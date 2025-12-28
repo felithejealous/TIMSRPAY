@@ -1,0 +1,103 @@
+/* 1. Reset and Full Screen Setup */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+html, body {
+    height: 100%;
+    overflow: hidden; /* Prevents scrolling on kiosk */
+    background-image: url("../Images/teoDMangoBG.png");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+/* 2. Background Design */
+.kiosk-container {
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    position: relative;
+    cursor: pointer;
+
+    text-decoration: none;
+    color: black;
+}
+
+/* Circular mango-style accent */
+.kiosk-container::before {
+    content: "";
+    position: absolute;
+    bottom: -20%;
+    left: -10%;
+    width: 120%;
+    height: 80%;
+    border-radius: 50%;
+    z-index: 1;
+}
+
+/* 3. Branding Box (Merged & Clean) */
+.brand-box {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+
+    padding: 0.6rem 1rem;
+}
+
+.brand-box img.Logo {
+    width: clamp(20rem, 47vw, 27rem);
+    height: auto;
+    max-height: 60vh;
+    object-fit: contain;
+}
+
+
+/* Optional text branding (kept clean) */
+.brand-name {
+    font-size: 3rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+}
+
+.tagline {
+    font-size: 1.2rem;
+    font-weight: bold;
+    letter-spacing: 4px;
+    border-top: 2px solid black;
+    padding-top: 5px;
+}
+
+/* 4. Call to Action */
+.tap-instruction {
+    position: absolute;
+    bottom: 20%;
+    z-index: 2;
+
+    font-size: 1.8rem;
+    opacity: 0.8;
+    animation: pulse 2s infinite;
+}
+
+/* Subtle animation */
+@keyframes pulse {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}

@@ -1,0 +1,180 @@
+/* Chrome, Edge, Safari */
+::-webkit-scrollbar {
+    display: none;
+}
+
+header {
+    position: relative; /* Needed for absolute positioning */
+    background-image: url(../Images/teoDMangoBG-horizontal.png);
+    height: 15rem;
+    padding: .5rem;
+    background-position: top;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.choose {
+    position: absolute;     /* Position relative to header */
+    bottom: -1.5rem;        /* Half of the div’s height to stick out */
+    left: 50%;              /* Center horizontally */
+    transform: translateX(-50%);
+    text-align: center;
+    font-size: 1.5rem;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: bold;
+    padding: .5rem;      /* Adjust for size */
+    background-color: white;
+    border-radius: 0.8rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    width: 70%;
+}
+
+ .menu-container {
+    background: white;
+            border-radius: 30px 30px 0 0;
+            margin-top: -30px;
+            padding: 20px;
+            height: calc(100vh - 220px);
+            position: relative;
+            z-index: 2;
+        }
+
+        .product-grid {
+            margin-top: 2.5rem;
+            margin-left: 2rem;
+            margin-right: 2rem;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            overflow-y: auto;
+            max-height: 60%;
+            padding-bottom: 20px;
+            margin-bottom: 2.5rem;
+    
+        }
+
+        .product-card {
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+            aspect-ratio: 2/3.5;
+            color: white;
+            cursor: pointer;
+
+        }
+
+        .product-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .product-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 10px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+        }
+
+        .product-info h3 { font-size: 0.9rem; margin-bottom: 2px; }
+        .product-info p { font-size: 0.7rem; opacity: 0.8; margin-bottom: 5px; }
+        .price-tag { font-weight: bold; font-size: 1rem; }
+
+
+       /* 1. Floating Cart Bar */
+.floating-cart-bar {
+    position: fixed;
+    bottom: 6px;        /* 20px */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;             /* Flexible width for different tablet sizes */
+    max-width: 85%;    /* 460px - keeps it from getting too wide on large screens */
+    height: 3rem;       /* 70px */
+    background: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 20px; /* 50px - Pill shape */
+    padding: 0 1.5625rem;    /* 0 25px */
+    z-index: 999;
+    box-shadow: 0 0.625rem 1.875rem rgba(0,0,0,0.2); /* 0 10px 30px */
+    border: 0.0625rem solid #eee; /* 1px */
+}
+
+/* 2. Buttons */
+.btn {
+    padding: 0.3rem 2rem 0.3rem;
+    border-radius: 1.5625rem;  /* 25px */
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s;
+    font-size: 1rem;           /* Added for scaling */
+}
+
+.btn:active { 
+    transform: scale(0.95); 
+}
+
+.btn-outline { 
+    border: 2px solid #FBBC04; /* width, style, color */
+    margin-right: 1rem;      /* 10px */
+    background-color: transparent; /* show border only */
+    color: black;              /* optional: text matches border */
+}
+
+.btn-fill { 
+    background-color: #FBBC04;
+    color: white; 
+    margin-right: 2.5rem;
+    border: none;
+}
+
+/* 3. Cart Overlay */
+.cart-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    display: none;
+}
+
+/* 4. Cart Popup */
+.cart-popup {
+    position: fixed;
+    bottom: -100%;
+    left: 0;
+    right: 0;
+    background: white;
+    height: 85vh;            /* 85% of Viewport Height - Best for popups */
+    border-radius: 1.875rem 1.875rem 0 0; /* 30px 30px 0 0 */
+    padding: 1.875rem 1.25rem; /* 30px 20px */
+    transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 1001;
+    box-shadow: 0 2rem 4rem rgba(0,0,0,0.2); /* 0 -5px 20px */
+}
+
+.cart-popup.active { 
+    bottom: 0; 
+}
+
+/* 5. Cart Item */
+.cart-item {
+    display: flex;
+    border: 0.0625rem solid #eee; /* 1px */
+    border-radius: 0.9375rem;      /* 15px */
+    padding: 0.625rem;            /* 10px */
+    margin-bottom: 0.9375rem;     /* 15px */
+    align-items: center;
+}
+
+.cart-item img { 
+    width: 3.75rem;               /* 60px */
+    height: 3.75rem;              /* 60px */
+    border-radius: 0.625rem;      /* 10px */
+    margin-right: 0.9375rem;      /* 15px */
+}

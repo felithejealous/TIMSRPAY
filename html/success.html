@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Order Complete</title>
+    <link rel="stylesheet" href="../css/success.css">
+</head>
+<body id="body-main">
+
+<div class="order-complete" id="content-to-fade">
+    <img src="../Images/mango-icon.png" alt="Mango Icon">
+    <p>Order complete!</p>
+</div>
+
+<script>
+    const content = document.getElementById('body-main');
+
+    // Total wait time is 4 seconds
+    // We start the fade at 3.2 seconds so it finishes at 4.0
+    setTimeout(() => {
+        // Apply the fade out class
+        content.classList.add('fade-exit');
+        
+        // After the fade animation finishes (800ms), redirect
+        setTimeout(() => {
+            window.location.href = '../html/index.html';
+        }, 800); 
+
+    }, 3200); 
+</script>
+
+</body>
+</html>

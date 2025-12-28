@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teo D' Mango - Order Type</title>
+    <link rel="stylesheet" href="../css/select.css">
+</head>
+<body>
+
+    <div class="container">
+        <h1>Select order type</h1>
+
+        <div class="order-options">
+            <button class="option-card" data-target="../html/counter.html">
+                <div class="icon-box">
+                    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10 90V75C10 68 15 64 22 64H78C85 64 90 68 90 75V90" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+                        <path d="M68 64V52" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+                        <rect x="42" y="15" width="46" height="37" rx="8" stroke="currentColor" stroke-width="8"/>
+                    </svg>
+                </div>
+                <span class="option-label">Pay at the counter</span>
+            </button>
+
+            <button class="option-card" data-target="../html/cashless.html">
+                <div class="icon-box">
+                    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="8" y="20" width="84" height="60" rx="12" stroke="currentColor" stroke-width="9"/>
+                        <path d="M8 45H92" stroke="currentColor" stroke-width="9"/>
+                        <rect x="25" y="62" width="25" height="10" rx="5" fill="currentColor"/>
+                    </svg>
+                </div>
+                <span class="option-label">Cashless</span>
+            </button>
+        </div>
+
+        <button class="footer-btn" id="nextBtn">Next</button>
+    </div>
+
+    <script>
+        const optionCards = document.querySelectorAll('.option-card');
+        const nextBtn = document.getElementById('nextBtn');
+        let selectedTarget = null;
+
+        optionCards.forEach(card => {
+            card.addEventListener('click', () => {
+                // 1. Remove 'selected' class from all cards
+                optionCards.forEach(c => c.classList.remove('selected'));
+                
+                // 2. Add 'selected' class to the one we just clicked
+                card.classList.add('selected');
+                
+                // 3. Store the URL from the data-target attribute
+                selectedTarget = card.getAttribute('data-target');
+                
+                // 4. Optional: Make the "Next" button look active
+                nextBtn.style.opacity = "1";
+            });
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (selectedTarget) {
+                window.location.href = selectedTarget;
+            } else {
+                alert("Please select an order type first!");
+            }
+        });
+    </script>
+
+</body>
+</html>

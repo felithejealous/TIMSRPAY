@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teo D' Mango - Payment Method</title>
+    <link rel="stylesheet" href="../css/select.css">
+    <style>
+        .teo-pay-img {
+            width: 90%;
+            height: 90%;
+            object-fit: contain;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Payment Method</h1>
+
+        <div class="order-options">
+            <button class="option-card" data-method="teopay">
+                <div class="icon-box">
+                    <img src="../Images/mango-icon.png" alt="Teo Pay" class="teo-pay-img">
+                </div>
+                <span class="option-label">Teo Pay</span>
+            </button>
+
+            <button class="option-card" data-method="qr">
+                <div class="icon-box">
+                    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="10" y="10" width="80" height="80" rx="8" stroke="currentColor" stroke-width="6"/>
+                        <rect x="22" y="22" width="18" height="18" rx="2" stroke="currentColor" stroke-width="5"/>
+                        <rect x="60" y="22" width="18" height="18" rx="2" stroke="currentColor" stroke-width="5"/>
+                        <rect x="22" y="60" width="18" height="18" rx="2" stroke="currentColor" stroke-width="5"/>
+                        <rect x="52" y="52" width="8" height="8" rx="1" fill="currentColor"/>
+                        <rect x="65" y="65" width="8" height="8" rx="1" fill="currentColor"/>
+                        <rect x="52" y="65" width="8" height="8" rx="1" fill="currentColor"/>
+                        <rect x="65" y="52" width="8" height="8" rx="1" fill="currentColor"/>
+                    </svg>
+                </div>
+                <span class="option-label">QR Code</span>
+            </button>
+        </div>
+
+        <button class="footer-btn" id="payBtn" style="opacity: 0.5;">Proceed</button>
+    </div>
+
+    <script>
+        const optionCards = document.querySelectorAll('.option-card');
+        const payBtn = document.getElementById('payBtn');
+        let selectedMethod = null; // Store the actual method name
+
+        optionCards.forEach(card => {
+            card.addEventListener('click', () => {
+                optionCards.forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+                
+                // Get the value from the data-method attribute
+                selectedMethod = card.getAttribute('data-method');
+                
+                payBtn.style.opacity = "1";
+            });
+        });
+
+        payBtn.addEventListener('click', () => {
+            if (selectedMethod === "teopay") {
+                window.location.href = '../html/counter.html';
+            } else if (selectedMethod === "qr") {
+                window.location.href = '../html/qr.html';
+            } else {
+                alert("Please select a payment method!");
+            }
+        });
+    </script>
+
+</body>
+</html>

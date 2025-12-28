@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Receipt</title>
+    <link rel="stylesheet" href="../css/receipt.css">
+</head>
+<body>
+
+<div class="receipt">
+
+    <!-- ORDER NUMBER -->
+    <div class="receipt-order-number">
+        <h1>0124</h1>
+    </div>
+
+    <div class="receipt-header">
+        <h2>TEO D' MANGO</h2>
+        <p>Official Receipt</p>
+        <p>Kiosk Order</p>
+    </div>
+
+    <div class="receipt-info">
+        <div><span>Date</span><span>09/28/2025</span></div>
+        <div><span>Time</span><span>14:32</span></div>
+        <div><span>Payment</span><span>Cashless</span></div>
+    </div>
+
+    <div class="receipt-items">
+        <div class="item">
+            <span>Mango Shake (Large)</span>
+            <span>₱120.00</span>
+        </div>
+        <div class="item">
+            <span>Add Pearls</span>
+            <span>₱20.00</span>
+        </div>
+    </div>
+
+    <div class="receipt-totals">
+        <div><span>Subtotal</span><span>₱140.00</span></div>
+        <div><span>Tax</span><span>₱0.00</span></div>
+        <div class="grand-total">
+            <span>TOTAL</span>
+            <span>₱140.00</span>
+        </div>
+    </div>
+
+    <div class="receipt-points">
+        <div class="points-row">
+            <span>Points Earned</span>
+            <span class="points-highlight">+ <span id="earnedPoints">14</span> pts</span>
+        </div>
+    </div>
+
+    <button class="receipt-btn">PRINT RECEIPT</button>
+
+    <div class="receipt-footer">
+    <p>Thank you for your purchase!</p>
+    <p>Please keep this receipt.</p>
+
+</div>
+
+</div>
+
+
+<div id="printOverlay" class="print-overlay">
+    <div class="print-content">
+        <div class="spinner"></div>
+        <p>Printing receipt...</p>
+    </div>
+</div>
+
+<script>
+    const printBtn = document.querySelector('.receipt-btn');
+    const overlay = document.getElementById('printOverlay');
+
+    printBtn.addEventListener('click', () => {
+        // Show the printing pop-up
+        overlay.classList.add('show');
+
+        // Wait 3 seconds, then go to the final page
+        setTimeout(() => {
+            window.location.href = '../html/success.html';
+        }, 3000);
+    });
+
+    const totalText = document.querySelector('.grand-total span:last-child').innerText;
+    const numericTotal = parseFloat(totalText.replace('₱', ''));
+    const pointsCalculation = Math.floor(numericTotal / 10); 
+
+    document.getElementById('earnedPoints').innerText = pointsCalculation;
+</script>
+
+
+
+</body>
+</html>
