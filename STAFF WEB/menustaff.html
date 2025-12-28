@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Teo D' Mango | Menu Explorer Pro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #fcd34d;
+            --primary-dark: #f59e0b;
+            --dark: #111111;
+            --light: #f9fafb;
+            --success: #10b981;
+            --danger: #ef4444;
+            --text-muted: #6b7280;
+            --card-radius: 24px;
+            --card-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--light); color: var(--dark); display: flex; min-height: 100vh; overflow-x: hidden; }
+
+        /* --- ENHANCED RESPONSIVE SIDEBAR --- */
+        aside {
+            width: 260px; background: white; height: 100vh; position: fixed;
+            border-right: 1px solid #e5e7eb; padding: 2rem 1.2rem; display: flex;
+            flex-direction: column; z-index: 1000; transition: all 0.4s ease;
+        }
+        .sidebar-logo { padding: 10px 5px; margin-bottom: 2rem; text-align: center; }
+        .sidebar-logo img { max-width: 100%; height: auto; max-height: 60px; display: block; margin: 0 auto; }
+        
+        nav ul { list-style: none; }
+        nav a {
+            text-decoration: none; color: var(--text-muted); padding: 0.9rem 1.1rem;
+            display: flex; align-items: center; gap: 15px; font-weight: 600;
+            border-radius: 14px; margin-bottom: 0.5rem; transition: 0.2s;
+        }
+        nav li.active a { background: var(--primary); color: var(--dark); font-weight: 700; box-shadow: 0 4px 12px rgba(252, 211, 77, 0.2); }
+
+        /* --- MAIN LAYOUT & RESPONSIVE SPLIT --- */
+        main { margin-left: 260px; flex: 1; display: flex; height: 100vh; transition: all 0.4s ease; }
+
+        /* MENU SECTION */
+        .menu-container { flex: 1.5; padding: 2.5rem; overflow-y: auto; }
+        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1.5rem; }
+        
+        .product-card { 
+            background: white; border-radius: 20px; padding: 1rem; box-shadow: var(--card-shadow); 
+            text-align: center; cursor: pointer; transition: 0.3s; border: 2px solid transparent;
+        }
+        .product-card:hover { border-color: var(--primary); transform: translateY(-5px); }
+        .product-card img { width: 100%; height: 140px; border-radius: 15px; object-fit: cover; margin-bottom: 12px; }
+        .product-card h4 { font-weight: 800; font-size: 1rem; margin-bottom: 5px; }
+        
+        /* ORDER PANEL */
+        .order-panel { width: 420px; background: white; border-left: 1px solid #e5e7eb; padding: 2rem; display: flex; flex-direction: column; }
+        .card-custom { background: #f8fafc; border-radius: 20px; padding: 1.2rem; margin-bottom: 1.2rem; border: 1px solid #e2e8f0; }
+        .card-custom h4 { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; font-weight: 800; }
+
+        /* OPTIONS STYLES */
+        .options-flex { display: flex; gap: 8px; flex-wrap: wrap; }
+        .option-chip { 
+            padding: 10px 14px; background: white; border-radius: 12px; border: 1.5px solid #e2e8f0; 
+            font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: 0.2s;
+        }
+        .option-chip.active { background: var(--primary); border-color: var(--primary-dark); color: var(--dark); }
+
+        .cart-list { flex: 1; overflow-y: auto; margin: 1rem 0; }
+        .cart-item { padding: 12px 0; border-bottom: 1px dashed #eee; display: flex; justify-content: space-between; align-items: center; }
+        .cart-item small { display: block; color: var(--text-muted); margin-top: 2px; font-size: 0.75rem; }
+
+        .btn-checkout { width: 100%; padding: 1.1rem; background: var(--dark); color: white; border: none; border-radius: 16px; font-weight: 800; cursor: pointer; transition: 0.3s; font-size: 1rem; }
+        .btn-checkout:hover { background: var(--success); transform: translateY(-2px); }
+
+        /* --- MEDIA QUERIES --- */
+
+        /* TABLET OPTIMIZATION */
+        @media screen and (max-width: 1150px) {
+            aside { width: 85px; padding: 2rem 0.5rem; }
+            aside span, .sidebar-logo img { display: none; }
+            nav a { justify-content: center; padding: 1.2rem; }
+            main { margin-left: 85px; }
+            .order-panel { width: 350px; }
+        }
+
+        /* MOBILE OPTIMIZATION */
+        @media screen and (max-width: 850px) {
+            aside {
+                width: 100%; height: 70px; position: fixed; bottom: 0; top: auto;
+                flex-direction: row; border-right: none; border-top: 1px solid #e5e7eb; padding: 0;
+            }
+            nav { width: 100%; }
+            nav ul { display: flex; justify-content: space-around; align-items: center; height: 100%; }
+            nav li { margin-bottom: 0; }
+            nav a { flex-direction: column; gap: 4px; font-size: 0.65rem; padding: 8px; border-radius: 0; }
+            nav li.active a { background: none; color: var(--primary-dark); box-shadow: none; }
+            
+            main { margin-left: 0; margin-bottom: 75px; flex-direction: column; height: auto; }
+            .menu-container, .order-panel { width: 100%; flex: none; height: auto; overflow: visible; border-left: none; }
+            .order-panel { padding: 1.5rem; background: #f1f5f9; border-top: 2px solid #ddd; }
+            .menu-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+        }
+    </style>
+</head>
+<body>
+
+    <aside>
+        <div class="sidebar-logo"><img src="logo.png" alt="Teo D' Mango"></div>
+        <nav>
+            <ul>
+                <li><a href="overview.html"><i class="fa-solid fa-chart-line"></i> <span>Overview</span></a></li>
+                <li class="active"><a href="#"><i class="fa-solid fa-receipt"></i> <span>Menu</span></a></li>
+                <li><a href="inventory.html"><i class="fa-solid fa-boxes-stacked"></i> <span>Inventory</span></a></li>
+                <li><a href="attendance.html"><i class="fa-solid fa-user-clock"></i> <span>Attendance</span></a></li>
+                <li><a href="topupstaff.html"><i class="fa-solid fa-credit-card"></i> <span>RPAY</span></a></li>
+                <li><a href="rewardsstaff.html"><i class="fa-solid fa-gift"></i> <span>Rewards</span></a></li>
+                <li style="margin-top: auto;"><a href="dashaccsettstaff.html"><i class="fa-solid fa-gear"></i> <span>Settings</span></a></li>
+                <li><a href="index.html" style="color:var(--danger)"><i class="fa-solid fa-right-from-bracket"></i> <span>Log Out</span></a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main>
+        <section class="menu-container">
+            <header style="margin-bottom: 2rem;">
+                <h1 style="font-size: clamp(1.8rem, 4vw, 2.2rem); letter-spacing: -1.5px;">Menu Explorer</h1>
+                <p style="color: var(--text-muted); font-weight: 500;">Select a drink to customize the order.</p>
+            </header>
+
+            <div class="menu-grid">
+                <div class="product-card" onclick="selectItem('Mango Bliss', 85)">
+                    <img src="mangga.png">
+                    <h4>Mango Bliss</h4>
+                    <p style="font-weight: 800; color: var(--primary-dark);">₱85.00</p>
+                </div>
+                <div class="product-card" onclick="selectItem('Classic Lychee', 95)">
+                    <img src="lychee.png">
+                    <h4>Avocado Dream</h4>
+                    <p style="font-weight: 800; color: var(--primary-dark);">₱95.00</p>
+                </div>
+                <div class="product-card" onclick="selectItem('Classic Ube', 75)">
+                    <img src="ube.png">
+                    <h4>Classic Ube</h4>
+                    <p style="font-weight: 800; color: var(--primary-dark);">₱75.00</p>
+                </div>
+                <div class="product-card" onclick="selectItem('Classic Strawberry', 90)">
+                    <img src="strawberry.png">
+                    <h4>Classic Strawberry</h4>
+                    <p style="font-weight: 800; color: var(--primary-dark);">₱90.00</p>
+                </div>
+                <div class="product-card" onclick="selectItem('Classic Buko', 110)">
+                    <img src="Buko.png">
+                    <h4>Classic Buko</h4>
+                    <p style="font-weight: 800; color: var(--primary-dark);">₱110.00</p>
+                </div>
+                <div class="product-card" onclick="selectItem('Classic Avocado', 125)">
+                    <img src="avocado.png">
+                    <h4>Classic Avocado</h4>
+                    <p style="font-weight: 800; color: var(--primary-dark);">₱125.00</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="order-panel">
+            <h3 style="font-weight: 800; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px;">
+                <i class="fa-solid fa-sliders" style="color: var(--primary-dark);"></i> Customization
+            </h3>
+            
+            <div id="selectedItemDisplay" style="background: var(--dark); color: white; padding: 12px; border-radius: 12px; margin-bottom: 1.5rem; font-weight: 700; text-align: center; font-size: 0.9rem;">
+                None Selected
+            </div>
+
+            <div class="card-custom">
+                <h4>Sugar Level</h4>
+                <div class="options-flex" id="sugarOptions">
+                    <div class="option-chip" onclick="setSugar('0%')">0%</div>
+                    <div class="option-chip" onclick="setSugar('50%')">50%</div>
+                    <div class="option-chip active" onclick="setSugar('100%')">100%</div>
+                </div>
+            </div>
+
+            <div class="card-custom">
+                <h4>Add-ons (+₱15.00)</h4>
+                <div class="options-flex" id="addonOptions">
+                    <div class="option-chip" onclick="toggleAddon(this, 'Graham', 15)">Graham</div>
+                    <div class="option-chip" onclick="toggleAddon(this, 'Pearls', 15)">Pearls</div>
+                    <div class="option-chip" onclick="toggleAddon(this, 'Cheese', 15)">Cheese</div>
+                </div>
+            </div>
+
+            <button class="btn-checkout" style="background: var(--dark); margin-bottom: 1.5rem;" onclick="addToCart()">
+                <i class="fa-solid fa-cart-plus"></i> Add to Cart
+            </button>
+
+            <div class="cart-list" id="cartList">
+                <p style="text-align: center; color: var(--text-muted); font-size: 0.85rem; margin-top: 1rem;">Cart is empty</p>
+            </div>
+
+            <div style="padding-top: 1.5rem; border-top: 2px solid var(--light);">
+                <div style="display: flex; justify-content: space-between; font-size: 1.3rem; font-weight: 900; margin-bottom: 1.5rem; letter-spacing: -0.5px;">
+                    <span>Grand Total</span>
+                    <span id="totalPrice">₱0.00</span>
+                </div>
+                <button class="btn-checkout" onclick="window.location.href='confirmationstaff.html'">
+                    Proceed to Payment <i class="fa-solid fa-arrow-right" style="margin-left: 8px;"></i>
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        let currentItem = null;
+        let selectedSugar = "100%";
+        let selectedAddons = [];
+        let cart = [];
+        let total = 0;
+
+        function selectItem(name, price) {
+            currentItem = { name, basePrice: price };
+            document.getElementById('selectedItemDisplay').innerHTML = `<i class="fa-solid fa-check-circle" style="color:var(--success)"></i> Selected: ${name}`;
+        }
+
+        function setSugar(level) {
+            selectedSugar = level;
+            const chips = document.querySelectorAll('#sugarOptions .option-chip');
+            chips.forEach(c => c.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function toggleAddon(el, name, price) {
+            el.classList.toggle('active');
+            if(el.classList.contains('active')) {
+                selectedAddons.push({ name, price });
+            } else {
+                selectedAddons = selectedAddons.filter(a => a.name !== name);
+            }
+        }
+
+        function addToCart() {
+            if(!currentItem) return alert("Please select a drink first!");
+            
+            let finalPrice = currentItem.basePrice;
+            selectedAddons.forEach(a => finalPrice += a.price);
+
+            const orderItem = {
+                display: `${currentItem.name} (${selectedSugar})`,
+                details: selectedAddons.map(a => a.name).join(", ") || "No Add-ons",
+                price: finalPrice
+            };
+
+            cart.push(orderItem);
+            updateCartUI();
+            resetSelection();
+        }
+
+        function updateCartUI() {
+            const list = document.getElementById('cartList');
+            const totalDisplay = document.getElementById('totalPrice');
+            list.innerHTML = "";
+            total = 0;
+
+            if(cart.length === 0) {
+                list.innerHTML = `<p style="text-align: center; color: var(--text-muted); font-size: 0.85rem; margin-top: 1rem;">Cart is empty</p>`;
+            }
+
+            cart.forEach((item, index) => {
+                total += item.price;
+                list.innerHTML += `
+                    <div class="cart-item">
+                        <div>
+                            <strong>${item.display}</strong>
+                            <small>${item.details}</small>
+                        </div>
+                        <div style="text-align:right">
+                            <strong>₱${item.price.toFixed(2)}</strong>
+                            <i class="fa-solid fa-trash-alt" style="margin-left:12px; cursor:pointer; color:var(--danger)" onclick="removeItem(${index})"></i>
+                        </div>
+                    </div>`;
+            });
+            totalDisplay.innerText = `₱${total.toFixed(2)}`;
+        }
+
+        function resetSelection() {
+            currentItem = null;
+            selectedAddons = [];
+            document.getElementById('selectedItemDisplay').innerText = "None Selected";
+            document.querySelectorAll('#addonOptions .option-chip').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('#sugarOptions .option-chip').forEach(c => c.classList.remove('active'));
+            document.querySelector('#sugarOptions .option-chip:last-child').classList.add('active');
+        }
+
+        function removeItem(index) {
+            cart.splice(index, 1);
+            updateCartUI();
+        }
+    </script>
+</body>
+</html>
