@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TIMS RPAY | Teo D' Mango Premium</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap');
+
+        :root {
+            --primary: #FFD93D;
+            --primary-dark: #e4b654;
+            --dark: #1A120B;
+            --glass-bg: rgba(248, 228, 164, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.6);
+            --shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+        body { background: linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%); background-attachment: fixed; min-height: 100vh; color: var(--dark); overflow-x: hidden; }
+
+        header { background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: 12px 0; width: 100%; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--glass-border); }
+        .nav-container { max-width: 1100px; margin: 0 auto; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; }
+        .logo-img { height: 45px; }
+        nav a { text-decoration: none; color: var(--dark); margin-left: 25px; font-size: 13px; font-weight: 800; text-transform: uppercase; }
+
+        .wrapper { max-width: 1100px; margin: 50px auto; padding: 0 20px; animation: fadeIn 0.8s ease-out; }
+        h1 { font-size: 2.5rem; font-weight: 900; letter-spacing: -1.5px; text-align: center; margin-bottom: 40px; }
+
+        /* --- 3D CARD FLIP CONTAINER --- */
+        .card-container { width: 380px; height: 230px; margin: 0 auto 60px; perspective: 1000px; cursor: pointer; }
+        .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform-style: preserve-3d; }
+        .card-container:hover .card-inner { transform: rotateY(180deg); }
+        .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 25px; padding: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); color: white; display: flex; flex-direction: column; justify-content: space-between; }
+
+        .card-front { background: linear-gradient(135deg, #1A120B 0%, #333 100%); border: 1px solid rgba(255,255,255,0.1); }
+        .card-logo { align-self: flex-end; font-weight: 900; color: var(--primary); letter-spacing: 1px; font-size: 1.2rem; }
+        .card-chip { width: 50px; height: 38px; background: linear-gradient(135deg, #e4b654 0%, #fff 100%); border-radius: 8px; margin-top: 10px; }
+        .card-num { font-size: 1.3rem; letter-spacing: 4px; font-family: 'Courier New', monospace; margin-top: 20px; }
+        .card-holder-info { display: flex; justify-content: space-between; align-items: flex-end; }
+        .holder-name { text-transform: uppercase; font-size: 0.8rem; letter-spacing: 2px; opacity: 0.8; }
+
+        .card-back { background: linear-gradient(135deg, #222 0%, #000 100%); transform: rotateY(180deg); padding: 20px 0; display: block; }
+        .mag-stripe { background: #000; height: 45px; width: 100%; margin-top: 10px; }
+        .signature-area { background: rgba(255,255,255,0.2); height: 40px; width: 70%; margin: 25px 20px; display: flex; align-items: center; justify-content: flex-end; padding-right: 15px; border-radius: 4px; }
+        .cvv-code { color: black; background: white; padding: 4px 10px; border-radius: 4px; font-weight: 800; font-style: italic; font-size: 0.8rem; }
+        .back-text { padding: 0 25px; font-size: 0.6rem; opacity: 0.5; line-height: 1.4; }
+
+        /* --- ACTION PANELS --- */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .panel { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); padding: 40px; border-radius: 35px; border: 1px solid var(--glass-border); box-shadow: var(--shadow); }
+        
+        .balance-display { background: var(--dark); color: var(--primary); padding: 30px; border-radius: 20px; text-align: center; margin-bottom: 20px; }
+        .amt { font-size: 3rem; font-weight: 900; letter-spacing: -2px; }
+
+        /* RELOAD OPTIONS */
+        .reload-option { margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid #eee; }
+        .reload-option:last-of-type { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        
+        .option-tag { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--primary-dark); letter-spacing: 1px; display: block; margin-bottom: 10px; }
+
+        input { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #ddd; margin-bottom: 15px; font-size: 1rem; font-weight: 700; }
+        
+        .btn-pay { width: 100%; padding: 16px; background: var(--dark); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; text-transform: uppercase; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-pay:hover { background: #000; transform: scale(1.02); }
+
+        /* Store Locator Style */
+        .store-reloader { background: #fffdf0; border: 2px solid var(--primary); padding: 20px; border-radius: 20px; display: flex; align-items: center; gap: 15px; }
+        .store-reloader i { font-size: 1.5rem; color: var(--primary-dark); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 850px) {
+            .grid { grid-template-columns: 1fr; }
+            .card-container { width: 320px; height: 190px; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="nav-container"> 
+        <a href="index.html"><img src="logo.png" alt="Teo Logo" class="logo-img"></a>
+        <nav>
+            <a href="welcome.html">HOME</a>
+           <a href="dashboard.html">OVERVIEW</a>
+                <a href="menu.html">MENU</a>
+                <a href="rewards.html" style="color: #000;">REWARDS</a>
+                <a href="topup.html" style="color: #000;">TOP-UP RPAY</a>
+                <a href="dashaccsett.html">SETTINGS</a>
+                <a href="index.html" class="btn-logout">LOG OUT</a>
+        </nav>
+    </div>
+</header>
+
+<main class="wrapper">
+    <h1>TIMS RPAY Digital Card</h1>
+
+    <div class="card-container">
+        <div class="card-inner">
+            <div class="card-face card-front">
+                <div class="card-logo">TIMS RPAY</div>
+                <div class="card-chip"></div>
+                <div class="card-num">8821 0000 9920 1022</div>
+                <div class="card-holder-info">
+                    <div>
+                        <small style="display:block; opacity: 0.6; font-size: 0.6rem;">CARD MEMBER</small>
+                        <span class="holder-name">Jane Doe</span>
+                    </div>
+                    <img src="logo.png" style="height: 30px; filter: brightness(0) invert(1); opacity: 0.3;">
+                </div>
+            </div>
+            <div class="card-face card-back">
+                <div class="mag-stripe"></div>
+                <div class="signature-area"><span class="cvv-code">821</span></div>
+                <div class="back-text">
+                    This card is issued by Teo D' Mango Philippines. By using this card, you agree to the terms of the TIMS RPAY agreement.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid">
+        <div class="panel">
+            <h3 style="margin-bottom: 20px; font-weight: 800;">Account Balance</h3>
+            <div class="balance-display">
+                <p style="font-size: 0.7rem; font-weight: 800; opacity: 0.6; letter-spacing: 1px;">TOTAL AVAILABLE</p>
+                <div class="amt">₱450.00</div>
+            </div>
+            <button class="btn-pay" style="background: var(--primary); color: var(--dark);">
+                <i class="fa-solid fa-arrows-rotate"></i> Sync Credits
+            </button>
+        </div>
+
+        <div class="panel">
+            <h3 style="margin-bottom: 25px; font-weight: 800;">Reload Your Card</h3>
+
+            <div class="reload-option">
+                <span class="option-tag">Online Top-Up</span>
+                <input type="number" placeholder="Enter Amount (₱)">
+                <button class="btn-pay">
+                    <i class="fa-solid fa-globe"></i> Pay via GCash / Card
+                </button>
+            </div>
+
+            <div class="reload-option">
+                <span class="option-tag">In-Store Loading</span>
+                <div class="store-reloader">
+                    <i class="fa-solid fa-store"></i>
+                    <div style="flex: 1;">
+                        <h4 style="font-size: 0.9rem; font-weight: 800;">Cash Reload</h4>
+                        <p style="font-size: 0.75rem; color: #666; font-weight: 600;">Visit any Teo D' Mango branch to reload via Cashier.</p>
+                    </div>
+                </div>
+                <button class="btn-pay" style="margin-top: 15px; background: white; color: var(--dark); border: 2px solid var(--dark);">
+                    <i class="fa-solid fa-location-dot"></i> Find Nearby Stores
+                </button>
+            </div>
+        </div>
+    </div>
+</main>
+
+</body>
+</html>

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Payment | Teo D' Mango Premium</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap');
+
+        :root {
+            --primary: #FFD93D;
+            --primary-dark: #e4b654;
+            --dark: #1A120B;
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.6);
+            --shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+            --text-main: #1A120B;
+            --text-muted: #64748b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+        
+        body { 
+            background: linear-gradient(135deg, #ffffff 0%, #ffffff 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        /* Fixed Glass Header */
+        header {
+            background: rgba(255, 217, 61, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 12px 0;
+            width: 100%;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid var(--glass-border);
+        }
+        .nav-container { 
+            max-width: 1100px; 
+            margin: 0 auto; padding: 0 20px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo-img { height: 45px; }
+        nav a { text-decoration: none; color: var(--dark); margin-left: 25px; font-size: 13px; font-weight: 800; text-transform: uppercase; }
+
+        .container { 
+            max-width: 1100px; 
+            margin: 40px auto 60px; 
+            padding: 0 20px; 
+        }
+
+        .page-badge { 
+            display: block; width: fit-content; margin: 0 auto 30px;
+            background: var(--dark); color: white; padding: 12px 40px; 
+            border-radius: 50px; font-weight: 900; text-transform: uppercase; 
+            letter-spacing: 2px;
+        }
+
+        /* --- GLASS CARDS --- */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(30px);
+            padding: 40px;
+            border-radius: 40px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow);
+            margin-bottom: 25px;
+        }
+
+        /* --- PURCHASE DETAILS TABLE --- */
+        .purchase-details { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        .purchase-details th { text-align: left; font-size: 0.75rem; font-weight: 900; opacity: 0.5; text-transform: uppercase; padding-bottom: 15px; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .purchase-details td { padding: 15px 0; font-weight: 600; border-bottom: 1px solid rgba(0,0,0,0.03); }
+        .purchase-details .item-name { color: var(--dark); font-weight: 800; display: block; font-size: 1.1rem; }
+        .purchase-details .item-sub { font-size: 0.8rem; color: #64748b; font-weight: 500; }
+
+        .receipt-summary { padding-top: 15px; }
+        .summary-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: 700; }
+        .summary-row.discount { color: #166534; font-weight: 800; }
+        .total-price { font-weight: 900; font-size: 1.8rem; color: var(--dark); border-top: 2px solid var(--dark); padding-top: 15px; margin-top: 15px; }
+
+        /* --- GRID LAYOUT --- */
+        .grid-layout { display: grid; grid-template-columns: 1.3fr 0.7fr; gap: 30px; margin-top: 10px; }
+
+        .method-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 30px; }
+        .method-item { 
+            text-align: center; cursor: pointer; padding: 20px 10px; 
+            background: white; border: 2px solid transparent; border-radius: 25px; 
+            transition: 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+        }
+        .method-item:hover { border-color: var(--primary); transform: translateY(-5px); }
+        .method-item.active { border-color: var(--primary-dark); background: #fffdf0; }
+        .method-item i { font-size: 1.8rem; margin-bottom: 10px; color: var(--dark); }
+        .method-label { font-size: 0.75rem; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* --- QR SECTION --- */
+        .qr-section { 
+            background: var(--dark); padding: 40px; border-radius: 35px; text-align: center; color: white;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        .qr-box { background: white; padding: 20px; border-radius: 25px; display: inline-block; margin-bottom: 20px; }
+        .qr-box img { width: 140px; height: 140px; display: block; border-radius: 10px; }
+
+        /* --- FINAL CARD --- */
+        .final-card { background: white; border-radius: 35px; padding: 40px; text-align: center; }
+        .grand-total { font-size: 3rem; font-weight: 900; color: var(--dark); margin: 10px 0; letter-spacing: -2px; }
+
+        .btn-proceed { 
+            width: 100%; padding: 20px; background: var(--dark); color: white; border: none; 
+            border-radius: 20px; font-weight: 800; font-size: 1.1rem; cursor: pointer; transition: 0.3s;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .btn-proceed:hover { background: #000; transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+
+        @media (max-width: 900px) {
+            .grid-layout { grid-template-columns: 1fr; }
+            .page-badge { margin-bottom: 20px; width: 100%; text-align: center; border-radius: 15px; }
+            .grand-total { font-size: 2.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="nav-container"> 
+            <a href="index.html"><img src="logo.png" alt="Teo Logo" class="logo-img"></a>
+            <nav>
+                <a href="welcome.html">HOME</a>
+              <a href="dashboard.html">OVERVIEW</a>
+                <a href="menu.html">MENU</a>
+                <a href="rewards.html" style="color: #000;">REWARDS</a>
+                <a href="topup.html" style="color: #000;">TOP-UP RPAY</a>
+                <a href="dashaccsett.html">SETTINGS</a>
+                <a href="index.html" class="btn-logout">LOG OUT</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <span class="page-badge">Checkout detail</span>
+
+        <div class="glass-card">
+            <h2 style="font-weight: 900; margin-bottom: 25px; font-size: 1.8rem; letter-spacing: -1px;">Review Purchase</h2>
+            
+            <table class="purchase-details">
+                <thead>
+                    <tr>
+                        <th>Item Selection</th>
+                        <th style="text-align: center;">Qty</th>
+                        <th style="text-align: right;">Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <span class="item-name">Mango Bliss (Large)</span>
+                            <span class="item-sub">+ Graham Crumbs, 100% Sugar</span>
+                        </td>
+                        <td style="text-align: center; font-weight: 800;">01</td>
+                        <td style="text-align: right; font-weight: 800;">₱95.00</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <span class="item-name">Avocado Cream (Medium)</span>
+                            <span class="item-sub">No Toppings, 50% Sugar</span>
+                        </td>
+                        <td style="text-align: center; font-weight: 800;">01</td>
+                        <td style="text-align: right; font-weight: 800;">₱75.00</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="receipt-summary">
+                <div class="summary-row">
+                    <span style="opacity: 0.6;">Total List Price</span> 
+                    <span>₱170.00</span>
+                </div>
+                <div class="summary-row discount">
+                    <span><i class="fa-solid fa-crown"></i> Member Discount (10%)</span> 
+                    <span>-₱17.00</span>
+                </div>
+                <div class="summary-row total-price">
+                    <span>Final Amount</span> 
+                    <span>₱153.00</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid-layout">
+            <div class="payment-selection">
+                <h2 style="font-weight: 900; margin-bottom: 20px; font-size: 1.5rem; letter-spacing: -0.5px;">Choose Payment</h2>
+                <div class="method-grid">
+                    <div class="method-item" onclick="alert('Connecting to Bank...')">
+                        <i class="fa-solid fa-building-columns"></i>
+                        <div class="method-label">E-Banks</div>
+                    </div>
+                    <div class="method-item active">
+                        <i class="fa-solid fa-qrcode"></i>
+                        <div class="method-label">Teo Pay</div>
+                    </div>
+                    <div class="method-item" onclick="alert('Please pay at the counter upon pickup.')">
+                        <i class="fa-solid fa-wallet"></i>
+                        <div class="method-label">Cash</div>
+                    </div>
+                </div>
+
+                <div class="qr-section">
+                    <div class="qr-box">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&color=1A120B&data=TeoDMango" alt="QR">
+                    </div>
+                    <p style="font-weight: 900; letter-spacing: 2px; font-size: 0.85rem; opacity: 0.8;">SCAN TO PAY VIA GCASH OR MAYA</p>
+                </div>
+            </div>
+
+            <div class="final-fee">
+                <div class="glass-card final-card">
+                    <p style="font-weight: 900; opacity: 0.5; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">Amount to Pay</p>
+                    <div class="grand-total">₱153.00</div>
+                    <p style="font-size: 0.85rem; opacity: 0.7; margin-bottom: 25px; font-weight: 600;">Verified In-Store Pickup</p>
+                    <button class="btn-proceed" onclick="handleFinish()">Confirm Order</button>
+                </div>
+                <p style="text-align: center; font-size: 0.75rem; opacity: 0.5; font-weight: 700; margin-top: 15px;">No delivery fee for this order.</p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function handleFinish() {
+            const btn = document.querySelector('.btn-proceed');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+            btn.style.pointerEvents = 'none';
+            
+            setTimeout(() => {
+                alert("Payment Successful! Show your receipt at the counter to claim your shakes.");
+                window.location.href = 'receipt.html';
+            }, 1500);
+        }
+
+        // Method Toggle Logic
+        document.querySelectorAll('.method-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.method-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

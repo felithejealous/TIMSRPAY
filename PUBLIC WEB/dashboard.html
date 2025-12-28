@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Member Rewards | Teo D' Mango Premium</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap');
+
+        :root {
+            --primary: #FFD93D;
+            --primary-dark: #e4b654;
+            --dark: #1A120B;
+            --glass-bg: rgba(248, 228, 164, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.6);
+            --shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+            --text-main: #1A120B;
+            --text-muted: #64748b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+        
+        body { 
+            background: linear-gradient(135deg, #ffffff 0%, #ffffff 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        /* Fixed Glass Header */
+        header {
+            background: rgba(248, 228, 164, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 12px 0;
+            width: 100%;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid var(--glass-border);
+        }
+        .nav-container { 
+            max-width: 1100px; 
+            margin: 0 auto; padding: 0 20px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo-img { height: 45px; }
+        nav a { text-decoration: none; color: var(--dark); margin-left: 25px; font-size: 13px; font-weight: 800; text-transform: uppercase; }
+
+        .page-wrapper {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+            display: flex;
+            gap: 30px;
+        }
+
+        /* --- LEFT SIDE: PROMO & INFO (Auth-Style Image Side) --- */
+        .info-side { 
+            flex: 0.8;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .main-promo-card {
+            background: url('https://images.unsplash.com/photo-1546173159-315724a31696?auto=format&fit=crop&q=80&w=800') center/cover;
+            flex: 1;
+            border-radius: 35px;
+            position: relative;
+            box-shadow: var(--shadow);
+            min-height: 400px;
+            overflow: hidden;
+        }
+        .main-promo-card::after {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+        }
+        .promo-content { position: absolute; bottom: 30px; left: 30px; right: 30px; color: white; z-index: 2; }
+        
+        .mini-promo {
+            background: var(--dark);
+            color: var(--primary);
+            padding: 25px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* --- RIGHT SIDE: REDEEM & PERSONAL (Auth-Style Form Side) --- */
+        .content-side { 
+            flex: 1.2;
+            background: var(--glass-bg);
+            backdrop-filter: blur(30px);
+            padding: 40px;
+            border-radius: 40px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow);
+        }
+
+        .welcome-back { margin-bottom: 30px; }
+        .welcome-back h4 { font-weight: 800; color: var(--primary-dark); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 2px; }
+        .welcome-back h1 { font-size: 2.5rem; font-weight: 900; letter-spacing: -1.5px; line-height: 1.1; margin-top: 5px; }
+
+        /* Tier Banner */
+        .tier-banner {
+            background: #fffdf0;
+            border: 2px solid var(--primary);
+            padding: 15px 25px;
+            border-radius: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .points-display { text-align: right; }
+        .points-display span { font-size: 1.8rem; font-weight: 900; color: var(--dark); display: block; line-height: 1; }
+        .points-display small { font-weight: 800; opacity: 0.6; font-size: 0.7rem; text-transform: uppercase; }
+
+        /* Rewards List */
+        .rewards-list { display: flex; flex-direction: column; gap: 15px; }
+        .reward-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: white;
+            padding: 15px;
+            border-radius: 20px;
+            border: 1px solid rgba(0,0,0,0.05);
+            transition: 0.3s;
+        }
+        .reward-item:hover { transform: scale(1.02); border-color: var(--primary); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        .reward-img { width: 65px; height: 65px; border-radius: 15px; object-fit: cover; }
+        .reward-info { flex: 1; }
+        .reward-info h5 { font-weight: 800; font-size: 1rem; }
+        .reward-info p { font-size: 0.8rem; font-weight: 700; color: var(--primary-dark); }
+
+        .btn-claim {
+            background: var(--dark);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 0.75rem;
+            border: none;
+            cursor: pointer;
+        }
+
+        /* Quick Promo Alert */
+        .promo-alert-box {
+            background: #ffffff;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 15px;
+            margin-top: 25px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 950px) {
+            .page-wrapper { flex-direction: column; }
+            .info-side { order: 2; }
+            .content-side { order: 1; padding: 30px 20px; }
+            .main-promo-card { min-height: 250px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="nav-container"> 
+            <a href="index.html"><img src="logo.png" alt="Teo D' Mango" class="logo-img"></a>
+            <nav>
+                <a href="welcome.html">HOME</a>
+                <a href="dashboard.html">OVERVIEW</a>
+                <a href="menu.html">MENU</a>
+                <a href="rewards.html" style="color: #000;">REWARDS</a>
+                <a href="topup.html" style="color: #000;">TOP-UP RPAY</a>
+                <a href="dashaccsett.html">SETTINGS</a>
+                <a href="index.html" class="btn-logout">LOG OUT</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="page-wrapper">
+        <div class="info-side">
+            <div class="main-promo-card">
+                <div class="promo-content">
+                    <span style="background: var(--primary-dark); padding: 4px 12px; border-radius: 50px; font-size: 0.7rem; font-weight: 900;">ACTIVE PROMO</span>
+                    <h2 style="font-size: 1.8rem; font-weight: 900; margin: 10px 0;">Double Points Weekend!</h2>
+                    <p style="font-size: 0.9rem; opacity: 0.9;">Earn 2 points for every ₱50 spent on all Mango Graham flavors until Sunday.</p>
+                </div>
+            </div>
+            
+            <div class="mini-promo">
+                <i class="fa-solid fa-bolt" style="font-size: 1.5rem;"></i>
+                <div>
+                    <h4 style="font-size: 0.9rem;">Flash Deal: Buy 1 Get 1</h4>
+                    <p style="font-size: 0.75rem; opacity: 0.7;">For Gold Members only. Available 2PM - 5PM today.</p>
+                </div>
+            </div>
+
+            <div class="mini-promo" style="background: white; border: 1px solid #eee; color: var(--dark);">
+                <i class="fa-solid fa-calendar-star" style="font-size: 1.5rem; color: var(--primary-dark);"></i>
+                <div>
+                    <h4 style="font-size: 0.9rem;">Refer a Friend</h4>
+                    <p style="font-size: 0.75rem; color: var(--text-muted);">Get 50 bonus points when they sign up.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-side">
+            <div class="welcome-back">
+                <h4>Welcome back,</h4>
+                <h1>Jane Doe </h1>
+            </div>
+
+            <div class="tier-banner">
+                <div>
+                    <h4 style="font-size: 0.7rem; color: var(--dark); margin: 0;">Current Status</h4>
+                    <strong style="color: var(--primary-dark); font-size: 1.1rem;"><i class="fa-solid fa-crown"></i> GOLD MEMBER</strong>
+                </div>
+                <div class="points-display">
+                    <small>Total Balance</small>
+                    <span>1,250</span>
+                </div>
+            </div>
+
+            <h3 style="font-weight: 900; margin-bottom: 20px; font-size: 1.2rem; letter-spacing: -0.5px;">Available for Redemption</h3>
+
+            <div class="rewards-list">
+                <div class="reward-item">
+                    <img src="https://images.unsplash.com/photo-1591073113125-e46713c829ed?auto=format&fit=crop&q=80&w=200" class="reward-img">
+                    <div class="reward-info">
+                        <h5>Free Large Mango Bliss</h5>
+                        <p>500 POINTS</p>
+                    </div>
+                    <button class="btn-claim">REDEEM</button>
+                </div>
+
+                <div class="reward-item">
+                    <img src="https://i.pinimg.com/1200x/f8/15/b1/f815b139bf2a952fb8a8e8bca24b9bd4.jpg" class="reward-img">
+                    <div class="reward-info">
+                        <h5>Free Avocado Cream (M)</h5>
+                        <p>450 POINTS</p>
+                    </div>
+                    <button class="btn-claim">REDEEM</button>
+                </div>
+
+                <div class="reward-item">
+                    <div style="width: 65px; height: 65px; background: #FFF9E6; border-radius: 15px; display: grid; place-items: center;">
+                        <i class="fa-solid fa-plus" style="color: var(--primary-dark);"></i>
+                    </div>
+                    <div class="reward-info">
+                        <h5>Triple Graham Topping</h5>
+                        <p>100 POINTS</p>
+                    </div>
+                    <button class="btn-claim">REDEEM</button>
+                </div>
+            </div>
+
+            <div class="promo-alert-box">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span>You have 2 coupons expiring in 5 days!</span>
+            </div>
+
+            <p style="text-align: center; margin-top: 30px; font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">
+                Points earned will expire on Dec 2026. <a href="#" style="color: var(--dark);">Terms & Conditions</a>
+            </p>
+        </div>
+    </div>
+
+</body>
+</html>
