@@ -7,12 +7,13 @@
 }
 
 html, body {
-    height: 100%;
-    overflow: hidden;
+    min-height: 100%;  /* Changed from height: 100% */
+    overflow: auto;     /* Changed from overflow: hidden */
     background-image: url(../Images/teoDMangoBG.png);
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
+    background-attachment: fixed;  /* Keeps background fixed while scrolling */
 }
 
 header{

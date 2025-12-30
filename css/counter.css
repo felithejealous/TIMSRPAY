@@ -7,7 +7,7 @@
 }
 
 body {
-    height: 100vh;
+    min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -15,7 +15,9 @@ body {
     background-image: url("../Images/teoDMangoBG.png");
     background-size: cover;
     background-position: center;
-    overflow: hidden;
+    background-attachment: fixed;
+    overflow: auto;
+    padding: 2rem 1rem;
 }
 
 .content-wrapper {
@@ -24,12 +26,14 @@ body {
     align-items: center;
     gap: 2.5rem;
     z-index: 10;
+    width: 1000%;
+    max-width: 500px;
 }
 
 /* Semi-transparent base */
 .glass-panel {
-    background: rgba(255, 255, 255, 0.6); /* Semi-transparent white */
-    backdrop-filter: blur(10px); /* Blurs the background image behind it */
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     padding: 3rem 4rem;
     border-radius: 2.5rem;
@@ -39,6 +43,7 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 3rem;
+    width: 100%;
 }
 
 .input-section {
@@ -100,6 +105,8 @@ body {
     font-size: 1rem;
     cursor: not-allowed;
     transition: all 0.3s ease;
+    width: 100%;
+    max-width: 400px;
 }
 
 .minimal-footer-btn.active {
@@ -110,7 +117,7 @@ body {
 }
 
 .back-btn {
-    position: absolute;
+    position: fixed;
     top: 2.5rem;
     left: 2.5rem;
     background: rgba(255, 255, 255, 0.5);
@@ -124,4 +131,75 @@ body {
     align-items: center;
     justify-content: center;
     backdrop-filter: blur(5px);
+    z-index: 100;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    body {
+        padding: 1rem 0.5rem;
+    }
+
+    .glass-panel {
+        padding: 2rem 1.5rem;
+        gap: 2rem;
+    }
+
+    .minimal-title {
+        font-size: 1rem;
+    }
+
+    .display-container {
+        font-size: 2rem;
+        letter-spacing: 8px;
+        height: 2.5rem;
+    }
+
+    .numpad-grid {
+        gap: 0.8rem;
+    }
+
+    .num-btn {
+        width: 3.5rem;
+        height: 3.5rem;
+        font-size: 1.1rem;
+    }
+
+    .minimal-footer-btn {
+        padding: 0.9rem 3rem;
+        font-size: 0.95rem;
+    }
+
+    .back-btn {
+        top: 1.5rem;
+        left: 1.5rem;
+        width: 3rem;
+        height: 3rem;
+    }
+
+    .back-btn svg {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .glass-panel {
+        padding: 1.5rem 1rem;
+    }
+
+    .display-container {
+        font-size: 1.8rem;
+        letter-spacing: 6px;
+    }
+
+    .num-btn {
+        width: 3rem;
+        height: 3rem;
+        font-size: 1rem;
+    }
+
+    .minimal-footer-btn {
+        padding: 0.8rem 2rem;
+    }
 }
