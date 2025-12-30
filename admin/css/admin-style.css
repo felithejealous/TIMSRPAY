@@ -1,0 +1,187 @@
+/* --- ENHANCED RESPONSIVE SIDEBAR --- */
+:root {
+    --primary: #fcd34d;
+    --primary-light: #f3d87e;
+    --primary-dark: #f59e0b;
+    --dark: #111111;
+    --light: #f9fafb;
+    --success: #10b981;
+    --danger: #ef4444;
+    --text-muted: #6b7280;
+    --card-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+* { 
+    box-sizing: border-box; 
+    margin: 0; 
+    padding: 0; 
+    font-family: 'Inter', sans-serif; 
+}
+
+body { 
+    background-color: var(--light); 
+    color: var(--dark); 
+    display: flex; 
+    min-height: 100vh; 
+}
+
+aside {
+    width: 260px; 
+    background-image: url(../images/teoDMangoBG.png);
+    background-size: cover;
+    background-repeat: no-repeat;
+    height: 100vh; 
+    position: fixed;
+    border-right: none; 
+    padding: 2rem 0 2rem 1.2rem; 
+    display: flex;
+    flex-direction: column; 
+    z-index: 1000; 
+    transition: all 0.4s ease;
+}
+
+.sidebar-logo { 
+    padding: 10px 5px; 
+    margin-bottom: 1rem; 
+    margin-right: 1.2rem; 
+    text-align: center; 
+    overflow: visible;
+}
+
+.sidebar-logo img { 
+    width: 100%; 
+    height: auto; 
+    max-height: 90px;
+    display: block; 
+    margin: 0 auto; 
+    object-fit: contain;
+}
+
+nav ul { 
+    list-style: none;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+nav a {
+    text-decoration: none;
+    color: var(--dark); 
+    padding: 0.9rem 1.1rem;
+    display: flex; 
+    align-items: center; 
+    gap: 15px; 
+    font-weight: 600;
+    border-radius: 14px 0 0 14px; 
+    margin-bottom: 0.5rem; 
+    width: 100%; 
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+nav a i {
+    transition: transform 0.3s ease, color 0.3s ease;
+}
+
+nav li.active a { 
+    background: var(--light); 
+    color: var(--primary-dark); 
+    font-weight: 700; 
+    box-shadow: -6px 4px 8px -3px rgba(0, 0, 0, 0.3);
+}
+
+nav li:not(.active) a:hover {
+    background-color: rgba(255, 255, 255, 0.4); 
+    padding-left: 1.5rem; 
+    box-shadow: -4px 4px 10px -4px rgba(0, 0, 0, 0.1);
+}
+
+nav a:hover i {
+    transform: scale(1.1);
+    color: var(--primary-dark);
+}
+
+nav li:last-child {
+    margin-top: auto;
+    margin-right: 1.2rem;
+}
+
+nav li:last-child a {
+    border-radius: 14px;
+    width: calc(100% - 10px);
+}
+
+nav li:last-child a:hover {
+    background:rgba(181, 34, 34, 0.789);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: white !important;
+    padding-left: 1.5rem;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+}
+
+nav li:last-child a:hover i {
+    color: white;
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+}
+
+main { 
+    margin-left: 260px; 
+    flex: 1; 
+    padding: 2.5rem 3.5rem; 
+    transition: all 0.4s ease; 
+}
+
+header { 
+    margin-bottom: 2rem; 
+}
+
+header h1 { 
+    font-size: clamp(1.8rem, 4vw, 2.2rem); 
+    letter-spacing: -1.5px; 
+}
+
+@media (max-width: 768px) {
+    aside {
+        width: 70px;
+        padding: 1.5rem 0;
+    }
+
+    aside .sidebar-logo, 
+    aside nav span {
+        display: none;
+    }
+
+    nav a {
+        justify-content: center;
+        padding: 1rem;
+        border-radius: 14px;
+        margin: 0.5rem auto;
+        width: 50px;
+    }
+
+    nav li:last-child {
+        margin-right: 0;
+        margin-top: 2rem;
+    }
+
+    main {
+        margin-left: 70px;
+        padding: 1.5rem;
+    }
+
+    nav li:last-child a {
+        width: 50px;
+    }
+}
+
+@media (max-width: 480px) {
+    aside {
+        width: 0;
+        transform: translateX(-100%);
+    }
+    
+    main {
+        margin-left: 0;
+        padding: 1rem;
+    }
+}
