@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Rewards & History | Teo D' Mango Premium</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap');
+
+        :root {
+            --primary: #FFD93D;
+            --primary-dark: #e4b654;
+            --dark: #1A120B;
+            --glass-bg: rgba(248, 228, 164, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.6);
+            --shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+            --text-main: #1A120B;
+            --text-muted: #64748b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+        
+        body { 
+            background: linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        /* --- FIXED GLASS HEADER --- */
+        header {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 12px 0;
+            width: 100%;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid var(--glass-border);
+        }
+        .nav-container { 
+            max-width: 1100px; 
+            margin: 0 auto; padding: 0 20px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo-img { height: 45px; }
+        nav a { text-decoration: none; color: var(--dark); margin-left: 25px; font-size: 13px; font-weight: 800; text-transform: uppercase; }
+        .btn-logout { background: var(--dark); color: white !important; padding: 8px 18px; border-radius: 50px; }
+
+        .wrapper {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        h1 { font-size: 2.5rem; font-weight: 900; letter-spacing: -1.5px; margin-bottom: 25px; }
+
+        /* --- REWARDS HERO CARD --- */
+        .rewards-hero {
+            background: var(--dark);
+            color: white;
+            padding: 45px;
+            border-radius: 40px;
+            margin-bottom: 40px;
+            position: relative;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        .rewards-hero::before {
+            content: ''; position: absolute; top: -50px; right: -50px; width: 200px; height: 200px;
+            background: var(--primary); opacity: 0.1; filter: blur(60px); border-radius: 50%;
+        }
+
+        .tier-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,0.1);
+            padding: 8px 20px; border-radius: 50px;
+            border: 1px solid var(--primary);
+            color: var(--primary); font-weight: 900;
+            text-transform: uppercase; font-size: 0.75rem; letter-spacing: 2px;
+        }
+
+        .points-value { font-size: 4rem; color: var(--primary); margin: 15px 0 5px; font-weight: 900; line-height: 1; letter-spacing: -3px; }
+        .rewards-hero p { opacity: 0.7; font-weight: 600; font-size: 1rem; margin-bottom: 35px; }
+
+        /* Progress Bar Refined */
+        .progression-track { position: relative; height: 10px; background: #333; border-radius: 50px; margin: 40px 10px 10px; }
+        .progression-fill { position: absolute; height: 100%; width: 70%; background: var(--primary); border-radius: 50px; box-shadow: 0 0 20px rgba(255,217,61,0.3); }
+        .tier-labels { display: flex; justify-content: space-between; margin-top: 15px; }
+        .tier-label { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: #777; transition: 0.3s; }
+        .tier-label.active { color: var(--primary); }
+
+        /* --- SECTION HEADER --- */
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .filter-tabs { display: flex; background: rgba(0,0,0,0.05); padding: 5px; border-radius: 12px; }
+        .filter-btn {
+            padding: 8px 20px; border: none; background: transparent; cursor: pointer;
+            font-weight: 800; font-size: 0.75rem; border-radius: 10px; transition: 0.3s;
+        }
+        .filter-btn.active { background: white; color: var(--dark); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+
+        /* --- DATA TABLE --- */
+        .glass-card {
+            background: white; border-radius: 35px; padding: 20px;
+            box-shadow: var(--shadow); border: 1px solid var(--glass-border); overflow: hidden;
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 20px; background: #fafafa; color: var(--text-muted); font-size: 0.75rem; font-weight: 900; text-transform: uppercase; }
+        td { padding: 20px; border-bottom: 1px solid #f8f8f8; font-size: 0.95rem; }
+
+        .order-meta { display: flex; align-items: center; gap: 12px; }
+        .order-icon { width: 42px; height: 42px; background: #fffcf0; border: 1.5px solid var(--primary); border-radius: 14px; display: grid; place-items: center; font-size: 1.2rem; }
+
+        .badge-status { padding: 6px 14px; border-radius: 50px; font-size: 0.7rem; font-weight: 900; }
+        .badge-status.done { background: #dcfce7; color: #166534; }
+        .badge-status.prep { background: #fff9db; color: #854d0e; }
+
+        .btn-action {
+            background: var(--primary); color: var(--dark); border: none; padding: 10px 20px;
+            border-radius: 12px; font-weight: 900; cursor: pointer; font-size: 0.75rem; transition: 0.3s;
+        }
+        .btn-action:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+
+        /* --- QUICK ACTION GRID --- */
+        .perks-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-top: 30px; }
+        .perk-card {
+            background: var(--glass-bg); backdrop-filter: blur(20px);
+            padding: 30px; border-radius: 35px; border: 1px solid var(--glass-border);
+            transition: 0.3s;
+        }
+        .perk-card:hover { transform: scale(1.02); }
+        .perk-card h3 { font-size: 1.2rem; margin-bottom: 10px; font-weight: 900; }
+        .perk-card p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 25px; font-weight: 600; }
+
+        .redeem-row { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 15px 20px; background: white; border-radius: 20px; border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 850px) {
+            .nav-container { flex-direction: column; gap: 10px; }
+            .perks-grid { grid-template-columns: 1fr; }
+            .rewards-hero { padding: 30px; }
+            .points-value { font-size: 3rem; }
+            th:nth-child(4), td:nth-child(4) { display: none; } /* Hide ID on small screens */
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="nav-container"> 
+            <a href="index.html"><img src="logo.png" alt="Teo Logo" class="logo-img"></a>
+            <nav>
+                <a href="welcome.html">HOME</a>
+            <a href="dashboard.html">OVERVIEW</a>
+                <a href="menu.html">MENU</a>
+                <a href="rewards.html" style="color: #000;">REWARDS</a>
+                <a href="topup.html" style="color: #000;">TOP-UP RPAY</a>
+                <a href="dashaccsett.html">SETTINGS</a>
+                <a href="index.html" class="btn-logout">LOG OUT</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="wrapper">
+        <h1 style="letter-spacing: -2px;">Your Tropical Perks</h1>
+
+        <section class="rewards-hero">
+            <span class="tier-badge"><i class="fa-solid fa-crown"></i> Gold Member</span>
+            <div class="points-value">1,250</div>
+            <p>You're only <strong>250 points</strong> away from a Free Mango Overload!</p>
+            
+            <div class="progression-track">
+                <div class="progression-fill"></div>
+            </div>
+            <div class="tier-labels">
+                <span class="tier-label active">Starter</span>
+                <span class="tier-label active">Pro</span>
+                <span class="tier-label active">Gold</span>
+                <span class="tier-label">Legend</span>
+            </div>
+        </section>
+
+        <div class="section-header">
+            <h2 style="font-weight: 900; font-size: 1.5rem; letter-spacing: -0.5px;">Order Journey</h2>
+            <div class="filter-tabs">
+                <button class="filter-btn active">All</button>
+                <button class="filter-btn">Done</button>
+                <button class="filter-btn">In Progress</button>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Drink Selection</th>
+                            <th>Date</th>
+                            <th>Total</th>
+                            <th>Order ID</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="order-meta">
+                                    <div class="order-icon">🥭</div>
+                                    <div>
+                                        <strong style="display:block;">Classic Mango Bliss</strong>
+                                        <small style="color:var(--text-muted);">+ Graham, 100% Sugar</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="font-weight: 600;">Dec 28, 2025</td>
+                            <td style="font-weight: 900;">₱120.00</td>
+                            <td style="font-family: monospace; opacity: 0.6;">#88219</td>
+                            <td><span class="badge-status done">CLAIMED</span></td>
+                            <td><button class="btn-action">REORDER</button></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="order-meta">
+                                    <div class="order-icon">🥑</div>
+                                    <div>
+                                        <strong style="display:block;">Avocado Dream</strong>
+                                        <small style="color:var(--text-muted);">Standard, 50% Sugar</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="font-weight: 600;">Dec 24, 2025</td>
+                            <td style="font-weight: 900;">₱95.00</td>
+                            <td style="font-family: monospace; opacity: 0.6;">#88210</td>
+                            <td><span class="badge-status prep">PREPARING</span></td>
+                            <td><button class="btn-action" style="background:#eee; color:#aaa; cursor:not-allowed;">TRACK</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="perks-grid">
+            <div class="perk-card">
+                <h3>Redeem Points</h3>
+                <p>Swap your points for instant upgrades and freebies.</p>
+                <div class="redeem-row">
+                    <span style="font-weight: 800;">Free Topping Upgrade</span>
+                    <button class="btn-action" style="background: var(--dark); color: white;">250 PTS</button>
+                </div>
+            </div>
+            <div class="perk-card" style="background: var(--primary);">
+                <h3>Boost Balance</h3>
+                <p>Complete simple tasks to earn extra tropical points.</p>
+                <div class="redeem-row" style="background: rgba(255,255,255,0.4); border: none;">
+                    <span style="font-weight: 800;">Refer a Friend</span>
+                    <strong style="color: #166534;">+100 PTS</strong>
+                </div>
+            </div>
+        </div>
+    </main>
+
+</body>
+</html>
