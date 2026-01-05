@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -344,4 +345,352 @@
         });
     </script>
 </body>
+=======
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teo D' Mango | Admin Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --mango-orange: #ff8c00;
+            --bg-cream: #FFFDF5;
+            --text: #000000;
+            --sidebar-width: 260px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-cream);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* --- SIDEBAR DESIGN (Original) --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: url('sidebar.jpg'); 
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+
+        .logo-section {
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .logo-box img {
+            max-width: 90%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+            filter: drop-shadow(0px 4px 4px rgba(0,0,0,0.2));
+        }
+
+        .nav-menu {
+            flex: 1;
+            margin-top: 10px;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 12px 30px;
+            text-decoration: none;
+            color: var(--text-brown);
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item.active {
+            background-color: var(--bg-cream);
+            color: var(--mango-orange);
+            border-radius: 30px 0 0 30px;
+            margin-left: 15px;
+            box-shadow: -5px 5px 10px rgba(0,0,0,0.05);
+        }
+
+        .logout-btn {
+            color: #d32f2f;
+            text-decoration: none;
+            font-weight: 700;
+            padding: 14px 30px;
+            display: block;
+            margin-top: auto;
+        }
+
+        /* --- MAIN CONTENT --- */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 40px;
+        }
+
+        .header-card {
+            background: white;
+            padding: 20px 40px;
+            border-radius: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+        }
+
+        .chart-card {
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+            position: relative;
+        }
+
+        .chart-card h3 {
+            color: var(--mango-orange);
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+        }
+
+        .chart-info {
+            font-size: 0.8rem;
+            color: #888;
+            margin-bottom: 20px;
+        }
+
+        .canvas-holder {
+            height: 250px;
+        }
+
+        .badge {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .badge-up { background: #e6fffa; color: #2d6a4f; }
+        .badge-warning { background: #fff5f5; color: #c53030; }
+
+        @media (max-width: 1100px) {
+            .dashboard-grid { grid-template-columns: 1fr; }
+            
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="logo-section">
+            <div class="logo-box"><img src="logo.png" alt="Logo"></div>
+        </div>
+        <nav class="nav-menu">
+            <a href="landing.html" class="nav-item">Home</a>
+            <a href="dashboard.html" class="nav-item active">Dashboard</a>
+            <a href="accountsman.html" class="nav-item">Accounts</a>
+            <a href="#" class="nav-item">Inventory</a>
+            <a href="attendance.html" class="nav-item">Attendance</a>
+            <a href="#" class="nav-item">Payments</a>
+            <a href="#" class="nav-item">Promos</a>
+            <a href="rewards.html" class="nav-item">Rewards</a>
+            <a href="notification.html" class="nav-item">Notifications</a>
+            <a href="#" class="nav-item">Settings</a>
+            <a href="#" class="logout-btn">Log Out</a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header class="header-card">
+            <h1 style="font-weight: 700;"><b>Sales Analytics</b></h1>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="text-align: right">
+                    <div style="font-weight: 600;">Admin User</div>
+                    <small style="color: #888">January 03, 2026</small>
+                </div>
+                <div style="width: 45px; height: 45px; background: #eee; border-radius: 50%;"></div>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <div class="chart-card">
+                <span class="badge badge-up">+12% vs Yesterday</span>
+                <h3>Daily Sales</h3>
+                <p class="chart-info">Hourly revenue monitoring (Current Day)</p>
+                <div class="canvas-holder"><canvas id="dailySalesChart"></canvas></div>
+            </div>
+
+            <div class="chart-card">
+                <span class="badge badge-up">+5% vs last week</span>
+                <h3>Weekly Performance</h3>
+                <p class="chart-info">Total sales distribution per day</p>
+                <div class="canvas-holder"><canvas id="weeklySalesChart"></canvas></div>
+            </div>
+
+            <div class="chart-card">
+                <span class="badge badge-up">On Track</span>
+                <h3>Monthly Revenue</h3>
+                <p class="chart-info">Year-to-date sales growth</p>
+                <div class="canvas-holder"><canvas id="monthlySalesChart"></canvas></div>
+            </div>
+
+            <div class="chart-card">
+                <h3>Best Sellers</h3>
+                <p class="chart-info">Top performing products by volume</p>
+                <div class="canvas-holder"><canvas id="topSellingChart"></canvas></div>
+            </div>
+
+            <div class="chart-card">
+                <span class="badge badge-warning">2 items low stock</span>
+                <h3>Stock Inventory</h3>
+                <p class="chart-info">Current supply levels (Critical in Red)</p>
+                <div class="canvas-holder"><canvas id="inventoryChart"></canvas></div>
+            </div>
+
+            <div class="chart-card">
+                <h3>Order Channels</h3>
+                <p class="chart-info">Walk-in vs Delivery breakdown</p>
+                <div class="canvas-holder"><canvas id="statChart"></canvas></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Global Chart Defaults
+        Chart.defaults.font.family = "'Inter', sans-serif";
+        Chart.defaults.plugins.tooltip.padding = 10;
+        Chart.defaults.plugins.tooltip.cornerRadius = 8;
+
+        const commonOptions = { 
+            maintainAspectRatio: false, 
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { grid: { color: '#f0f0f0' }, beginAtZero: true },
+                x: { grid: { display: false } }
+            }
+        };
+
+        // 1. DAILY SALES (Line with Gradient)
+        const dailyCtx = document.getElementById('dailySalesChart').getContext('2d');
+        const dailyGrad = dailyCtx.createLinearGradient(0, 0, 0, 400);
+        dailyGrad.addColorStop(0, 'rgba(255, 140, 0, 0.4)');
+        dailyGrad.addColorStop(1, 'rgba(255, 140, 0, 0)');
+
+        new Chart(dailyCtx, {
+            type: 'line',
+            data: {
+                labels: ['8am', '10am', '12pm', '2pm', '4pm', '6pm', '8pm'],
+                datasets: [{
+                    data: [400, 1200, 3500, 2100, 2800, 4200, 1800],
+                    borderColor: '#ff8c00',
+                    borderWidth: 4,
+                    pointBackgroundColor: '#fff',
+                    pointBorderWidth: 2,
+                    fill: true,
+                    backgroundColor: dailyGrad,
+                    tension: 0.4
+                }]
+            },
+            options: commonOptions
+        });
+
+        // 2. WEEKLY SALES (Bar with Rounded Corners)
+        new Chart(document.getElementById('weeklySalesChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    data: [4500, 5200, 4800, 6100, 8500, 10500, 9800],
+                    backgroundColor: '#ff8c00',
+                    borderRadius: 8,
+                    hoverBackgroundColor: '#e67e00'
+                }]
+            },
+            options: commonOptions
+        });
+
+        // 3. MONTHLY SALES (Modern Line)
+        new Chart(document.getElementById('monthlySalesChart'), {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Mar', 'May', 'Jul', 'Sep', 'Nov'],
+                datasets: [{
+                    data: [120000, 145000, 210000, 230000, 210000, 320000],
+                    borderColor: '#ff8c00',
+                    borderWidth: 3,
+                    pointRadius: 5,
+                    pointHoverRadius: 8,
+                    tension: 0.3
+                }]
+            },
+            options: commonOptions
+        });
+
+        // 4. TOP SELLING (Horizontal Bar)
+        new Chart(document.getElementById('topSellingChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Mango Shake', 'Mango Graham', 'Mango Sago', 'Mango Float'],
+                datasets: [{
+                    data: [350, 280, 200, 140],
+                    backgroundColor: ['#ff8c00', '#ffa500', '#ffb31a', '#ffcc33'],
+                    borderRadius: 10
+                }]
+            },
+            options: { ...commonOptions, indexAxis: 'y' }
+        });
+
+        // 5. INVENTORY (Low Stock Alert Logic)
+        new Chart(document.getElementById('inventoryChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Mango', 'Milk', 'Graham', 'Cups', 'Ice'],
+                datasets: [{
+                    data: [85, 45, 18, 92, 22],
+                    backgroundColor: (ctx) => ctx.raw < 25 ? '#ef4444' : '#ff8c00',
+                    borderRadius: 5
+                }]
+            },
+            options: { ...commonOptions, indexAxis: 'y' }
+        });
+
+        // 6. STATS (Clean Doughnut)
+        new Chart(document.getElementById('statChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Walk-in', 'Delivery', 'Online'],
+                datasets: [{
+                    data: [60, 25, 15],
+                    backgroundColor: ['#ff8c00', '#fcdb05', '#4e342e'],
+                    hoverOffset: 15,
+                    borderWidth: 0
+                }]
+            },
+            options: { ...commonOptions, cutout: '75%', plugins: { legend: { display: true, position: 'bottom' } } }
+        });
+    </script>
+</body>
+>>>>>>> 6e690f8d21fae42f7451d93fceef612b170fe1f7
 </html>
