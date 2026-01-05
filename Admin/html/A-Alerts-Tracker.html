@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teo D' Mango | Attendance</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/admin-style.css">
+    <link rel="stylesheet" href="../css/admin-alerts.css">
+</head>
+
+
+<body>
+
+    <aside>
+        <div class="sidebar-logo">
+            <img src="../images/TeoDMangoLogo.png" alt="Teo D' Mango">
+        </div>
+        <nav>
+            <ul>
+                <li><a href="A-Dashboard.html"><i class="fa-solid fa-chart-line"></i> <span>Dashboard</span></a></li>
+                
+                <li><a href="A-Account-Manager.html"><i class="fa-solid fa-user-gear"></i> <span>Accounts</span></a></li>
+                
+                <li><a href="A-inventory-monitoring.html"><i class="fa-solid fa-boxes-stacked"></i> <span>Inventory</span></a></li>
+                
+                <li>
+                    <a href="A-Attendance-Tracker.html"><i class="fa-solid fa-user-clock"></i> <span>Attendance</span></a>
+                </li>
+
+                <li class="active" style="margin-top: auto;">
+                    <a href="A-Alerts-Tracker.html"><i class="fa-solid fa-triangle-exclamation"></i> <span>Alerts</span></a>
+                </li>
+                
+                <li><a href="A-promo-manager.html"><i class="fa-solid fa-tags"></i> <span>Promos</span></a></li>
+                
+                <li><a href="A-Rewards.html"><i class="fa-solid fa-gift"></i> <span>Rewards</span></a></li>
+                
+                <li><a href="A-Notifications.html"><i class="fa-solid fa-bell"></i> <span>Notifications</span></a></li>
+
+                <li><a href="A-settings.html"><i class="fa-solid fa-gear"></i> <span>Settings</span></a></li>
+                
+                <li>
+                    <a href="index.html" style="color:var(--danger)">
+                        <i class="fa-solid fa-right-from-bracket"></i> <span>Log Out</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+    <header>
+        <h1>Notifications</h1>
+        <p>Manage system alerts and stock updates.</p>
+    </header>
+
+    <div class="table-toolbar">
+        <button class="action-btn-main" onclick="addNewAlert()">+ Create New Alert</button>
+        <div class="table-filters">
+            <button class="filter-btn active">All</button>
+            <button class="filter-btn">Critical</button>
+            <button class="filter-btn">Pending</button>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table class="alert-table">
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Item / Area</th>
+                    <th>Issue Description</th>
+                    <th>Action Required</th>
+                    <th>Deadline</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="alertQueue">
+                <tr class="alert-row critical">
+                    <td><span class="type-badge">Inventory</span></td>
+                    <td><strong>Promo Flyers</strong></td>
+                    <td>Out of stock immediately</td>
+                    <td>Reorder from supplier</td>
+                    <td><i>9:41 AM</i></td>
+                    <td><span class="status-dot"></span></td>
+                </tr>
+                <tr class="alert-row moderate">
+                    <td><span class="type-badge">System</span></td>
+                    <td><strong>QR Scanner</strong></td>
+                    <td>Device not syncing</td>
+                    <td>Check connection</td>
+                    <td><i>Nov 18</i></td>
+                    <td><span class="status-dot"></span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div id="alertModal" class="modal-overlay">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h2>Create New Alert</h2>
+            <button class="close-modal" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="input-group">
+                <label>Alert Type</label>
+                <input type="text" id="type" placeholder="e.g., Inventory, Staff, System">
+            </div>
+            <div class="input-group">
+                <label>Item / Area</label>
+                <input type="text" id="item" placeholder="e.g., Fresh Mangoes">
+            </div>
+            <div class="input-group">
+                <label>Issue Description</label>
+                <textarea id="issue" placeholder="Describe the problem..."></textarea>
+            </div>
+            <div class="input-group">
+                <label>Action Required</label>
+                <input type="text" id="action" placeholder="What needs to be done?">
+            </div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label>Deadline</label>
+                    <input type="text" id="deadline" placeholder="e.g., 5:00 PM">
+                </div>
+                <div class="input-group">
+                    <label>Severity</label>
+                    <select id="severity">
+                        <option value="low">Low (Green)</option>
+                        <option value="moderate" selected>Moderate (Yellow)</option>
+                        <option value="critical">Critical (Red)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-ui btn-cancel" onclick="closeModal()">Cancel</button>
+            <button class="btn-ui btn-save-changes" style="width: auto; padding: 0 30px;" onclick="submitNewAlert()">Create Alert</button>
+        </div>
+    </div>
+</div>
+</main>
+
+<script>
+    // --- Modal Logic ---
+const modal = document.getElementById('alertModal');
+
+function addNewAlert() {
+    modal.style.display = 'flex';
+}
+
+function closeModal() {
+    modal.style.display = 'none';
+}
+
+function submitNewAlert() {
+    const type = document.getElementById('type').value;
+    const item = document.getElementById('item').value;
+    const issue = document.getElementById('issue').value;
+    const action = document.getElementById('action').value;
+    const deadline = document.getElementById('deadline').value;
+    const severity = document.getElementById('severity').value;
+
+    if (!type || !item) return alert("Please fill in required fields.");
+
+    const tbody = document.getElementById('alertQueue');
+    const newRow = document.createElement('tr');
+    newRow.className = `alert-row ${severity}`;
+
+    newRow.innerHTML = `
+        <td><span class="type-badge">${type}</span></td>
+        <td><strong>${item}</strong></td>
+        <td>${issue}</td>
+        <td>${action}</td>
+        <td><i>${deadline}</i></td>
+        <td><span class="status-dot"></span></td>
+    `;
+
+    tbody.prepend(newRow);
+    closeModal();
+    
+    // Reset Form
+    document.querySelectorAll('.modal-body input, .modal-body textarea').forEach(i => i.value = '');
+}
+
+// --- Filter Logic ---
+document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        // UI: Toggle active class
+        document.querySelector('.filter-btn.active').classList.remove('active');
+        btn.classList.add('active');
+
+        const filterValue = btn.textContent.toLowerCase();
+        const rows = document.querySelectorAll('.alert-row');
+
+        rows.forEach(row => {
+            if (filterValue === 'all') {
+                row.style.display = 'table-row';
+            } else if (row.classList.contains(filterValue)) {
+                row.style.display = 'table-row';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+});
+
+window.onclick = function(event) {
+    if (event.target == modal) closeModal();
+}
+</script>
+</body>
+</html>

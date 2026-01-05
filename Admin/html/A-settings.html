@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teo D' Mango | Settings</title>
+
+    <link rel="stylesheet" href="../css/admin-style.css">
+    <link rel="stylesheet" href="../css/admin-settings.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        /* Toast Notification Styling */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        .toast {
+            background: #333;
+            color: #fff;
+            padding: 16px 24px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 500;
+            min-width: 250px;
+            animation: slideIn 0.3s ease-out forwards;
+        }
+
+        .toast.success { border-left: 5px solid #2ecc71; }
+        .toast.info { border-left: 5px solid #3498db; }
+        .toast.danger { border-left: 5px solid #e74c3c; }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes fadeOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(100%); } }
+
+        /* Modal Header Styling */
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close-modal-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #999;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .close-modal-btn:hover { color: var(--danger); }
+    </style>
+</head>
+
+<body>
+    <div id="toast-container"></div>
+
+    <aside>
+        <div class="sidebar-logo"><img src="../images/TeoDMangoLogo.png" alt="Teo D' Mango"></div>
+        <nav>
+            <ul>
+                <li><a href="A-Dashboard.html"><i class="fa-solid fa-chart-line"></i> <span>Dashboard</span></a></li>
+                <li><a href="A-Account-Manager.html"><i class="fa-solid fa-user-gear"></i> <span>Accounts</span></a></li>
+                <li><a href="A-inventory-monitoring.html"><i class="fa-solid fa-boxes-stacked"></i> <span>Inventory</span></a></li>
+                <li><a href="../html/A-Alerts.html"><i class="fa-solid fa-user-clock"></i> <span>Attendance</span></a></li>
+                <li><a href="A-Alerts-Tracker.html"><i class="fa-solid fa-triangle-exclamation"></i> <span>Alerts</span></a></li>
+                <li><a href="A-promo-manager.html"><i class="fa-solid fa-tags"></i> <span>Promos</span></a></li>
+                <li><a href="A-Rewards.html"><i class="fa-solid fa-gift"></i> <span>Rewards</span></a></li>
+                <li><a href="A-Notifications.html"><i class="fa-solid fa-bell"></i> <span>Notifications</span></a></li>
+                <li class="active" style="margin-top: auto;"><a href="A-settings.html"><i class="fa-solid fa-gear"></i> <span>Settings</span></a></li>
+                <li><a href="index.html" style="color:var(--danger)"><i class="fa-solid fa-right-from-bracket"></i> <span>Log Out</span></a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header><h1>Settings</h1><p>Select a category to manage your preferences.</p></header>
+        <div class="settings-card-grid">
+            <div class="settings-card" onclick="openModal('accountModal')"><i class="fa-solid fa-shield-halved"></i><h3>Account Settings</h3><p>Security and login credentials</p></div>
+            <div class="settings-card" onclick="openModal('profileModal')"><i class="fa-solid fa-user-pen"></i><h3>Profile Settings</h3><p>Personal info and display name</p></div>
+            <div class="settings-card" onclick="openModal('menuModal')"><i class="fa-solid fa-utensils"></i><h3>Manage Menu</h3><p>Pricing and item availability</p></div>
+            <div class="settings-card" onclick="openModal('notifModal')"><i class="fa-solid fa-bell"></i><h3>Notifications</h3><p>Email and system alerts</p></div>
+            <div class="settings-card" onclick="openModal('paymentModal')"><i class="fa-solid fa-wallet"></i><h3>Payment Methods</h3><p>GCash, Maya, and gateways</p></div>
+            <div class="settings-card" onclick="openModal('langModal')"><i class="fa-solid fa-language"></i><h3>Language</h3><p>Select your preferred dialect</p></div>
+            <div class="settings-card" onclick="openModal('alertModal')"><i class="fa-solid fa-triangle-exclamation"></i><h3>Alerts</h3><p>Low stock and critical notices</p></div>
+            <div class="settings-card" onclick="openModal('activityModal')"><i class="fa-solid fa-clock-rotate-left"></i><h3>Your Activities</h3><p>Recent logins and actions</p></div>
+        </div>
+    </main>
+
+    <div class="modal-overlay" id="modalOverlay">
+        
+        <div class="modal-card" id="accountModal" style="display:none;">
+            <div class="modal-header"><h3>Account Security</h3><button class="close-modal-btn" onclick="closeAllModals()"><i class="fa-solid fa-xmark"></i></button></div>
+            <div class="input-group"><fieldset><input type="text" value="admin_teo" placeholder=" "><legend>Username</legend></fieldset></div>
+            <div class="input-group"><fieldset><input type="password" placeholder=" "><legend>New Password</legend></fieldset></div>
+            <div class="modal-actions"><button class="save-btn" onclick="showToast('Login credentials updated', 'success'); closeAllModals();">Update Login</button></div>
+        </div>
+
+        <div class="modal-card" id="profileModal" style="display:none;">
+            <div class="modal-header"><h3>Profile Settings</h3><button class="close-modal-btn" onclick="closeAllModals()"><i class="fa-solid fa-xmark"></i></button></div>
+            <div class="input-group"><fieldset><input type="text" value="Admin User" placeholder=" "><legend>Display Name</legend></fieldset></div>
+            <div class="input-group"><fieldset><input type="email" value="admin@teodmango.com" placeholder=" "><legend>Email Address</legend></fieldset></div>
+            <div class="modal-actions"><button class="save-btn" onclick="showToast('Profile saved', 'success'); closeAllModals();">Save Changes</button></div>
+        </div>
+
+        <div class="modal-card" id="paymentModal" style="display:none;">
+            <div class="modal-header"><h3>Payment Methods</h3><button class="close-modal-btn" onclick="closeAllModals()"><i class="fa-solid fa-xmark"></i></button></div>
+            <div class="gateway-list">
+                <div class="gateway-item"><span>GCash</span><label class="toggle-switch"><input type="checkbox" checked><span class="slider"></span></label></div>
+                <div class="gateway-item"><span>Maya</span><label class="toggle-switch"><input type="checkbox" checked><span class="slider"></span></label></div>
+            </div>
+            <div class="modal-actions"><button class="save-btn" onclick="showToast('Payment methods updated', 'info'); closeAllModals();">Done</button></div>
+        </div>
+
+        <div class="modal-card" id="activityModal" style="display:none;">
+            <div class="modal-header"><h3>Recent Activities</h3><button class="close-modal-btn" onclick="closeAllModals()"><i class="fa-solid fa-xmark"></i></button></div>
+            <div style="max-height: 250px; overflow-y: auto;">
+                <ul style="list-style: none; padding: 0; font-size: 0.9rem;">
+                    <li style="padding: 10px 0; border-bottom: 1px solid #eee;"><strong>Login:</strong> Today at 8:45 AM</li>
+                    <li style="padding: 10px 0; border-bottom: 1px solid #eee;"><strong>Menu Update:</strong> Changed "Mango Graham" price.</li>
+                </ul>
+            </div>
+            <div class="modal-actions"><button class="reset-btn" onclick="showToast('Logs cleared', 'danger'); closeAllModals();">Clear Logs</button></div>
+        </div>
+
+        <div class="modal-card" id="menuModal" style="display:none; max-width: 800px; width: 95%;">
+            <div class="modal-header"><h3>Menu Management</h3><button class="close-modal-btn" onclick="closeAllModals()"><i class="fa-solid fa-xmark"></i></button></div>
+            <div style="display: flex; align-items: center; margin-bottom: 20px; gap: 15px;">
+                <div style="flex: 1; position: relative;"><i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #999;"></i><input type="text" id="menuSearch" placeholder="Search menu items..." style="width: 100%; padding: 10px 10px 10px 35px; border: 1px solid #ddd; border-radius: 8px;" onkeyup="searchMenu()"></div>
+                <button class="add-btn" style="padding: 10px 20px; width: auto;" onclick="prepareAddNew()">+ Add Item</button>
+            </div>
+            <div id="menuListContainer" style="max-height: 400px; overflow-y: auto; border: 1px solid #eee; border-radius: 10px; background: #fafafa;">
+                <div class="menu-item-row" data-name="Mango Graham" onclick="prepareEdit(this, 'Mango Graham', 120, 'Signature mango graham shake.')" style="cursor: pointer;">
+                    <div style="display: flex; align-items: center; gap: 15px; padding: 15px; border-bottom: 1px solid #eee;">
+                        <img class="display-img" src="../images/placeholder.png" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover;">
+                        <div style="flex: 1;"><h4 class="display-name" style="margin: 0; color: #333;">Mango Graham</h4><span class="display-price" style="color: var(--primary); font-weight: bold;">₱120.00</span></div>
+                        <i class="fa-solid fa-pen-to-square" style="color: #ccc;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-card" id="addItemModal" style="display:none; max-width: 500px; width: 95%;">
+            <div class="modal-header">
+                <div style="display: flex; align-items: center; gap: 10px;"><button onclick="openModal('menuModal')" style="background: none; border: none; cursor: pointer; color: #777;"><i class="fa-solid fa-arrow-left"></i></button><h3 id="itemFormTitle" style="margin:0;">Add New Item</h3></div>
+                <button class="close-modal-btn" onclick="closeAllModals()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="menu-form-area">
+                <input type="file" id="itemImageInput" accept="image/*" style="display: none;" onchange="previewImage(this)">
+                <div class="image-preview-container" onclick="document.getElementById('itemImageInput').click()" style="height: 160px; border: 2px dashed #ddd; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; margin-bottom: 15px;">
+                    <img id="itemImageDisplay" src="" style="display:none; width: 100%; height: 100%; object-fit: cover;">
+                    <div id="placeholderContent" style="text-align:center;"><i class="fa-solid fa-camera" style="font-size: 2rem; color: #ccc;"></i><p>Upload Photo</p></div>
+                </div>
+                <div class="input-group"><fieldset><input type="text" id="itemName" placeholder=" "><legend>Item Name</legend></fieldset></div>
+                <div class="input-group"><fieldset><input type="number" id="itemPrice" placeholder=" "><legend>Price (PHP)</legend></fieldset></div>
+                <div class="input-group"><fieldset style="height: auto;"><textarea id="itemDesc" rows="3" style="width:100%; border:none; outline:none; resize:none;" placeholder=" "></textarea><legend>Description</legend></fieldset></div>
+            </div>
+            <div class="modal-actions"><button class="reset-btn" id="itemDeleteBtn" style="color: var(--danger); display: none;" onclick="confirmDelete()">Delete Item</button><button class="save-btn" id="itemSubmitBtn" onclick="saveNewItem()">Add to Menu</button></div>
+        </div>
+
+        <div class="modal-card" id="notifModal" style="display:none;"><div class="modal-header"><h3>Notifications</h3><button class="close-modal-btn" onclick="closeAllModals()"><i class="fa-solid fa-xmark"></i></button></div><div class="gateway-list"><div class="gateway-item"><span>Email Alerts</span><label class="toggle-switch"><input type="checkbox" checked><span class="slider"></span></label></div></div><div class="modal-actions"><button class="save-btn" onclick="showToast('Settings saved!', 'info'); closeAllModals();">Save</button></div></div>
+        <div class="modal-card" id="langModal" style="display:none;"><div class="modal-header"><h3>Language</h3><button class="close-modal-btn" onclick="closeAllModals()"><i class="fa-solid fa-xmark"></i></button></div><div class="input-group"><fieldset><select style="width:100%; border:none;"><option>English</option><option>Tagalog</option></select><legend>Select</legend></fieldset></div><div class="modal-actions"><button class="save-btn" onclick="showToast('Language updated', 'info'); closeAllModals();">Apply</button></div></div>
+        <div class="modal-card" id="alertModal" style="display:none;"><div class="modal-header"><h3>Alerts</h3><button class="close-modal-btn" onclick="closeAllModals()"><i class="fa-solid fa-xmark"></i></button></div><div class="gateway-list"><div class="gateway-item"><span>Low Stock Warning</span><label class="toggle-switch"><input type="checkbox" checked><span class="slider"></span></label></div></div><div class="modal-actions"><button class="save-btn" onclick="showToast('Alerts configured', 'info'); closeAllModals();">Done</button></div></div>
+
+    </div>
+
+    <script>
+        const overlay = document.getElementById('modalOverlay');
+        let currentEditingRow = null;
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            const icon = type === 'success' ? 'fa-check-circle' : (type === 'danger' ? 'fa-exclamation-circle' : 'fa-info-circle');
+            toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => { toast.style.animation = 'fadeOut 0.3s ease-out forwards'; setTimeout(() => toast.remove(), 300); }, 3000);
+        }
+
+        function openModal(modalId) { overlay.style.display = 'flex'; document.querySelectorAll('.modal-card').forEach(card => card.style.display = 'none'); document.getElementById(modalId).style.display = 'block'; }
+        function closeAllModals() { overlay.style.display = 'none'; }
+        window.onclick = function(event) { if (event.target == overlay) closeAllModals(); }
+
+        // Menu Logic with Image Reflection
+        function prepareAddNew() { currentEditingRow = null; clearMenuForm(); document.getElementById('itemFormTitle').innerText = "Add New Menu Item"; document.getElementById('itemSubmitBtn').innerText = "Add to Menu"; document.getElementById('itemDeleteBtn').style.display = "none"; openModal('addItemModal'); }
+        function prepareEdit(rowElement, name, price, desc) { currentEditingRow = rowElement; clearMenuForm(); document.getElementById('itemFormTitle').innerText = "Edit Menu Item"; document.getElementById('itemName').value = name; document.getElementById('itemPrice').value = price; document.getElementById('itemDesc').value = desc; const currentImg = rowElement.querySelector('.display-img').src; if(!currentImg.includes('placeholder.png')) { const d = document.getElementById('itemImageDisplay'); d.src = currentImg; d.style.display = 'block'; document.getElementById('placeholderContent').style.display = 'none'; } document.getElementById('itemSubmitBtn').innerText = "Save Changes"; document.getElementById('itemDeleteBtn').style.display = "block"; openModal('addItemModal'); }
+        function saveNewItem() { const name = document.getElementById('itemName').value; const price = document.getElementById('itemPrice').value; const desc = document.getElementById('itemDesc').value.replace(/'/g, "\\'"); const imgSrc = document.getElementById('itemImageDisplay').src || "../images/placeholder.png"; if (!name || !price) { showToast("Name and Price are required", "danger"); return; } const formattedPrice = `₱${parseFloat(price).toFixed(2)}`; if (currentEditingRow) { currentEditingRow.setAttribute('data-name', name); currentEditingRow.querySelector('.display-name').innerText = name; currentEditingRow.querySelector('.display-price').innerText = formattedPrice; currentEditingRow.querySelector('.display-img').src = imgSrc; currentEditingRow.setAttribute('onclick', `prepareEdit(this, '${name}', ${price}, '${desc}')`); showToast("Menu updated"); } else { const container = document.getElementById('menuListContainer'); const newRow = document.createElement('div'); newRow.className = 'menu-item-row'; newRow.setAttribute('data-name', name); newRow.setAttribute('onclick', `prepareEdit(this, '${name}', ${price}, '${desc}')`); newRow.innerHTML = `<div style="display: flex; align-items: center; gap: 15px; padding: 15px; border-bottom: 1px solid #eee; cursor:pointer;"><img class="display-img" src="${imgSrc}" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover;"><div style="flex: 1;"><h4 class="display-name" style="margin: 0; color: #333;">${name}</h4><span class="display-price" style="color: var(--primary); font-weight: bold;">${formattedPrice}</span></div><i class="fa-solid fa-pen-to-square" style="color: #ccc;"></i></div>`; container.appendChild(newRow); showToast("Menu successfully added"); } openModal('menuModal'); }
+        function previewImage(input) { const file = input.files[0]; if (file) { const reader = new FileReader(); reader.onload = (e) => { const display = document.getElementById('itemImageDisplay'); display.src = e.target.result; display.style.display = 'block'; document.getElementById('placeholderContent').style.display = 'none'; }; reader.readAsDataURL(file); } }
+        function clearMenuForm() { document.getElementById('itemName').value = ""; document.getElementById('itemPrice').value = ""; document.getElementById('itemDesc').value = ""; document.getElementById('itemImageDisplay').style.display = 'none'; document.getElementById('placeholderContent').style.display = 'block'; document.getElementById('itemImageDisplay').src = ""; }
+        function confirmDelete() { if (currentEditingRow && confirm("Remove this item?")) { currentEditingRow.remove(); showToast("Item removed", "danger"); openModal('menuModal'); } }
+        function searchMenu() { const input = document.getElementById('menuSearch').value.toLowerCase(); document.querySelectorAll('.menu-item-row').forEach(row => { row.style.display = row.getAttribute('data-name').toLowerCase().includes(input) ? "block" : "none"; }); }
+    </script>
+</body>
+</html>
