@@ -11,7 +11,7 @@
 
     <!-- ORDER NUMBER -->
     <div class="receipt-order-number">
-        <h1>0124</h1>
+        <h1 id="orderNumber">----</h1>
     </div>
 
     <div class="receipt-header">
@@ -21,28 +21,22 @@
     </div>
 
     <div class="receipt-info">
-        <div><span>Date</span><span>09/28/2025</span></div>
-        <div><span>Time</span><span>14:32</span></div>
-        <div><span>Payment</span><span>Cashless</span></div>
+        <div><span>Date</span><span id="orderDate">--/--/----</span></div>
+        <div><span>Time</span><span id="orderTime">--:--</span></div>
+        <div><span>Payment</span><span id="paymentMethod">Cash</span></div>
     </div>
 
-    <div class="receipt-items">
-        <div class="item">
-            <span>Mango Shake (Large)</span>
-            <span>₱120.00</span>
-        </div>
-        <div class="item">
-            <span>Add Pearls</span>
-            <span>₱20.00</span>
-        </div>
+    <!-- Made items dynamic -->
+    <div class="receipt-items" id="receiptItems">
+        <!-- Items will be loaded dynamically -->
     </div>
 
     <div class="receipt-totals">
-        <div><span>Subtotal</span><span>₱140.00</span></div>
-        <div><span>Tax</span><span>₱0.00</span></div>
+        <div><span>Subtotal</span><span id="subtotalAmount">₱0.00</span></div>
+        <div><span>Tax</span><span id="taxAmount">₱0.00</span></div>
         <div class="grand-total">
             <span>TOTAL</span>
-            <span>₱140.00</span>
+            <span id="totalAmount">₱0.00</span>
         </div>
     </div>
 
@@ -56,10 +50,9 @@
     <button class="receipt-btn">PRINT RECEIPT</button>
 
     <div class="receipt-footer">
-    <p>Thank you for your purchase!</p>
-    <p>Please keep this receipt.</p>
-
-</div>
+        <p>Thank you for your purchase!</p>
+        <p>Please keep this receipt.</p>
+    </div>
 
 </div>
 
@@ -71,28 +64,8 @@
     </div>
 </div>
 
-<script>
-    const printBtn = document.querySelector('.receipt-btn');
-    const overlay = document.getElementById('printOverlay');
-
-    printBtn.addEventListener('click', () => {
-        // Show the printing pop-up
-        overlay.classList.add('show');
-
-        // Wait 3 seconds, then go to the final page
-        setTimeout(() => {
-            window.location.href = '../html/success.html';
-        }, 3000);
-    });
-
-    const totalText = document.querySelector('.grand-total span:last-child').innerText;
-    const numericTotal = parseFloat(totalText.replace('₱', ''));
-    const pointsCalculation = Math.floor(numericTotal / 10); 
-
-    document.getElementById('earnedPoints').innerText = pointsCalculation;
-</script>
-
-
+<!-- Enhanced receipt script to load from order data -->
+<script src="../js/receipt.js"></script>
 
 </body>
 </html>

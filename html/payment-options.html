@@ -45,16 +45,16 @@
 
         optionCards.forEach(card => {
             card.addEventListener('click', () => {
-                // 1. Remove 'selected' class from all cards
+                // Remove 'selected' class from all cards
                 optionCards.forEach(c => c.classList.remove('selected'));
                 
-                // 2. Add 'selected' class to the one we just clicked
+                // Add 'selected' class to the one we just clicked
                 card.classList.add('selected');
                 
-                // 3. Store the URL from the data-target attribute
+                // Store the URL from the data-target attribute
                 selectedTarget = card.getAttribute('data-target');
                 
-                // 4. Optional: Make the "Next" button look active
+                // Make the "Next" button look active
                 nextBtn.style.opacity = "1";
             });
         });
