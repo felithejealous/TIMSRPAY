@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teo D' Mango - Queue Number</title>
+    <link rel="stylesheet" href="../css/select.css">
+    <style>
+        .queue-number-display {
+            text-align: center;
+            margin: 40px 0;
+            padding: 40px;
+            background: linear-gradient(135deg, #FBBC04 0%, #FF6B35 100%);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .queue-label {
+            font-size: 24px;
+            color: white;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .queue-number {
+            font-size: 120px;
+            color: white;
+            font-weight: bold;
+            margin: 20px 0;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .queue-instruction {
+            font-size: 18px;
+            color: white;
+            margin-top: 20px;
+        }
+        .order-details {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+        .order-details h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Your Queue Number</h1>
+
+        <div class="queue-number-display">
+            <div class="queue-label">QUEUE NUMBER</div>
+            <div class="queue-number" id="queueNumber">---</div>
+            <div class="queue-instruction">Please proceed to the counter when your number is called</div>
+        </div>
+
+        <div class="order-details">
+            <h3>Order Summary</h3>
+            <div class="detail-row">
+                <span>Order ID:</span>
+                <span id="orderId">--------</span>
+            </div>
+            <div class="detail-row">
+                <span>Order Type:</span>
+                <span id="orderType">Dine-in</span>
+            </div>
+            <div class="detail-row">
+                <span>Total Amount:</span>
+                <span id="totalAmount" style="font-weight: bold; color: #FBBC04;">₱0.00</span>
+            </div>
+        </div>
+
+        <p class="instruction-text">
+            Please keep this number visible and proceed to the counter for payment.
+        </p>
+
+        <button class="footer-btn" id="doneBtn">Done</button>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const orderData = JSON.parse(localStorage.getItem("currentOrder"));
+            
+            if (!orderData) {
+                alert("No order data found!");
+                window.location.href = "../html/menu.html";
+                return;
+            }
+
+            // Display queue number and order details
+            document.getElementById("queueNumber").textContent = orderData.queueNumber || "001";
+            document.getElementById("orderId").textContent = orderData.orderId || "--------";
+            document.getElementById("orderType").textContent = orderData.orderType || "Dine-in";
+            document.getElementById("totalAmount").textContent = `₱${(orderData.total || 0).toFixed(2)}`;
+        });
+
+        document.getElementById("doneBtn").addEventListener("click", () => {
+            // Clear cart and order for next customer
+            localStorage.removeItem("cart");
+            localStorage.removeItem("currentOrder");
+            localStorage.removeItem("orderType");
+            
+            // Navigate to success page
+            window.location.href = "../html/success.html";
+        });
+    </script>
+
+</body>
+</html>

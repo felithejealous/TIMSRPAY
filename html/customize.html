@@ -1,116 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teo D' Mango - Order Type</title>
-    <link rel="stylesheet" href="../css/customize.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teo D' Mango - Customize</title>
+  <link rel="stylesheet" href="../css/customize.css">
 </head>
-
 <body>
+  <header>
+    <h1>Customize your order</h1>
+  </header>
 
-    <header>
-        <h1>Customize your order</h1>
-    </header>
-
-    <div class="main-content">
-        <div class="product-info">
-
-            <div class="img-container">
-                <img src="../Images/teoDMangoBG.png" alt="Mango">
-            </div>
-
-            <div class="deets">
-                <h2 class="product-title">CLASSIC TEO D' MANGO</h2>
-                <p class="product-description">Mango slush</p>
-                <div class="product-price">
-                    <h2 class="base-price">60.00</h2>
-                    <p>Base price</p>
-                </div>
-            </div>
-
+  <div class="main-content">
+    <div class="product-info">
+      <div class="img-container">
+        <img src="../Images/teoDMangoBG.png" alt="Drink">
+      </div>
+      <div class="deets">
+        <!-- These will be replaced dynamically by JS -->
+        <h2 class="product-title">Loading...</h2>
+        <p class="product-description">Loading description...</p>
+        <div class="product-price">
+          <h2 class="base-price">0.00</h2>
+          <p>Base price</p>
         </div>
-
-        <div class="product-custom">
-
-            <div class="size-options">
-            <p>SIZE</p>
-            <form>
-                <label>
-                    <input type="radio" name="size" value="small">
-                    <span class="size-label">
-                        Small <span class="price">60.00</span>
-                    </span>
-                </label>
-
-                <label>
-                    <input type="radio" name="size" value="medium">
-                    <span class="size-label">
-                        Medium <span class="price">+10.00</span>
-                    </span>
-                </label>
-
-                <label>
-                    <input type="radio" name="size" value="large">
-                    <span class="size-label">
-                        Large <span class="price">+20.00</span>
-                    </span>
-                </label>
-            </form>
-        </div>
-        <br>
-        <hr> 
-        <br>
-        <div class="add-ons-options">
-            <p>ADD-ONS</p>
-            <form>
-                <label>
-                    <input type="checkbox" name="topping" value="pearls">
-                    <span class="addon-label">
-                        Pearls <span class="price">+10.00</span>
-                    </span>
-                </label>
-                <label>
-                    <input type="checkbox" name="topping" value="crystals">
-                    <span class="addon-label">
-                        Crystals <span class="price">+20.00</span>
-                    </span>
-                </label>
-                <label>
-                    <input type="checkbox" name="topping" value="icecream">
-                    <span class="addon-label">
-                        Ice Cream <span class="price">+20.00</span>
-                    </span>
-                </label>
-                <label>
-                    <input type="checkbox" name="topping" value="graham">
-                    <span class="addon-label">
-                        Graham <span class="price">+20.00</span>
-                    </span>
-                </label>
-            </form>
-        </div>
-
-        </div>
-
-        <div class="bottom-price">
-
-            <h2>60.00</h2>
-
-             <div class="buttons">
-                <a href="../html/menu.html">
-                    <button class="btn btn-outline">Get more orders</button>
-                </a>
-
-                <a href="../html/payment-options.html">
-                    <button class="btn btn-fill">Proceed payment</button>
-                </a>
-            </div>
-
-        </div>
-
+      </div>
     </div>
 
-</body>
+    <div class="product-custom">
+      <div class="size-options">
+        <p>SIZE</p>
+        <form>
+          <label>
+            <input type="radio" name="size" value="small" checked>
+            <span class="size-label">Small <span class="price">Base</span></span>
+          </label>
+          <label>
+            <input type="radio" name="size" value="medium">
+            <span class="size-label">Medium <span class="price">+10.00</span></span>
+          </label>
+          <label>
+            <input type="radio" name="size" value="large">
+            <span class="size-label">Large <span class="price">+20.00</span></span>
+          </label>
+        </form>
+      </div>
 
+      <br><hr><br>
+
+      <div class="add-ons-options">
+        <p>ADD-ONS</p>
+        <form>
+          <label><input type="checkbox" name="topping" value="pearls"> Pearls (+10.00)</label>
+          <label><input type="checkbox" name="topping" value="crystals"> Crystals (+20.00)</label>
+          <label><input type="checkbox" name="topping" value="icecream"> Ice Cream (+20.00)</label>
+          <label><input type="checkbox" name="topping" value="graham"> Graham (+20.00)</label>
+        </form>
+      </div>
+      
+      <!-- Added quantity input directly in HTML -->
+      <br><hr><br>
+      <div class="quantity-options">
+        <p>QUANTITY</p>
+        <input type="number" id="quantity" value="1" min="1" max="99" style="width: 80px; padding: 8px; font-size: 1rem;">
+      </div>
+    </div>
+
+    <div class="bottom-price">
+      <!-- This will be updated dynamically -->
+      <h2>0.00</h2>
+      <div class="buttons">
+        <a href="../html/menu.html">
+          <button class="btn btn-outline">Get more orders</button>
+        </a>
+        <button class="btn btn-fill" id="proceedBtn">Add to Cart</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Link to external JS -->
+  <script src="../js/customize.js"></script>
+</body>
 </html>
