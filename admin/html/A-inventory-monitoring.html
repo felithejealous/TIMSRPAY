@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teo D' Mango | Inventory Monitoring</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/admin-style.css">
+    <link rel="stylesheet" href="../css/admin-settings.css">
+    
+    <style>
+        /* --- Inventory Specific Styles --- */
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .inventory-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 20px;
+            border: 1px solid var(--primary-light);
+            box-shadow: var(--card-shadow);
+            transition: transform 0.2s;
+        }
+
+        .inventory-card:hover { transform: translateY(-5px); }
+
+        .stock-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .stock-info h4 { font-size: 1.1rem; color: var(--dark); margin-bottom: 4px; }
+        .stock-info p { font-size: 0.8rem; color: var(--text-muted); }
+
+        /* Progress Bar */
+        .progress-container {
+            background: #eee;
+            height: 10px;
+            border-radius: 10px;
+            margin: 1.2rem 0;
+            overflow: hidden;
+        }
+
+        .progress-bar { height: 100%; border-radius: 10px; transition: width 0.5s ease-in-out; }
+        .bg-success { background: #22c55e; }
+        .bg-warning { background: #eab308; }
+        .bg-danger { background: #ef4444; }
+
+        .stock-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1rem;
+            border-top: 1px solid #f5f5f5;
+        }
+
+        .quantity-display { font-weight: 800; font-size: 1.2rem; }
+        .unit-label { font-size: 0.75rem; color: var(--text-muted); font-weight: normal; }
+
+        .filter-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            background: white;
+            padding: 1rem;
+            border-radius: 15px;
+            box-shadow: var(--card-shadow);
+        }
+    </style>
+</head>
+
+<body>
+    <aside>
+        <div class="sidebar-logo">
+            <img src="../images/TeoDMangoLogo.png" alt="Teo D' Mango">
+        </div>
+        <nav>
+            <ul>
+                <li><a href="landing.html"><i class="fa-solid fa-home"></i> <span>Home</span></a></li>
+                <li><a href="A-Dashboard.html"><i class="fa-solid fa-chart-line"></i> <span>Dashboard</span></a></li>                
+                <li><a href="A-Account-Manager.html"><i class="fa-solid fa-user-gear"></i> <span>Accounts</span></a></li>               
+                <li class="active" style="margin-top: auto;"><a href="A-inventory-monitoring.html"><i class="fa-solid fa-boxes-stacked"></i> <span>Inventory</span></a></li>
+                <li><a href="A-Attendance-Tracker.html"><i class="fa-solid fa-user-clock"></i> <span>Attendance</span></a></li>
+                <li><a href="A-Alerts-Tracker.html"><i class="fa-solid fa-triangle-exclamation"></i> <span>Alerts</span></a></li>
+                <li><a href="A-promo-manager.html"><i class="fa-solid fa-tags"></i> <span>Promos</span></a></li>
+                <li><a href="A-Rewards.html"><i class="fa-solid fa-gift"></i> <span>Rewards</span></a></li>
+                <li><a href="A-Notifications.html"><i class="fa-solid fa-bell"></i> <span>Notifications</span></a></li>
+                <li><a href="A-settings.html"><i class="fa-solid fa-gear"></i> <span>Settings</span></a></li>
+                <li>
+                    <a href="index.html" style="color:var(--danger)">
+                        <i class="fa-solid fa-right-from-bracket"></i> <span>Log Out</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header>
+            <h1>Inventory Monitoring</h1>
+            <p>Track ingredient levels, expiration dates, and freshness.</p>
+        </header>
+
+        <div class="filter-bar">
+            <div style="flex: 1; position: relative;">
+                <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 15px; top: 12px; color: #ccc;"></i>
+                <input type="text" placeholder="Search ingredients..." style="width: 100%; padding: 10px 10px 10px 40px; border: 1px solid #eee; border-radius: 10px;">
+            </div>
+            <button class="add-btn" style="width: auto; padding: 0 20px;" onclick="openModal('addItemModal')">+ Add Item</button>
+        </div>
+
+        <div class="inventory-grid" id="inventoryGrid">
+            <div class="inventory-card" data-threshold="10">
+                <div class="alert-ribbon">Low Stock</div>
+                <div class="stock-header">
+                    <div class="stock-info">
+                        <h4 class="item-name">Fresh Mangoes</h4>
+                        <p>Main Ingredient</p>
+                    </div>
+                    <i class="fa-solid fa-leaf" style="color: #22c55e;"></i>
+                </div>
+                
+                <div class="progress-container">
+                    <div class="progress-bar bg-danger" style="width: 15%;"></div>
+                </div>
+
+                <div class="stock-footer">
+                    <div class="quantity-display"><span class="qty-val">5</span> <span class="unit-label">kg left</span></div>
+                    <button class="reset-btn adjust-trigger" style="padding: 5px 12px; font-size: 0.8rem;">Adjust</button>
+                </div>
+
+                <div class="stock-meta">
+                    <span><i class="fa-solid fa-calendar-xmark"></i> Exp: <span class="exp-date exp-warning">2026-01-02</span></span>
+                    <span class="update-tag">Updated: <span class="last-updated">2h ago</span></span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal-overlay" id="modalOverlay" style="display: none;">
+        
+        <div class="modal-card" id="adjustModal" style="display: none;">
+            <h3>Adjust Stock</h3>
+            <p id="adjustItemName" style="font-weight: bold; color: var(--primary-dark); margin-bottom: 15px;"></p>
+            
+            <div class="input-group">
+                <fieldset><input type="number" id="adjustQtyInput"><legend>Current Quantity</legend></fieldset>
+            </div>
+            <div class="input-group">
+                <fieldset><input type="date" id="adjustExpInput"><legend>Expiration Date</legend></fieldset>
+            </div>
+
+            <div class="modal-actions">
+                <button class="reset-btn" onclick="closeAllModals()">Cancel</button>
+                <button class="save-btn" id="confirmAdjust">Save Changes</button>
+            </div>
+        </div>
+
+        <div class="modal-card" id="addItemModal" style="display: none; max-width: 500px;">
+            <h3>Register New Supply</h3>
+            <div class="input-group">
+                <fieldset><input type="text" id="newItemName" placeholder=" "><legend>Item Name</legend></fieldset>
+            </div>
+            <div class="modal-grid">
+                <div class="input-group">
+                    <fieldset><input type="number" id="newItemQty" placeholder=" "><legend>Initial Qty</legend></fieldset>
+                </div>
+                <div class="input-group">
+                    <fieldset>
+                        <select id="newItemUnit" style="width: 100%; border: none; outline: none; background: transparent;">
+                            <option value="kg">kg</option>
+                            <option value="packs">packs</option>
+                            <option value="liters">liters</option>
+                        </select>
+                        <legend>Unit</legend>
+                    </fieldset>
+                </div>
+            </div>
+            <div class="modal-grid">
+                <div class="input-group">
+                    <fieldset><input type="date" id="newItemExp" placeholder=" "><legend>Expiration Date</legend></fieldset>
+                </div>
+                <div class="input-group">
+                    <fieldset><input type="number" id="alertThreshold" placeholder=" " value="10"><legend>Alert at (Qty)</legend></fieldset>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="reset-btn" onclick="closeAllModals()">Cancel</button>
+                <button class="save-btn" onclick="addNewItem()">Activate Tracking</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const overlay = document.getElementById('modalOverlay');
+        let currentEditingCard = null;
+
+        function openModal(modalId) {
+            overlay.style.display = 'flex';
+            document.querySelectorAll('.modal-card').forEach(m => m.style.display = 'none');
+            document.getElementById(modalId).style.display = 'block';
+        }
+
+        function closeAllModals() { 
+            overlay.style.display = 'none'; 
+            currentEditingCard = null;
+        }
+
+        // Delegation for Adjust Buttons
+        document.addEventListener('click', function(e) {
+            if (e.target && e.target.classList.contains('adjust-trigger')) {
+                currentEditingCard = e.target.closest('.inventory-card');
+                
+                const name = currentEditingCard.querySelector('.item-name').innerText;
+                const qty = currentEditingCard.querySelector('.qty-val').innerText;
+                const exp = currentEditingCard.querySelector('.exp-date').innerText;
+
+                document.getElementById('adjustItemName').innerText = name;
+                document.getElementById('adjustQtyInput').value = qty;
+                document.getElementById('adjustExpInput').value = exp;
+
+                openModal('adjustModal');
+            }
+        });
+
+        // Save Adjustments
+        document.getElementById('confirmAdjust').addEventListener('click', function() {
+            if (!currentEditingCard) return;
+
+            const newQty = document.getElementById('adjustQtyInput').value;
+            const newExp = document.getElementById('adjustExpInput').value;
+            const threshold = parseInt(currentEditingCard.getAttribute('data-threshold'));
+
+            // Update DOM
+            currentEditingCard.querySelector('.qty-val').innerText = newQty;
+            currentEditingCard.querySelector('.exp-date').innerText = newExp;
+            currentEditingCard.querySelector('.last-updated').innerText = "Just now";
+
+            // Update Progress Bar & Alert
+            const progressBar = currentEditingCard.querySelector('.progress-bar');
+            const ribbon = currentEditingCard.querySelector('.alert-ribbon');
+            
+            if (parseInt(newQty) <= threshold) {
+                progressBar.className = "progress-bar bg-danger";
+                progressBar.style.width = "15%";
+                if (!ribbon) {
+                    const newRibbon = document.createElement('div');
+                    newRibbon.className = 'alert-ribbon';
+                    newRibbon.innerText = 'Low Stock';
+                    currentEditingCard.prepend(newRibbon);
+                }
+            } else {
+                progressBar.className = "progress-bar bg-success";
+                progressBar.style.width = "100%";
+                if (ribbon) ribbon.remove();
+            }
+
+            closeAllModals();
+        });
+
+        function addNewItem() {
+            const name = document.getElementById('newItemName').value;
+            const qty = document.getElementById('newItemQty').value;
+            const unit = document.getElementById('newItemUnit').value;
+            const expDate = document.getElementById('newItemExp').value || 'N/A';
+            const threshold = document.getElementById('alertThreshold').value;
+
+            if (!name || !qty) return alert("Missing required fields!");
+
+            const isLow = parseInt(qty) <= parseInt(threshold);
+            const alertHtml = isLow ? `<div class="alert-ribbon">Low Stock</div>` : '';
+            const barColor = isLow ? 'bg-danger' : 'bg-success';
+
+            const grid = document.getElementById('inventoryGrid');
+            const newCard = document.createElement('div');
+            newCard.className = 'inventory-card';
+            newCard.setAttribute('data-threshold', threshold);
+            newCard.innerHTML = `
+                ${alertHtml}
+                <div class="stock-header">
+                    <div class="stock-info">
+                        <h4 class="item-name">${name}</h4>
+                        <p>Newly Added</p>
+                    </div>
+                    <i class="fa-solid fa-box" style="color: var(--primary-dark);"></i>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar ${barColor}" style="width: ${isLow ? '15%' : '100%'}%;"></div>
+                </div>
+                <div class="stock-footer">
+                    <div class="quantity-display"><span class="qty-val">${qty}</span> <span class="unit-label">${unit} left</span></div>
+                    <button class="reset-btn adjust-trigger" style="padding: 5px 12px; font-size: 0.8rem;">Adjust</button>
+                </div>
+                <div class="stock-meta">
+                    <span><i class="fa-solid fa-clock"></i> Exp: <span class="exp-date exp-safe">${expDate}</span></span>
+                    <span class="update-tag">Updated: <span class="last-updated">Just now</span></span>
+                </div>
+            `;
+
+            grid.prepend(newCard);
+            closeAllModals();
+        }
+
+        window.onclick = (e) => { if(e.target == overlay) closeAllModals(); }
+    </script>
+</body>
+</html>
