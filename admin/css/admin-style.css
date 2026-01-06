@@ -67,7 +67,7 @@ nav ul {
 nav a {
     text-decoration: none;
     color: var(--dark); 
-    padding: 0.9rem 1.1rem;
+    padding: 0.8rem 1.1rem;
     display: flex; 
     align-items: center; 
     gap: 15px; 
