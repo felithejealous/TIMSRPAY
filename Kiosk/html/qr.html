@@ -57,14 +57,28 @@
     </div>
 
     <script>
+        const script = document.createElement('script');
+        script.src = '../js/payment-handler.js';
+        document.head.appendChild(script);
+
         // Simulate payment processing
         setTimeout(() => {
             const overlay = document.getElementById('paymentOverlay');
             overlay.classList.add('show');
 
-            // Redirect to counter.html after 2.5 seconds
             setTimeout(() => {
-                window.location.href = '../html/counter.html';
+                const order = window.createOrderFromCart();
+                if (order) {
+                    // Generate random queue number between 1-99
+                    const queueNumber = Math.floor(Math.random() * 99) + 1;
+                    
+                    order.paymentMethod = localStorage.getItem('paymentMethod') || 'QR Code (GCash)';
+                    order.queueNumber = queueNumber;
+                    order.orderType = localStorage.getItem('orderType') || 'Dine-in';
+                    
+                    localStorage.setItem('currentOrder', JSON.stringify(order));
+                    window.location.href = '../html/receipt.html';
+                }
             }, 2500);
         }, 4000); 
     </script>

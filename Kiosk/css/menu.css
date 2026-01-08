@@ -167,20 +167,94 @@ header {
 .cart-popup.active { 
     bottom: 0; 
 }
-
 /* 5. Cart Item */
 .cart-item {
-    display: flex;
-    border: 0.0625rem solid #eee; /* 1px */
-    border-radius: 0.9375rem;      /* 15px */
-    padding: 0.625rem;            /* 10px */
-    margin-bottom: 0.9375rem;     /* 15px */
-    align-items: center;
+  display: flex;
+  border: 0.0625rem solid #eee; /* 1px */
+  border-radius: 0.9375rem; /* 15px */
+  padding: 0.9375rem; /* 15px */
+  margin-bottom: 0.9375rem; /* 15px */
+  align-items: center;
+  justify-content: space-between; /* Better spacing between content */
+  gap: 1rem; /* Space between elements */
 }
 
-.cart-item img { 
-    width: 3.75rem;               /* 60px */
-    height: 3.75rem;              /* 60px */
-    border-radius: 0.625rem;      /* 10px */
-    margin-right: 0.9375rem;      /* 15px */
+.cart-item img {
+  width: 3.75rem; /* 60px */
+  height: 3.75rem; /* 60px */
+  border-radius: 0.625rem; /* 10px */
+  margin-right: 0; /* Remove margin, using gap instead */
+}
+
+/* New styling for cart item details */
+.cart-item-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.cart-item-details h4 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.cart-item-details p {
+  margin: 3px 0 8px 0;
+  font-size: 0.75rem;
+  color: #999;
+}
+
+/* New container for quantity and price */
+.cart-item-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.cart-item-quantity {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cart-item-quantity label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.cart-item-quantity input {
+  width: 50px;
+  padding: 0.5rem;
+  border: 2px solid #fbbc04;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  text-align: center;
+  background-color: #fff;
+}
+
+.cart-item-price {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #fbbc04;
+  min-width: 80px;
+  text-align: right;
+}
+
+.cart-item-remove {
+  background-color: transparent;
+  border: none;
+  color: #ff6b6b;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.cart-item-remove:hover {
+  color: #ff5252;
 }

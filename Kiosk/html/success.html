@@ -93,13 +93,13 @@
         </svg>
         <h1>Order Complete!</h1>
         <p>Thank you for your order. Please collect your receipt.</p>
-        <button class="btn" onclick="window.location.href='../html/menu.html'">New Order</button>
+        <!-- Redirect to index.html instead of menu.html to restart kiosk -->
+        <button class="btn" onclick="window.location.href='../html/index.html'">New Order</button>
     </div>
 
     <script>
-        // Auto-redirect after 10 seconds
         setTimeout(() => {
-            window.location.href = '../html/menu.html';
+            window.location.href = '../html/index.html';
         }, 10000);
     </script>
 </body>

@@ -1,196 +1,226 @@
-
-*{
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
 }
 
-html, body {
-    min-height: 100%;  /* Changed from height: 100% */
-    overflow: auto;     /* Changed from overflow: hidden */
-    background-image: url(../Images/teoDMangoBG.png);
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-position: center;
-    background-attachment: fixed;  /* Keeps background fixed while scrolling */
+html,
+body {
+  min-height: 100%;
+  overflow: auto;
+  background-image: url(../Images/teoDMangoBG.png);
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-attachment: fixed;
 }
 
-header{
-    text-align: center;
-    margin-top: 2rem;
-    margin-bottom: 0;
+header {
+  text-align: center;
+  margin-top: 2rem;
+  margin-bottom: 0;
 }
 
-.main-content{
-    margin: 0rem 1rem 1rem;
-    padding: 2rem 2rem 2rem;
+.main-content {
+  margin: 0rem 1rem 1rem;
+  padding: 2rem 2rem 2rem;
 }
 
 .product-info {
-    background-color: white;
-    border-radius: 30px;
-    height: 12rem;
-    margin-bottom: 1rem;
-    display: flex;             /* allows child elements to align */
-    align-items: center;       /* vertically center content */          /* optional spacing inside */
-    overflow: hidden;          /* ensures image corners respect container radius */
+  background-color: white;
+  border-radius: 30px;
+  height: 12rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
 }
 
-/* Image container inside product-info */
 .img-container {
-    flex: 0 0 auto;            /* prevent shrinking */
-    width: 30%;                /* takes 30% of product-info width */
-    height: 100%;              /* fills product-info height */
-    border-top-left-radius: 20px;      /* only left corners rounded */
-    border-bottom-left-radius: 20px;
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
-    overflow: hidden;          /* ensures image doesn't overflow */
+  flex: 0 0 auto;
+  width: 30%;
+  height: 100%;
+  border-top-left-radius: 20px;
+  border-bottom-left-radius: 20px;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  overflow: hidden;
 }
 
-/* Image itself */
 .img-container img {
-    width: 100%;               /* fill container width */
-    height: 100%;              /* fill container height */
-    object-fit: cover;         /* maintain aspect ratio, cover container */
-    display: block;            /* remove inline spacing */
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
-.product-custom{
-    
-    background-color: white;
-    border-radius: 30px;
-    height: 18rem;
-    margin-bottom: 1rem;
-    padding-left: 3rem;
-    padding-bottom: 3rem;
-    padding-right: 3rem;
-    padding-top: 2rem;
+
+.product-custom {
+  background-color: white;
+  border-radius: 30px;
+  margin-bottom: 1rem;
+  padding: 2rem 3rem;
+  /* removed fixed height to allow flexible content, added proper padding */
+}
+
+.size-options,
+.add-ons-options {
+  margin-bottom: 1.5rem;
+}
+
+.size-options p,
+.add-ons-options p {
+  margin-bottom: 0.75rem;
+  font-weight: 600;
 }
 
 .deets {
-    position: relative;
-    display: flex;                  /* enable flex layout */
-    flex-direction: column;         /* stack children vertically */
-    justify-content: space-between; /* top/middle/bottom alignment */
-    height: 100%;                   /* fill parent container (e.g., .product-info) */
-    margin: 0 2rem; 
-    padding-top: 0.5rem;  
-    padding-bottom: 0.5rem;           /* left/right spacing */
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  margin: 0 2rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
 }
 
-
-/* General label styling */
 .size-options label,
 .add-ons-options label {
-    display: flex;               /* horizontal layout of input + text */
-    align-items: center;         
-    justify-content: space-between; /* spread text and price */    /* spacing inside label */    /* space between items */
-    border-radius: 1rem;          /* rounded edges */
-    cursor: pointer;
-    transition: background-color 0.2s, color 0.2s;
-    font-size: 0.9rem;            /* smaller text */
-    user-select: none;           
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+  font-size: 0.9rem;
+  user-select: none;
 }
 
-/* Flex container for text + price */
 .size-options .size-label,
 .add-ons-options .addon-label {
-    display: flex;
-    justify-content: space-between; /* text on left, price on right */
-    width: 100%;
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
 }
 
-/* Hide default radio/checkbox appearance */
 .size-options input[type="radio"],
 .add-ons-options input[type="checkbox"] {
-    appearance: none;
-    -webkit-appearance: none;
-    width: 16px;                 /* smaller circle */
-    height: 16px;
-    border: 2px solid #ccc;
-    border-radius: 50%;           /* circle shape for checkboxes too */
-    margin-right: 0.5rem;
-    cursor: pointer;
-    position: relative;
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #ccc;
+  border-radius: 50%;
+  margin-right: 0.5rem;
+  cursor: pointer;
+  position: relative;
 }
 
-/* Circle for selected radio button or checkbox */
 .size-options input[type="radio"]:checked::before,
 .add-ons-options input[type="checkbox"]:checked::before {
-    content: '';
-    position: absolute;
-    width: 8px;                  /* smaller inner circle */
-    height: 8px;
-    border-radius: 50%;           /* circular fill */
-    background-color: #FBBC04;
-    top: 3px;
-    left: 3px;
+  content: "";
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #fbbc04;
+  top: 3px;
+  left: 3px;
 }
 
-/* Vertical layout */
 .size-options form,
 .add-ons-options form {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
+/* restructured quantity section for better spacing and visibility */
+.quantity-options {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #f0f0f0;
+}
+
+.quantity-options p {
+  margin: 0;
+  font-weight: 600;
+  font-size: 1rem;
+  min-width: 100px;
+}
+
+#quantity {
+  width: 120px;
+  padding: 0.75rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-align: center;
+  border: 3px solid #fbbc04;
+  border-radius: 1rem;
+  background-color: #fff;
+  color: #fbbc04;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+#quantity:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(251, 188, 4, 0.3);
+}
 
 .bottom-price {
-    background-color: white;
-    border-radius: 30px;
-    height: 6rem;
-    margin-bottom: 1rem;
-
-    display: flex;
-    flex-direction: row;          /* horizontal layout */
-    align-items: center;          /* vertically center items */
-    justify-content: space-between; /* space between price and buttons */
-    padding: 0 1.5rem;            /* horizontal padding */
+  background-color: white;
+  border-radius: 30px;
+  margin-bottom: 1rem;
+  padding: 1.5rem 2rem;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  /* increased padding and gap for better spacing between price and buttons */
 }
 
-/* Price styling */
+/* price now larger, bolder, and with golden color to stand out */
 .bottom-price h2 {
-    font-size: 2rem;
-    margin: 0;                   /* remove default margin */
+  font-size: 3rem;
+  font-weight: 800;
+  margin: 0;
+  color: #fbbc04;
+  min-width: fit-content;
+  letter-spacing: -2px;
 }
 
-/* Buttons container */
 .bottom-price .buttons {
-    display: flex;               /* horizontal layout of buttons */
-    gap: 1rem;                   /* space between buttons */
+  display: flex;
+  gap: 1rem;
+  flex: 1;
+  justify-content: flex-end;
 }
 
-/* Optional: make buttons same size */
-.bottom-price .buttons .btn {
-    min-width: 100px;
-    text-align: center;
-}
-
-/* Buttons */
 .btn {
-    padding: 0.3rem 2rem;
-    border-radius: 1.5625rem;  /* 25px */
-    cursor: pointer;
-    transition: transform 0.2s;
-    font-size: 1rem;
+  padding: 0.3rem 2rem;
+  border-radius: 1.5625rem;
+  cursor: pointer;
+  transition: transform 0.2s;
+  font-size: 1rem;
 }
 
-.btn:active { 
-    transform: scale(0.95); 
+.btn:active {
+  transform: scale(0.95);
 }
 
-.btn-outline { 
-    border: 2px solid #FBBC04;
-    background-color: transparent;
-    color: black;
+.btn-outline {
+  border: 2px solid #fbbc04;
+  background-color: transparent;
+  color: black;
 }
 
-.btn-fill { 
-    background-color: #FBBC04;
-    color: white; 
-    border: none;
+.btn-fill {
+  background-color: #fbbc04;
+  color: white;
+  border: none;
 }
-
-
-

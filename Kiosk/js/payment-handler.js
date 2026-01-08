@@ -60,7 +60,7 @@ function createOrderFromCart() {
     })
   })
 
-  const tax = 0 // Adjust if needed
+  const tax = 1.0
   const total = subtotal + tax
   const points = calculateOrderPoints(total)
 
