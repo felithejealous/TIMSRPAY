@@ -21,6 +21,10 @@
     </div>
 
     <div class="receipt-info">
+        <!-- Added Order Type and Queue/Table Number display -->
+        <div><span>Order Type</span><span id="orderType">Dine-in</span></div>
+        <div id="queueNumberRow" style="display: none;"><span>Queue #</span><span id="queueNumber">--</span></div>
+        <div id="tableNumberRow" style="display: none;"><span>Table #</span><span id="tableNumber">--</span></div>
         <div><span>Date</span><span id="orderDate">--/--/----</span></div>
         <div><span>Time</span><span id="orderTime">--:--</span></div>
         <div><span>Payment</span><span id="paymentMethod">Cash</span></div>
@@ -47,7 +51,9 @@
         </div>
     </div>
 
-    <button class="receipt-btn">PRINT RECEIPT</button>
+    <!-- Changed button text from "PRINT RECEIPT" to "CONFIRM ORDER" -->
+    <!-- Added inline onclick handler to ensure button works -->
+    <button class="receipt-btn" onclick="confirmOrder()">CONFIRM ORDER</button>
 
     <div class="receipt-footer">
         <p>Thank you for your purchase!</p>
@@ -60,7 +66,8 @@
 <div id="printOverlay" class="print-overlay">
     <div class="print-content">
         <div class="spinner"></div>
-        <p>Printing receipt...</p>
+        <!-- Changed overlay text from "Printing receipt..." to "Confirming order..." -->
+        <p>Confirming order...</p>
     </div>
 </div>
 

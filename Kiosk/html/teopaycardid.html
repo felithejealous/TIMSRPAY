@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teo D' Mango - Counter</title>
+    <title>Teo D' Mango - Teo Pay Card ID</title>
     <link rel="stylesheet" href="../css/counter.css">
 </head>
 <body>
@@ -15,8 +15,8 @@
     <div class="content-wrapper">
         <div class="glass-panel">
             <div class="input-section">
-                <h1 class="minimal-title">Input your number</h1>
-                <div class="display-container" id="display">____</div>
+                <h1 class="minimal-title">Enter Teo Pay Card ID</h1>
+                <div class="display-container" id="display">____________</div>
             </div>
 
             <div class="numpad-grid">
@@ -35,22 +35,23 @@
             </div>
         </div>
 
-        <button class="minimal-footer-btn" id="confirmBtn">Confirm</button>
+        <button class="minimal-footer-btn" id="confirmBtn">Next</button>
     </div>
 
     <script>
         let inputString = "";
         const display = document.getElementById('display');
         const confirmBtn = document.getElementById('confirmBtn');
+        const maxLength = 12;
 
         function updateDisplay() {
-            let dots = inputString.padEnd(4, "_");
+            let dots = inputString.padEnd(maxLength, "_");
             display.innerText = dots;
-            confirmBtn.classList.toggle('active', inputString.length > 0);
+            confirmBtn.classList.toggle('active', inputString.length === maxLength);
         }
 
         function addNum(num) {
-            if (inputString.length < 4) {
+            if (inputString.length < maxLength) {
                 inputString += num;
                 updateDisplay();
             }
@@ -67,23 +68,15 @@
         }
 
         confirmBtn.addEventListener('click', () => {
-            if (inputString.length > 0) {
-                const script = document.createElement('script');
-                script.src = '../js/payment-handler.js';
-                script.onload = () => {
-                    const order = window.createOrderFromCart();
-                    if (order) {
-                        order.paymentMethod = localStorage.getItem('paymentMethod') || 'Pay at Counter';
-                        order.tableNumber = inputString;
-                        order.orderType = localStorage.getItem('orderType') || 'Dine-in';
-                        
-                        localStorage.setItem('currentOrder', JSON.stringify(order));
-                        window.location.href = '../html/receipt.html';
-                    }
-                };
-                document.head.appendChild(script);
+            if (inputString.length === maxLength) {
+                localStorage.setItem('teopayCardId', inputString);
+                window.location.href = '../html/mpinteopay.html';
+            } else {
+                alert('Please enter complete 12-digit Card ID');
             }
         });
+
+        updateDisplay();
     </script>
 </body>
 </html>

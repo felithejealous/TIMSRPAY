@@ -65,8 +65,10 @@
 
         payBtn.addEventListener('click', () => {
             if (selectedMethod === "teopay") {
-                window.location.href = '../html/counter.html';
+                localStorage.setItem('paymentMethod', 'Teo Pay');
+                window.location.href = '../html/teopaycardid.html';
             } else if (selectedMethod === "qr") {
+                localStorage.setItem('paymentMethod', 'QR Code (GCash)');
                 window.location.href = '../html/qr.html';
             } else {
                 alert("Please select a payment method!");
