@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teo D' Mango - Order Type</title>
+    <link rel="stylesheet" href="../css/select.css">
+    <style>
+        .teo-pay-img {
+            width: 90%;
+            height: 90%;
+            object-fit: contain;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Select order type</h1>
+
+        <div class="order-options">
+            <!-- Counter Option -->
+            <button class="option-card" data-target="../html/counter.html">
+                <div class="icon-box">
+                    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10 90V75C10 68 15 64 22 64H78C85 64 90 68 90 75V90" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+                        <path d="M68 64V52" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+                        <rect x="42" y="15" width="46" height="37" rx="8" stroke="currentColor" stroke-width="8"/>
+                    </svg>
+                </div>
+                <span class="option-label">Pay at the counter</span>
+            </button>
+
+            <!-- TeoPay Option (Updated Target) -->
+            <button class="option-card" data-target="../html/teopaycardid.html">
+                <div class="icon-box">
+                    <img src="../Images/mango-icon.png" alt="Teo Pay" class="teo-pay-img">
+                </div>
+                <span class="option-label">TeoPay</span>
+            </button>
+        </div>
+
+        <button class="footer-btn" id="nextBtn" style="opacity: 0.5;">Next</button>
+    </div>
+
+    <script>
+        const optionCards = document.querySelectorAll('.option-card');
+        const nextBtn = document.getElementById('nextBtn');
+        let selectedTarget = null;
+
+        optionCards.forEach(card => {
+            card.addEventListener('click', () => {
+                // Remove 'selected' class from all cards
+                optionCards.forEach(c => c.classList.remove('selected'));
+                
+                // Add 'selected' class to the one we just clicked
+                card.classList.add('selected');
+                
+                // Store the URL from the data-target attribute
+                selectedTarget = card.getAttribute('data-target');
+                
+                // Handle LocalStorage for consistency if needed by later pages
+                if (selectedTarget.includes('teopaycardid')) {
+                    localStorage.setItem('paymentMethod', 'Teo Pay');
+                } else {
+                    localStorage.setItem('paymentMethod', 'Counter');
+                }
+                
+                // Make the "Next" button look active
+                nextBtn.style.opacity = "1";
+            });
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (selectedTarget) {
+                window.location.href = selectedTarget;
+            } else {
+                // UI feedback instead of alert
+                const msg = document.createElement('div');
+                msg.innerText = "Please select an order type first!";
+                msg.style.cssText = "position:fixed; bottom:40px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.8); color:white; padding:12px 24px; border-radius:30px; z-index:9999; font-family: sans-serif;";
+                document.body.appendChild(msg);
+                setTimeout(() => msg.remove(), 2500);
+            }
+        });
+    </script>
+
+</body>
+</html>

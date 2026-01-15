@@ -71,7 +71,7 @@
                     <td><strong>Promo Flyers</strong></td>
                     <td>Out of stock immediately</td>
                     <td>Reorder from supplier</td>
-                    <td><i>9:41 AM</i></td>
+                    <td><i>09:41 AM</i></td>
                     <td><span class="status-dot"></span></td>
                 </tr>
                 <tr class="alert-row moderate">
@@ -79,12 +79,13 @@
                     <td><strong>QR Scanner</strong></td>
                     <td>Device not syncing</td>
                     <td>Check connection</td>
-                    <td><i>Nov 18</i></td>
+                    <td><i>06:00 PM</i></td>
                     <td><span class="status-dot"></span></td>
                 </tr>
             </tbody>
         </table>
     </div>
+
     <div id="alertModal" class="modal-overlay">
     <div class="modal-card">
         <div class="modal-header">
@@ -94,7 +95,13 @@
         <div class="modal-body">
             <div class="input-group">
                 <label>Alert Type</label>
-                <input type="text" id="type" placeholder="e.g., Inventory, Staff, System">
+                <select id="type">
+                    <option value="" disabled selected>Select category...</option>
+                    <option value="Inventory">Inventory</option>
+                    <option value="Staff">Staff</option>
+                    <option value="System">System</option>
+                    <option value="Maintenance">Maintenance</option>
+                </select>
             </div>
             <div class="input-group">
                 <label>Item / Area</label>
@@ -111,7 +118,7 @@
             <div class="input-row">
                 <div class="input-group">
                     <label>Deadline</label>
-                    <input type="text" id="deadline" placeholder="e.g., 5:00 PM">
+                    <input type="time" id="deadline">
                 </div>
                 <div class="input-group">
                     <label>Severity</label>
@@ -132,7 +139,6 @@
 </main>
 
 <script>
-    // --- Modal Logic ---
 const modal = document.getElementById('alertModal');
 
 function addNewAlert() {
@@ -143,15 +149,34 @@ function closeModal() {
     modal.style.display = 'none';
 }
 
+function formatTime(timeString) {
+    if(!timeString) return "N/A";
+    const [hours, minutes] = timeString.split(':');
+    let period = 'AM';
+    let hour = parseInt(hours);
+    
+    if (hour >= 12) {
+        period = 'PM';
+        if (hour > 12) hour -= 12;
+    } else if (hour === 0) {
+        hour = 12;
+    }
+    
+    return `${hour}:${minutes} ${period}`;
+}
+
 function submitNewAlert() {
     const type = document.getElementById('type').value;
     const item = document.getElementById('item').value;
     const issue = document.getElementById('issue').value;
     const action = document.getElementById('action').value;
-    const deadline = document.getElementById('deadline').value;
+    const deadlineValue = document.getElementById('deadline').value;
     const severity = document.getElementById('severity').value;
 
     if (!type || !item) return alert("Please fill in required fields.");
+
+    // Format the 24h time to 12h AM/PM for the table
+    const displayTime = formatTime(deadlineValue);
 
     const tbody = document.getElementById('alertQueue');
     const newRow = document.createElement('tr');
@@ -162,7 +187,7 @@ function submitNewAlert() {
         <td><strong>${item}</strong></td>
         <td>${issue}</td>
         <td>${action}</td>
-        <td><i>${deadline}</i></td>
+        <td><i>${displayTime}</i></td>
         <td><span class="status-dot"></span></td>
     `;
 
@@ -170,13 +195,13 @@ function submitNewAlert() {
     closeModal();
     
     // Reset Form
+    document.getElementById('type').selectedIndex = 0;
     document.querySelectorAll('.modal-body input, .modal-body textarea').forEach(i => i.value = '');
 }
 
 // --- Filter Logic ---
 document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-        // UI: Toggle active class
         document.querySelector('.filter-btn.active').classList.remove('active');
         btn.classList.add('active');
 

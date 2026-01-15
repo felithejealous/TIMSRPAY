@@ -1,0 +1,112 @@
+/* 1. Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+}
+
+body, html {
+    height: 100%;
+    overflow: hidden;
+    background: #fdfdfd url("../Images/teoDMangoBG.png") no-repeat top / cover;
+}
+
+.container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+/* 2. Typography */
+h1 {
+    font-size: 2.5rem;
+    color: #000;
+    margin-bottom: 2.5rem;
+    font-weight: 800;
+    z-index: 10;
+}
+
+/* 3. Button Layout */
+.order-options {
+    display: flex;
+    gap: 1.5625rem;
+    z-index: 10;
+    margin-bottom: 3.125rem;
+}
+
+.option-card {
+    background: white;
+    width: 15rem;
+    height: 17.5rem;
+    border-radius: 1.875rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0.625rem 1.5625rem rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 3px solid transparent;
+    text-decoration: none;
+    color: #333; 
+}
+
+/* 4. The Icon Box (Centered for Font Awesome) */
+.icon-box {
+    width: 10rem; 
+    height: 10rem;
+    margin-bottom: 0.5rem; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease;
+}
+
+/* Replacing SVG scale with Font Icon scale */
+.icon-box i {
+    font-size: 6rem; /* Adjust this to make the icon bigger/smaller */
+    color: inherit;
+}
+
+/* 5. Selected State */
+.option-card.selected {
+    background-color: #FFF7DB;
+    border-color: #ffbf00;
+    transform: scale(0.98);
+    color: #ffbf00; 
+}
+
+.option-card.selected .icon-box {
+    color: #ffbf00;
+}
+
+.option-label {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: inherit; 
+    margin-top: 0.5rem;
+}
+
+/* 6. Footer Button */
+.footer-btn {
+    background-color: #ffbf00;
+    color: #444;
+    padding: 0.9375rem 6.25rem;
+    border-radius: 3.125rem;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border: none;
+    box-shadow: 0 0.25rem 0.625rem rgba(0,0,0,0.1);
+    z-index: 10;
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+
+.footer-btn:active {
+    transform: scale(0.95);
+}
