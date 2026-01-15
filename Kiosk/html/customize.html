@@ -1,84 +1,510 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Teo D' Mango - Customize</title>
-  <link rel="stylesheet" href="../css/customize.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Teo D' Mango - Customize</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        html, body {
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden; 
+            background-image: url(../Images/teoDMangoBG.png);
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            text-align: center;
+            padding: 1rem 0 0.5rem;
+            flex-shrink: 0;
+        }
+
+        header h1 {
+            color: white;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 0 1rem 1rem;
+            overflow: hidden;
+        }
+
+        .product-info {
+            background-color: white;
+            border-radius: 20px;
+            min-height: 80px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+
+        .img-container {
+            flex: 0 0 auto;
+            width: 80px;
+            height: 80px;
+        }
+
+        .img-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .deets {
+            flex: 1;
+            padding: 0 1rem;
+        }
+
+        .product-title {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #222;
+        }
+
+        .product-description {
+            font-size: 0.75rem;
+            color: #777;
+        }
+
+        .scrollable-content {
+            flex: 1;
+            background-color: white;
+            border-radius: 25px;
+            padding: 1.5rem;
+            overflow-y: auto;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+            scrollbar-width: none;
+        }
+        .scrollable-content::-webkit-scrollbar {
+            display: none;
+        }
+
+        .section-label {
+            font-weight: 800;
+            font-size: 0.9rem;
+            color: #444;
+            margin-bottom: 0.8rem;
+            display: block;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .pill-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .pill-btn {
+            flex: 1;
+            min-width: 80px;
+            padding: 12px 5px;
+            border-radius: 15px;
+            border: 2px solid #eee;
+            background: white;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pill-btn span.price-addon {
+            font-size: 0.7rem;
+            opacity: 0.6;
+            font-weight: 400;
+        }
+
+        .pill-btn.active {
+            border-color: #fbbc04;
+            background-color: #fbbc04;
+            color: white;
+        }
+
+        .addon-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        .check-pill {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 15px;
+            background: #f8f8f8;
+            border-radius: 15px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .check-pill input { display: none; }
+
+        .check-pill.active {
+            background: #fff9e6;
+            border-color: #fbbc04;
+            color: #b38600;
+        }
+
+        .quantity-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 1rem;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .qty-controller {
+            display: inline-flex;
+            align-items: center;
+            background: #f1f1f1;
+            padding: 5px;
+            border-radius: 15px;
+        }
+
+        .qty-btn {
+            width: 38px;
+            height: 38px;
+            background: #FBBC04;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .qty-number-box {
+            width: 50px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            color: #333;
+            font-size: 1.2rem;
+            background: white;
+            margin: 0 5px;
+            border-radius: 8px;
+        }
+
+        .bottom-bar {
+            background-color: white;
+            border-radius: 25px;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+
+        .total-container h2 {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: #fbbc04;
+            letter-spacing: -1px;
+        }
+
+        .total-container p {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: #aaa;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 800;
+            text-transform: uppercase;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            font-size: 0.8rem;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #fbbc04;
+            color: #444;
+        }
+
+        .btn-fill {
+            background: #fbbc04;
+            color: white;
+        }
+    </style>
 </head>
 <body>
-  <header>
-    <h1>Customize your order</h1>
-  </header>
+    <header>
+        <h1 id="pageHeader">Customize Order</h1>
+    </header>
 
-  <div class="main-content">
-    <div class="product-info">
-      <div class="img-container">
-        <img src="../Images/teoDMangoBG.png" alt="Drink">
-      </div>
-      <div class="deets">
-        <!-- These will be replaced dynamically by JS -->
-        <h2 class="product-title">Loading...</h2>
-        <p class="product-description">Loading description...</p>
-        <div class="product-price">
-          <h2 class="base-price">0.00</h2>
-          <p>Base price</p>
+    <div class="main-container">
+        <div class="product-info">
+            <div class="img-container">
+                <img id="productImg" src="../Images/teoDMangoBG.png" alt="Drink">
+            </div>
+            <div class="deets">
+                <h2 class="product-title" id="productTitle">Loading...</h2>
+                <p class="product-description" id="productDesc">Loading description...</p>
+            </div>
         </div>
-      </div>
+
+        <div class="scrollable-content">
+            <!-- SIZE SECTION -->
+            <span class="section-label">Select Size</span>
+            <div class="pill-group" id="sizeGroup">
+                <button class="pill-btn active" data-val="Small" data-price="0">
+                    Small <span class="price-addon">Base</span>
+                </button>
+                <button class="pill-btn" data-val="Medium" data-price="10">
+                    Medium <span class="price-addon">+₱10</span>
+                </button>
+                <button class="pill-btn" data-val="Large" data-price="20">
+                    Large <span class="price-addon">+₱20</span>
+                </button>
+            </div>
+
+            <!-- SUGAR LEVEL SECTION -->
+            <span class="section-label">Sugar Level</span>
+            <div class="pill-group" id="sugarGroup">
+                <button class="pill-btn" data-val="0%">0%</button>
+                <button class="pill-btn" data-val="25%">25%</button>
+                <button class="pill-btn" data-val="50%">50%</button>
+                <button class="pill-btn active" data-val="100%">100%</button>
+            </div>
+
+            <!-- ADD-ONS SECTION -->
+            <span class="section-label">Add-ons</span>
+            <div class="addon-grid" id="addonsGroup">
+                <label class="check-pill">
+                    <span>Pearls</span> <span>+₱10</span>
+                    <input type="checkbox" data-val="Pearls" data-price="10">
+                </label>
+                <label class="check-pill">
+                    <span>Crystals</span> <span>+₱20</span>
+                    <input type="checkbox" data-val="Crystals" data-price="20">
+                </label>
+                <label class="check-pill">
+                    <span>Ice Cream</span> <span>+₱20</span>
+                    <input type="checkbox" data-val="Ice Cream" data-price="20">
+                </label>
+                <label class="check-pill">
+                    <span>Graham</span> <span>+₱20</span>
+                    <input type="checkbox" data-val="Graham" data-price="20">
+                </label>
+            </div>
+
+            <!-- QUANTITY SECTION -->
+            <div class="quantity-section">
+                <span class="section-label" style="margin:0">Quantity</span>
+                <div class="qty-controller">
+                    <button class="qty-btn" onclick="adjustQty(-1)">-</button>
+                    <div class="qty-number-box" id="qtyDisplay">1</div>
+                    <button class="qty-btn" onclick="adjustQty(1)">+</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ACTION BAR -->
+        <div class="bottom-bar">
+            <div class="total-container">
+                <p>Total</p>
+                <h2 id="totalDisplay">₱ 0.00</h2>
+            </div>
+            <div class="action-buttons">
+                <button class="btn btn-outline" onclick="window.location.href='menu.html'">Back</button>
+                <button class="btn btn-fill" id="addToCartBtn">Add to Tray</button>
+            </div>
+        </div>
     </div>
 
-    <div class="product-custom">
-      <div class="size-options">
-        <p>SIZE</p>
-        <form>
-          <label>
-            <input type="radio" name="size" value="small" checked>
-            <span class="size-label">Small <span class="price">Base</span></span>
-          </label>
-          <label>
-            <input type="radio" name="size" value="medium">
-            <span class="size-label">Medium <span class="price">+10.00</span></span>
-          </label>
-          <label>
-            <input type="radio" name="size" value="large">
-            <span class="size-label">Large <span class="price">+20.00</span></span>
-          </label>
-        </form>
-      </div>
+    <script>
+        const products = [
+            { id: 1, name: "Classic Teo D' Mango", price: 60, desc: "Tropical mango slush with signature layers.", img: "../Images/mangga.png" },
+            { id: 2, name: "Strawberry", price: 60, desc: "Sweet and tangy strawberry fruity blend.", img: "../Images/strawberry.png" },
+            { id: 3, name: "Ube", price: 60, desc: "Rich and creamy purple yam experience.", img: "../Images/ube.png" },
+            { id: 4, name: "Avocado", price: 60, desc: "Smooth tropical avocado goodness.", img: "../Images/avocado.png" },
+            { id: 5, name: "Buko", price: 60, desc: "Refreshing coconut milk base.", img: "../Images/Buko.png" },
+            { id: 6, name: "Lychee", price: 60, desc: "Light and floral lychee blend.", img: "../Images/lychee.png" }
+        ];
 
-      <br><hr><br>
+        let currentProduct = null;
+        let quantity = 1;
+        let editIndex = null;
 
-      <div class="add-ons-options">
-        <p>ADD-ONS</p>
-        <form>
-          <label><input type="checkbox" name="topping" value="pearls"> Pearls (+10.00)</label>
-          <label><input type="checkbox" name="topping" value="crystals"> Crystals (+20.00)</label>
-          <label><input type="checkbox" name="topping" value="icecream"> Ice Cream (+20.00)</label>
-          <label><input type="checkbox" name="topping" value="graham"> Graham (+20.00)</label>
-        </form>
-      </div>
-      
-      <!-- Added quantity input directly in HTML -->
-      <br><hr><br>
-      <div class="quantity-options">
-        <p>QUANTITY</p>
-        <input type="number" id="quantity" value="1" min="1" max="99" style="width: 80px; padding: 8px; font-size: 1rem;">
-      </div>
-    </div>
+        window.onload = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const editIdxParam = urlParams.get('editIndex');
+            let productId = parseInt(urlParams.get('id'));
+            
+            // If we are editing, fetch the correct product ID from the tray item itself
+            if (editIdxParam !== null) {
+                editIndex = parseInt(editIdxParam);
+                const tray = JSON.parse(localStorage.getItem('teo_tray')) || [];
+                const itemToEdit = tray[editIndex];
+                
+                if (itemToEdit) {
+                    productId = itemToEdit.productId; // Overwrite productId with the actual ordered item's ID
+                    
+                    document.getElementById('pageHeader').innerText = "Update Order";
+                    document.getElementById('addToCartBtn').innerText = "Update Tray";
+                    
+                    // Load Quantity
+                    quantity = itemToEdit.qty;
+                    document.getElementById('qtyDisplay').innerText = quantity;
 
-    <div class="bottom-price">
-      <!-- This will be updated dynamically -->
-      <h2>0.00</h2>
-      <div class="buttons">
-        <a href="../html/menu.html">
-          <button class="btn btn-outline">Get more orders</button>
-        </a>
-        <button class="btn btn-fill" id="proceedBtn">Add to Cart</button>
-      </div>
-    </div>
-  </div>
+                    // Load Size
+                    document.querySelectorAll('#sizeGroup .pill-btn').forEach(btn => {
+                        btn.classList.toggle('active', btn.dataset.val === itemToEdit.size);
+                    });
 
-  <!-- Link to external JS -->
-  <script src="../js/customize.js"></script>
+                    // Load Sugar
+                    document.querySelectorAll('#sugarGroup .pill-btn').forEach(btn => {
+                        btn.classList.toggle('active', btn.dataset.val === itemToEdit.sugarLevel);
+                    });
+
+                    // Load Addons
+                    document.querySelectorAll('#addonsGroup input').forEach(input => {
+                        const isChecked = itemToEdit.toppings.includes(input.dataset.val);
+                        input.checked = isChecked;
+                        input.parentElement.classList.toggle('active', isChecked);
+                    });
+                }
+            }
+
+            // Find product by ID (or fallback to ID 1)
+            currentProduct = products.find(p => p.id === (productId || 1));
+
+            if (!currentProduct && products.length > 0) {
+                currentProduct = products[0];
+            }
+
+            if (currentProduct) {
+                document.getElementById('productTitle').innerText = currentProduct.name;
+                document.getElementById('productDesc').innerText = currentProduct.desc;
+                document.getElementById('productImg').src = currentProduct.img;
+                updatePrice();
+            } else {
+                document.getElementById('productTitle').innerText = "Product Not Found";
+            }
+        };
+
+        // UI Interactions
+        document.querySelectorAll('.pill-btn').forEach(btn => {
+            btn.onclick = function() {
+                this.parentElement.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                updatePrice();
+            };
+        });
+
+        document.querySelectorAll('.check-pill input').forEach(input => {
+            input.onchange = function() {
+                this.parentElement.classList.toggle('active', this.checked);
+                updatePrice();
+            };
+        });
+
+        function adjustQty(delta) {
+            quantity = Math.max(1, quantity + delta);
+            document.getElementById('qtyDisplay').innerText = quantity;
+            updatePrice();
+        }
+
+        function updatePrice() {
+            if (!currentProduct) return;
+            let total = currentProduct.price;
+            
+            const activeSize = document.querySelector('#sizeGroup .active');
+            if(activeSize) total += parseInt(activeSize.dataset.price);
+
+            document.querySelectorAll('#addonsGroup input:checked').forEach(addon => {
+                total += parseInt(addon.dataset.price);
+            });
+
+            const finalTotal = total * quantity;
+            document.getElementById('totalDisplay').innerText = `₱${finalTotal.toFixed(2)}`;
+        }
+
+        document.getElementById('addToCartBtn').onclick = () => {
+            const tray = JSON.parse(localStorage.getItem('teo_tray')) || [];
+            const size = document.querySelector('#sizeGroup .active').dataset.val;
+            const sugar = document.querySelector('#sugarGroup .active').dataset.val;
+            const toppings = Array.from(document.querySelectorAll('#addonsGroup input:checked'))
+                                 .map(input => input.dataset.val);
+
+            // Unit Price Logic
+            let unitPrice = currentProduct.price;
+            unitPrice += parseInt(document.querySelector('#sizeGroup .active').dataset.price);
+            document.querySelectorAll('#addonsGroup input:checked').forEach(input => {
+                unitPrice += parseInt(input.dataset.price);
+            });
+
+            const newItem = {
+                id: editIndex !== null ? tray[editIndex].id : Date.now(),
+                productId: currentProduct.id,
+                name: currentProduct.name,
+                img: currentProduct.img,
+                price: unitPrice,
+                qty: quantity,
+                size: size,
+                sugarLevel: sugar,
+                toppings: toppings
+            };
+
+            if (editIndex !== null) {
+                tray[editIndex] = newItem; // Overwrite
+            } else {
+                tray.push(newItem); // New entry
+            }
+
+            localStorage.setItem('teo_tray', JSON.stringify(tray));
+            window.location.href = "menu.html";
+        };
+    </script>
 </body>
 </html>

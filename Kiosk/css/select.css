@@ -53,26 +53,24 @@ h1 {
     transition: all 0.2s ease;
     border: 3px solid transparent;
     text-decoration: none;
-    /* This color property controls the SVG and Label by default */
     color: #333; 
 }
 
-/* 4. The SVG Icon Box (ENLARGED) */
+/* 4. The Icon Box (Centered for Font Awesome) */
 .icon-box {
-    /* Increased from 5rem to 8rem */
     width: 10rem; 
     height: 10rem;
-    margin-bottom: 0.5rem; /* Reduced margin to balance the larger size */
+    margin-bottom: 0.5rem; 
     display: flex;
     align-items: center;
     justify-content: center;
     transition: color 0.2s ease;
 }
 
-/* Ensure the SVG scales to the new box size */
-.option-card svg {
-    width: 500%; /* Slight padding so strokes aren't cut off at the edges */
-    height: 200%;
+/* Replacing SVG scale with Font Icon scale */
+.icon-box i {
+    font-size: 6rem; /* Adjust this to make the icon bigger/smaller */
+    color: inherit;
 }
 
 /* 5. Selected State */
@@ -83,7 +81,6 @@ h1 {
     color: #ffbf00; 
 }
 
-/* Updated selector to match the unified .icon-box class */
 .option-card.selected .icon-box {
     color: #ffbf00;
 }

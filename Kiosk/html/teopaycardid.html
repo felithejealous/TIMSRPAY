@@ -2,62 +2,277 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teo D' Mango - Teo Pay Card ID</title>
-    <link rel="stylesheet" href="../css/counter.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Teo D' Mango - TeoPay Card ID</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* Restored background image */
+            background-image: url("../Images/teoDMangoBG.png");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            overflow: hidden;
+            padding: 15px;
+        }
+
+        .content-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 450px;
+            max-height: 95vh;
+            z-index: 10;
+        }
+
+        /* Glassy Panel - Matching MPIN style */
+        .solid-panel {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            padding: 1.5rem;
+            border-radius: 2.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            width: 100%;
+            text-align: center;
+        }
+
+        .minimal-title {
+            font-size: 1.2rem;
+            color: #ffffff;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .helper-text {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .display-container {
+            font-size: 2.2rem;
+            color: #222;
+            font-weight: 900;
+            letter-spacing: 6px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 1.2rem;
+            border: 2px solid #fbbc04;
+            width: 100%;
+            min-height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-transform: uppercase;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* Keyboard Layout */
+        .keyboard-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+            margin-top: 0.5rem;
+        }
+
+        .kb-row {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            width: 100%;
+        }
+
+        /* Flat Keys - No popping */
+        .key {
+            flex: 1;
+            height: 48px;
+            background: #ffffff;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            color: #222;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            box-shadow: none; /* Flat style */
+        }
+
+        .key:active {
+            background: #fbbc04;
+            color: white;
+            transform: scale(0.95);
+        }
+
+        .key.util {
+            flex: 1.5;
+            background: rgba(0, 0, 0, 0.2);
+            color: #fff;
+            font-size: 0.8rem;
+        }
+
+        /* Confirm Button - Matching MPIN style */
+        .confirm-btn {
+            width: 100%;
+            padding: 1.1rem;
+            border-radius: 3rem;
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 1.1rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: not-allowed;
+            transition: all 0.3s ease;
+            margin-top: 0.5rem;
+        }
+
+        .confirm-btn.active {
+            background: #4caf50;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(76, 175, 80, 0.3);
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 1.5rem;
+            left: 1.5rem;
+            background: white;
+            border: none;
+            width: 3rem;
+            height: 3rem;
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            cursor: pointer;
+            color: #222;
+            z-index: 100;
+        }
+    </style>
 </head>
 <body>
 
     <button class="back-btn" onclick="history.back()">
-        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
     </button>
 
     <div class="content-wrapper">
-        <div class="glass-panel">
-            <div class="input-section">
-                <h1 class="minimal-title">Enter Teo Pay Card ID</h1>
-                <div class="display-container" id="display">____________</div>
+        <div class="solid-panel">
+            <div style="background: #fbbc04; width: 40px; height: 5px; border-radius: 10px; margin-bottom: 0.2rem;"></div>
+            <h1 class="minimal-title">TeoPay Login</h1>
+            <p class="helper-text">ENTER 6-CHARACTER CARD ID</p>
+            
+            <div class="display-container" id="display">______</div>
+
+            <div class="keyboard-container">
+                <!-- Numbers -->
+                <div class="kb-row">
+                    <button class="key" onclick="addChar('1')">1</button>
+                    <button class="key" onclick="addChar('2')">2</button>
+                    <button class="key" onclick="addChar('3')">3</button>
+                    <button class="key" onclick="addChar('4')">4</button>
+                    <button class="key" onclick="addChar('5')">5</button>
+                    <button class="key" onclick="addChar('6')">6</button>
+                    <button class="key" onclick="addChar('7')">7</button>
+                    <button class="key" onclick="addChar('8')">8</button>
+                    <button class="key" onclick="addChar('9')">9</button>
+                    <button class="key" onclick="addChar('0')">0</button>
+                </div>
+                <!-- QWERTY Row 1 -->
+                <div class="kb-row">
+                    <button class="key" onclick="addChar('Q')">Q</button>
+                    <button class="key" onclick="addChar('W')">W</button>
+                    <button class="key" onclick="addChar('E')">E</button>
+                    <button class="key" onclick="addChar('R')">R</button>
+                    <button class="key" onclick="addChar('T')">T</button>
+                    <button class="key" onclick="addChar('Y')">Y</button>
+                    <button class="key" onclick="addChar('U')">U</button>
+                    <button class="key" onclick="addChar('I')">I</button>
+                    <button class="key" onclick="addChar('O')">O</button>
+                    <button class="key" onclick="addChar('P')">P</button>
+                </div>
+                <!-- QWERTY Row 2 -->
+                <div class="kb-row">
+                    <button class="key" onclick="addChar('A')">A</button>
+                    <button class="key" onclick="addChar('S')">S</button>
+                    <button class="key" onclick="addChar('D')">D</button>
+                    <button class="key" onclick="addChar('F')">F</button>
+                    <button class="key" onclick="addChar('G')">G</button>
+                    <button class="key" onclick="addChar('H')">H</button>
+                    <button class="key" onclick="addChar('J')">J</button>
+                    <button class="key" onclick="addChar('K')">K</button>
+                    <button class="key" onclick="addChar('L')">L</button>
+                </div>
+                <!-- QWERTY Row 3 + Utils -->
+                <div class="kb-row">
+                    <button class="key util" onclick="clearInput()">CLR</button>
+                    <button class="key" onclick="addChar('Z')">Z</button>
+                    <button class="key" onclick="addChar('X')">X</button>
+                    <button class="key" onclick="addChar('C')">C</button>
+                    <button class="key" onclick="addChar('V')">V</button>
+                    <button class="key" onclick="addChar('B')">B</button>
+                    <button class="key" onclick="addChar('N')">N</button>
+                    <button class="key" onclick="addChar('M')">M</button>
+                    <button class="key util" onclick="backspace()">⌫</button>
+                </div>
             </div>
 
-            <div class="numpad-grid">
-                <button class="num-btn" onclick="addNum('1')">1</button>
-                <button class="num-btn" onclick="addNum('2')">2</button>
-                <button class="num-btn" onclick="addNum('3')">3</button>
-                <button class="num-btn" onclick="addNum('4')">4</button>
-                <button class="num-btn" onclick="addNum('5')">5</button>
-                <button class="num-btn" onclick="addNum('6')">6</button>
-                <button class="num-btn" onclick="addNum('7')">7</button>
-                <button class="num-btn" onclick="addNum('8')">8</button>
-                <button class="num-btn" onclick="addNum('9')">9</button>
-                <button class="num-btn util" onclick="clearNum()">C</button>
-                <button class="num-btn" onclick="addNum('0')">0</button>
-                <button class="num-btn util" onclick="backspace()">⌫</button>
-            </div>
+            <button class="confirm-btn" id="confirmBtn" disabled>Continue</button>
         </div>
-
-        <button class="minimal-footer-btn" id="confirmBtn">Next</button>
     </div>
 
     <script>
         let inputString = "";
         const display = document.getElementById('display');
         const confirmBtn = document.getElementById('confirmBtn');
-        const maxLength = 12;
+        const maxLength = 6;
 
         function updateDisplay() {
-            let dots = inputString.padEnd(maxLength, "_");
-            display.innerText = dots;
-            confirmBtn.classList.toggle('active', inputString.length === maxLength);
+            let formatted = inputString.padEnd(maxLength, "_");
+            display.innerText = formatted;
+            
+            const isComplete = inputString.length === maxLength;
+            confirmBtn.disabled = !isComplete;
+            confirmBtn.classList.toggle('active', isComplete);
         }
 
-        function addNum(num) {
+        function addChar(char) {
             if (inputString.length < maxLength) {
-                inputString += num;
+                inputString += char;
                 updateDisplay();
             }
         }
 
-        function clearNum() {
+        function clearInput() {
             inputString = "";
             updateDisplay();
         }
@@ -71,8 +286,6 @@
             if (inputString.length === maxLength) {
                 localStorage.setItem('teopayCardId', inputString);
                 window.location.href = '../html/mpinteopay.html';
-            } else {
-                alert('Please enter complete 12-digit Card ID');
             }
         });
 
