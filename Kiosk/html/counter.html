@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Teo D' Mango - Order Entry</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* Using the specific relative path provided */
+            background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), 
+                        url('../Images/teoDMangoBG.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 1.5rem;
+            left: 1.5rem;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            width: 3rem;
+            height: 3rem;
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            cursor: pointer;
+            color: #222;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .content-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+            z-index: 10;
+            width: 90%;
+            max-width: 420px;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        body.keyboard-open .content-wrapper {
+            transform: translateY(-130px);
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 2.5rem 2rem;
+            border-radius: 2rem;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.2rem;
+            width: 100%;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .minimal-title {
+            font-size: 1.6rem;
+            color: #1a1a1a;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: -0.8rem;
+            font-weight: 500;
+        }
+
+        .name-input {
+            width: 100%;
+            padding: 18px;
+            border-radius: 15px;
+            border: 2px solid rgba(0,0,0,0.06);
+            font-size: 1.6rem;
+            text-align: center;
+            font-weight: 800;
+            color: #222;
+            outline: none;
+            background: rgba(0,0,0,0.02);
+            transition: all 0.3s ease;
+        }
+
+        .name-input:focus {
+            border-color: #fbbc04;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(251, 188, 4, 0.1);
+        }
+
+        .btn-confirm {
+            background: #fbbc04;
+            color: #1a1a1a;
+            width: auto;
+            min-width: 180px;
+            padding: 14px 30px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            box-shadow: 0 6px 15px rgba(251, 188, 4, 0.25);
+            transition: all 0.2s;
+            margin-top: 0.5rem;
+        }
+
+        .btn-confirm:active {
+            transform: scale(0.97);
+            box-shadow: 0 2px 8px rgba(251, 188, 4, 0.2);
+        }
+
+        .keyboard-container {
+            position: fixed;
+            bottom: -500px;
+            left: 0;
+            width: 100%;
+            background: rgba(245, 245, 245, 0.98);
+            backdrop-filter: blur(20px);
+            padding: 12px 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            transition: bottom 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            z-index: 1000;
+            border-top: 1px solid rgba(0,0,0,0.1);
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.15);
+        }
+
+        .keyboard-container.show { bottom: 0; }
+        .kb-row { display: flex; justify-content: center; gap: 6px; width: 100%; }
+        .key {
+            background: white;
+            color: #000;
+            flex: 1;
+            height: 54px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            box-shadow: 0 1.5px 0 rgba(0,0,0,0.15);
+            cursor: pointer;
+            user-select: none;
+        }
+        .key:active { background: #e0e0e0; transform: translateY(1.5px); box-shadow: none; }
+        .key.space { flex: 4; font-size: 0.9rem; }
+        .key.done { flex: 2; background: #222; color: white; font-size: 0.9rem; }
+
+        #successOverlay {
+            position: fixed;
+            inset: 0;
+            background: white;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+        }
+
+        #successOverlay.active { display: flex; }
+
+        .check-circle {
+            width: 100px;
+            height: 100px;
+            background: #fbbc04;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes pop {
+            0% { transform: scale(0); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <button class="back-btn" onclick="history.back()">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    </button>
+
+    <div class="content-wrapper" id="contentWrapper">
+        <div class="glass-panel">
+            <h1 class="minimal-title">Customer Name</h1>
+            <p class="subtitle">Please enter your name for the order</p>
+            <input type="text" class="name-input" id="customerName" placeholder="TAP TO TYPE" readonly>
+            <button class="btn-confirm" onclick="processOrder()">Confirm Order</button>
+        </div>
+    </div>
+
+    <!-- Success Screen -->
+    <div id="successOverlay">
+        <div class="check-circle">
+            <svg viewBox="0 0 24 24" width="50" height="50" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h2 style="font-size: 1.8rem; font-weight: 900; color: #222;">ORDER PLACED</h2>
+        <p style="font-size: 1.1rem; color: #666; font-weight: 500; margin-top: 0.5rem;">Pay at the counter, please!</p>
+    </div>
+
+    <!-- Custom Keyboard -->
+    <div class="keyboard-container" id="keyboard">
+        <div class="kb-row">
+            <div class="key" onclick="type('Q')">Q</div><div class="key" onclick="type('W')">W</div><div class="key" onclick="type('E')">E</div><div class="key" onclick="type('R')">R</div><div class="key" onclick="type('T')">T</div><div class="key" onclick="type('Y')">Y</div><div class="key" onclick="type('U')">U</div><div class="key" onclick="type('I')">I</div><div class="key" onclick="type('O')">O</div><div class="key" onclick="type('P')">P</div>
+        </div>
+        <div class="kb-row">
+            <div class="key" onclick="type('A')">A</div><div class="key" onclick="type('S')">S</div><div class="key" onclick="type('D')">D</div><div class="key" onclick="type('F')">F</div><div class="key" onclick="type('G')">G</div><div class="key" onclick="type('H')">H</div><div class="key" onclick="type('J')">J</div><div class="key" onclick="type('K')">K</div><div class="key" onclick="type('L')">L</div>
+        </div>
+        <div class="kb-row">
+            <div class="key" onclick="type('Z')">Z</div><div class="key" onclick="type('X')">X</div><div class="key" onclick="type('C')">C</div><div class="key" onclick="type('V')">V</div><div class="key" onclick="type('B')">B</div><div class="key" onclick="type('N')">N</div><div class="key" onclick="type('M')">M</div><div class="key" style="flex: 1.5" onclick="del()">⌫</div>
+        </div>
+        <div class="kb-row">
+            <div class="key space" onclick="type(' ')">SPACE</div>
+            <div class="key done" onclick="closeKB()">DONE</div>
+        </div>
+    </div>
+
+    <script>
+        const input = document.getElementById('customerName');
+        const kb = document.getElementById('keyboard');
+        const overlay = document.getElementById('successOverlay');
+
+        input.addEventListener('click', (e) => {
+            e.stopPropagation();
+            kb.classList.add('show');
+            document.body.classList.add('keyboard-open');
+        });
+
+        function type(c) { input.value += c; }
+        function del() { input.value = input.value.slice(0, -1); }
+        function closeKB() { 
+            kb.classList.remove('show'); 
+            document.body.classList.remove('keyboard-open');
+        }
+
+        function processOrder() {
+            if (input.value.trim().length < 2) {
+                input.style.borderColor = "#ff4444";
+                setTimeout(() => input.style.borderColor = "rgba(0,0,0,0.06)", 1000);
+                return;
+            }
+
+            // Save the customer name for the receipt before navigating
+            localStorage.setItem('customerName', input.value.trim());
+
+            overlay.classList.add('active');
+            setTimeout(() => {
+                window.location.href = 'receipt.html';
+            }, 4000);
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!kb.contains(e.target) && e.target !== input) closeKB();
+        });
+    </script>
+</body>
+</html>

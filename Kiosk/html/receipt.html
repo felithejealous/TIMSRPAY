@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receipt - Teo D' Mango</title>
+    <style>
+        /* BASE STYLES */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            font-weight: 300;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f5f5f5;
+            background-image: url("../Images/teoDMangoBG.png");
+            background-size: cover;
+            background-position: center;
+            overflow: hidden;
+        }
+
+        /* RECEIPT CONTAINER */
+        .receipt {
+            width: 340px;
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            font-family: "Courier New", monospace;
+            max-height: 90vh;
+            overflow-y: scroll;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            animation: receiptSlideIn 0.8s ease-out;
+        }
+
+        @keyframes receiptSlideIn {
+            0% { transform: translateY(50px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        .receipt::-webkit-scrollbar { display: none; }
+
+        .receipt-order-number {
+            text-align: center;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+        }
+
+        .receipt-order-number p {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #888;
+            margin-bottom: 2px;
+            letter-spacing: 1px;
+        }
+
+        .receipt-order-number h1 {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: #ff6600;
+            margin: 0;
+            word-break: break-all;
+        }
+
+        .receipt-header {
+            text-align: center;
+            border-bottom: 1px dashed #000;
+            padding-bottom: 12px;
+            margin-bottom: 14px;
+        }
+
+        .receipt-header h2 { font-size: 20px; font-weight: 600; }
+        .receipt-header p { font-size: 12px; }
+
+        .receipt-info { font-size: 12px; margin-bottom: 12px; }
+        .receipt-info div { display: flex; justify-content: space-between; margin-bottom: 4px; }
+
+        .receipt-items {
+            border-top: 1px dashed #000;
+            border-bottom: 1px dashed #000;
+            padding: 10px 0;
+            margin: 12px 0;
+            font-size: 13px;
+            min-height: 40px;
+        }
+
+        .item-row { display: flex; justify-content: space-between; margin-bottom: 6px; }
+        .fee-row { font-style: italic; color: #444; }
+
+        .receipt-totals { font-size: 14px; }
+        .receipt-totals div { display: flex; justify-content: space-between; margin-bottom: 6px; }
+
+        .grand-total {
+            font-weight: 600;
+            font-size: 16px;
+            border-top: 1px solid #000;
+            padding-top: 8px;
+        }
+
+        .receipt-points {
+            margin: 15px 0;
+            padding: 10px 0;
+            text-align: center;
+            border-top: 1px dashed #ccc;
+        }
+
+        .points-row { display: flex; justify-content: space-between; font-size: 0.85rem; color: #555; margin-bottom: 10px; }
+        .points-highlight { color: #ffbf00; font-weight: 700; }
+
+        .qr-container { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 5px; }
+        .qr-code {
+            width: 100px; height: 100px;
+            background: #eee; display: flex;
+            align-items: center; justify-content: center;
+            border: 1px solid #ddd;
+        }
+        .qr-code img { width: 90%; height: 90%; image-rendering: pixelated; }
+        .qr-label { font-size: 9px; color: #777; text-transform: uppercase; }
+
+        .receipt-footer { text-align: center; font-size: 11px; margin-top: 14px; color: #444; line-height: 1.4; }
+
+        .receipt-btn {
+            width: 100%; margin-top: 16px;
+            padding: 14px; font-size: 15px;
+            font-weight: 700; background: #ffbf00;
+            border: none; border-radius: 30px;
+            cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            text-transform: uppercase; transition: transform 0.1s ease;
+        }
+
+        .receipt-btn:active { transform: scale(0.98); }
+
+        .print-overlay {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+            display: none; flex-direction: column;
+            justify-content: center; align-items: center;
+            z-index: 1000;
+        }
+
+        .spinner {
+            width: 40px; height: 40px;
+            border: 3px solid #eee;
+            border-top: 3px solid #ffbf00;
+            border-radius: 50%;
+            margin-bottom: 1.5rem;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .printing-paper {
+            width: 150px; height: 20px;
+            background: white; border: 1px solid #ddd;
+            margin-bottom: 10px;
+            animation: paperFlow 2s infinite ease-in-out;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        @keyframes paperFlow {
+            0% { height: 10px; opacity: 0; transform: translateY(-10px); }
+            50% { height: 60px; opacity: 1; }
+            100% { height: 80px; opacity: 0; transform: translateY(20px); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="receipt">
+    <div class="receipt-order-number">
+        <p id="labelType">ORDER IDENTIFIER</p>
+        <h1 id="topIdentifier">----</h1>
+    </div>
+
+    <div class="receipt-header">
+        <h2>TEO D' MANGO</h2>
+        <p>Official Receipt</p>
+        <p>Kiosk Order</p>
+    </div>
+
+    <div class="receipt-info">
+        <div><span>Order Type</span><span id="orderType">--</span></div>
+        <div id="tableRow" style="display: none;"><span>Table #</span><span id="tableNumber">--</span></div>
+        <div><span>Date</span><span id="orderDate">--/--/----</span></div>
+        <div><span>Time</span><span id="orderTime">--:--</span></div>
+        <div><span>Payment</span><span id="paymentMethod">--</span></div>
+    </div>
+
+    <div class="receipt-items" id="receiptItems">
+        <!-- Real Items from LocalStorage go here -->
+    </div>
+
+    <div class="receipt-totals">
+        <div><span>Subtotal (Net)</span><span id="subtotalAmount">₱0.00</span></div>
+        <div id="packagingRow" style="display: none;"><span>Bag Fee</span><span>₱1.00</span></div>
+        <div><span>Tax (12% Incl.)</span><span id="taxAmount">₱0.00</span></div>
+        <div class="grand-total">
+            <span>TOTAL</span>
+            <span id="totalAmount">₱0.00</span>
+        </div>
+    </div>
+
+    <div class="receipt-points" id="pointsSection">
+        <div class="points-row">
+            <span>Points Earned</span>
+            <span class="points-highlight">+ <span id="earnedPoints">0</span> pts</span>
+        </div>
+        
+        <div class="qr-container">
+            <div class="qr-code">
+                <img id="qrImage" src="" alt="Points QR">
+            </div>
+            <p class="qr-label">Scan to claim points</p>
+        </div>
+    </div>
+
+    <button class="receipt-btn" onclick="confirmOrder()">Okay, Got it!</button>
+
+    <div class="receipt-footer">
+        <p>Your mango-nificent day starts here!</p>
+        <p>Show this to our staff to collect your order.</p>
+    </div>
+</div>
+
+<div id="printOverlay" class="print-overlay">
+    <div class="printing-paper"></div>
+    <div class="spinner"></div>
+    <div class="print-content"><p style="font-family: 'Courier New', monospace; font-weight: bold; color: #444;">FINALIZING ORDER...</p></div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // GET REAL DATA FROM LOCAL STORAGE
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        const paymentMethod = localStorage.getItem('paymentMethod') || 'Cash';
+        const customerName = localStorage.getItem('customerName') || 'Guest';
+        const teoCardID = localStorage.getItem('teoCardID');
+        const orderType = localStorage.getItem('orderType') || 'Dine-in';
+        const tableNumber = localStorage.getItem('tableNumber');
+
+        // IDENTIFIER LOGIC
+        const labelType = document.getElementById('labelType');
+        const topIdentifier = document.getElementById('topIdentifier');
+
+        if (paymentMethod.toLowerCase().includes('teo') && teoCardID) {
+            labelType.innerText = "TEOPAY CARD NUMBER";
+            topIdentifier.innerText = teoCardID;
+        } else {
+            labelType.innerText = "CUSTOMER NAME";
+            topIdentifier.innerText = customerName;
+        }
+
+        // Basic Info
+        document.getElementById('orderType').innerText = orderType;
+        document.getElementById('paymentMethod').innerText = paymentMethod;
+        const now = new Date();
+        document.getElementById('orderDate').innerText = now.toLocaleDateString();
+        document.getElementById('orderTime').innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        if (orderType.toLowerCase() === 'dine-in' && tableNumber) {
+            document.getElementById('tableRow').style.display = 'flex';
+            document.getElementById('tableNumber').innerText = tableNumber;
+        }
+
+        // Render Real Items
+        const itemsContainer = document.getElementById('receiptItems');
+        let rawTotal = 0;
+        let totalQty = 0;
+
+        if (cart.length === 0) {
+            itemsContainer.innerHTML = '<p style="text-align:center">No items found.</p>';
+        } else {
+            cart.forEach(item => {
+                const qty = item.quantity || 1;
+                const price = parseFloat(item.price) || 0;
+                const lineTotal = qty * price;
+                rawTotal += lineTotal;
+                totalQty += qty;
+
+                const div = document.createElement('div');
+                div.className = 'item-row';
+                div.innerHTML = `<span>${qty}x ${item.name}</span><span>₱${lineTotal.toFixed(2)}</span>`;
+                itemsContainer.appendChild(div);
+            });
+        }
+
+        // Bag Fee Logic
+        let bagFee = 0;
+        if (orderType.toLowerCase() === 'take-out' && totalQty > 0) {
+            bagFee = 1.00;
+            document.getElementById('packagingRow').style.display = 'flex';
+            const bagDiv = document.createElement('div');
+            bagDiv.className = 'item-row fee-row';
+            bagDiv.innerHTML = `<span>1x Eco-Bag Fee</span><span>₱1.00</span>`;
+            itemsContainer.appendChild(bagDiv);
+        }
+
+        // Totals Calculations
+        const finalTotal = rawTotal + bagFee;
+        const subtotal = finalTotal / 1.12;
+        const taxAmount = finalTotal - subtotal;
+        const points = Math.floor(finalTotal / 10);
+
+        document.getElementById('subtotalAmount').innerText = `₱${subtotal.toFixed(2)}`;
+        document.getElementById('taxAmount').innerText = `₱${taxAmount.toFixed(2)}`;
+        document.getElementById('totalAmount').innerText = `₱${finalTotal.toFixed(2)}`;
+        document.getElementById('earnedPoints').innerText = points;
+
+        // Payment Method Check: Pay at Counter = No Points/QR on receipt
+        const isPayAtCounter = paymentMethod.toLowerCase().includes('counter');
+        
+        if (isPayAtCounter) {
+            document.getElementById('pointsSection').style.display = 'none';
+        } else {
+            const qrData = encodeURIComponent(`OrderID:${Date.now()}|Points:${points}|User:${customerName}|Card:${teoCardID || 'N/A'}`);
+            document.getElementById('qrImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${qrData}`;
+        }
+    });
+
+    /**
+     * Resets the entire transaction and clears LocalStorage 
+     * before returning to the start page.
+     */
+    function confirmOrder() {
+        document.getElementById('printOverlay').style.display = 'flex';
+        
+        // FULL RESET: Clear all keys related to the ordering process
+        const keysToClear = [
+            'cart', 
+            'paymentMethod', 
+            'teoCardID', 
+            'tableNumber', 
+            'orderType', 
+            'customerName',
+            'orderTotal',
+            'temp_order_id'
+        ];
+        
+        keysToClear.forEach(key => localStorage.removeItem(key));
+        
+        // Alternative: localStorage.clear(); // Use this if you want to wipe EVERYTHING
+        
+        // Delay to allow the "Finalizing" animation to play
+        setTimeout(() => { 
+            window.location.href = 'index.html'; 
+        }, 3000);
+    }
+</script>
+
+</body>
+</html>
