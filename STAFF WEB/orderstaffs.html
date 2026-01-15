@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Teo D' Mango | Order Queue</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #fcd34d;
+            --primary-dark: #f59e0b;
+            --dark: #111111;
+            --light: #f9fafb;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6; 
+            --text-muted: #6b7280;
+            --card-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--light); color: var(--dark); display: flex; min-height: 100vh; }
+
+        /* --- SIDEBAR --- */
+        aside {
+            width: 260px; background: white; height: 100vh; position: fixed;
+            border-right: 1px solid #e5e7eb; padding: 2rem 1.2rem; display: flex;
+            flex-direction: column; z-index: 900; transition: all 0.4s ease;
+        }
+        .sidebar-logo { padding: 10px 5px; margin-bottom: 2rem; text-align: center; }
+        .sidebar-logo img { max-width: 100%; height: auto; max-height: 60px; display: block; margin: 0 auto; }
+        
+        nav ul { list-style: none; }
+        nav a {
+            text-decoration: none; color: var(--text-muted); padding: 0.9rem 1.1rem;
+            display: flex; align-items: center; gap: 15px; font-weight: 600;
+            border-radius: 14px; margin-bottom: 0.5rem; transition: 0.2s;
+        }
+        nav li.active a { background: var(--primary); color: var(--dark); font-weight: 700; box-shadow: 0 4px 12px rgba(252, 211, 77, 0.2); }
+
+        /* --- MAIN CONTENT --- */
+        main { margin-left: 260px; flex: 1; padding: 2rem; transition: all 0.4s ease; width: 100%; }
+        
+        header { margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
+        .page-title { font-size: 1.8rem; font-weight: 800; letter-spacing: -1px; }
+
+        /* --- QUEUE LAYOUT --- */
+        .queue-container { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; height: calc(100vh - 120px); }
+        .queue-column { background: #eef2f6; border-radius: 20px; padding: 1.5rem; display: flex; flex-direction: column; overflow-y: hidden; }
+        .col-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 2px dashed #cbd5e1; }
+        .col-title { font-size: 1.2rem; font-weight: 800; display: flex; align-items: center; gap: 10px; }
+        .badge { padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; color: white; }
+        
+        .kiosk-col .badge { background: var(--info); }
+        .kiosk-col .col-title i { color: var(--info); }
+        .walkin-col .badge { background: var(--primary-dark); }
+        .walkin-col .col-title i { color: var(--primary-dark); }
+
+        .card-scroller { flex: 1; overflow-y: auto; padding-right: 5px; }
+
+        .ticket-card {
+            background: white; border-radius: 16px; padding: 1.2rem; margin-bottom: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04); border-left: 6px solid transparent;
+            cursor: pointer; transition: all 0.2s ease;
+        }
+        .ticket-card:hover { transform: translateY(-3px); box-shadow: 0 8px 15px rgba(0,0,0,0.08); }
+        .kiosk-col .ticket-card { border-left-color: var(--info); }
+        .walkin-col .ticket-card { border-left-color: var(--primary-dark); }
+
+        .ticket-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+        .ticket-id { font-weight: 800; font-size: 1.1rem; }
+        .ticket-time { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
+        .ticket-items { font-size: 0.95rem; color: #333; line-height: 1.4; margin-bottom: 12px; }
+        .ticket-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f3f4f6; padding-top: 10px; }
+        .status-pill { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--warning); }
+
+        /* --- POPUP OVERLAY --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+            z-index: 2000; display: none; justify-content: center; align-items: center;
+        }
+
+        .modal-content {
+            background: #fff; width: 90%; max-width: 420px; border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2); overflow: hidden; animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .modal-header { background: var(--dark); color: white; padding: 1.2rem 1.5rem; display: flex; justify-content: space-between; align-items: center; }
+        .receipt-body { padding: 2rem; background: #fffdf5; font-family: 'Courier New', Courier, monospace; }
+
+        /* Receipt Typography */
+        .receipt-item-row { display: flex; justify-content: space-between; font-weight: 700; font-size: 1rem; margin-top: 10px; }
+        .receipt-addon-row { 
+            display: flex; justify-content: space-between; font-size: 0.85rem; color: #555; 
+            padding-left: 20px; margin-top: 2px; position: relative;
+        }
+        .receipt-addon-row::before { content: "+"; position: absolute; left: 8px; font-size: 0.7rem; top: 2px; }
+
+        /* Special Request Note Box */
+        .receipt-note {
+            background: #fff; border: 1px dashed #9ca3af; padding: 12px; 
+            border-radius: 8px; font-size: 0.85rem; margin-top: 20px; 
+            color: #1f2937; font-family: 'Inter', sans-serif; /* Switch font for readability */
+            display: none; /* Hidden by default */
+        }
+        .receipt-note strong { color: var(--danger); text-transform: uppercase; font-size: 0.75rem; display: block; margin-bottom: 4px; }
+
+        .receipt-divider { border-bottom: 2px dashed #d1d5db; margin: 15px 0; }
+        .receipt-total { font-weight: 900; font-size: 1.2rem; display: flex; justify-content: space-between; margin-top: 10px; }
+
+        .modal-actions { padding: 1.5rem; background: white; border-top: 1px solid #eee; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .btn { border: none; padding: 1rem; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .btn-print { background: #e5e7eb; color: var(--dark); }
+        .btn-print:hover { background: #d1d5db; }
+        .btn-done { background: var(--success); color: white; }
+        .btn-done:hover { background: #059669; }
+        .close-icon { cursor: pointer; font-size: 1.5rem; }
+
+        /* RESPONSIVE */
+        @media screen and (max-width: 1200px) { aside { width: 85px; } aside span, .sidebar-logo { display: none; } nav a { justify-content: center; } main { margin-left: 85px; } }
+        @media screen and (max-width: 900px) { .queue-container { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; } }
+        @media screen and (max-width: 768px) { aside { width: 100%; height: 70px; bottom: 0; top: auto; flex-direction: row; padding: 0; } nav ul { display: flex; width: 100%; justify-content: space-around; } nav a { flex-direction: column; font-size: 0.6rem; padding: 8px; gap: 4px; } main { margin-left: 0; margin-bottom: 70px; padding: 1rem; } .queue-container { display: block; height: auto; } .queue-column { height: 500px; margin-bottom: 20px; } }
+    </style>
+</head>
+<body>
+
+    <aside>
+        <div class="sidebar-logo"><img src="logo.png" alt="Teo D' Mango"></div>
+        <nav>
+            <ul>
+                <li><a href="index.html"><i class="fa-solid fa-chart-line"></i> <span>Overview</span></a></li>
+                <li class="active"><a href="#"><i class="fa-solid fa-bell-concierge"></i> <span>Orders</span></a></li>
+                <li><a href="menustaff.html"><i class="fa-solid fa-receipt"></i> <span>Menu</span></a></li>
+                <li><a href="inventory.html"><i class="fa-solid fa-boxes-stacked"></i> <span>Inventory</span></a></li>
+                <li><a href="attendance.html"><i class="fa-solid fa-user-clock"></i> <span>Attendance</span></a></li>
+                <li><a href="topupstaff.html"><i class="fa-solid fa-credit-card"></i> <span>RPAY</span></a></li>
+                <li><a href="rewardsstaff.html"><i class="fa-solid fa-gift"></i> <span>Rewards</span></a></li>
+                <li style="margin-top: auto;"><a href="settings.html"><i class="fa-solid fa-gear"></i> <span>Settings</span></a></li>
+                <li><a href="index.html" style="color:var(--danger)"><i class="fa-solid fa-right-from-bracket"></i> <span>Log Out</span></a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main>
+        <header>
+            <div>
+                <h1 class="page-title">Active Orders</h1>
+                <p style="color: var(--text-muted);">Manage real-time incoming orders.</p>
+            </div>
+            <div style="text-align: right;">
+                <span style="font-weight: 800; font-size: 1.2rem; display: block;">24</span>
+                <span style="font-size: 0.8rem; color: var(--text-muted);">Pending Items</span>
+            </div>
+        </header>
+
+        <div class="queue-container">
+            
+            <div class="queue-column kiosk-col">
+                <div class="col-header">
+                    <div class="col-title"><i class="fa-solid fa-mobile-screen-button"></i> Kiosk Queue</div>
+                    <span class="badge">3 Active</span>
+                </div>
+                <div class="card-scroller">
+                    
+                    <div class="ticket-card" onclick='openOrder("K-104", "Kiosk", [
+                        {qty:"2x", name:"Mango Graham (L)", price:"220.00", addons:["Extra Pearl", "Less Ice"]},
+                        {qty:"1x", name:"Mineral Water", price:"20.00", addons:[]}
+                    ], "₱240.00", "Please add extra tissue and separate the pearls for the second cup.")'>
+                        <div class="ticket-header">
+                            <span class="ticket-id">#K-104</span>
+                            <span class="ticket-time">2m ago</span>
+                        </div>
+                        <div class="ticket-items">
+                            <strong>2x</strong> Mango Graham (L)<br>
+                            <strong>1x</strong> Mineral Water
+                        </div>
+                        <div class="ticket-footer">
+                            <span class="status-pill"><i class="fa-solid fa-circle-notch fa-spin"></i> Preparing</span>
+                            <i class="fa-solid fa-chevron-right" style="color:#cbd5e1"></i>
+                        </div>
+                    </div>
+
+                    <div class="ticket-card" onclick='openOrder("K-105", "Kiosk", [
+                        {qty:"1x", name:"Avocado Dream (M)", price:"120.00", addons:["50% Sugar", "No Milk", "Extra Graham"]}
+                    ], "₱120.00", "")'>
+                        <div class="ticket-header">
+                            <span class="ticket-id">#K-105</span>
+                            <span class="ticket-time">5m ago</span>
+                        </div>
+                        <div class="ticket-items">
+                            <strong>1x</strong> Avocado Dream (M)<br>
+                            <small style="color:var(--text-muted)">3 Add-ons</small>
+                        </div>
+                        <div class="ticket-footer">
+                            <span class="status-pill" style="color: var(--danger)">Pending</span>
+                            <i class="fa-solid fa-chevron-right" style="color:#cbd5e1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="queue-column walkin-col">
+                <div class="col-header">
+                    <div class="col-title"><i class="fa-solid fa-cash-register"></i> Walk-In Queue</div>
+                    <span class="badge">2 Active</span>
+                </div>
+                <div class="card-scroller">
+                    
+                    <div class="ticket-card" onclick='openOrder("W-882", "Counter 1", [
+                        {qty:"4x", name:"Mango Loco (Family)", price:"680.00", addons:["Separate Sauce", "Extra Spoon"]}
+                    ], "₱680.00", "ALLERGY ALERT: No nuts on one serving.")'>
+                        <div class="ticket-header">
+                            <span class="ticket-id">#W-882</span>
+                            <span class="ticket-time">Just Now</span>
+                        </div>
+                        <div class="ticket-items">
+                            <strong>4x</strong> Mango Loco (Family)
+                        </div>
+                        <div class="ticket-footer">
+                            <span class="status-pill" style="color: var(--danger)">Pending Payment</span>
+                            <i class="fa-solid fa-chevron-right" style="color:#cbd5e1"></i>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal-overlay" id="orderModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h3 id="modalOrderId">Order #000</h3>
+                    <small id="modalSource" style="opacity: 0.8;">Source</small>
+                </div>
+                <i class="fa-solid fa-xmark close-icon" onclick="closeModal()"></i>
+            </div>
+            
+            <div class="receipt-body">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <h4 style="text-transform: uppercase; font-weight: 900;">Teo D' Mango</h4>
+                    <p style="font-size: 0.8rem;">Official Receipt</p>
+                </div>
+
+                <div class="receipt-divider"></div>
+                
+                <div id="receiptItems">
+                    </div>
+
+                <div id="receiptNote" class="receipt-note">
+                    <strong><i class="fa-solid fa-message"></i> Customer's Note: :</strong>
+                    <span id="receiptNoteText"></span>
+                </div>
+
+                <div class="receipt-divider"></div>
+
+                <div class="receipt-row receipt-item-row" style="font-size: 0.9rem;">
+                    <span>Subtotal</span>
+                    <span>--</span>
+                </div>
+                <div class="receipt-row receipt-item-row" style="font-size: 0.9rem;">
+                    <span>VAT (12%)</span>
+                    <span>--</span>
+                </div>
+                <div class="receipt-total">
+                    <span>TOTAL</span>
+                    <span id="modalTotal">₱0.00</span>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-print"><i class="fa-solid fa-print"></i> Print</button>
+                <button class="btn btn-done" onclick="closeModal()"><i class="fa-solid fa-check"></i> Complete</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const modal = document.getElementById('orderModal');
+        const noteContainer = document.getElementById('receiptNote');
+        const noteText = document.getElementById('receiptNoteText');
+        
+        // Updated Function: added 'note' parameter
+        function openOrder(id, source, items, total, note) {
+            document.getElementById('modalOrderId').innerText = id;
+            document.getElementById('modalSource').innerText = source + ' • ' + new Date().toLocaleTimeString();
+            document.getElementById('modalTotal').innerText = total;
+
+            // Handle Items
+            const itemsContainer = document.getElementById('receiptItems');
+            itemsContainer.innerHTML = ''; 
+
+            items.forEach(item => {
+                const itemRow = document.createElement('div');
+                itemRow.className = 'receipt-item-row';
+                itemRow.innerHTML = `<span>${item.qty} ${item.name}</span> <span>${item.price}</span>`;
+                itemsContainer.appendChild(itemRow);
+
+                if (item.addons && item.addons.length > 0) {
+                    item.addons.forEach(addon => {
+                        const addonRow = document.createElement('div');
+                        addonRow.className = 'receipt-addon-row';
+                        addonRow.innerHTML = `<span>${addon}</span>`; 
+                        itemsContainer.appendChild(addonRow);
+                    });
+                }
+            });
+
+            // Handle Note Visibility
+            if (note && note.trim() !== "") {
+                noteText.innerText = note;
+                noteContainer.style.display = 'block';
+            } else {
+                noteContainer.style.display = 'none';
+            }
+
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            modal.style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>

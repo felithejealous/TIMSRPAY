@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Teo D' Mango | Pro Inventory</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #fcd34d;
+            --primary-dark: #f59e0b;
+            --dark: #111111;
+            --light: #f9fafb;
+            --success: #10b981;
+            --danger: #ef4444;
+            --text-muted: #6b7280;
+            --card-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--light); color: var(--dark); display: flex; min-height: 100vh; transition: background 0.3s; }
+
+        /* --- ENHANCED RESPONSIVE SIDEBAR --- */
+        aside {
+            width: 260px; background: white; height: 100vh; position: fixed;
+            border-right: 1px solid #e5e7eb; padding: 2rem 1.2rem; display: flex;
+            flex-direction: column; z-index: 1000; transition: all 0.4s ease;
+        }
+        .sidebar-logo { padding: 10px 5px; margin-bottom: 2rem; text-align: center; }
+        .sidebar-logo img { max-width: 100%; height: auto; max-height: 70px; display: block; margin: 0 auto; }
+
+        nav ul { list-style: none; }
+        nav a {
+            text-decoration: none; color: var(--text-muted); padding: 0.9rem 1.1rem;
+            display: flex; align-items: center; gap: 15px; font-weight: 600;
+            border-radius: 14px; margin-bottom: 0.5rem; transition: 0.2s;
+        }
+        nav li.active a { background: var(--primary); color: var(--dark); font-weight: 700; box-shadow: 0 4px 12px rgba(252, 211, 77, 0.2); }
+
+        /* --- MAIN CONTENT AREA --- */
+        main { 
+            margin-left: 260px; 
+            flex: 1; 
+            padding: 2.5rem 3.5rem; 
+            transition: all 0.4s ease;
+        }
+
+        header { margin-bottom: 2.5rem; }
+        header h1 { font-size: clamp(1.8rem, 4vw, 2.2rem); letter-spacing: -1.5px; }
+
+        /* STAT CARDS (Fluid Grid) */
+        .stats-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 1.5rem; 
+            margin-bottom: 2.5rem; 
+        }
+        .stat-card { 
+            background: white; padding: 1.5rem; border-radius: 20px; 
+            box-shadow: var(--card-shadow); display: flex; align-items: center; gap: 1.2rem; 
+        }
+        .icon-circle { width: 45px; height: 45px; border-radius: 50%; display: grid; place-items: center; font-size: 1.1rem; }
+
+        /* TABLE CARD */
+        .card { background: white; border-radius: 24px; padding: 2rem; box-shadow: var(--card-shadow); }
+        .table-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;
+        }
+
+        .filter-tabs { display: flex; gap: 0.5rem; background: #f1f5f9; padding: 0.4rem; border-radius: 12px; }
+        .tab { padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 0.85rem; color: var(--text-muted); transition: 0.2s; }
+        .tab.active { background: white; color: var(--dark); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+
+        /* TABLE RESPONSIVE */
+        .table-responsive { overflow-x: auto; width: 100%; border-radius: 12px; }
+        table { width: 100%; border-collapse: collapse; min-width: 700px; }
+        th { text-align: left; color: var(--text-muted); font-size: 0.75rem; padding: 1.2rem; text-transform: uppercase; border-bottom: 2px solid #f1f5f9; }
+        td { padding: 1.2rem; border-bottom: 1px solid #f1f5f9; font-size: 0.95rem; }
+
+        .progress-wrapper { width: 100px; background: #e2e8f0; height: 8px; border-radius: 10px; overflow: hidden; margin-top: 5px; }
+        .progress-fill { height: 100%; border-radius: 10px; }
+
+        .btn-edit { background: #f3f4f6; border: none; padding: 0.6rem 1rem; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 0.85rem; }
+        .btn-edit:hover { background: var(--dark); color: white; }
+
+        /* MODAL */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(17, 24, 39, 0.7); backdrop-filter: blur(5px); z-index: 2000; place-items: center; padding: 1rem; }
+        .modal-content { background: white; padding: 2rem; border-radius: 24px; width: 100%; max-width: 450px; box-shadow: var(--card-shadow); }
+
+        .save-btn { width: 100%; background: var(--dark); color: white; padding: 1rem; border: none; border-radius: 14px; font-weight: 800; cursor: pointer; transition: 0.3s; }
+        .save-btn:hover { background: var(--primary-dark); color: var(--dark); }
+
+        /* --- MEDIA QUERIES --- */
+
+        /* TABLET OPTIMIZATION */
+        @media screen and (max-width: 1024px) {
+            aside { width: 85px; padding: 2rem 0.5rem; }
+            aside span, .sidebar-logo img { display: none; }
+            nav a { justify-content: center; padding: 1.2rem; }
+            main { margin-left: 85px; padding: 2rem; }
+        }
+
+        /* MOBILE OPTIMIZATION */
+        @media screen and (max-width: 768px) {
+            aside {
+                width: 100%; height: 70px; position: fixed; bottom: 0; top: auto;
+                flex-direction: row; border-right: none; border-top: 1px solid #e5e7eb; padding: 0;
+            }
+            .sidebar-logo { display: none; }
+            nav ul { display: flex; justify-content: space-around; align-items: center; height: 100%; width: 100%; }
+            nav li { margin-bottom: 0; }
+            nav a { flex-direction: column; gap: 4px; font-size: 0.65rem; padding: 8px; border-radius: 0; }
+            nav li.active a { background: none; color: var(--primary-dark); box-shadow: none; }
+            
+            main { margin-left: 0; margin-bottom: 80px; padding: 1.5rem; }
+            header { text-align: center; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .card { padding: 1.5rem; }
+            .table-header { flex-direction: column; align-items: stretch; }
+        }
+    </style>
+</head>
+<body>
+
+    <aside>
+        <div class="sidebar-logo"><img src="logo.png" alt="Teo D' Mango"></div>
+        <nav>
+            <ul>
+                <li><a href="overview.html"><i class="fa-solid fa-chart-line"></i> <span>Overview</span></a></li>
+                <li><a href="orderstaffs.html"><i class="fa-solid fa-bell-concierge"></i> <span>Orders</span></a></li>
+                <li><a href="menustaff.html"><i class="fa-solid fa-receipt"></i> <span>Menu</span></a></li>
+                <li class="active"><a href="#"><i class="fa-solid fa-boxes-stacked"></i> <span>Inventory</span></a></li>
+                <li><a href="dashboardstaff.html"><i class="fa-solid fa-user-clock"></i> <span>Attendance</span></a></li>
+                <li><a href="topupstaff.html"><i class="fa-solid fa-credit-card"></i> <span>RPAY</span></a></li>
+                <li><a href="rewardsstaff.html"><i class="fa-solid fa-gift"></i> <span>Rewards</span></a></li>
+                <li style="margin-top: auto;"><a href="dashaccsettstaff.html"><i class="fa-solid fa-gear"></i> <span>Settings</span></a></li>
+                <li><a href="index.html" style="color:var(--danger)"><i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main>
+        <header>
+            <h1>Inventory Management</h1>
+            <p style="color: var(--text-muted);">Real-time tracking of ingredients and supplies.</p>
+        </header>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="icon-circle" style="background: #e0f2fe; color: #0369a1;"><i class="fa-solid fa-layer-group"></i></div>
+                <div>
+                    <h4 style="font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted);">Total Items</h4>
+                    <div style="font-size: 1.3rem; font-weight: 800;">24</div>
+                </div>
+            </div>
+            <div class="stat-card" style="border-bottom: 4px solid var(--danger);">
+                <div class="icon-circle" style="background: #fee2e2; color: var(--danger);"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                <div>
+                    <h4 style="font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted);">Low Stock</h4>
+                    <div style="font-size: 1.3rem; font-weight: 800; color: var(--danger);">3</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="icon-circle" style="background: #dcfce7; color: var(--success);"><i class="fa-solid fa-rotate"></i></div>
+                <div>
+                    <h4 style="font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted);">Refilled</h4>
+                    <div style="font-size: 1.3rem; font-weight: 800; color: var(--success);">8</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="icon-circle" style="background: #fef3c7; color: #92400e;"><i class="fa-solid fa-tags"></i></div>
+                <div>
+                    <h4 style="font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted);">Categories</h4>
+                    <div style="font-size: 1.3rem; font-weight: 800;">5</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="table-header">
+                <div class="filter-tabs">
+                    <div class="tab active">All Items</div>
+                    <div class="tab">Low Stock</div>
+                </div>
+                <button class="save-btn" style="width: auto; padding: 0.7rem 1.5rem;">+ Add Item</button>
+            </div>
+
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Item Details</th>
+                            <th>Category</th>
+                            <th>Stock Level</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Fresh Mangoes</strong><br><small style="color: var(--text-muted);">Kilograms (kg)</small></td>
+                            <td>Fruits</td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <strong>12 / 50</strong>
+                                    <div class="progress-wrapper">
+                                        <div class="progress-fill" style="width: 24%; background: var(--danger);"></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span style="color: var(--danger); font-weight: 800; font-size: 0.75rem;">● LOW STOCK</span></td>
+                            <td><button class="btn-edit" onclick="showModal('Fresh Mangoes', 12)">Update</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <div id="updateModal" class="modal">
+        <div class="modal-content">
+            <h2 style="margin-bottom: 1.5rem; letter-spacing: -1px;">Update Stock</h2>
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 8px;">Item Name</label>
+                <input type="text" id="modalItemName" disabled style="width:100%; padding:14px; border:2px solid #edf2f7; border-radius:12px; background: #f8fafc;">
+            </div>
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 8px;">Current Qty</label>
+                <input type="number" id="modalQty" style="width:100%; padding:14px; border:2px solid #edf2f7; border-radius:12px; outline:none;">
+            </div>
+            <button class="save-btn" onclick="saveData()">Confirm Refill</button>
+            <button onclick="hideModal()" style="width: 100%; background: none; border: none; margin-top: 1rem; color: var(--text-muted); cursor: pointer; font-weight: 600;">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        const modal = document.getElementById('updateModal');
+        function showModal(name, qty) {
+            document.getElementById('modalItemName').value = name;
+            document.getElementById('modalQty').value = qty;
+            modal.style.display = 'grid';
+        }
+        function hideModal() { modal.style.display = 'none'; }
+        function saveData() { alert(`Stock updated successfully!`); hideModal(); }
+    </script>
+</body>
+</html>
