@@ -15,14 +15,22 @@ class RegisterResponse(BaseModel):
 
 
 # ---------- ORDERS ----------
+class OrderItemAddOnCreate(BaseModel):
+    add_on_id: int
+    qty: int = 1
+
+
 class OrderItemCreate(BaseModel):
     product_id: int
     quantity: int
-    price: Decimal  # price per item at time of order
+
+    # per item customization
+    size: Optional[str] = "Small"  # "Small" | "Medium" | "Large"
+    add_ons: Optional[List[OrderItemAddOnCreate]] = []
 
 
 class OrderCreate(BaseModel):
     user_id: int
     order_type: str  # "kiosk" or "online"
     items: List[OrderItemCreate]
-    payment_method: Optional[str] = None  # optional for now
+    payment_method: Optional[str] = None  # e.g. "wallet" | "cash"
