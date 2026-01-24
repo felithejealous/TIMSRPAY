@@ -1,25 +1,15 @@
-import os
-from flask import Flask
-from flask_migrate import Migrate
-from flask_cors import CORS
-from models import db
-import routes  # we'll create this next
+from fastapi import FastAPI
+from routers.auth import router as auth_router
+from routers.orders import router as orders_router
+from routers.wallet import router as wallet_router  
 
-def create_app():
-    app = Flask(__name__)
-    # Load DB connection from environment
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-    db.init_app(app)
-    migrate = Migrate(app, db)
-    CORS(app)
+app = FastAPI(title="TIMS-RPAY API")
 
-    # Register routes
-    routes.init_app(app)
+app.include_router(auth_router)
+app.include_router(orders_router)
+app.include_router(wallet_router)
 
-    return app
-
-if __name__ == "__main__":
-    app = create_app()
-    app.run(host="0.0.0.0", port=5000, debug=True)
+@app.get("/")
+def root():
+    return {"message": "Backend is running"}
