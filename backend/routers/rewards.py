@@ -341,6 +341,39 @@ def request_manual_points_otp(
         "expires_at": str(row.expires_at)
     }
 
+############### POINTS ENDPOINTS PARAM
+@router.get("/points/history")
+def get_my_reward_points_history(
+    user_id: int,
+    limit: int = 20,
+    db: Session = Depends(get_db),
+):
+    rw = _get_reward_wallet(db, user_id)
+
+    rows = (
+        db.query(RewardTransaction)
+        .filter(RewardTransaction.reward_wallet_id == rw.id)
+        .order_by(RewardTransaction.id.desc())
+        .limit(limit)
+        .all()
+    )
+
+    return {
+        "user_id": user_id,
+        "total_points": int(rw.total_points or 0),
+        "transactions": [
+            {
+                "id": r.id,
+                "points_change": int(r.points_change),
+                "transaction_type": r.transaction_type,
+                "order_id": r.order_id,
+                "created_at": str(r.created_at),
+            }
+            for r in rows
+        ]
+    }
+
+
 
 # ============================================================
 # 4) STAFF — CONFIRM OTP + ADD POINTS (HARDENED)
