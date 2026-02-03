@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, Boolean, Text, ForeignKey, Numeric, DateTime, Text
 from sqlalchemy.sql import func
 from database import Base
+from sqlalchemy.orm import relationship
 
 class Role(Base):
     __tablename__ = "roles"
@@ -31,6 +32,9 @@ class Wallet(Base):
     user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
     balance = Column(Numeric(12, 2), default=0)
 
+    pin_hash = Column(Text, nullable=True)  
+
+
 class RewardWallet(Base):
     __tablename__ = "reward_wallets"
 
@@ -45,9 +49,11 @@ class Product(Base):
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
     name = Column(String(150), nullable=False)
     price = Column(Numeric(12, 2), nullable=False)
-    is_active = Column(Boolean, default=True)
 
-    # ADD  (already exists in dB, just missing in SLAlchemy model)
+    is_active = Column(Boolean, default=True)
+    is_available = Column(Boolean, default=True, nullable=False)  # ✅ ADD THIS
+
+    # already exists in DB
     points_per_unit = Column(Integer, default=0, nullable=False)
 
 
@@ -135,7 +141,7 @@ class WalletTransaction(Base):
     __tablename__ = "wallet_transactions"
 
     id = Column(Integer, primary_key=True, index=True)
-    wallet_id = Column(Integer, ForeignKey("wallets.id"), nullable=False)
+    wallet_id = Column(Integer, ForeignKey("wallets.id"), nullable=True)
     order_id = Column(Integer, ForeignKey("orders.id"), nullable=True)
 
     amount = Column(Numeric(12, 2), nullable=False)
@@ -152,6 +158,16 @@ class InventoryMaster(Base):
     is_active = Column(Boolean, nullable=False, default=True)
     updated_at = Column(DateTime(timezone=False), server_default=func.now(), onupdate=func.now())
 
+class InventoryMasterMovement(Base):
+    __tablename__ = "inventory_master_movements"
+
+    id = Column(Integer, primary_key=True, index=True)
+    inventory_master_id = Column(Integer, ForeignKey("inventory_master.id"), nullable=False)
+    change_qty = Column(Numeric(12, 4), nullable=False)
+    reason = Column(String(50), nullable=False)
+    ref_order_id = Column(Integer, ForeignKey("orders.id"), nullable=True)
+    created_at = Column(DateTime(timezone=False), server_default=func.now())
+
 
 class ProductRecipe(Base):
     __tablename__ = "product_recipe"
@@ -161,3 +177,83 @@ class ProductRecipe(Base):
     inventory_master_id = Column(Integer, ForeignKey("inventory_master.id"), nullable=False)
     qty_used = Column(Numeric(12, 2), nullable=False)
 
+class RewardRedemptionToken(Base):
+    __tablename__ = "reward_redemption_tokens"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+
+    token = Column(String(80), unique=True, index=True, nullable=False)
+
+    # rule snapshot at time of generation (helpful for auditing)
+    required_points = Column(Integer, nullable=False, default=2800)
+
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+    used_at = Column(DateTime(timezone=True), nullable=True)
+
+    is_used = Column(Boolean, nullable=False, default=False)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    # optional relationship
+    user = relationship("User", backref="reward_redemption_tokens")
+
+
+class Category(Base):
+    __tablename__ = "categories"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(150), nullable=False, unique=True)
+    is_active = Column(Boolean, default=True)
+
+class AttendanceLog(Base):
+    __tablename__ = "attendance_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    staff_id = Column(Integer, index=True, nullable=False)  # keep simple (no FK para iwas metadata issues)
+    time_in = Column(DateTime, nullable=False, server_default=func.now())
+    time_out = Column(DateTime, nullable=True)
+
+class StaffProfile(Base):
+    __tablename__ = "staff_profiles"
+
+    user_id = Column(Integer, primary_key=True, index=True)  # same as users.id
+    full_name = Column(String(150), nullable=False)
+    position = Column(String(100), nullable=True)
+
+class PasswordResetToken(Base):
+    __tablename__ = "password_reset_tokens"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+
+    # store HASH only
+    token_hash = Column(Text, nullable=False)
+
+    expires_at = Column(DateTime(timezone=False), nullable=False)
+
+    # security hardening
+    attempts = Column(Integer, nullable=False, default=0)
+
+    is_used = Column(Boolean, nullable=False, default=False)
+    used_at = Column(DateTime(timezone=False), nullable=True)
+
+    created_at = Column(DateTime(timezone=False), server_default=func.now(), nullable=False)
+
+class RewardManualOTP(Base):
+    __tablename__ = "reward_manual_otp"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+
+    otp_hash = Column(Text, nullable=False)
+    expires_at = Column(DateTime(timezone=False), nullable=False)
+
+    # ✅ HARDENING
+    attempt_count = Column(Integer, nullable=False, default=0)
+    last_attempt_at = Column(DateTime(timezone=False), nullable=True)
+
+    is_used = Column(Boolean, nullable=False, default=False)
+    used_at = Column(DateTime(timezone=False), nullable=True)
+
+    created_at = Column(DateTime(timezone=False), server_default=func.now(), nullable=False)
