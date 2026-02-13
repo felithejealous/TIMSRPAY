@@ -1,14 +1,18 @@
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Header, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 from datetime import datetime
 
 from database import SessionLocal
-from models import AttendanceLog, User, Role, StaffProfile
+from models import AttendanceLog, User, StaffProfile
+
+# ✅ JWT security
+from security import get_current_user, require_roles
 
 router = APIRouter(prefix="/attendance", tags=["Attendance"])
+
 
 # -----------------------
 # DB
@@ -20,31 +24,17 @@ def get_db():
     finally:
         db.close()
 
-# -----------------------
-# GUARDS
-# -----------------------
-def require_staff_or_higher(
-    x_role: str = Header(default="", alias="X-Role", description="staff|cashier|admin")
-):
-    if (x_role or "").strip().lower() not in {"staff", "cashier", "admin"}:
-        raise HTTPException(status_code=403, detail="Staff only (set header X-Role: staff)")
-    return True
-
-def require_admin(
-    x_role: str = Header(default="", alias="X-Role", description="admin")
-):
-    if (x_role or "").strip().lower() != "admin":
-        raise HTTPException(status_code=403, detail="Admin only (set header X-Role: admin)")
-    return True
 
 # -----------------------
 # SCHEMAS
 # -----------------------
 class ClockInPayload(BaseModel):
-    staff_id: int  # this should be users.id
+    staff_id: Optional[int] = None  # ✅ optional; if None => self
+
 
 class ClockOutPayload(BaseModel):
-    staff_id: int
+    staff_id: Optional[int] = None  # ✅ optional; if None => self
+
 
 # -----------------------
 # HELPERS
@@ -54,7 +44,7 @@ def _ensure_staff_exists(db: Session, staff_id: int):
     if not u:
         raise HTTPException(status_code=404, detail="Staff user not found")
 
-    if not u.is_active:
+    if hasattr(u, "is_active") and not bool(u.is_active):
         raise HTTPException(status_code=400, detail="Staff user is inactive")
 
     sp = db.query(StaffProfile).filter(StaffProfile.user_id == staff_id).first()
@@ -63,6 +53,25 @@ def _ensure_staff_exists(db: Session, staff_id: int):
 
     return u, sp
 
+
+def _resolve_staff_id(payload_staff_id: Optional[int], current_user: User) -> int:
+    """
+    ✅ Security rule:
+    - staff/cashier can only act on themselves
+    - admin can act on anyone
+    """
+    if payload_staff_id is None:
+        return int(current_user.id)
+
+    payload_staff_id = int(payload_staff_id)
+
+    role = getattr(current_user, "role_name", "customer")
+    if role != "admin" and payload_staff_id != int(current_user.id):
+        raise HTTPException(status_code=403, detail="You can only clock in/out your own account")
+
+    return payload_staff_id
+
+
 # -----------------------
 # ENDPOINTS
 # -----------------------
@@ -70,9 +79,10 @@ def _ensure_staff_exists(db: Session, staff_id: int):
 def clock_in(
     payload: ClockInPayload,
     db: Session = Depends(get_db),
-    _: bool = Depends(require_staff_or_higher),
+    current_user: User = Depends(get_current_user),
+    _: User = Depends(require_roles("staff", "cashier", "admin")),
 ):
-    staff_id = int(payload.staff_id)
+    staff_id = _resolve_staff_id(payload.staff_id, current_user)
     _ensure_staff_exists(db, staff_id)
 
     # block if already has open shift
@@ -101,9 +111,10 @@ def clock_in(
 def clock_out(
     payload: ClockOutPayload,
     db: Session = Depends(get_db),
-    _: bool = Depends(require_staff_or_higher),
+    current_user: User = Depends(get_current_user),
+    _: User = Depends(require_roles("staff", "cashier", "admin")),
 ):
-    staff_id = int(payload.staff_id)
+    staff_id = _resolve_staff_id(payload.staff_id, current_user)
     _ensure_staff_exists(db, staff_id)
 
     row = db.query(AttendanceLog).filter(
@@ -131,17 +142,23 @@ def clock_out(
 def attendance_status(
     staff_id: int,
     db: Session = Depends(get_db),
-    _: bool = Depends(require_staff_or_higher),
+    current_user: User = Depends(get_current_user),
+    _: User = Depends(require_roles("staff", "cashier", "admin")),
 ):
-    _ensure_staff_exists(db, staff_id)
+    # ✅ staff/cashier can only view their own status; admin can view anyone
+    role = getattr(current_user, "role_name", "customer")
+    if role != "admin" and int(staff_id) != int(current_user.id):
+        raise HTTPException(status_code=403, detail="You can only view your own attendance status")
+
+    _ensure_staff_exists(db, int(staff_id))
 
     row = db.query(AttendanceLog).filter(
-        AttendanceLog.staff_id == staff_id,
+        AttendanceLog.staff_id == int(staff_id),
         AttendanceLog.time_out.is_(None)
     ).order_by(desc(AttendanceLog.id)).first()
 
     return {
-        "staff_id": staff_id,
+        "staff_id": int(staff_id),
         "is_clocked_in": bool(row),
         "open_attendance_id": row.id if row else None,
         "time_in": str(row.time_in) if row else None,
@@ -153,7 +170,7 @@ def list_attendance_logs(
     staff_id: Optional[int] = Query(default=None),
     limit: int = Query(default=50, ge=1, le=500),
     db: Session = Depends(get_db),
-    _: bool = Depends(require_admin),
+    _: User = Depends(require_roles("admin")),
 ):
     q = db.query(AttendanceLog)
 

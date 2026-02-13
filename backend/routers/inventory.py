@@ -1,8 +1,6 @@
-from typing import Optional, List
+from typing import Optional
 from decimal import Decimal
-from datetime import datetime
-
-from fastapi import APIRouter, Depends, HTTPException, Header, Query
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from sqlalchemy import func as sa_func
@@ -10,7 +8,12 @@ from sqlalchemy import func as sa_func
 from database import SessionLocal
 from models import InventoryMaster, InventoryMasterMovement
 
+# ✅ JWT + role guards
+from security import require_roles, get_current_user  # get_current_user optional if you want to return who did what
+from models import User  # for type hints only
+
 router = APIRouter(prefix="/inventory", tags=["Inventory"])
+
 
 # -----------------------
 # DB
@@ -21,25 +24,6 @@ def get_db():
         yield db
     finally:
         db.close()
-
-
-# -----------------------
-# GUARDS (TEMP HEADER)
-# -----------------------
-def require_staff(
-    x_role: str = Header(default="", alias="X-Role", description="staff | cashier | admin")
-):
-    if (x_role or "").strip().lower() not in {"staff", "cashier", "admin"}:
-        raise HTTPException(status_code=403, detail="Staff only (set header X-Role: staff)")
-    return True
-
-
-def require_admin(
-    x_role: str = Header(default="", alias="X-Role", description="admin")
-):
-    if (x_role or "").strip().lower() != "admin":
-        raise HTTPException(status_code=403, detail="Admin only (set header X-Role: admin)")
-    return True
 
 
 # -----------------------
@@ -84,17 +68,15 @@ def _get_item(db: Session, inventory_master_id: int) -> InventoryMaster:
 
 # =========================================================
 # 1) LIST INVENTORY MASTER
+# staff/cashier/admin
 # =========================================================
-@router.get(
-    "/master",
-    operation_id="inventory_list_master_v1"
-)
+@router.get("/master", operation_id="inventory_list_master_v1")
 def list_inventory_master(
     only_active: bool = True,
     q: Optional[str] = None,
     limit: int = 200,
     db: Session = Depends(get_db),
-    _: bool = Depends(require_staff),
+    _: User = Depends(require_roles("staff", "cashier", "admin")),
 ):
     query = db.query(InventoryMaster)
 
@@ -102,9 +84,7 @@ def list_inventory_master(
         query = query.filter(InventoryMaster.is_active == True)
 
     if q:
-        query = query.filter(
-            sa_func.lower(InventoryMaster.name).like(f"%{_normalize_name(q)}%")
-        )
+        query = query.filter(sa_func.lower(InventoryMaster.name).like(f"%{_normalize_name(q)}%"))
 
     rows = query.order_by(InventoryMaster.id.asc()).limit(limit).all()
 
@@ -119,21 +99,19 @@ def list_inventory_master(
                 "is_active": bool(r.is_active),
             }
             for r in rows
-        ]
+        ],
     }
 
 
 # =========================================================
 # 2) GET SINGLE ITEM
+# staff/cashier/admin
 # =========================================================
-@router.get(
-    "/master/{inventory_master_id}",
-    operation_id="inventory_get_master_v1"
-)
+@router.get("/master/{inventory_master_id}", operation_id="inventory_get_master_v1")
 def get_inventory_master_item(
     inventory_master_id: int,
     db: Session = Depends(get_db),
-    _: bool = Depends(require_staff),
+    _: User = Depends(require_roles("staff", "cashier", "admin")),
 ):
     r = _get_item(db, inventory_master_id)
     return {
@@ -146,28 +124,24 @@ def get_inventory_master_item(
 
 
 # =========================================================
-# 3) CREATE NEW INVENTORY ITEM (admin)
+# 3) CREATE NEW INVENTORY ITEM
+# admin only
 # =========================================================
-@router.post(
-    "/master",
-    operation_id="inventory_create_master_v1"
-)
+@router.post("/master", operation_id="inventory_create_master_v1")
 def create_inventory_master_item(
     payload: InventoryCreate,
     db: Session = Depends(get_db),
-    _: bool = Depends(require_admin),
+    _: User = Depends(require_roles("admin")),
 ):
     name_norm = _normalize_name(payload.name)
     if not name_norm:
         raise HTTPException(status_code=400, detail="name is required")
 
-    exists = db.query(InventoryMaster).filter(
-        sa_func.lower(InventoryMaster.name) == name_norm
-    ).first()
+    exists = db.query(InventoryMaster).filter(sa_func.lower(InventoryMaster.name) == name_norm).first()
     if exists:
         raise HTTPException(
             status_code=400,
-            detail=f"Item already exists: {exists.name} (id={exists.id})"
+            detail=f"Item already exists: {exists.name} (id={exists.id})",
         )
 
     row = InventoryMaster(
@@ -185,7 +159,7 @@ def create_inventory_master_item(
                 inventory_master_id=row.id,
                 change_qty=Decimal(str(payload.quantity)),
                 reason="create_initial_stock",
-                ref_order_id=None
+                ref_order_id=None,
             )
         )
 
@@ -203,17 +177,15 @@ def create_inventory_master_item(
 
 
 # =========================================================
-# 4) UPDATE ITEM (admin)
+# 4) UPDATE ITEM
+# admin only
 # =========================================================
-@router.patch(
-    "/master/{inventory_master_id}",
-    operation_id="inventory_update_master_v1"
-)
+@router.patch("/master/{inventory_master_id}", operation_id="inventory_update_master_v1")
 def update_inventory_master_item(
     inventory_master_id: int,
     payload: InventoryUpdate,
     db: Session = Depends(get_db),
-    _: bool = Depends(require_admin),
+    _: User = Depends(require_roles("admin")),
 ):
     row = _get_item(db, inventory_master_id)
 
@@ -224,14 +196,13 @@ def update_inventory_master_item(
 
         dup = db.query(InventoryMaster).filter(
             sa_func.lower(InventoryMaster.name) == new_name_norm,
-            InventoryMaster.id != row.id
+            InventoryMaster.id != row.id,
         ).first()
         if dup:
             raise HTTPException(
                 status_code=400,
-                detail=f"Another item already has this name: {dup.name} (id={dup.id})"
+                detail=f"Another item already has this name: {dup.name} (id={dup.id})",
             )
-
         row.name = payload.name.strip()
 
     if payload.unit is not None:
@@ -257,16 +228,14 @@ def update_inventory_master_item(
 
 # =========================================================
 # 5) RESTOCK
+# staff/cashier/admin (✅ up to you; if gusto mo admin only, sabihin mo)
 # =========================================================
-@router.post(
-    "/master/{inventory_master_id}/restock",
-    operation_id="inventory_restock_master_v1"
-)
+@router.post("/master/{inventory_master_id}/restock", operation_id="inventory_restock_master_v1")
 def restock_inventory_master_item(
     inventory_master_id: int,
     payload: RestockPayload,
     db: Session = Depends(get_db),
-    _: bool = Depends(require_staff),
+    _: User = Depends(require_roles("staff", "cashier", "admin")),
 ):
     row = _get_item(db, inventory_master_id)
 
@@ -284,7 +253,7 @@ def restock_inventory_master_item(
             inventory_master_id=row.id,
             change_qty=add,
             reason=(payload.reason or "restock").strip(),
-            ref_order_id=None
+            ref_order_id=None,
         )
     )
 
@@ -302,16 +271,14 @@ def restock_inventory_master_item(
 
 # =========================================================
 # 6) ADJUST (+/-)
+# admin only
 # =========================================================
-@router.post(
-    "/master/{inventory_master_id}/adjust",
-    operation_id="inventory_adjust_master_v1"
-)
+@router.post("/master/{inventory_master_id}/adjust", operation_id="inventory_adjust_master_v1")
 def adjust_inventory_master_item(
     inventory_master_id: int,
     payload: AdjustPayload,
     db: Session = Depends(get_db),
-    _: bool = Depends(require_admin),
+    _: User = Depends(require_roles("admin")),
 ):
     row = _get_item(db, inventory_master_id)
 
@@ -330,7 +297,7 @@ def adjust_inventory_master_item(
             inventory_master_id=row.id,
             change_qty=change,
             reason=(payload.reason or "adjustment").strip(),
-            ref_order_id=None
+            ref_order_id=None,
         )
     )
 
@@ -348,16 +315,14 @@ def adjust_inventory_master_item(
 
 # =========================================================
 # 7) MOVEMENT LOGS
+# staff/cashier/admin
 # =========================================================
-@router.get(
-    "/master/{inventory_master_id}/movements",
-    operation_id="inventory_master_movements_v1"
-)
+@router.get("/master/{inventory_master_id}/movements", operation_id="inventory_master_movements_v1")
 def get_inventory_master_movements(
     inventory_master_id: int,
     limit: int = 100,
     db: Session = Depends(get_db),
-    _: bool = Depends(require_staff),
+    _: User = Depends(require_roles("staff", "cashier", "admin")),
 ):
     _ = _get_item(db, inventory_master_id)
 
@@ -378,8 +343,8 @@ def get_inventory_master_movements(
                 "change_qty": float(Decimal(str(r.change_qty))),
                 "reason": r.reason,
                 "ref_order_id": getattr(r, "ref_order_id", None),
-                "created_at": str(getattr(r, "created_at", "")) if hasattr(r, "created_at") else None
+                "created_at": str(getattr(r, "created_at", "")) if hasattr(r, "created_at") else None,
             }
             for r in rows
-        ]
+        ],
     }

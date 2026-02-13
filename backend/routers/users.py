@@ -1,11 +1,15 @@
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Header, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import func as sa_func
 from pydantic import BaseModel
 
 from database import SessionLocal
 from models import User, Role, Wallet, RewardWallet
+
+# ✅ JWT security
+from security import get_current_user, require_roles
+
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -28,33 +32,21 @@ def get_role_name(db: Session, role_id: Optional[int]) -> str:
     if not role_id:
         return "unknown"
     r = db.query(Role).filter(Role.id == role_id).first()
-    return (r.name if r else "unknown")
+    return (r.name if r and r.name else "unknown").lower()
 
 
 def _get_role_id(db: Session, role_name: str) -> Optional[int]:
-    r = db.query(Role).filter(sa_func.lower(Role.name) == role_name.strip().lower()).first()
+    role_name = (role_name or "").strip().lower()
+    r = db.query(Role).filter(sa_func.lower(Role.name) == role_name).first()
     return r.id if r else None
 
 
-# -----------------------
-# GUARDS (TEMP via X-Role)
-# -----------------------
-def require_staff_or_admin_or_cashier(
-    x_role: str = Header(default="", alias="X-Role", description="staff | cashier | admin")
-):
-    role = (x_role or "").strip().lower()
-    if role not in {"staff", "cashier", "admin"}:
-        raise HTTPException(status_code=403, detail="Staff/Cashier/Admin only (set header X-Role)")
-    return role
-
-
-def require_admin(
-    x_role: str = Header(default="", alias="X-Role", description="admin")
-):
-    role = (x_role or "").strip().lower()
-    if role != "admin":
-        raise HTTPException(status_code=403, detail="Admin only (set header X-Role: admin)")
-    return True
+def _is_customer(db: Session, user: User) -> bool:
+    customer_role_id = _get_role_id(db, "customer")
+    if not customer_role_id:
+        # if roles table not ready, fail loudly
+        raise HTTPException(status_code=500, detail="Role 'customer' not found in roles table")
+    return int(getattr(user, "role_id", 0) or 0) == int(customer_role_id)
 
 
 # -----------------------
@@ -69,8 +61,10 @@ def list_users(
     limit: int = Query(default=100, ge=1, le=500),
     include_balances: bool = Query(default=False, description="include wallet_balance + reward_points"),
     db: Session = Depends(get_db),
-    role: str = Depends(require_staff_or_admin_or_cashier),
+    current_user: User = Depends(require_roles("staff", "cashier", "admin")),
 ):
+    role = (getattr(current_user, "role_name", "") or "").lower()
+
     query = db.query(User)
 
     # staff/cashier sees customers only
@@ -105,7 +99,7 @@ def list_users(
         item = {
             "user_id": u.id,
             "email": u.email,
-            "is_active": bool(u.is_active),
+            "is_active": bool(getattr(u, "is_active", True)),
             "role_id": u.role_id,
             "role_name": get_role_name(db, u.role_id),
             "created_at": str(getattr(u, "created_at", "")) if hasattr(u, "created_at") else None,
@@ -130,17 +124,17 @@ def list_users(
 def get_user(
     user_id: int,
     db: Session = Depends(get_db),
-    role: str = Depends(require_staff_or_admin_or_cashier),
+    current_user: User = Depends(require_roles("staff", "cashier", "admin")),
 ):
+    role = (getattr(current_user, "role_name", "") or "").lower()
+
     u = db.query(User).filter(User.id == user_id).first()
     if not u:
         raise HTTPException(status_code=404, detail="User not found")
 
+    # staff/cashier can only view customers
     if role in {"staff", "cashier"}:
-        customer_role_id = _get_role_id(db, "customer")
-        if not customer_role_id:
-            raise HTTPException(status_code=500, detail="Role 'customer' not found in roles table")
-        if u.role_id != customer_role_id:
+        if not _is_customer(db, u):
             raise HTTPException(status_code=403, detail="Staff/Cashier can only view customers")
 
     wallet = db.query(Wallet).filter(Wallet.user_id == u.id).first()
@@ -149,7 +143,7 @@ def get_user(
     return {
         "user_id": u.id,
         "email": u.email,
-        "is_active": bool(u.is_active),
+        "is_active": bool(getattr(u, "is_active", True)),
         "role_id": u.role_id,
         "role_name": get_role_name(db, u.role_id),
         "wallet_balance": float(wallet.balance) if wallet else 0.0,
@@ -169,7 +163,7 @@ def set_user_active(
     user_id: int,
     payload: ToggleActivePayload,
     db: Session = Depends(get_db),
-    _: bool = Depends(require_admin),
+    _: User = Depends(require_roles("admin")),
 ):
     u = db.query(User).filter(User.id == user_id).first()
     if not u:

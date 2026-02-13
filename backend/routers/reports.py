@@ -5,6 +5,7 @@ import csv
 import io
 
 from fastapi import APIRouter, Depends, HTTPException, Header, Query
+from security import require_roles
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 from sqlalchemy import func as sa_func, desc, and_
@@ -18,7 +19,12 @@ from models import (
     User, RewardTransaction
 )
 
-router = APIRouter(prefix="/reports", tags=["Reports"])
+
+router = APIRouter(
+    prefix="/reports",
+    tags=["Reports"],
+    dependencies=[Depends(require_roles("admin"))]  #  all reports admin-only
+)
 
 # -----------------------
 # DB

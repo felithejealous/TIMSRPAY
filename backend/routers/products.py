@@ -1,13 +1,18 @@
 from typing import Optional, List
-from fastapi import APIRouter, Depends, HTTPException, Header, Query
+
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy import func as sa_func
 
 from database import SessionLocal
-from models import Product, ProductRecipe, InventoryMaster
+from models import Product, ProductRecipe, InventoryMaster, User
+
+# ✅ JWT role guards
+from security import require_roles
 
 router = APIRouter(prefix="/products", tags=["Products"])
+
 
 # -----------------------
 # DB
@@ -19,22 +24,6 @@ def get_db():
     finally:
         db.close()
 
-# -----------------------
-# GUARDS
-# -----------------------
-def require_staff(
-    x_role: str = Header(default="", alias="X-Role", description="staff | cashier | admin")
-):
-    if (x_role or "").strip().lower() not in {"staff", "cashier", "admin"}:
-        raise HTTPException(status_code=403, detail="Staff only (set header X-Role)")
-    return True
-
-def require_admin(
-    x_role: str = Header(default="", alias="X-Role", description="admin")
-):
-    if (x_role or "").strip().lower() != "admin":
-        raise HTTPException(status_code=403, detail="Admin only (set header X-Role: admin)")
-    return True
 
 # -----------------------
 # SCHEMAS
@@ -47,23 +36,32 @@ class ProductPatch(BaseModel):
     is_active: Optional[bool] = None
     is_available: Optional[bool] = None
 
+
+class ProductCreate(BaseModel):
+    name: str
+    price: float
+    category_id: Optional[int] = None
+    points_per_unit: int = 0
+    is_active: bool = True
+    is_available: bool = True
+
+
 class RecipeItem(BaseModel):
     inventory_master_id: int
     qty_used: float
 
+
 class RecipeReplace(BaseModel):
     items: List[RecipeItem]
 
+
 # ============================================================
-# CUSTOMER MENU: active + available only
+# CUSTOMER MENU: active + available only (PUBLIC)
 # ============================================================
 @router.get("/menu")
 def get_menu(db: Session = Depends(get_db)):
     q = db.query(Product)
-
-    # If column doesn't exist yet, this will error -> run ALTER TABLE first.
     q = q.filter(Product.is_active == True, Product.is_available == True)
-
     rows = q.order_by(Product.id.asc()).all()
     return {
         "count": len(rows),
@@ -78,11 +76,12 @@ def get_menu(db: Session = Depends(get_db)):
                 "category_id": getattr(p, "category_id", None),
             }
             for p in rows
-        ]
+        ],
     }
 
+
 # ============================================================
-# LIST PRODUCTS (staff/admin view)
+# LIST PRODUCTS (staff/cashier/admin)
 # ============================================================
 @router.get("/")
 def list_products(
@@ -90,17 +89,15 @@ def list_products(
     q: Optional[str] = Query(default=None, description="search by name"),
     limit: int = Query(default=100, ge=1, le=500),
     db: Session = Depends(get_db),
+    _: User = Depends(require_roles("staff", "cashier", "admin")),
 ):
     query = db.query(Product)
-
     if active_only:
         query = query.filter(Product.is_active == True)
-
     if q:
         query = query.filter(Product.name.ilike(f"%{q.strip()}%"))
 
     rows = query.order_by(Product.id.asc()).limit(limit).all()
-
     return {
         "count": len(rows),
         "data": [
@@ -114,18 +111,18 @@ def list_products(
                 "category_id": getattr(p, "category_id", None),
             }
             for p in rows
-        ]
+        ],
     }
 
+
 # ============================================================
-# GET SINGLE PRODUCT
+# GET SINGLE PRODUCT (PUBLIC)
 # ============================================================
 @router.get("/{product_id}")
 def get_product(product_id: int, db: Session = Depends(get_db)):
     p = db.query(Product).filter(Product.id == product_id).first()
     if not p:
         raise HTTPException(status_code=404, detail="Product not found")
-
     return {
         "product_id": p.id,
         "name": p.name,
@@ -136,23 +133,15 @@ def get_product(product_id: int, db: Session = Depends(get_db)):
         "category_id": getattr(p, "category_id", None),
     }
 
-# ============================================================
-# CREATE PRODUCT
-# - I changed it to JSON body (cleaner)
-# ============================================================
-class ProductCreate(BaseModel):
-    name: str
-    price: float
-    category_id: Optional[int] = None
-    points_per_unit: int = 0
-    is_active: bool = True
-    is_available: bool = True
 
+# ============================================================
+# CREATE PRODUCT (staff/cashier/admin)
+# ============================================================
 @router.post("/")
 def create_product(
     payload: ProductCreate,
     db: Session = Depends(get_db),
-    _: bool = Depends(require_staff),
+    _: User = Depends(require_roles("staff", "cashier", "admin")),
 ):
     name = (payload.name or "").strip()
     if not name:
@@ -162,7 +151,6 @@ def create_product(
     if payload.points_per_unit < 0:
         raise HTTPException(status_code=400, detail="points_per_unit must be >= 0")
 
-    # optional anti-duplicate by name
     existing = db.query(Product).filter(sa_func.lower(Product.name) == name.lower()).first()
     if existing:
         raise HTTPException(status_code=400, detail="Product name already exists")
@@ -180,15 +168,16 @@ def create_product(
     db.refresh(p)
     return {"message": "created", "product_id": p.id}
 
+
 # ============================================================
-# PATCH PRODUCT (toggle availability, edit)
+# PATCH PRODUCT (staff/cashier/admin)
 # ============================================================
 @router.patch("/{product_id}")
 def patch_product(
     product_id: int,
     payload: ProductPatch,
     db: Session = Depends(get_db),
-    _: bool = Depends(require_staff),
+    _: User = Depends(require_roles("staff", "cashier", "admin")),
 ):
     p = db.query(Product).filter(Product.id == product_id).first()
     if not p:
@@ -221,6 +210,7 @@ def patch_product(
 
     db.commit()
     db.refresh(p)
+
     return {
         "product_id": p.id,
         "name": p.name,
@@ -231,14 +221,15 @@ def patch_product(
         "category_id": getattr(p, "category_id", None),
     }
 
+
 # ============================================================
-# RECIPE VIEW
+# RECIPE VIEW (staff/cashier/admin)
 # ============================================================
 @router.get("/{product_id}/recipe")
 def get_recipe(
     product_id: int,
     db: Session = Depends(get_db),
-    _: bool = Depends(require_staff),
+    _: User = Depends(require_roles("staff", "cashier", "admin")),
 ):
     p = db.query(Product).filter(Product.id == product_id).first()
     if not p:
@@ -264,18 +255,19 @@ def get_recipe(
                 "qty_used": float(pr.qty_used),
             }
             for pr, invm in rows
-        ]
+        ],
     }
 
+
 # ============================================================
-# RECIPE REPLACE (full replace)
+# RECIPE REPLACE (staff/cashier/admin)
 # ============================================================
 @router.put("/{product_id}/recipe")
 def replace_recipe(
     product_id: int,
     payload: RecipeReplace,
     db: Session = Depends(get_db),
-    _: bool = Depends(require_staff),
+    _: User = Depends(require_roles("staff", "cashier", "admin")),
 ):
     p = db.query(Product).filter(Product.id == product_id).first()
     if not p:
@@ -284,24 +276,26 @@ def replace_recipe(
     if not payload.items:
         raise HTTPException(status_code=400, detail="items cannot be empty")
 
-    inv_ids = [x.inventory_master_id for x in payload.items]
+    inv_ids = [int(x.inventory_master_id) for x in payload.items]
     inv_rows = db.query(InventoryMaster).filter(InventoryMaster.id.in_(inv_ids)).all()
     inv_map = {r.id: r for r in inv_rows}
 
     for x in payload.items:
-        if x.inventory_master_id not in inv_map:
+        if int(x.inventory_master_id) not in inv_map:
             raise HTTPException(status_code=400, detail=f"Invalid inventory_master_id: {x.inventory_master_id}")
-        if x.qty_used <= 0:
+        if float(x.qty_used) <= 0:
             raise HTTPException(status_code=400, detail="qty_used must be > 0")
 
     db.query(ProductRecipe).filter(ProductRecipe.product_id == product_id).delete(synchronize_session=False)
 
     for x in payload.items:
-        db.add(ProductRecipe(
-            product_id=product_id,
-            inventory_master_id=x.inventory_master_id,
-            qty_used=x.qty_used
-        ))
+        db.add(
+            ProductRecipe(
+                product_id=product_id,
+                inventory_master_id=int(x.inventory_master_id),
+                qty_used=float(x.qty_used),
+            )
+        )
 
     db.commit()
     return {"message": "Recipe replaced", "product_id": product_id, "count": len(payload.items)}

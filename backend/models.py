@@ -18,12 +18,15 @@ class User(Base):
     password_hash = Column(Text, nullable=True)
 
     role_id = Column(Integer, ForeignKey("roles.id"), nullable=True)
+    role = relationship ("Role")
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=False), server_default=func.now())
 
     google_id = Column(String(100), unique=True, nullable=True)
     oauth_provider = Column(String(50), nullable=True)
     profile_picture = Column(Text, nullable=True)
+
+    
 
 class Wallet(Base):
     __tablename__ = "wallets"
@@ -51,8 +54,7 @@ class Product(Base):
     price = Column(Numeric(12, 2), nullable=False)
 
     is_active = Column(Boolean, default=True)
-    is_available = Column(Boolean, default=True, nullable=False)  # ✅ ADD THIS
-
+    is_available = Column(Boolean, default=True, nullable=False)  
     # already exists in DB
     points_per_unit = Column(Integer, default=0, nullable=False)
 
@@ -77,7 +79,7 @@ class StockMovement(Base):
 class Order(Base):
     __tablename__ = "orders"
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     order_type = Column(String(20), nullable=False)  # kiosk/online
     status = Column(String(20), default="pending")
     total_amount = Column(Numeric(12, 2), default=0)
@@ -85,6 +87,21 @@ class Order(Base):
     subtotal = Column(Numeric(12, 2), default=0)
     vat_amount = Column(Numeric(12, 2), default=0)
     vat_rate = Column(Numeric(5, 2), default=12.00)
+    # how many points this order earned (receipt display kahit guest)
+    earned_points = Column(Integer, nullable=False, default=0)
+    # if points were already credited to a user account
+    points_synced = Column(Boolean, nullable=False, default=False)
+    # claim window for guest/cash orders (e.g., created_at + 24h)
+    points_claim_expires_at = Column(DateTime(timezone=False), nullable=True)
+    # claim audit (once claimed, lock it)
+    points_claimed_at = Column(DateTime(timezone=False), nullable=True)
+    # who received the points (customer account)
+    points_claimed_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    # staff/cashier who processed the claim (optional audit)
+    points_claimed_by_staff_id = Column(Integer, nullable=True)
+    # optional: how it was claimed
+    # "wallet_auto" | "manual_otp" | "admin_adjust"
+    points_claim_method = Column(String(20), nullable=True)
 
 
 class OrderItem(Base):
@@ -249,7 +266,6 @@ class RewardManualOTP(Base):
     otp_hash = Column(Text, nullable=False)
     expires_at = Column(DateTime(timezone=False), nullable=False)
 
-    # ✅ HARDENING
     attempt_count = Column(Integer, nullable=False, default=0)
     last_attempt_at = Column(DateTime(timezone=False), nullable=True)
 
@@ -257,3 +273,35 @@ class RewardManualOTP(Base):
     used_at = Column(DateTime(timezone=False), nullable=True)
 
     created_at = Column(DateTime(timezone=False), server_default=func.now(), nullable=False)
+    
+class RewardOrderClaim(Base):
+    __tablename__ = "reward_order_claims"
+
+    id = Column(Integer, primary_key=True, index=True)
+    order_id = Column(Integer, ForeignKey("orders.id", ondelete="CASCADE"), nullable=False, unique=True)
+
+    claimed_user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    claimed_by_staff_id = Column(Integer, nullable=True)
+
+    claim_method = Column(String(20), nullable=False, default="manual_otp")
+    claimed_at = Column(DateTime(timezone=False), server_default=func.now())
+
+class Announcement(Base):
+    __tablename__ = "announcements"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String(150), nullable=False)
+    body = Column(Text, nullable=False)
+
+    image_url = Column(Text, nullable=True)
+    status = Column(String(20), nullable=False, default="draft")   # draft|published|archived
+    is_pinned = Column(Boolean, nullable=False, default=False)
+
+    publish_at = Column(DateTime, nullable=True)
+    expire_at = Column(DateTime, nullable=True)
+
+    created_by_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    updated_by_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+
+    created_at = Column(DateTime, server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime, onupdate=func.now(), nullable=True)
