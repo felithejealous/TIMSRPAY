@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teo D' Mango - Scan to Pay</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            font-weight: 300;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f5f5f5;
+            background-image: url("../Images/teoDMangoBG.png");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            overflow: hidden;
+            padding: 2rem 1rem;
+        }
+
+        .content-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+            z-index: 10;
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .glass-panel {
+            background: #ffffff;
+            padding: 2.5rem 2rem;
+            border-radius: 2.5rem;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.2rem;
+            width: 100%;
+            min-height: 480px;
+            text-align: center;
+            position: relative;
+            transition: all 0.5s ease;
+        }
+
+        /* Screen States */
+        .screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.2rem;
+            width: 100%;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .minimal-title {
+            font-size: 1.1rem;
+            color: #555;
+            font-weight: 400;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* QR Code Styling */
+        .qr-frame {
+            background: white;
+            padding: 1rem;
+            border-radius: 1.5rem;
+            border: 2px solid #fbbc04;
+            margin: 0.5rem 0;
+            box-shadow: 0 8px 20px rgba(251, 188, 4, 0.15);
+        }
+
+        .qr-image {
+            width: 200px;
+            height: 200px;
+            display: block;
+            border-radius: 0.5rem;
+        }
+
+        .amount-display {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: #333;
+            margin-bottom: 0.2rem;
+        }
+
+        .amount-label {
+            font-size: 0.8rem;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .status-text {
+            color: #666;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        /* Success Icon - MPIN Inspired Style */
+        .success-icon-container {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            margin-bottom: 1rem;
+            margin-top: 2rem;
+        }
+
+        .success-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: #e8f5e9;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .success-icon {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            background: #4CAF50;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            box-shadow: 0 10px 20px rgba(76, 175, 80, 0.3);
+            z-index: 2;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.2); opacity: 0.4; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #fbbc04;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 2rem 0;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .dots::after {
+            content: '';
+            animation: dots 1.5s infinite;
+        }
+
+        @keyframes dots {
+            0% { content: ''; }
+            33% { content: '.'; }
+            66% { content: '..'; }
+            100% { content: '...'; }
+        }
+
+        .footer-note {
+            background: rgba(0, 0, 0, 0.05);
+            color: #777;
+            padding: 1rem 2rem;
+            border-radius: 3rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="content-wrapper">
+        <div class="glass-panel" id="mainPanel">
+            
+            <!-- STEP 1: SCANNING -->
+            <div class="screen active" id="screen-scan">
+                <h1 class="minimal-title">Scan to Pay</h1>
+                <div class="amount-label">Total Amount Due</div>
+                <div class="amount-display" id="totalAmount">₱ 0.00</div>
+                <div class="qr-frame">
+                    <img src="../Images/payment-qr.png" alt="Payment QR" class="qr-image" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=TeoDMangoPayment'">
+                </div>
+                <p class="status-text">Please scan the QR code using your<br>GCash or Maya app to pay.</p>
+                <p class="status-text" style="font-size: 0.75rem; color: #999; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; margin-top: 1rem;">
+                    Waiting for Payment<span class="dots"></span>
+                </p>
+            </div>
+
+            <!-- STEP 2: CONFIRMED (MPIN STYLE) -->
+            <div class="screen" id="screen-confirmed">
+                <div class="success-icon-container">
+                    <div class="success-bg"></div>
+                    <div class="success-icon">✓</div>
+                </div>
+                <h1 class="minimal-title" style="color: #4CAF50; font-weight: 800; font-size: 1.4rem;">Success!</h1>
+                <div style="margin: 0.5rem 0;">
+                    <p class="status-text" style="color: #222; font-weight: 600; font-size: 1.1rem;">Payment Received</p>
+                    <p id="confirmedAmount" style="font-size: 1.2rem; font-weight: 800; color: #4CAF50; margin-top: 5px;">₱ 0.00</p>
+                </div>
+                <p class="status-text" style="color: #888;">Thank you for choosing Teo D' Mango!<br>Your transaction is complete.</p>
+            </div>
+
+            <!-- STEP 3: PRINTING -->
+            <div class="screen" id="screen-printing">
+                <div class="spinner"></div>
+                <h1 class="minimal-title">Processing</h1>
+                <p class="status-text">Printing your receipt<span class="dots"></span></p>
+                <p class="status-text" style="font-size: 0.8rem; color: #aaa; margin-top: 1rem;">Please wait a moment.</p>
+            </div>
+
+        </div>
+
+        <div class="footer-note" id="footerNote">
+            The page will update once payment is detected.
+        </div>
+    </div>
+
+    <script>
+        const showScreen = (screenId) => {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        };
+
+        window.onload = () => {
+            // 1. Get total from localStorage
+            const currentOrder = JSON.parse(localStorage.getItem('currentOrder') || '{}');
+            const total = currentOrder.totalAmount || 0;
+            const formattedTotal = `₱ ${parseFloat(total).toFixed(2)}`;
+            
+            document.getElementById('totalAmount').innerText = formattedTotal;
+            document.getElementById('confirmedAmount').innerText = formattedTotal;
+
+            // 2. Simulate Payment Flow
+            
+            // Wait 7 seconds to simulate user interaction
+            setTimeout(() => {
+                // Show Confirmed Screen
+                showScreen('screen-confirmed');
+                document.getElementById('footerNote').innerText = "Payment Successful";
+                
+                // Update order status
+                if(currentOrder) {
+                    currentOrder.paymentStatus = 'Paid';
+                    localStorage.setItem('currentOrder', JSON.stringify(currentOrder));
+                }
+
+                // Wait 4 seconds on Success screen before starting "Printing"
+                setTimeout(() => {
+                    showScreen('screen-printing');
+                    document.getElementById('footerNote').innerText = "Generating Digital Receipt...";
+
+                    // After 4 seconds of "Printing", redirect
+                    setTimeout(() => {
+                        window.location.href = '../html/receipt.html';
+                    }, 4000);
+
+                }, 4000);
+
+            }, 7000); 
+        };
+    </script>
+</body>
+</html>

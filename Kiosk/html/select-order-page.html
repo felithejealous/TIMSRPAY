@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teo D' Mango - Order Style</title>
+    <link rel="stylesheet" href="../css/select.css">
+</head>
+<body>
+
+    <div class="container">
+        <h1>Select order type</h1>
+
+        <div class="order-options">
+            <button class="option-card" data-target="../html/menu.html">
+                <div class="icon-box">
+                    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20 30C20 25 25 22 30 22H70C75 22 80 25 80 30V35H20V30Z" stroke="currentColor" stroke-width="8"/>
+                        <path d="M25 35L32 85H68L75 35" stroke="currentColor" stroke-width="8" stroke-linejoin="round"/>
+                        <path d="M29 55H71" stroke="currentColor" stroke-width="6"/>
+                        <path d="M31 68H69" stroke="currentColor" stroke-width="6"/>
+                    </svg>
+                </div>
+                <span class="option-label">Dine-in</span>
+            </button>
+
+            <button class="option-card" data-target="../html/menu.html">
+                <div class="icon-box">
+                    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="12" y="15" width="76" height="70" rx="12" stroke="currentColor" stroke-width="8"/>
+                        <path d="M38 43C38 52 62 52 62 43" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <span class="option-label">To-go</span>
+            </button>
+        </div>
+
+        <button class="footer-btn" id="nextBtn">Get orders</button>
+    </div>
+
+    <script>
+        const optionCards = document.querySelectorAll('.option-card');
+        const nextBtn = document.getElementById('nextBtn');
+        let selected = false;
+
+        optionCards.forEach(card => {
+            card.addEventListener('click', () => {
+                // Remove selected class from others
+                optionCards.forEach(c => c.classList.remove('selected'));
+                // Add to clicked
+                card.classList.add('selected');
+                selected = true;
+                
+                // Active button style
+                nextBtn.style.opacity = "1";
+            });
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (selected) {
+                window.location.href = '../html/menu.html';
+            } else {
+                alert("Please select Dine-in or To-go first!");
+            }
+        });
+    </script>
+
+</body>
+</html>
