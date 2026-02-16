@@ -2,8 +2,8 @@ from typing import Optional
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from database import SessionLocal
-from models import AddOn
+from backend.database import SessionLocal
+from backend.models import AddOn
 
 router = APIRouter(prefix="/addons", tags=["AddOns"])
 

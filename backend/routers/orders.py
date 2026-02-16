@@ -10,8 +10,8 @@ from sqlalchemy import func as sa_func
 import hashlib
 import hmac
 
-from database import SessionLocal
-from models import (
+from backend.database import SessionLocal
+from backend.models import (
     Order, OrderItem, Product,
     RewardWallet, RewardTransaction,
     AddOn, OrderItemAddOn,
@@ -22,10 +22,10 @@ from models import (
 )
 
 # keep your original schema import (legacy endpoint uses it)
-from schemas import OrderCreate
+from backend.schemas import OrderCreate
 
 # JWT guards
-from security import get_current_user, require_roles
+from backend.security import get_current_user, require_roles
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
 

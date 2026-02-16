@@ -10,9 +10,9 @@ import os
 import smtplib
 from email.message import EmailMessage
 
-from security import get_current_user, require_roles
-from database import SessionLocal
-from models import (
+from backend.security import get_current_user, require_roles
+from backend.database import SessionLocal
+from backend.models import (
     User,
     Order,  # ✅ for order_id claim flow
     RewardWallet,

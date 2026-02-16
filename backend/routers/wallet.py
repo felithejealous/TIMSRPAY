@@ -7,9 +7,9 @@ import os
 import hashlib
 import hmac
 
-from security import get_current_user
-from database import SessionLocal
-from models import Wallet, WalletTransaction, Order, User
+from backend.security import get_current_user
+from backend.database import SessionLocal
+from backend.models import Wallet, WalletTransaction, Order, User
 
 
 router = APIRouter(prefix="/wallet", tags=["TeoPay"])

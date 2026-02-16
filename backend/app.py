@@ -1,21 +1,21 @@
 from fastapi import FastAPI
-from routers.auth import router as auth_router
-from routers.orders import router as orders_router
-from routers.wallet import router as wallet_router
-from routers.addons import router as addons_router
-from routers.inventory import router as inventory_router
-from routers import reports
-from routers import rewards
-from routers.recipes import router as recipes_router
-from routers.products import router as products_router
-import models
-from routers.attendance import router as attendance_router
-from routers.staff import router as staff_router
-from routers.users import router as users_router
+from backend.routers.auth import router as auth_router
+from backend.routers.orders import router as orders_router
+from backend.routers.wallet import router as wallet_router
+from backend.routers.addons import router as addons_router
+from backend.routers.inventory import router as inventory_router
+from backend.routers import reports
+from backend.routers import rewards
+from backend.routers.recipes import router as recipes_router
+from backend.routers.products import router as products_router
+from backend import models
+from backend.routers.attendance import router as attendance_router
+from backend.routers.staff import router as staff_router
+from backend.routers.users import router as users_router
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
 import os
-from routers.announcement import router as announcements_router
+from backend.routers.announcement import router as announcements_router
 from fastapi.staticfiles import StaticFiles
 
 load_dotenv()

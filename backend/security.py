@@ -7,8 +7,8 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import jwt, JWTError
 from sqlalchemy.orm import Session
 
-from database import SessionLocal
-from models import User, Role
+from backend.database import SessionLocal
+from backend.models import User, Role
 
 
 # =======================

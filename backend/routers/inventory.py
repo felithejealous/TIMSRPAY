@@ -5,12 +5,12 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from sqlalchemy import func as sa_func
 
-from database import SessionLocal
-from models import InventoryMaster, InventoryMasterMovement
+from backend.database import SessionLocal
+from backend.models import InventoryMaster, InventoryMasterMovement
 
 # ✅ JWT + role guards
-from security import require_roles, get_current_user  # get_current_user optional if you want to return who did what
-from models import User  # for type hints only
+from backend.security import require_roles, get_current_user  # get_current_user optional if you want to return who did what
+from backend.models import User  # for type hints only
 
 router = APIRouter(prefix="/inventory", tags=["Inventory"])
 

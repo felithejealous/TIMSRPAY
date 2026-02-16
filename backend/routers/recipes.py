@@ -4,16 +4,16 @@ from decimal import Decimal
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from database import SessionLocal
-from models import Product, AddOn, InventoryMaster, ProductRecipe, AddOnRecipe
-from schemas import (
+from backend.database import SessionLocal
+from backend.models import Product, AddOn, InventoryMaster, ProductRecipe, AddOnRecipe
+from backend.schemas import (
     ProductRecipeCreate, ProductRecipeUpdate,
     AddOnRecipeCreate, AddOnRecipeUpdate
 )
 
 # ✅ JWT role guards
-from security import require_roles
-from models import User
+from backend.security import require_roles
+from backend.models import User
 
 router = APIRouter(prefix="/recipes", tags=["Recipes"])
 

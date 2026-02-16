@@ -5,9 +5,9 @@ from sqlalchemy import func as sa_func
 from datetime import datetime, timezone
 from typing import Optional, List
 
-from database import SessionLocal
-from security import get_current_user, require_roles
-from models import Announcement, User
+from backend.database import SessionLocal
+from backend.security import get_current_user, require_roles
+from backend.models import Announcement, User
 from fastapi import File, UploadFile, Form
 import shutil
 import uuid

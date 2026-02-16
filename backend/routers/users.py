@@ -4,11 +4,11 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func as sa_func
 from pydantic import BaseModel
 
-from database import SessionLocal
-from models import User, Role, Wallet, RewardWallet
+from backend.database import SessionLocal
+from backend.models import User, Role, Wallet, RewardWallet
 
 # ✅ JWT security
-from security import get_current_user, require_roles
+from backend.security import get_current_user, require_roles
 
 
 router = APIRouter(prefix="/users", tags=["Users"])

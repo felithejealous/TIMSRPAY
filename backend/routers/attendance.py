@@ -5,11 +5,11 @@ from sqlalchemy.orm import Session
 from sqlalchemy import desc
 from datetime import datetime
 
-from database import SessionLocal
-from models import AttendanceLog, User, StaffProfile
+from backend.database import SessionLocal
+from backend.models import AttendanceLog, User, StaffProfile
 
-# ✅ JWT security
-from security import get_current_user, require_roles
+# JWT security
+from backend.security import get_current_user, require_roles
 
 router = APIRouter(prefix="/attendance", tags=["Attendance"])
 

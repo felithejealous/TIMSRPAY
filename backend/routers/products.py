@@ -5,11 +5,11 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy import func as sa_func
 
-from database import SessionLocal
-from models import Product, ProductRecipe, InventoryMaster, User
+from backend.database import SessionLocal
+from backend.models import Product, ProductRecipe, InventoryMaster, User
 
 # ✅ JWT role guards
-from security import require_roles
+from backend.security import require_roles
 
 router = APIRouter(prefix="/products", tags=["Products"])
 

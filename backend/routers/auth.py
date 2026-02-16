@@ -15,9 +15,9 @@ import requests
 from fastapi.responses import RedirectResponse
 from urllib.parse import urlencode
 
-from database import SessionLocal
-from models import User, Wallet, RewardWallet, Role, PasswordResetToken
-from security import create_access_token, get_current_user
+from backend.database import SessionLocal
+from backend.models import User, Wallet, RewardWallet, Role, PasswordResetToken
+from backend.security import create_access_token, get_current_user
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 

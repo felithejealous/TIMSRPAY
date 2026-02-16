@@ -4,11 +4,11 @@ from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
 import hashlib, hmac, secrets
 
-from database import SessionLocal
-from models import User, Role, StaffProfile
+from backend.database import SessionLocal
+from backend.models import User, Role, StaffProfile
 
 # ✅ JWT security
-from security import get_current_user, require_roles
+from backend.security import get_current_user, require_roles
 
 
 router = APIRouter(prefix="/staff", tags=["Staff"])
