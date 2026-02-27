@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teo D' Mango - Order Type</title>
+    <title>Teo D' Mango - Kiosk Menu</title>
     <style>
         /* Global Styles */
         * {
@@ -16,12 +16,16 @@
             display: none;
         }
 
+        body {
+            background-color: #f9f9f9;
+        }
+
         header {
             position: relative; 
-            background-image: url(../Images/teoDMangoBG-horizontal.png);
-            height: 15rem;
-            padding: .5rem;
-            background-position: top;
+            background-image: url(../Images/Teo-banner.png);
+            height: 18rem; /* Increased height for banner */
+            padding: 1rem;
+            background-position: center;
             background-size: cover;
             background-repeat: no-repeat;
         }
@@ -34,60 +38,120 @@
 
         .choose {
             position: absolute;
-            bottom: -1.5rem;
+            bottom: -2rem;
             left: 50%;
             transform: translateX(-50%);
             text-align: center;
-            font-size: 1.5rem;
+            font-size: 1.8rem; /* Slightly larger text */
             font-weight: bold;
-            padding: .5rem;
+            padding: 0.8rem;
             background-color: white;
-            border-radius: 0.8rem;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            width: 70%;
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            width: 60%;
             z-index: 10;
         }
 
         .main-content {
-            padding-top: 2rem;
-            background-color: #f9f9f9;
-            min-height: calc(100vh - 15rem);
+            padding-top: 3rem;
+            /* Changed min-height to ensure content can fill screen without fixed padding */
+            min-height: calc(100vh - 18rem); 
         }
 
+        /* --- UPDATED PRODUCT GRID STYLING --- */
         .product-grid {
-            margin: 2.5rem 2rem;
+            margin: 2rem;
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            padding-bottom: 120px; 
+            /* 3 items at a time on tablets, auto-adjusts based on screen width */
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+            gap: 30px;
+            /* Removed fixed padding-bottom, will manage with JS */
+            padding-bottom: 2rem;
+        }
+
+        /* Class added by JS when cart has items */
+        .product-grid.has-cart {
+            padding-bottom: 150px; /* Space for floating bar */
         }
 
         .product-card {
-            border-radius: 15px;
-            position: relative;
-            overflow: hidden;
-            aspect-ratio: 2/3.5;
-            color: white;
+            background: white;
+            border-radius: 25px;
+            padding: 20px;
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.05);
             cursor: pointer;
-            background-size: cover;
-            background-position: center;
-            transition: transform 0.2s;
+            display: flex;
+            flex-direction: column;
         }
 
-        .product-card:hover { transform: scale(1.02); }
-
-        .product-info {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 10px;
-            background: linear-gradient(transparent, rgba(0,0,0,0.85));
+        .product-card:hover { 
+            transform: translateY(-8px); 
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1); 
         }
 
-        .product-info h3 { font-size: 0.9rem; margin-bottom: 2px; }
-        .product-info p { font-size: 0.7rem; opacity: 0.8; margin-bottom: 5px; height: 2.4em; overflow: hidden; }
-        .price-tag { font-weight: bold; font-size: 1rem; }
+        .img-wrapper {
+            width: 100%;
+            height: 250px; /* Increased height to make pictures longer */
+            border-radius: 18px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            background-color: #f5f5f5;
+        }
+
+        .product-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: 0.5s;
+        }
+
+        .product-card:hover img {
+            transform: scale(1.05);
+        }
+
+        .product-info h3 { 
+            font-size: 1.3rem; 
+            margin-bottom: 8px; 
+            color: #222; 
+            font-weight: 800;
+        }
+
+        .product-info p { 
+            font-size: 0.95rem; 
+            color: #666; 
+            margin-bottom: 15px; 
+            line-height: 1.5;
+            height: 3em; /* Slightly more room for description */
+            overflow: hidden; 
+        }
+
+        .product-controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 15px;
+            border-top: 1px solid #f0f0f0;
+            margin-top: auto;
+        }
+
+        .price-tag { 
+            font-weight: 900; 
+            font-size: 1.2rem; 
+            color: #222;
+        }
+
+        .add-btn-small {
+            background: #FBBC04;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
 
         /* --- FLOATING ORDER BAR --- */
         .floating-cart-bar {
@@ -95,32 +159,33 @@
             bottom: 20px;         
             left: 50%;
             transform: translateX(-50%);
-            width: 90%;             
-            max-width: 650px;    
-            height: 4.5rem; 
+            width: 90%;            
+            max-width: 800px;   
+            height: 5rem; 
             background: white;
             display: flex;
             align-items: center;
             justify-content: space-between;
             border-radius: 50px; 
-            padding: 0 1.5rem;    
+            padding: 0 2rem;    
             z-index: 9999; 
             box-shadow: 0 10px 30px rgba(0,0,0,0.25); 
             border: none;
             transition: all 0.3s ease;
         }
 
-        .cart-total { font-weight: 900; font-size: 1.2rem; color: #333; }
+        .cart-total { font-weight: 900; font-size: 1.5rem; color: #333; }
 
         .button-group { display: flex; gap: 10px; align-items: center; }
 
         .btn {
-            height: 2.6rem; 
-            min-width: 120px; 
+            height: 3rem; 
+            min-width: 160px;
+            padding: 0 25px;
             border-radius: 50px;  
             font-weight: bold;
             cursor: pointer;
-            font-size: 0.7rem; 
+            font-size: 0.85rem; 
             border: none;
             display: flex;
             align-items: center;
@@ -134,7 +199,7 @@
         .btn-outline { border: 1.5px solid #FBBC04 !important; background: transparent; color: #444; }
         .btn-fill { background: #FBBC04; color: white; box-shadow: 0 3px 10px rgba(251, 188, 4, 0.25); }
 
-        /* Order Popup */
+        /* Order Popup Styling (Untouched) */
         .cart-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.4); z-index: 10000; display: none; backdrop-filter: blur(6px);
@@ -142,7 +207,7 @@
 
         .cart-popup {
             position: fixed; bottom: -100%; left: 50%; transform: translateX(-50%);
-            width: 100%; max-width: 800px; background: #fff; height: 85vh;             
+            width: 100%; max-width: 800px; background: #fff; height: 85vh;            
             border-radius: 40px 40px 0 0; transition: bottom 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
             z-index: 10001; box-shadow: 0 -15px 50px rgba(0,0,0,0.2);
             display: flex; flex-direction: column;
@@ -233,9 +298,16 @@
         .cart-total-text .label { font-size: 0.85rem; color: #999; text-transform: uppercase; font-weight: bold; }
         .cart-total-text .amount { font-size: 2rem; font-weight: 900; color: #222; }
 
+        /* Media Queries for Tablet/Kiosk */
+        @media (min-width: 768px) {
+            .product-grid {
+                grid-template-columns: repeat(3, 1fr); /* 3 items per row on tablets */
+            }
+        }
+
         @media (max-width: 600px) {
-            .product-grid { grid-template-columns: repeat(2, 1fr); margin: 2rem 1rem; }
-            .btn { min-width: 100px; font-size: 0.65rem; }
+            .product-grid { grid-template-columns: 1fr; margin: 2rem 1.5rem; }
+            .btn { min-width: 120px; font-size: 0.7rem; }
             .cart-popup { height: 90vh; }
         }
     </style>
@@ -250,12 +322,10 @@
 
     <div class="main-content">
         <div class="product-grid" id="productGrid">
-            <!-- Product cards -->
-        </div>
+            </div>
     </div>
 
-    <!-- Floating Order Bar -->
-    <div class="floating-cart-bar" id="floatingBar">
+    <div class="floating-cart-bar" id="floatingBar" style="display:none;">
         <div class="cart-total" id="barTotal">₱ 0.00</div>
         <div class="button-group">
             <button class="btn btn-fill" onclick="toggleCart()">VIEW MY ORDERS</button>
@@ -264,7 +334,6 @@
 
     <div class="cart-overlay" id="overlay" onclick="toggleCart()"></div>
 
-    <!-- Order Popup -->
     <div class="cart-popup" id="cartPanel">
         <div class="cart-header">
             <div class="cart-title">YOUR ORDERS</div>
@@ -289,47 +358,45 @@
 
     <script>
         const products = [
-            { id: 1, name: "Classic Teo D' Mango", price: 60, desc: "Tropical mango slush...", img: "../Images/mangga.png", color: "#e67e22" },
-            { id: 2, name: "Strawberry", price: 60, desc: "Fruity blend...", img: "../Images/strawberry.png", color: "#e91e63" },
-            { id: 3, name: "Ube", price: 60, desc: "Purple yam...", img: "../Images/ube.png", color: "#9c27b0" },
-            { id: 4, name: "Avocado", price: 60, desc: "Tropical Avocado...", img: "../Images/avocado.png", color: "#68ee51" },
-            { id: 5, name: "Buko", price: 60, desc: "Coconut base...", img: "../Images/Buko.png", color: "#1edfe9" },
-            { id: 6, name: "Lychee", price: 60, desc: "Lychee blend...", img: "../Images/lychee.png", color: "#f4a7cf" }
+            { id: 1, name: "Classic Teo D' Mango", price: 60, desc: "Tropical mango slush blended with premium ice cream and toasted graham.", img: "../Images/mangga.png" },
+            { id: 2, name: "Strawberry", price: 60, desc: "Wild berry cake slush with fresh strawberry bits and cream.", img: "../Images/strawberry.png" },
+            { id: 3, name: "Ube", price: 60, desc: "Rich purple yam blend with farm-fresh milk and swirls.", img: "../Images/ube.png" },
+            { id: 4, name: "Avocado", price: 60, desc: "Tropical Avocado blend with premium vanilla and graham.", img: "../Images/avocado.png" },
+            { id: 5, name: "Buko", price: 60, desc: "Refreshing coconut base with chewy tapioca pearls.", img: "../Images/Buko.png" },
+            { id: 6, name: "Lychee", price: 60, desc: "Sweet lychee blend with fresh fruit bits and syrup.", img: "../Images/lychee.png" }
         ];
 
-        // --- REFRESH LOGIC ---
-        // If a URL parameter 'orderSuccess=true' is passed, we clear the tray immediately.
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('orderSuccess') === 'true') {
-            localStorage.removeItem('teo_tray');
+        let tray = JSON.parse(localStorage.getItem('teo_tray')) || [];
+        const grid = document.getElementById('productGrid');
+        
+        function renderProducts() {
+            grid.innerHTML = '';
+            products.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.onclick = () => {
+                    window.location.href = `customize.html?id=${p.id}`;
+                };
+
+                card.innerHTML = `
+                    <div class="img-wrapper">
+                        <img src="${p.img}" alt="${p.name}">
+                    </div>
+                    <div class="product-info">
+                        <h3>${p.name}</h3>
+                        <p>${p.desc}</p>
+                        <div class="product-controls">
+                            <div class="price-tag">₱${p.price.toFixed(2)}</div>
+                            <button class="add-btn-small">Select</button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
         }
 
-        // Persistent Order Logic
-        let tray = JSON.parse(localStorage.getItem('teo_tray')) || [];
-
-        const grid = document.getElementById('productGrid');
-        products.forEach(p => {
-            const card = document.createElement('div');
-            card.className = 'product-card';
-            card.style.backgroundImage = `url('${p.img}')`;
-            card.style.backgroundColor = p.color;
-            
-            card.onclick = () => {
-                window.location.href = `customize.html?id=${p.id}`;
-            };
-
-            card.innerHTML = `
-                <div class="product-info">
-                    <h3>${p.name}</h3>
-                    <p>${p.desc}</p>
-                    <div class="price-tag">₱${p.price.toFixed(2)}</div>
-                </div>
-            `;
-            grid.appendChild(card);
-        });
-
-        // Initialize display
         window.onload = () => {
+            renderProducts();
             renderTray();
         };
 
@@ -339,11 +406,8 @@
 
         function updateQty(index, delta, event) {
             if (event) event.stopPropagation();
-            
             tray[index].qty += delta;
-            if (tray[index].qty <= 0) {
-                tray.splice(index, 1);
-            }
+            if (tray[index].qty <= 0) tray.splice(index, 1);
             saveTray();
             renderTray();
         }
@@ -355,13 +419,18 @@
 
         function renderTray() {
             const container = document.getElementById('cartItemsContainer');
+            const floatingBar = document.getElementById('floatingBar');
+            const productGrid = document.getElementById('productGrid');
+
             if (tray.length === 0) {
                 container.innerHTML = `<div style="text-align:center; padding-top:50px; color:#aaa;">No orders yet</div>`;
                 updateTotals(0);
-                document.getElementById('floatingBar').style.display = 'none';
+                floatingBar.style.display = 'none';
+                productGrid.classList.remove('has-cart'); // Remove space
                 return;
             } else {
-                document.getElementById('floatingBar').style.display = 'flex';
+                floatingBar.style.display = 'flex';
+                productGrid.classList.add('has-cart'); // Add space
             }
 
             container.innerHTML = '';
@@ -408,10 +477,7 @@
         }
 
         function goToCheckout() {
-            if (tray.length === 0) {
-                return;
-            }
-            // Save state one last time before moving
+            if (tray.length === 0) return;
             saveTray();
             window.location.href = "payment-options.html";
         }

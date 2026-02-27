@@ -5,6 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teo D' Mango - Order Style</title>
     <link rel="stylesheet" href="../css/select.css">
+    <style>
+        .option-card.selected {
+            border: 2px solid #ff6600;
+            background-color: #fff3e0;
+        }
+        .footer-btn {
+            opacity: 0.5;
+            transition: opacity 0.3s;
+        }
+    </style>
 </head>
 <body>
 
@@ -12,7 +22,7 @@
         <h1>Select order type</h1>
 
         <div class="order-options">
-            <button class="option-card" data-target="../html/menu.html">
+            <button class="option-card" data-type="Dine-in">
                 <div class="icon-box">
                     <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M20 30C20 25 25 22 30 22H70C75 22 80 25 80 30V35H20V30Z" stroke="currentColor" stroke-width="8"/>
@@ -24,7 +34,7 @@
                 <span class="option-label">Dine-in</span>
             </button>
 
-            <button class="option-card" data-target="../html/menu.html">
+            <button class="option-card" data-type="To-go">
                 <div class="icon-box">
                     <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <rect x="12" y="15" width="76" height="70" rx="12" stroke="currentColor" stroke-width="8"/>
@@ -41,7 +51,7 @@
     <script>
         const optionCards = document.querySelectorAll('.option-card');
         const nextBtn = document.getElementById('nextBtn');
-        let selected = false;
+        let selectedType = null;
 
         optionCards.forEach(card => {
             card.addEventListener('click', () => {
@@ -49,7 +59,9 @@
                 optionCards.forEach(c => c.classList.remove('selected'));
                 // Add to clicked
                 card.classList.add('selected');
-                selected = true;
+                
+                // Store the selected type
+                selectedType = card.getAttribute('data-type');
                 
                 // Active button style
                 nextBtn.style.opacity = "1";
@@ -57,7 +69,9 @@
         });
 
         nextBtn.addEventListener('click', () => {
-            if (selected) {
+            if (selectedType) {
+                // Save to local storage
+                localStorage.setItem('orderType', selectedType);
                 window.location.href = '../html/menu.html';
             } else {
                 alert("Please select Dine-in or To-go first!");

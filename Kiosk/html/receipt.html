@@ -10,13 +10,15 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-            font-weight: 300;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-weight: 400;
         }
 
         body {
             height: 100vh;
+            height: 100dvh;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             background-color: #f5f5f5;
@@ -24,246 +26,363 @@
             background-size: cover;
             background-position: center;
             overflow: hidden;
+            padding: 20px;
+        }
+
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 360px;
+            height: 100%;
+            justify-content: center;
+            position: relative;
         }
 
         /* RECEIPT CONTAINER */
         .receipt {
-            width: 340px;
+            width: 100%;
             background: #ffffff;
-            border-radius: 12px;
+            border-radius: 8px;
             padding: 24px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-            font-family: "Courier New", monospace;
-            max-height: 90vh;
-            overflow-y: scroll;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            
+            max-height: 85vh; 
+            overflow-y: auto;
             -ms-overflow-style: none;
             scrollbar-width: none;
-            animation: receiptSlideIn 0.8s ease-out;
-        }
-
-        @keyframes receiptSlideIn {
-            0% { transform: translateY(50px); opacity: 0; }
-            100% { transform: translateY(0); opacity: 1; }
+            opacity: 1;
+            
+            padding-bottom: 30px;
         }
 
         .receipt::-webkit-scrollbar { display: none; }
 
         .receipt-order-number {
             text-align: center;
-            margin-bottom: 10px;
-            padding-bottom: 5px;
+            margin-bottom: 15px;
         }
 
         .receipt-order-number p {
-            font-size: 10px;
+            font-size: 11px;
             text-transform: uppercase;
-            color: #888;
-            margin-bottom: 2px;
-            letter-spacing: 1px;
+            color: #777;
+            letter-spacing: 1.5px;
+            font-weight: 600;
         }
 
         .receipt-order-number h1 {
-            font-size: 20px;
-            font-weight: 700;
-            letter-spacing: 1px;
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
             color: #ff6600;
-            margin: 0;
-            word-break: break-all;
+            margin-top: 4px;
         }
 
         .receipt-header {
             text-align: center;
-            border-bottom: 1px dashed #000;
-            padding-bottom: 12px;
-            margin-bottom: 14px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
         }
 
-        .receipt-header h2 { font-size: 20px; font-weight: 600; }
-        .receipt-header p { font-size: 12px; }
+        .receipt-header h2 { font-size: 18px; font-weight: 700; color: #222; }
+        .receipt-header p { font-size: 13px; color: #555; }
 
-        .receipt-info { font-size: 12px; margin-bottom: 12px; }
-        .receipt-info div { display: flex; justify-content: space-between; margin-bottom: 4px; }
+        .receipt-info, .receipt-totals, .receipt-items { 
+            font-size: 13px;
+            color: #333;
+        }
+
+        .receipt-info div, .receipt-totals div { 
+            display: flex; 
+            justify-content: space-between; 
+            margin-bottom: 6px; 
+        }
+
+        .receipt-info span, .receipt-totals span { 
+            color: #555;
+        }
+        
+        .receipt-info span:first-child, .receipt-totals span:first-child { 
+            color: #777; 
+        }
 
         .receipt-items {
-            border-top: 1px dashed #000;
-            border-bottom: 1px dashed #000;
-            padding: 10px 0;
-            margin: 12px 0;
-            font-size: 13px;
-            min-height: 40px;
+            border-top: 1px solid #eee;
+            border-bottom: 1px solid #eee;
+            padding: 15px 0;
+            margin: 15px 0;
         }
 
-        .item-row { display: flex; justify-content: space-between; margin-bottom: 6px; }
-        .fee-row { font-style: italic; color: #444; }
+        .item-row { 
+            display: flex; 
+            justify-content: space-between; 
+            margin-bottom: 6px;
+            font-size: 13px;
+            color: #333;
+            line-height: 1.4;
+        }
 
-        .receipt-totals { font-size: 14px; }
-        .receipt-totals div { display: flex; justify-content: space-between; margin-bottom: 6px; }
+        .addon-row {
+            display: flex;                
+            justify-content: space-between;
+            font-size: 13px;
+            color: #777;
+            padding-left: 20px;
+            margin-bottom: 4px;
+        }
 
         .grand-total {
-            font-weight: 600;
+            font-weight: 700;
             font-size: 16px;
-            border-top: 1px solid #000;
-            padding-top: 8px;
+            border-top: 1px solid #eee;
+            padding-top: 12px;
+            color: #000;
+            margin-top: 8px;
         }
+        
+        .grand-total span { color: #000; }
 
         .receipt-points {
             margin: 15px 0;
-            padding: 10px 0;
+            padding: 15px 0;
             text-align: center;
-            border-top: 1px dashed #ccc;
+            border-top: 1px solid #eee;
         }
 
-        .points-row { display: flex; justify-content: space-between; font-size: 0.85rem; color: #555; margin-bottom: 10px; }
+        .points-row { display: flex; justify-content: space-between; font-size: 13px; color: #555; margin-bottom: 12px; }
         .points-highlight { color: #ffbf00; font-weight: 700; }
 
-        .qr-container { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 5px; }
+        .qr-container { display: flex; flex-direction: column; align-items: center; gap: 8px; }
         .qr-code {
             width: 100px; height: 100px;
             background: #eee; display: flex;
             align-items: center; justify-content: center;
-            border: 1px solid #ddd;
+            border-radius: 8px;
         }
         .qr-code img { width: 90%; height: 90%; image-rendering: pixelated; }
-        .qr-label { font-size: 9px; color: #777; text-transform: uppercase; }
+        .qr-label { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
 
-        .receipt-footer { text-align: center; font-size: 11px; margin-top: 14px; color: #444; line-height: 1.4; }
+        .receipt-footer { text-align: center; font-size: 12px; margin-top: 15px; color: #777; line-height: 1.5; }
+
+        /* BUTTON */
+        .action-container {
+            width: 100%;
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            flex-shrink: 0;
+        }
 
         .receipt-btn {
-            width: 100%; margin-top: 16px;
-            padding: 14px; font-size: 15px;
-            font-weight: 700; background: #ffbf00;
-            border: none; border-radius: 30px;
-            cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-            text-transform: uppercase; transition: transform 0.1s ease;
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            background: #ffbf00;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-transform: uppercase;
+            transition: transform 0.1s ease, box-shadow 0.2s ease;
+            color: #1a1a1a;
         }
 
-        .receipt-btn:active { transform: scale(0.98); }
-
-        .print-overlay {
-            position: fixed; top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(8px);
-            display: none; flex-direction: column;
-            justify-content: center; align-items: center;
-            z-index: 1000;
+        .receipt-btn:active {
+            transform: scale(0.98);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
-        .spinner {
-            width: 40px; height: 40px;
-            border: 3px solid #eee;
-            border-top: 3px solid #ffbf00;
+        /* CHANGED: Simplified Animation Styles */
+        #successOverlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: white; /* White Background */
+            z-index: 5000;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        #successOverlay.active { 
+            display: flex; 
+            opacity: 1;
+        }
+
+        .check-container {
+            width: 130px;
+            height: 130px;
+            background: #ffbf00; /* Yellow Circle */
             border-radius: 50%;
-            margin-bottom: 1.5rem;
-            animation: spin 1s linear infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white; /* White Checkmark */
+            font-size: 5rem;
+            
+            /* Slide in animation */
+            animation: slideInDown 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
         }
 
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        .printing-paper {
-            width: 150px; height: 20px;
-            background: white; border: 1px solid #ddd;
-            margin-bottom: 10px;
-            animation: paperFlow 2s infinite ease-in-out;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        @keyframes slideInDown {
+            0% { transform: translateY(-150px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
         }
 
-        @keyframes paperFlow {
-            0% { height: 10px; opacity: 0; transform: translateY(-10px); }
-            50% { height: 60px; opacity: 1; }
-            100% { height: 80px; opacity: 0; transform: translateY(20px); }
+        .success-text {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #333; /* Darker text for white bg */
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            opacity: 0;
+            animation: fadeIn 0.4s 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        /* FADE OUT EFFECT FOR WHOLE CONTAINER */
+        .fade-out {
+            animation: fadeOut 0.5s forwards ease-in-out;
+        }
+
+        @keyframes fadeOut {
+            to { opacity: 0; }
         }
     </style>
 </head>
 <body>
 
-<div class="receipt">
-    <div class="receipt-order-number">
-        <p id="labelType">ORDER IDENTIFIER</p>
-        <h1 id="topIdentifier">----</h1>
+    <div id="successOverlay">
+        <div class="check-container">✓</div>
+        <p class="success-text">ORDER PLACED!</p>
     </div>
 
-    <div class="receipt-header">
-        <h2>TEO D' MANGO</h2>
-        <p>Official Receipt</p>
-        <p>Kiosk Order</p>
-    </div>
-
-    <div class="receipt-info">
-        <div><span>Order Type</span><span id="orderType">--</span></div>
-        <div id="tableRow" style="display: none;"><span>Table #</span><span id="tableNumber">--</span></div>
-        <div><span>Date</span><span id="orderDate">--/--/----</span></div>
-        <div><span>Time</span><span id="orderTime">--:--</span></div>
-        <div><span>Payment</span><span id="paymentMethod">--</span></div>
-    </div>
-
-    <div class="receipt-items" id="receiptItems">
-        <!-- Real Items from LocalStorage go here -->
-    </div>
-
-    <div class="receipt-totals">
-        <div><span>Subtotal (Net)</span><span id="subtotalAmount">₱0.00</span></div>
-        <div id="packagingRow" style="display: none;"><span>Bag Fee</span><span>₱1.00</span></div>
-        <div><span>Tax (12% Incl.)</span><span id="taxAmount">₱0.00</span></div>
-        <div class="grand-total">
-            <span>TOTAL</span>
-            <span id="totalAmount">₱0.00</span>
+<div class="main-container" id="mainContainer">
+    <div class="receipt" id="receiptCard">
+        <div class="receipt-order-number">
+            <p id="labelType">ORDERING FOR</p>
+            <h1 id="topIdentifier">----</h1>
         </div>
-    </div>
 
-    <div class="receipt-points" id="pointsSection">
-        <div class="points-row">
-            <span>Points Earned</span>
-            <span class="points-highlight">+ <span id="earnedPoints">0</span> pts</span>
+        <div class="receipt-header">
+            <h2>TEO D' MANGO</h2>
+            <p>Official Receipt</p>
+            <p>Kiosk Order</p>
         </div>
-        
-        <div class="qr-container">
-            <div class="qr-code">
-                <img id="qrImage" src="" alt="Points QR">
+
+        <div class="receipt-info">
+            <div><span>Order Type</span><span id="orderType">--</span></div>
+            <div id="tableRow" style="display: none;"><span>Table #</span><span id="tableNumber">--</span></div>
+            <div><span>Date</span><span id="orderDate">--/--/----</span></div>
+            <div><span>Time</span><span id="orderTime">--:--</span></div>
+            <div><span>Payment</span><span id="paymentMethod">--</span></div>
+        </div>
+
+        <div class="receipt-items" id="receiptItems">
             </div>
-            <p class="qr-label">Scan to claim points</p>
+
+        <div class="receipt-totals">
+            <div><span>Subtotal (Net)</span><span id="subtotalAmount">₱0.00</span></div>
+            <div id="packagingRow" style="display: none;"><span>Bag Fee</span><span>₱1.00</span></div>
+            <div><span>Tax (12% Incl.)</span><span id="taxAmount">₱0.00</span></div>
+            <div class="grand-total">
+                <span>TOTAL</span>
+                <span id="totalAmount">₱0.00</span>
+            </div>
+        </div>
+
+        <div class="receipt-points" id="pointsSection">
+            <div class="points-row">
+                <span>Points Earned</span>
+                <span class="points-highlight">+ <span id="earnedPoints">0</span> pts</span>
+            </div>
+            
+            <div class="qr-container">
+                <div class="qr-code">
+                    <img id="qrImage" src="" alt="Points QR">
+                </div>
+                <p class="qr-label">Scan to claim points</p>
+            </div>
+        </div>
+
+        <div class="receipt-footer">
+            <p>Your mango-nificent day starts here!</p>
         </div>
     </div>
 
-    <button class="receipt-btn" onclick="confirmOrder()">Okay, Got it!</button>
-
-    <div class="receipt-footer">
-        <p>Your mango-nificent day starts here!</p>
-        <p>Show this to our staff to collect your order.</p>
+    <div class="action-container">
+        <button class="receipt-btn" onclick="confirmOrder()">Okay, Got it!</button>
     </div>
-</div>
-
-<div id="printOverlay" class="print-overlay">
-    <div class="printing-paper"></div>
-    <div class="spinner"></div>
-    <div class="print-content"><p style="font-family: 'Courier New', monospace; font-weight: bold; color: #444;">FINALIZING ORDER...</p></div>
 </div>
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        // GET REAL DATA FROM LOCAL STORAGE
-        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        // 1. DATA EXTRACTION
+        const tray = JSON.parse(localStorage.getItem('teo_tray')) || [];
         const paymentMethod = localStorage.getItem('paymentMethod') || 'Cash';
-        const customerName = localStorage.getItem('customerName') || 'Guest';
-        const teoCardID = localStorage.getItem('teoCardID');
         const orderType = localStorage.getItem('orderType') || 'Dine-in';
+        const customerName = localStorage.getItem('customerName') || 'Guest';
+        
+        // TeoPay Specific Data
+        const teoCardID = localStorage.getItem('teoCardID'); 
+        const walletPin = localStorage.getItem('walletPin') || "000000";
+        const walletEmail = localStorage.getItem('walletEmail') || "customer@teopay.com";
+        const userId = parseInt(localStorage.getItem('userId')) || 0;
         const tableNumber = localStorage.getItem('tableNumber');
+        
+        const cardHolderName = localStorage.getItem('cardHolderName');
 
-        // IDENTIFIER LOGIC
+        // Mapping for JSON Add-on IDs
+        const addonMapping = {
+            "Extra Pearls": 1,
+            "Nata de Coco": 2,
+            "Mango Bits": 3,
+            "Cheese": 4
+        };
+
+        // 2. CONSTRUCT THE JSON DATA STRUCTURE
+        const receiptData = {
+            "order_type": orderType.toLowerCase(),
+            "payment_method": paymentMethod.toLowerCase(),
+            "items": tray.map(item => ({
+                "product_id": item.id || 0,
+                "quantity": item.qty || 1, 
+                "size": item.size || "Regular",
+                "add_ons": item.toppings && item.toppings.length > 0 
+                           ? item.toppings.map(t => addonMapping[t] || 0) 
+                           : [0]
+            })),
+            "wallet_email": walletEmail,
+            "wallet_pin": walletPin,
+            "user_id": userId
+        };
+
+        // 3. UI RENDERING: HEADER INFO
         const labelType = document.getElementById('labelType');
         const topIdentifier = document.getElementById('topIdentifier');
 
-        if (paymentMethod.toLowerCase().includes('teo') && teoCardID) {
-            labelType.innerText = "TEOPAY CARD NUMBER";
-            topIdentifier.innerText = teoCardID;
+        if (paymentMethod.toLowerCase().includes('teo')) {
+            labelType.innerText = "ORDERING FOR";
+            topIdentifier.innerText = cardHolderName || teoCardID || "---";
         } else {
-            labelType.innerText = "CUSTOMER NAME";
+            labelType.innerText = "ORDERING FOR";
             topIdentifier.innerText = customerName;
         }
 
-        // Basic Info
         document.getElementById('orderType').innerText = orderType;
         document.getElementById('paymentMethod').innerText = paymentMethod;
+        
         const now = new Date();
         document.getElementById('orderDate').innerText = now.toLocaleDateString();
         document.getElementById('orderTime').innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -273,88 +392,83 @@
             document.getElementById('tableNumber').innerText = tableNumber;
         }
 
-        // Render Real Items
+        // 4. UI RENDERING: ITEMS, SIZE, & ADD-ONS
         const itemsContainer = document.getElementById('receiptItems');
         let rawTotal = 0;
-        let totalQty = 0;
 
-        if (cart.length === 0) {
-            itemsContainer.innerHTML = '<p style="text-align:center">No items found.</p>';
+        if (tray.length === 0) {
+            itemsContainer.innerHTML = '<p style="text-align:center; padding: 20px;">No items in tray.</p>';
         } else {
-            cart.forEach(item => {
-                const qty = item.quantity || 1;
+            tray.forEach(item => {
+                const qty = item.qty || 1;
                 const price = parseFloat(item.price) || 0;
                 const lineTotal = qty * price;
+                const itemSize = item.size ? ` ${item.size}` : "";
+                
                 rawTotal += lineTotal;
-                totalQty += qty;
 
-                const div = document.createElement('div');
-                div.className = 'item-row';
-                div.innerHTML = `<span>${qty}x ${item.name}</span><span>₱${lineTotal.toFixed(2)}</span>`;
-                itemsContainer.appendChild(div);
+                // Main Item Row
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'item-row';
+                itemDiv.innerHTML = `
+                    <span>${qty}x ${item.name}${itemSize}</span>
+                    <span>₱${lineTotal.toFixed(2)}</span>
+                `;
+                itemsContainer.appendChild(itemDiv);
+
+                // Add-ons (Toppings) Row
+                if (item.toppings && item.toppings.length > 0) {
+                    item.toppings.forEach(topping => {
+                        const addonDiv = document.createElement('div');
+                        addonDiv.className = 'addon-row';
+                        addonDiv.innerHTML = `<span>+ ${topping}</span><span>--</span>`;
+                        itemsContainer.appendChild(addonDiv);
+                    });
+                }
             });
         }
 
-        // Bag Fee Logic
-        let bagFee = 0;
-        if (orderType.toLowerCase() === 'take-out' && totalQty > 0) {
-            bagFee = 1.00;
-            document.getElementById('packagingRow').style.display = 'flex';
-            const bagDiv = document.createElement('div');
-            bagDiv.className = 'item-row fee-row';
-            bagDiv.innerHTML = `<span>1x Eco-Bag Fee</span><span>₱1.00</span>`;
-            itemsContainer.appendChild(bagDiv);
-        }
+        // 5. TOTALS CALCULATION
+        let bagFee = (orderType.toLowerCase() === 'to-go') ? 1.00 : 0;
+        if (bagFee > 0) document.getElementById('packagingRow').style.display = 'flex';
 
-        // Totals Calculations
         const finalTotal = rawTotal + bagFee;
         const subtotal = finalTotal / 1.12;
         const taxAmount = finalTotal - subtotal;
-        const points = Math.floor(finalTotal / 10);
 
         document.getElementById('subtotalAmount').innerText = `₱${subtotal.toFixed(2)}`;
         document.getElementById('taxAmount').innerText = `₱${taxAmount.toFixed(2)}`;
         document.getElementById('totalAmount').innerText = `₱${finalTotal.toFixed(2)}`;
-        document.getElementById('earnedPoints').innerText = points;
+        document.getElementById('earnedPoints').innerText = Math.floor(finalTotal / 10);
 
-        // Payment Method Check: Pay at Counter = No Points/QR on receipt
-        const isPayAtCounter = paymentMethod.toLowerCase().includes('counter');
-        
-        if (isPayAtCounter) {
-            document.getElementById('pointsSection').style.display = 'none';
-        } else {
-            const qrData = encodeURIComponent(`OrderID:${Date.now()}|Points:${points}|User:${customerName}|Card:${teoCardID || 'N/A'}`);
+        // 6. QR CODE GENERATION
+        if (!paymentMethod.toLowerCase().includes('counter')) {
+            const qrData = encodeURIComponent(JSON.stringify(receiptData));
             document.getElementById('qrImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${qrData}`;
+        } else {
+            document.getElementById('pointsSection').style.display = 'none';
         }
     });
 
-    /**
-     * Resets the entire transaction and clears LocalStorage 
-     * before returning to the start page.
-     */
+    // Trigger full screen animation
     function confirmOrder() {
-        document.getElementById('printOverlay').style.display = 'flex';
+        const overlay = document.getElementById('successOverlay');
+        const mainContainer = document.getElementById('mainContainer');
         
-        // FULL RESET: Clear all keys related to the ordering process
-        const keysToClear = [
-            'cart', 
-            'paymentMethod', 
-            'teoCardID', 
-            'tableNumber', 
-            'orderType', 
-            'customerName',
-            'orderTotal',
-            'temp_order_id'
-        ];
+        // 1. Show the full screen overlay
+        overlay.classList.add('active');
         
-        keysToClear.forEach(key => localStorage.removeItem(key));
-        
-        // Alternative: localStorage.clear(); // Use this if you want to wipe EVERYTHING
-        
-        // Delay to allow the "Finalizing" animation to play
-        setTimeout(() => { 
-            window.location.href = 'index.html'; 
-        }, 3000);
+        // 2. Wait 2 seconds (time for user to see the animation)
+        setTimeout(() => {
+            // 3. Fade out the whole container
+            mainContainer.classList.add('fade-out');
+            
+            // 4. Redirect
+            setTimeout(() => { 
+                localStorage.removeItem('teo_tray');
+                window.location.href = 'index.html'; 
+            }, 500); 
+        }, 2000); 
     }
 </script>
 

@@ -13,20 +13,27 @@
             -webkit-tap-highlight-color: transparent;
         }
 
+        /* FIXED: Added html height and updated body to use 100dvh to prevent white gaps */
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            background-color: #000; /* Fallback to hide white flashes */
+        }
+
         body {
-            height: 100vh;
+            height: 100dvh; 
             display: flex;
             justify-content: center;
             align-items: center;
-            /* Using the specific relative path provided */
+            /* FIXED: Ensures background stays fixed and covers entire area without resizing weirdly */
             background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), 
                         url('../Images/teoDMangoBG.png');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            overflow: hidden;
+            background-attachment: fixed;
             position: fixed;
-            width: 100%;
         }
 
         .back-btn {
@@ -138,22 +145,30 @@
 
         .keyboard-container {
             position: fixed;
-            bottom: -500px;
+            bottom: 0;
             left: 0;
             width: 100%;
             background: rgba(245, 245, 245, 0.98);
             backdrop-filter: blur(20px);
             padding: 12px 8px;
-            display: flex;
+            display: none;
             flex-direction: column;
             gap: 10px;
-            transition: bottom 0.4s cubic-bezier(0.25, 1, 0.5, 1);
             z-index: 1000;
             border-top: 1px solid rgba(0,0,0,0.1);
             box-shadow: 0 -10px 40px rgba(0,0,0,0.15);
+            animation: slideUp 0.3s ease-out;
         }
 
-        .keyboard-container.show { bottom: 0; }
+        .keyboard-container.show { 
+            display: flex;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
         .kb-row { display: flex; justify-content: center; gap: 6px; width: 100%; }
         .key {
             background: white;
@@ -187,21 +202,20 @@
 
         #successOverlay.active { display: flex; }
 
-        .check-circle {
-            width: 100px;
-            height: 100px;
-            background: #fbbc04;
+        /* CHANGED: Replaced check-circle with spinner animation */
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid #fbbc04;
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 1.5rem;
-            animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: spin 1s linear infinite;
+            margin-bottom: 2rem;
         }
 
-        @keyframes pop {
-            0% { transform: scale(0); }
-            100% { transform: scale(1); }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -220,16 +234,12 @@
         </div>
     </div>
 
-    <!-- Success Screen -->
     <div id="successOverlay">
-        <div class="check-circle">
-            <svg viewBox="0 0 24 24" width="50" height="50" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-        </div>
-        <h2 style="font-size: 1.8rem; font-weight: 900; color: #222;">ORDER PLACED</h2>
-        <p style="font-size: 1.1rem; color: #666; font-weight: 500; margin-top: 0.5rem;">Pay at the counter, please!</p>
+        <div class="spinner"></div>
+        <h2 style="font-size: 1.8rem; font-weight: 900; color: #222;">GENERATING RECEIPT</h2>
+        <p style="font-size: 1.1rem; color: #666; font-weight: 500; margin-top: 0.5rem;">Please wait...</p>
     </div>
 
-    <!-- Custom Keyboard -->
     <div class="keyboard-container" id="keyboard">
         <div class="kb-row">
             <div class="key" onclick="type('Q')">Q</div><div class="key" onclick="type('W')">W</div><div class="key" onclick="type('E')">E</div><div class="key" onclick="type('R')">R</div><div class="key" onclick="type('T')">T</div><div class="key" onclick="type('Y')">Y</div><div class="key" onclick="type('U')">U</div><div class="key" onclick="type('I')">I</div><div class="key" onclick="type('O')">O</div><div class="key" onclick="type('P')">P</div>
@@ -270,10 +280,7 @@
                 setTimeout(() => input.style.borderColor = "rgba(0,0,0,0.06)", 1000);
                 return;
             }
-
-            // Save the customer name for the receipt before navigating
             localStorage.setItem('customerName', input.value.trim());
-
             overlay.classList.add('active');
             setTimeout(() => {
                 window.location.href = 'receipt.html';
