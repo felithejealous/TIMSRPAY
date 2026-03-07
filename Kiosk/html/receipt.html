@@ -54,9 +54,15 @@
         .detail-row { font-size: 12px; color: #666; padding-left: 22px; margin-top: 2px; font-style: italic; }
         .addon-row { display: flex; justify-content: space-between; font-size: 12px; color: #777; padding-left: 22px; margin-top: 2px; }
 
+        /* UNIFORM TOTALS & VAT SECTION */
+        .receipt-totals { margin-top: 10px; }
+        .totals-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
+        .vat-detail { color: #888; font-size: 12px; }
+
         .highlight-box {
             background: #fff9e6; border-radius: 12px; padding: 12px;
             margin: 15px 0; border: 1px solid #ffeeba;
+            display: none; /* Hidden by default, shown via JS if not cash */
         }
         .highlight-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
         .points-text { color: #b8860b; font-weight: 800; font-size: 14px; }
@@ -117,7 +123,7 @@
         .modal-btn-confirm { background: #ff8c00; color: white; }
         .modal-btn-cancel { background: #eee; color: #333; }
 
-        /* --- MODERN GLASSY FINISH ANIMATION --- */
+        /* SUCCESS OVERLAY */
         #successOverlay {
             display: none; position: fixed; inset: 0; 
             background: rgba(255, 255, 255, 0.1);
@@ -212,15 +218,18 @@
             <div class="receipt-items" id="receiptItems"></div>
 
             <div class="receipt-totals">
-                <div><span>Subtotal</span><span id="subtotalAmount">₱0.00</span></div>
-                <div id="packagingRow" style="display:none;"><span>Bag Fee</span><span>₱1.00</span></div>
-                <div style="font-weight:800; font-size:18px; margin-top:10px; border-top:2px solid #000; padding-top:10px;">
+                <div class="totals-row"><span>Subtotal</span><span id="subtotalAmount">₱0.00</span></div>
+                <div id="packagingRow" class="totals-row" style="display:none;"><span>Bag Fee</span><span>₱1.00</span></div>
+                <div class="totals-row vat-detail"><span>VATable Sales</span><span id="vatableSales">₱0.00</span></div>
+                <div class="totals-row vat-detail"><span>VAT Amount (12%)</span><span id="vatAmount">₱0.00</span></div>
+
+                <div style="font-weight:800; font-size:18px; margin-top:10px; border-top:2px solid #000; padding-top:10px; display:flex; justify-content:space-between;">
                     <span>TOTAL</span>
                     <span id="totalAmount">₱0.00</span>
                 </div>
             </div>
 
-            <div class="highlight-box">
+            <div class="highlight-box" id="rewardsBox">
                 <div class="highlight-row">
                     <span style="font-size:12px; font-weight:700;">REWARDS EARNED</span>
                     <span class="points-text">+ <span id="earnedPoints">0</span> PTS</span>
@@ -265,7 +274,6 @@
     </div>
 
 <script>
-    // --- MODAL UTILITIES ---
     function showStyledAlert(title, message) {
         document.getElementById('modalTitle').innerText = title;
         document.getElementById('modalMessage').innerText = message;
@@ -333,29 +341,48 @@
         if (bagFee > 0) document.getElementById('packagingRow').style.display = 'flex';
 
         const finalTotal = rawTotal + bagFee;
+        const vatableSales = finalTotal / 1.12;
+        const vatAmount = finalTotal - vatableSales;
+
         document.getElementById('subtotalAmount').innerText = `₱${rawTotal.toFixed(2)}`;
+        document.getElementById('vatableSales').innerText = `₱${vatableSales.toFixed(2)}`;
+        document.getElementById('vatAmount').innerText = `₱${vatAmount.toFixed(2)}`;
         document.getElementById('totalAmount').innerText = `₱${finalTotal.toFixed(2)}`;
-        document.getElementById('earnedPoints').innerText = Math.floor(finalTotal / 10);
 
+        // --- STRICT REWARDS LOGIC (NO REWARDS FOR CASH OR COUNTER PAYMENTS) ---
+        const rewardsBox = document.getElementById('rewardsBox');
+        const teoFooter = document.getElementById('teoPayExtra');
         const finishBtn = document.getElementById('finishBtn');
-        if (paymentMethod.toLowerCase().includes('teo')) {
-            document.getElementById('balanceSection').style.display = 'block';
-            document.getElementById('teoPayExtra').style.display = 'block';
-            document.getElementById('balanceValue').innerText = `₱${userBalance.toFixed(2)}`;
-            
-            const statusBadge = document.getElementById('balanceStatus');
-            if (userBalance >= finalTotal) {
-                statusBadge.innerText = "Sufficient";
-                statusBadge.classList.add('status-ok');
-            } else {
-                statusBadge.innerText = "Insufficient";
-                statusBadge.classList.add('status-error');
-                document.getElementById('insufficientChoices').style.display = 'flex';
-                finishBtn.disabled = true;
-            }
+        
+        const pmLower = paymentMethod.toLowerCase();
+        const isExcluded = pmLower === 'cash' || pmLower.includes('counter');
 
-            const qrData = encodeURIComponent(`LOYALTY_${teoCardID}`);
-            document.getElementById('teoQrImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${qrData}`;
+        if (isExcluded) {
+            rewardsBox.style.display = 'none';
+            if(teoFooter) teoFooter.style.display = 'none';
+        } else {
+            rewardsBox.style.display = 'block';
+            document.getElementById('earnedPoints').innerText = Math.floor(finalTotal / 10);
+            
+            if (pmLower.includes('teo')) {
+                document.getElementById('balanceSection').style.display = 'block';
+                if(teoFooter) teoFooter.style.display = 'block';
+                document.getElementById('balanceValue').innerText = `₱${userBalance.toFixed(2)}`;
+                
+                const statusBadge = document.getElementById('balanceStatus');
+                if (userBalance >= finalTotal) {
+                    statusBadge.innerText = "Sufficient";
+                    statusBadge.classList.add('status-ok');
+                } else {
+                    statusBadge.innerText = "Insufficient";
+                    statusBadge.classList.add('status-error');
+                    document.getElementById('insufficientChoices').style.display = 'flex';
+                    finishBtn.disabled = true;
+                }
+
+                const qrData = encodeURIComponent(`LOYALTY_${teoCardID}`);
+                document.getElementById('teoQrImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${qrData}`;
+            }
         }
     });
 
@@ -374,14 +401,11 @@
     function confirmOrder() {
         const overlay = document.getElementById('successOverlay');
         const card = document.getElementById('glassCard');
-        
-        // Trigger Animation
         overlay.style.display = 'flex';
         setTimeout(() => {
             overlay.style.opacity = '1';
             card.style.transform = 'scale(1)';
         }, 50);
-
         setTimeout(() => {
             localStorage.removeItem('teo_tray');
             window.location.href = 'index.html'; 
