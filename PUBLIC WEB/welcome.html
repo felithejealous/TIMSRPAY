@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dashboard Overview | Teo D' Mango Premium</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* --- DYNAMIC THEME VARIABLES --- */
+        :root {
+            --mango: #ffc244;
+            --mango-dark: #d4a017;
+            --strawberry: #ff4d6d;
+            
+            /* DARK MODE (Default) */
+            --bg-main: #050505;
+            --text-main: #ffffff;
+            --text-muted: #888888;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --nav-bg: rgba(5, 5, 5, 0.7);
+            --shadow: 0 30px 60px rgba(0,0,0,0.5);
+            --hover-bg: rgba(255, 255, 255, 0.06);
+            --icon-bg: rgba(255, 255, 255, 0.05);
+            --glow-opacity: 0.15;
+            --danger: #ff4d6d;
+        }
+
+        /* LIGHT MODE */
+        body.light-mode {
+            --bg-main: #f4f5f7;
+            --text-main: #1a1a1a;
+            --text-muted: #666666;
+            --card-bg: rgba(255, 255, 255, 0.6);
+            --card-border: rgba(0, 0, 0, 0.05);
+            --nav-bg: rgba(244, 245, 247, 0.8);
+            --shadow: 0 20px 50px rgba(0,0,0,0.04);
+            --hover-bg: rgba(255, 255, 255, 1);
+            --icon-bg: rgba(0, 0, 0, 0.03);
+            --glow-opacity: 0.4; 
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; scroll-behavior: smooth; }
+        
+        body { 
+            background-color: var(--bg-main); color: var(--text-main);
+            min-height: 100vh; transition: background-color 0.5s ease, color 0.5s ease;
+            overflow-x: hidden; position: relative;
+        }
+
+        /* Glowing Orbs */
+        body::before, body::after { content: ''; position: fixed; border-radius: 50%; z-index: -1; transition: 0.5s ease; }
+        body::before { top: -10%; left: -5%; width: 600px; height: 600px; background: var(--mango); filter: blur(120px); opacity: var(--glow-opacity); }
+        body::after { bottom: -10%; right: -5%; width: 500px; height: 500px; background: var(--strawberry); filter: blur(150px); opacity: calc(var(--glow-opacity) - 0.05); }
+
+        /* --- NAVIGATION --- */
+        nav {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 8%; background: var(--nav-bg);
+            backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--card-border);
+            transition: background 0.5s ease, border-color 0.5s ease;
+        }
+        
+        .logo { display: flex; align-items: center; }
+        .logo img { 
+            height: 40px; object-fit: contain; 
+            filter: drop-shadow(0 0 2px rgba(255,255,255,0.8)) drop-shadow(0 0 5px var(--mango));
+            transition: 0.3s ease;
+        }
+        .logo img:hover {
+            filter: drop-shadow(0 0 4px rgba(255,255,255,1)) drop-shadow(0 0 10px var(--mango));
+            transform: scale(1.05);
+        }
+
+        .nav-links { display: flex; list-style: none; gap: 30px; align-items: center; }
+        .nav-links a { text-decoration: none; color: var(--text-muted); font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; }
+        .nav-links a:hover, .nav-links a.active { color: var(--text-main); }
+        
+        .btn-logout { border: 1.5px solid var(--text-main); padding: 8px 20px; border-radius: 50px; color: var(--text-main) !important; }
+        .btn-logout:hover { background: var(--text-main); color: var(--bg-main) !important; }
+
+        .nav-actions { display: flex; gap: 15px; align-items: center; }
+        .circle-btn {
+            background: var(--icon-bg); border: 1px solid var(--card-border);
+            color: var(--text-main); width: 40px; height: 40px; border-radius: 50%;
+            display: grid; place-items: center; cursor: pointer; transition: 0.3s; position: relative;
+        }
+        .circle-btn:hover { background: var(--hover-bg); transform: scale(1.05); color: var(--mango); }
+
+        /* --- DASHBOARD GRID --- */
+        .dashboard-wrapper {
+            max-width: 1200px;
+            margin: 40px auto 80px;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 25px;
+        }
+
+        .glass-bento {
+            background: var(--card-bg); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
+            border: 1px solid var(--card-border); border-radius: 35px;
+            padding: 40px; box-shadow: var(--shadow); transition: 0.3s ease;
+        }
+        .glass-bento:hover { border-color: rgba(255, 194, 68, 0.3); transform: translateY(-5px); }
+        .bento-title { font-size: 18px; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 25px; display: flex; align-items: center; gap: 12px; color: var(--text-main);}
+        .bento-title i { color: var(--mango); font-size: 20px; }
+
+        /* 1. HERO SECTION */
+        .hero-bento {
+            grid-column: span 8;
+            background: linear-gradient(to top, rgba(5,5,5,0.9) 0%, rgba(5,5,5,0.2) 100%), url('https://images.unsplash.com/photo-1546173159-315724a31696?auto=format&fit=crop&q=80&w=1000') center/cover;
+            display: flex; flex-direction: column; justify-content: flex-end;
+            min-height: 300px; border-radius: 35px; padding: 40px; border: 1px solid var(--card-border);
+            box-shadow: var(--shadow); transition: 0.4s;
+        }
+        .hero-bento:hover { transform: translateY(-5px); box-shadow: 0 40px 80px rgba(0,0,0,0.6); }
+        .hero-bento h1 { font-size: 48px; font-weight: 900; color: #fff; letter-spacing: -2px; margin-bottom: 10px; line-height: 1.1; }
+        .hero-bento p { font-size: 16px; color: #ddd; font-weight: 600; margin-bottom: 25px; max-width: 80%; }
+        
+        .btn-massive { 
+            background: var(--mango); color: #111; border: none; padding: 15px 35px; 
+            border-radius: 50px; font-weight: 900; font-size: 13px; text-transform: uppercase; 
+            letter-spacing: 1px; cursor: pointer; transition: 0.3s; width: fit-content;
+            box-shadow: 0 15px 30px rgba(255,194,68,0.2);
+        }
+        .btn-massive:hover { background: #fff; transform: translateY(-3px); box-shadow: 0 20px 40px rgba(255,255,255,0.2);}
+
+        /* 2. WALLET SECTION */
+        .wallet-bento { grid-column: span 4; display: flex; flex-direction: column; }
+        .wallet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .wallet-header span { font-size: 12px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        .wallet-balance { font-size: 42px; font-weight: 900; color: var(--text-main); letter-spacing: -2px; margin-bottom: 20px;}
+
+        /* Premium Black Metal Card */
+        .tims-card {
+            background: linear-gradient(135deg, #1c1c1c 0%, #050505 100%);
+            border: 1px solid rgba(255, 194, 68, 0.2); border-radius: 20px;
+            padding: 25px; color: #fff; position: relative; overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.1);
+            margin-bottom: 20px; flex: 1; display: flex; flex-direction: column; justify-content: space-between;
+        }
+        .tims-card::before {
+            content: ''; position: absolute; top: -50px; right: -50px; width: 150px; height: 150px;
+            background: radial-gradient(circle, var(--mango) 0%, transparent 60%); opacity: 0.15; filter: blur(30px);
+        }
+        .card-brand { font-weight: 900; font-size: 14px; letter-spacing: 2px; text-align: right; }
+        .card-brand span { color: var(--mango); }
+        .card-chip { 
+            width: 40px; height: 30px; background: linear-gradient(135deg, #e6c27a, #d4a017); 
+            border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.5); margin: 15px 0;
+        }
+        .card-num { font-size: 20px; letter-spacing: 4px; font-family: 'Courier New', monospace; font-weight: 800; color: #f0f0f0; }
+        .card-name { font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #fff; margin-top: 10px;}
+
+        .wallet-actions { display: flex; gap: 10px; }
+        .wallet-btn {
+            flex: 1; padding: 15px; border-radius: 15px; background: var(--icon-bg);
+            border: 1px solid var(--card-border); color: var(--text-main);
+            font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;
+            cursor: pointer; transition: 0.3s;
+        }
+        .wallet-btn:hover { background: var(--hover-bg); border-color: var(--mango); color: var(--mango); }
+
+        /* 3. LIVE ORDER STATUS */
+        .status-bento { grid-column: span 6; display: flex; flex-direction: column; justify-content: space-between;}
+        .status-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;}
+        .status-badge { background: rgba(255, 194, 68, 0.1); color: var(--mango); padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; border: 1px solid rgba(255, 194, 68, 0.3);}
+        
+        .queue-num { font-size: 48px; font-weight: 900; color: var(--text-main); margin-bottom: 20px; letter-spacing: -2px;}
+        .queue-num span { font-size: 14px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; display: block;}
+        
+        .progress-container { margin-top: auto; }
+        .progress-text { display: flex; justify-content: space-between; font-size: 13px; font-weight: 800; margin-bottom: 10px; color: var(--text-main);}
+        .progress-bar { height: 10px; background: var(--icon-bg); border-radius: 10px; overflow: hidden; border: 1px solid var(--card-border); }
+        .progress-fill { height: 100%; width: 60%; background: var(--mango); border-radius: 10px; box-shadow: 0 0 15px var(--mango); animation: pulse 2s infinite; }
+        
+        @keyframes pulse { 0% { opacity: 0.8; } 50% { opacity: 1; } 100% { opacity: 0.8; } }
+
+        /* 4. RECENT ORDERS */
+        .reorder-bento { grid-column: span 6; }
+        .reorder-list { display: flex; flex-direction: column; gap: 15px; }
+        .reorder-item {
+            background: var(--icon-bg); padding: 20px; border-radius: 20px;
+            border: 1px solid var(--card-border); display: flex; justify-content: space-between; align-items: center; transition: 0.3s; cursor: pointer;
+        }
+        .reorder-item:hover { background: var(--hover-bg); border-color: var(--mango); transform: translateX(5px);}
+        .reorder-info h4 { font-size: 15px; font-weight: 800; color: var(--text-main); margin-bottom: 3px; }
+        .reorder-info p { font-size: 12px; color: var(--text-muted); font-weight: 600; }
+        .btn-small { background: var(--text-main); color: var(--bg-main); border: none; padding: 10px 20px; border-radius: 50px; font-weight: 900; font-size: 12px; cursor: pointer; transition: 0.3s;}
+        .reorder-item:hover .btn-small { background: var(--mango); color: #111;}
+
+        /* 5. BEST SELLERS (WITH IMAGES) */
+        .bs-header { grid-column: span 12; display: flex; align-items: center; gap: 15px; margin-top: 20px; margin-bottom: 10px;}
+        .bs-header h2 { font-size: 24px; font-weight: 900; color: var(--text-main); letter-spacing: -1px; }
+        .bs-header i { color: var(--danger); font-size: 20px; }
+
+        .bs-card {
+            grid-column: span 3; background: var(--card-bg); backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border); border-radius: 30px; padding: 20px;
+            text-align: center; transition: 0.3s; cursor: pointer; display: flex; flex-direction: column;
+        }
+        .bs-card:hover { transform: translateY(-10px); border-color: var(--mango); box-shadow: var(--shadow); background: var(--hover-bg);}
+        
+        .bs-img-wrapper {
+            width: 100%; height: 160px; border-radius: 20px; overflow: hidden; 
+            margin-bottom: 15px; background: var(--icon-bg);
+        }
+        .bs-img-wrapper img {
+            width: 100%; height: 100%; object-fit: cover; transition: 0.5s ease;
+        }
+        .bs-card:hover .bs-img-wrapper img { transform: scale(1.1); }
+
+        .bs-card h4 { font-size: 16px; font-weight: 900; color: var(--text-main); margin-bottom: 5px; line-height: 1.2;}
+        .bs-card p { font-size: 14px; font-weight: 800; color: var(--text-muted); }
+
+        /* --- FOOTER --- */
+        footer { border-top: 1px solid var(--card-border); padding: 40px 20px; text-align: center; background: var(--nav-bg); backdrop-filter: blur(20px); margin-top: 40px;}
+        .footer-logo { font-weight: 900; font-size: 18px; color: var(--text-main); margin-bottom: 20px; letter-spacing: -1px;}
+        .footer-logo span { color: var(--mango); }
+        .footer-links { display: flex; justify-content: center; gap: 20px; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px;}
+        .footer-links a { color: var(--text-muted); text-decoration: none; transition: 0.3s; }
+        .footer-links a:hover { color: var(--mango); }
+        .social-icons { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px;}
+        .social-icons a { color: var(--text-muted); font-size: 18px; transition: 0.3s; }
+        .social-icons a:hover { color: var(--mango); transform: translateY(-3px); }
+
+        /* --- ACCOUNT SIDE PANEL (Slide-over) --- */
+        .panel-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(10px);
+            z-index: 2000; opacity: 0; visibility: hidden; transition: 0.4s;
+        }
+        .panel-overlay.active { opacity: 1; visibility: visible; }
+
+        .side-panel {
+            position: fixed; top: 0; right: -100%; width: 100%; max-width: 450px; height: 100%;
+            background: var(--bg-main); border-left: 1px solid var(--card-border);
+            box-shadow: -20px 0 50px rgba(0,0,0,0.5); display: flex; flex-direction: column;
+            transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1); z-index: 2001;
+        }
+        .side-panel.active { right: 0; }
+        
+        .panel-header { padding: 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--card-border); }
+        .panel-header h2 { font-size: 20px; font-weight: 900; letter-spacing: -0.5px; color: var(--text-main);}
+        .panel-close-btn { background: transparent; border: none; font-size: 24px; color: var(--text-muted); cursor: pointer; transition: 0.3s; }
+        .panel-close-btn:hover { color: var(--text-main); transform: rotate(90deg);}
+
+        .panel-body { padding: 30px; display: flex; flex-direction: column; gap: 30px; flex: 1; overflow-y: auto; }
+        
+        .profile-card { display: flex; align-items: center; gap: 20px; padding: 20px; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 25px; }
+        .avatar-circle { width: 60px; height: 60px; background: var(--mango); color: #111; border-radius: 50%; display: grid; place-items: center; font-size: 24px; font-weight: 900; }
+        .profile-details h3 { font-size: 18px; font-weight: 900; margin-bottom: 3px; letter-spacing: -0.5px; color: var(--text-main);}
+        .profile-details p { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;}
+        
+        .balance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .balance-item { background: var(--icon-bg); border: 1px solid var(--card-border); padding: 25px 15px; border-radius: 20px; text-align: center; display: flex; flex-direction: column; gap: 8px; transition: 0.3s; }
+        .balance-item:hover { transform: translateY(-5px); border-color: var(--mango); background: rgba(255,194,68,0.05); }
+        .balance-item i { font-size: 24px; color: var(--mango); }
+        .balance-item span { font-size: 22px; font-weight: 900; letter-spacing: -1px; color: var(--text-main); }
+        .balance-item small { font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;}
+        
+        .account-menu { display: flex; flex-direction: column; gap: 10px; }
+        .acc-link-btn {
+            background: transparent; border: 1px solid var(--card-border); color: var(--text-main);
+            padding: 18px 20px; border-radius: 15px; font-size: 13px; font-weight: 800;
+            text-align: left; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 15px; text-decoration: none;
+        }
+        .acc-link-btn i { font-size: 16px; color: var(--text-muted); width: 20px; text-align: center; transition: 0.3s; }
+        .acc-link-btn:hover { background: var(--hover-bg); border-color: var(--text-main); transform: translateX(5px); }
+        .acc-link-btn:hover i { color: var(--mango); }
+        .acc-link-btn.danger:hover { background: rgba(255, 77, 109, 0.1); border-color: var(--danger); color: var(--danger); }
+        .acc-link-btn.danger:hover i { color: var(--danger); }
+
+        @media (max-width: 950px) {
+            .dashboard-wrapper { display: flex; flex-direction: column; padding: 20px; }
+            .nav-links { display: none; }
+            .bs-card { grid-column: span 6; } /* 2 per row on tablet/mobile */
+        }
+        @media (max-width: 500px) {
+            .bs-card { grid-column: span 12; } /* 1 per row on small phones */
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="index.html" class="logo">
+            <img src="logo.png" alt="Teo D' Mango">
+        </a>
+        <div class="nav-links">
+            <a href="welcome.html" class="active">HOME</a>
+            <a href="dashboard.html">OVERVIEW</a>
+            <a href="menu.html">MENU</a>
+            <a href="rewards.html">REWARDS</a>
+            <a href="topup.html">TOP-UP RPAY</a>
+            <a href="dashaccsett.html">SETTINGS</a>
+            <a href="index.html" class="btn-logout">LOG OUT</a>
+        </div>
+        <div class="nav-actions">
+            <button class="circle-btn" id="themeToggle" title="Toggle Light/Dark Mode">
+                <i class="fa-solid fa-sun"></i>
+            </button>
+            <button class="circle-btn" onclick="openAccountPanel()" title="Account Info">
+                <i class="fa-solid fa-user"></i>
+            </button>
+        </div>
+    </nav>
+
+    <main class="dashboard-wrapper">
+        
+        <div class="hero-bento">
+            <h1>Hi, Jane! </h1>
+            <p>Ready for your daily mango fix? Skip the line and order ahead for a faster, premium experience.</p>
+            <button class="btn-massive" onclick="window.location.href='menu.html'">Start New Order</button>
+        </div>
+
+        <div class="glass-bento wallet-bento">
+            <div class="wallet-header">
+                <span>Current Balance</span>
+                <span style="font-size: 10px; color: #10b981;"><i class="fa-solid fa-circle-check"></i> Active</span>
+            </div>
+            <div class="wallet-balance">₱850.00</div>
+
+            <div class="tims-card">
+                <div class="card-brand">TIMS <span>RPAY</span></div>
+                <div class="card-chip"></div>
+                <div class="card-num">8821 0000 9920</div>
+                <div class="card-name">Jane Doe</div>
+            </div>
+
+            <div class="wallet-actions">
+                <button class="wallet-btn" onclick="window.location.href='topup.html'"><i class="fa-solid fa-plus"></i> Top Up</button>
+                <button class="wallet-btn" onclick="window.location.href='checkout.html'"><i class="fa-solid fa-qrcode"></i> Pay</button>
+            </div>
+        </div>
+
+        <div class="glass-bento status-bento">
+            <div class="status-header">
+                <h2 class="bento-title" style="margin:0;"><i class="fa-solid fa-clock-rotate-left"></i> Live Order Status</h2>
+                <span class="status-badge">In Progress</span>
+            </div>
+            
+            <div class="queue-num">
+                <span>Queue Number</span>
+                #042
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-text">
+                    <span>Preparing your drinks...</span>
+                    <span style="color: var(--text-muted);">Est. 5 mins</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-bento reorder-bento">
+            <h2 class="bento-title"><i class="fa-solid fa-rotate-right"></i> Order Again</h2>
+            
+            <div class="reorder-list">
+                <div class="reorder-item" onclick="window.location.href='menu.html'">
+                    <div class="reorder-info">
+                        <h4>Large Mango Bliss</h4>
+                        <p>Less Sugar • Extra Graham</p>
+                    </div>
+                    <button class="btn-small">₱120.00</button>
+                </div>
+
+                <div class="reorder-item" onclick="window.location.href='menu.html'">
+                    <div class="reorder-info">
+                        <h4>Avocado Supreme</h4>
+                        <p>Standard Size • No Toppings</p>
+                    </div>
+                    <button class="btn-small">₱150.00</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="bs-header">
+            <h2>Best Sellers</h2>
+            <i class="fa-solid fa-fire"></i>
+        </div>
+
+        <div class="bs-card" onclick="window.location.href='menu.html'">
+            <div class="bs-img-wrapper">
+                <img src="mango.png" alt="Mango Bliss">
+            </div>
+            <h4>Classic Mango Bliss</h4>
+            <p>₱120.00</p>
+        </div>
+
+        <div class="bs-card" onclick="window.location.href='menu.html'">
+            <div class="bs-img-wrapper">
+                <img src="buko2.png" alt="Buko Slush">
+            </div>
+            <h4>Creamy Buko Slush</h4>
+            <p>₱130.00</p>
+        </div>
+
+        <div class="bs-card" onclick="window.location.href='menu.html'">
+            <div class="bs-img-wrapper">
+                <img src="berry2.png" alt="Strawberry Dream">
+            </div>
+            <h4>Strawberry Dream</h4>
+            <p>₱140.00</p>
+        </div>
+
+        <div class="bs-card" onclick="window.location.href='menu.html'">
+            <div class="bs-img-wrapper">
+                <img src="ube2.png" alt="Ube Macapuno">
+            </div>
+            <h4>Ube Macapuno Slush</h4>
+            <p>₱145.00</p>
+        </div>
+
+    </main>
+
+    <footer>
+        <div class="footer-logo">Teo D' <span>Mango</span></div>
+        <div class="footer-links">
+            <a href="#">About Us</a>
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
+            <a href="#">Support</a>
+        </div>
+        <div class="social-icons">
+            <a href="#"><i class="fa-brands fa-facebook"></i></a>
+            <a href="#"><i class="fa-brands fa-instagram"></i></a>
+            <a href="#"><i class="fa-brands fa-tiktok"></i></a>
+        </div>
+        <p style="font-size: 11px; color: var(--text-muted); font-weight: 700;">&copy; 2026 TIMS-RPAY | Teo D' Mango. All rights reserved.</p>
+    </footer>
+
+    <div class="panel-overlay" id="mainOverlay" onclick="closeAll()"></div>
+
+    <div class="side-panel" id="accountPanel">
+        <div class="panel-header">
+            <h2>Account Info</h2>
+            <button class="panel-close-btn" onclick="closeAll()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        
+        <div class="panel-body">
+            <div class="profile-card">
+                <div class="avatar-circle">JD</div>
+                <div class="profile-details">
+                    <h3>Jane Doe</h3>
+                    <p>Gold Member</p>
+                </div>
+            </div>
+
+            <div class="balance-grid">
+                <div class="balance-item">
+                    <i class="fa-solid fa-star"></i>
+                    <span>1,250</span>
+                    <small>Reward Points</small>
+                </div>
+                <div class="balance-item">
+                    <i class="fa-solid fa-wallet"></i>
+                    <span>₱850.00</span>
+                    <small>TIMS-RPAY Bal</small>
+                </div>
+            </div>
+
+            <div class="account-menu">
+                <a href="dashaccsett.html" class="acc-link-btn">
+                    <i class="fa-solid fa-gear"></i> Account Settings
+                </a>
+                <a href="rewards.html" class="acc-link-btn">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Transaction History
+                </a>
+                <a href="topup.html" class="acc-link-btn">
+                    <i class="fa-solid fa-plus-circle"></i> Top-Up Wallet
+                </a>
+                <a href="index.html" class="acc-link-btn danger">
+                    <i class="fa-solid fa-right-from-bracket"></i> Log Out
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- THEME TOGGLE LOGIC ---
+        const toggleBtn = document.getElementById('themeToggle');
+        const icon = toggleBtn.querySelector('i');
+        const body = document.body;
+
+        toggleBtn.addEventListener('click', () => {
+            body.classList.toggle('light-mode');
+            
+            if (body.classList.contains('light-mode')) {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+            } else {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            }
+        });
+
+        // --- SIDE PANEL CONTROL LOGIC ---
+        function openAccountPanel() {
+            document.getElementById('mainOverlay').classList.add('active');
+            document.getElementById('accountPanel').classList.add('active');
+            document.body.style.overflow = 'hidden'; 
+        }
+
+        function closeAll() {
+            document.getElementById('mainOverlay').classList.remove('active');
+            document.getElementById('accountPanel').classList.remove('active');
+            document.body.style.overflow = 'auto'; 
+        }
+    </script>
+</body>
+</html>

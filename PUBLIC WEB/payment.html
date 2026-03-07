@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Checkout | Teo D' Mango Premium</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* --- DYNAMIC THEME VARIABLES --- */
+        :root {
+            --mango: #ffc244;
+            --mango-dark: #d4a017;
+            --strawberry: #ff4d6d;
+            
+            /* DARK MODE (Default) */
+            --bg-main: #050505;
+            --text-main: #ffffff;
+            --text-muted: #888888;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --nav-bg: rgba(5, 5, 5, 0.7);
+            --shadow: 0 30px 60px rgba(0,0,0,0.5);
+            --hover-bg: rgba(255, 255, 255, 0.06);
+            --icon-bg: rgba(255, 255, 255, 0.05);
+            --glow-opacity: 0.15;
+            --danger: #ff4d6d;
+        }
+
+        /* LIGHT MODE */
+        body.light-mode {
+            --bg-main: #f4f5f7;
+            --text-main: #1a1a1a;
+            --text-muted: #666666;
+            --card-bg: rgba(255, 255, 255, 0.6);
+            --card-border: rgba(0, 0, 0, 0.05);
+            --nav-bg: rgba(244, 245, 247, 0.8);
+            --shadow: 0 20px 50px rgba(0,0,0,0.04);
+            --hover-bg: rgba(255, 255, 255, 1);
+            --icon-bg: rgba(0, 0, 0, 0.03);
+            --glow-opacity: 0.4; 
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; scroll-behavior: smooth; }
+        
+        body { 
+            background-color: var(--bg-main); color: var(--text-main);
+            min-height: 100vh; transition: background-color 0.5s ease, color 0.5s ease;
+            overflow-x: hidden; position: relative;
+        }
+
+        /* Glowing Orbs */
+        body::before, body::after { content: ''; position: fixed; border-radius: 50%; z-index: -1; transition: 0.5s ease; }
+        body::before { top: -10%; left: -5%; width: 600px; height: 600px; background: var(--mango); filter: blur(120px); opacity: var(--glow-opacity); }
+        body::after { bottom: -10%; right: -5%; width: 500px; height: 500px; background: var(--strawberry); filter: blur(150px); opacity: calc(var(--glow-opacity) - 0.05); }
+
+        /* --- NAVIGATION --- */
+        nav {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 8%; background: var(--nav-bg);
+            backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--card-border);
+        }
+        .logo { display: flex; align-items: center; }
+        
+        /* --- UPDATED LOGO STYLES WITH HIGHLIGHT --- */
+        .logo img { 
+            height: 40px; 
+            object-fit: contain; 
+            /* The Mango Glow Effect */
+            filter: drop-shadow(0 0 2px rgba(255,255,255,0.8)) drop-shadow(0 0 5px var(--mango));
+            transition: 0.3s ease;
+        }
+        .logo img:hover {
+            filter: drop-shadow(0 0 4px rgba(255,255,255,1)) drop-shadow(0 0 10px var(--mango));
+            transform: scale(1.05);
+        }
+        /* ---------------------------------------- */
+
+        .nav-links { display: flex; list-style: none; gap: 30px; align-items: center; }
+        .nav-links a { text-decoration: none; color: var(--text-muted); font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; }
+        .nav-links a:hover, .nav-links a.active { color: var(--text-main); }
+        
+        .btn-logout { border: 1.5px solid var(--text-main); padding: 8px 20px; border-radius: 50px; color: var(--text-main) !important; }
+        .btn-logout:hover { background: var(--text-main); color: var(--bg-main) !important; }
+
+        .nav-actions { display: flex; gap: 15px; align-items: center; }
+        .circle-btn {
+            background: var(--icon-bg); border: 1px solid var(--card-border);
+            color: var(--text-main); width: 40px; height: 40px; border-radius: 50%;
+            display: grid; place-items: center; cursor: pointer; transition: 0.3s;
+        }
+        .circle-btn:hover { background: var(--hover-bg); transform: scale(1.05); color: var(--mango); }
+
+        /* --- CHECKOUT LAYOUT --- */
+        .checkout-wrapper { max-width: 1100px; margin: 40px auto 80px; padding: 0 20px; display: grid; grid-template-columns: repeat(12, 1fr); gap: 30px; }
+        
+        .main-col { grid-column: span 8; display: flex; flex-direction: column; gap: 30px; }
+        .side-col { grid-column: span 4; }
+
+        .page-header { grid-column: span 12; margin-bottom: 10px; }
+        .page-badge { 
+            display: inline-block; background: rgba(255, 194, 68, 0.1); color: var(--mango); 
+            padding: 8px 20px; border-radius: 50px; font-weight: 900; text-transform: uppercase; 
+            letter-spacing: 2px; font-size: 11px; margin-bottom: 15px; border: 1px solid rgba(255, 194, 68, 0.3);
+        }
+        .page-header h1 { font-size: 42px; font-weight: 900; letter-spacing: -1.5px; }
+
+        /* --- GLASS BENTO CARDS --- */
+        .glass-bento {
+            background: var(--card-bg); backdrop-filter: blur(40px);
+            border: 1px solid var(--card-border); border-radius: 35px;
+            padding: 40px; box-shadow: var(--shadow); transition: 0.3s ease;
+        }
+        .bento-title { font-size: 22px; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 25px; display: flex; align-items: center; gap: 12px; }
+        .bento-title i { color: var(--mango); }
+
+        /* --- EDITABLE ORDER LIST --- */
+        .order-list { display: flex; flex-direction: column; }
+        .order-item { display: flex; justify-content: space-between; align-items: center; padding: 25px 0; border-bottom: 1px solid var(--card-border); animation: fadeIn 0.4s ease; }
+        .order-item:last-child { border-bottom: none; padding-bottom: 0; }
+        
+        .item-info { flex: 1; padding-right: 20px; }
+        .item-info h4 { font-size: 16px; font-weight: 900; margin-bottom: 5px; color: var(--text-main); }
+        .item-info p { font-size: 12px; color: var(--text-muted); font-weight: 600; line-height: 1.4; }
+        
+        .item-actions { display: flex; align-items: center; gap: 20px; }
+        .item-price { font-size: 18px; font-weight: 900; color: var(--text-main); width: 80px; text-align: right; }
+        
+        .qty-edit {
+            display: flex; align-items: center; gap: 10px; background: var(--icon-bg);
+            padding: 5px; border-radius: 50px; border: 1px solid var(--card-border);
+        }
+        .qty-edit button {
+            width: 30px; height: 30px; border-radius: 50%; border: none;
+            background: var(--bg-main); color: var(--text-main); cursor: pointer;
+            font-size: 12px; transition: 0.3s;
+        }
+        .qty-edit button:hover { background: var(--mango); color: #111; }
+        .qty-edit span { font-size: 14px; font-weight: 900; width: 20px; text-align: center; }
+
+        .btn-remove {
+            background: transparent; color: var(--text-muted); border: none; font-size: 18px;
+            cursor: pointer; transition: 0.3s; width: 40px; height: 40px; border-radius: 50%;
+            display: grid; place-items: center;
+        }
+        .btn-remove:hover { background: rgba(255, 77, 109, 0.1); color: var(--danger); }
+
+        .btn-add-more {
+            width: 100%; padding: 18px; margin-top: 25px;
+            background: transparent; border: 2px dashed var(--card-border);
+            color: var(--text-muted); border-radius: 20px; font-weight: 800;
+            font-size: 12px; text-transform: uppercase; letter-spacing: 1px;
+            cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .btn-add-more:hover {
+            border-style: solid; border-color: var(--mango); color: var(--mango);
+            background: rgba(255, 194, 68, 0.05); transform: translateY(-2px);
+        }
+
+        .empty-cart { text-align: center; padding: 40px 0; color: var(--text-muted); display: none; }
+        .empty-cart i { font-size: 40px; margin-bottom: 15px; opacity: 0.5; }
+        .empty-cart h3 { font-size: 18px; font-weight: 900; margin-bottom: 5px; color: var(--text-main); }
+
+        /* --- PAYMENT SELECTION --- */
+        .method-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+        .method-item { 
+            background: var(--icon-bg); border: 2px solid transparent; border-radius: 20px; 
+            padding: 25px 10px; text-align: center; cursor: pointer; transition: 0.3s;
+            color: var(--text-muted); display: flex; flex-direction: column; align-items: center; gap: 10px;
+        }
+        .method-item:hover { background: var(--hover-bg); color: var(--text-main); transform: translateY(-5px); }
+        .method-item.active { border-color: var(--mango); background: rgba(255, 194, 68, 0.1); color: var(--mango); }
+        .method-item i { font-size: 28px; }
+        .method-item span { font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
+
+        .qr-section { 
+            background: var(--bg-main); border: 1px solid var(--card-border); 
+            border-radius: 25px; padding: 30px; text-align: center; margin-top: 25px;
+            display: none; animation: fadeIn 0.4s ease;
+        }
+        .qr-section.active { display: block; }
+        .qr-box { 
+            background: #fff; padding: 20px; border-radius: 20px; display: inline-block; 
+            margin-bottom: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .qr-box img { width: 150px; height: 150px; display: block; border-radius: 10px; transition: 0.3s ease; }
+        .qr-section p { font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; }
+
+        .rpay-form {
+            background: var(--bg-main); border: 1px solid var(--card-border); 
+            border-radius: 25px; padding: 30px; margin-top: 25px;
+            display: none; animation: fadeIn 0.4s ease;
+        }
+        .rpay-form.active { display: block; }
+        .rpay-form h3 { font-size: 18px; font-weight: 900; text-align: center; margin-bottom: 25px; color: var(--text-main); letter-spacing: -0.5px;}
+        
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+        .rpay-input {
+            width: 100%; padding: 18px 20px; border-radius: 18px;
+            background: var(--icon-bg); border: 1px solid var(--card-border);
+            color: var(--text-main); font-size: 15px; font-weight: 600; outline: none; transition: 0.3s;
+        }
+        .rpay-input:focus { border-color: var(--mango); background: var(--bg-main); box-shadow: 0 5px 15px rgba(255, 194, 68, 0.1); }
+        .pin-input { font-family: monospace; letter-spacing: 15px; font-size: 24px; text-align: center; padding: 15px;}
+
+        /* --- SIDE COLUMN (TOTALS) --- */
+        .sticky-card { position: sticky; top: 100px; }
+        .summary-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 14px; font-weight: 700; color: var(--text-muted); }
+        .summary-row span:last-child { color: var(--text-main); font-weight: 800; font-size: 16px;}
+        .summary-row.points-earned { color: var(--mango); background: rgba(255, 194, 68, 0.1); padding: 15px; border-radius: 15px; border: 1px dashed var(--mango); }
+        .total-divider { height: 1px; background: var(--card-border); margin: 25px 0; }
+        .grand-total-label { font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); display: block; margin-bottom: 5px; }
+        .grand-total { font-size: 48px; font-weight: 900; color: var(--text-main); letter-spacing: -2px; line-height: 1; margin-bottom: 30px; transition: 0.3s; }
+
+        .btn-massive { 
+            width: 100%; padding: 20px; background: var(--text-main); color: var(--bg-main); 
+            border: none; border-radius: 50px; font-size: 14px; font-weight: 900; 
+            text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: 0.3s; 
+        }
+        .btn-massive:hover:not(:disabled) { background: var(--mango); color: #111; transform: translateY(-3px); box-shadow: 0 15px 30px rgba(255,194,68,0.2);}
+        .btn-massive:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* --- RECEIPT MODAL (PRINT READY) --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(15px);
+            z-index: 2000; display: flex; justify-content: center; align-items: center;
+            opacity: 0; visibility: hidden; transition: 0.4s;
+        }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        
+        .receipt-modal-content {
+            background: var(--bg-main); border: 1px solid var(--card-border); padding: 40px; 
+            border-radius: 35px; width: 90%; max-width: 450px; position: relative;
+            transform: translateY(30px) scale(0.95); transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 40px 80px rgba(0,0,0,0.5); max-height: 90vh; overflow-y: auto;
+        }
+        .modal-overlay.active .receipt-modal-content { transform: translateY(0) scale(1); }
+        
+        .receipt-inner { background: #fff; color: #111; border-radius: 20px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        
+        .receipt-header-print { text-align: center; margin-bottom: 20px; border-bottom: 2px dashed #ddd; padding-bottom: 20px;}
+        .receipt-header-print h2 { font-size: 24px; font-weight: 900; letter-spacing: -1px; margin: 10px 0 5px;}
+        .receipt-header-print p { font-size: 12px; color: #666; font-weight: 600; margin-bottom: 5px;}
+        
+        .print-item-row { display: flex; justify-content: space-between; font-weight: 800; font-size: 14px; margin-top: 15px;}
+        .print-item-sub { font-size: 11px; color: #888; font-weight: 600; line-height: 1.4; margin-bottom: 10px; max-width: 80%;}
+        
+        .receipt-totals-print { margin-top: 20px; border-top: 2px dashed #ddd; padding-top: 20px; }
+        .receipt-totals-print .summary-row { color: #111; font-size: 13px; }
+        .receipt-totals-print .summary-row span:last-child { color: #111; }
+        .receipt-totals-print .total-price { font-size: 20px; font-weight: 900; border-top: 1px solid #eee; padding-top: 15px; margin-top: 10px; }
+        .receipt-totals-print .pts-row { color: var(--mango-dark); background: rgba(255, 194, 68, 0.1); padding: 10px; border-radius: 10px; margin-top: 15px;}
+        
+        .receipt-footer-print { text-align: center; margin-top: 30px; font-size: 11px; color: #888; font-weight: 600;}
+
+        .receipt-actions { display: flex; gap: 15px; }
+        .btn-outline { 
+            flex: 1; padding: 18px; border: 2px solid var(--text-main); background: transparent; 
+            color: var(--text-main); border-radius: 50px; font-weight: 900; text-transform: uppercase; 
+            cursor: pointer; transition: 0.3s; 
+        }
+        .btn-outline:hover { background: var(--text-main); color: var(--bg-main); }
+        .btn-fill { flex: 1; padding: 18px; background: var(--mango); color: #111; border: none; border-radius: 50px; font-weight: 900; text-transform: uppercase; cursor: pointer; transition: 0.3s;}
+        .btn-fill:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(255, 194, 68, 0.3); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* =======================================
+           PRINT MEDIA QUERY (Hides everything except receipt)
+           ======================================= */
+        @media print {
+            body { background: #fff !important; margin: 0; padding: 0; }
+            body * { visibility: hidden; }
+            
+            #successReceiptModal, #successReceiptModal * { visibility: visible; }
+            #successReceiptModal {
+                position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+                background: white !important; padding: 0; margin: 0;
+            }
+            .receipt-modal-content {
+                box-shadow: none !important; border: none !important; width: 100% !important; max-width: 100% !important;
+                transform: none !important; padding: 0 !important; color: black !important; background: transparent !important;
+            }
+            .receipt-inner { box-shadow: none !important; border: none !important; padding: 0 !important;}
+            .no-print { display: none !important; }
+            /* Ensure logo prints */
+            .receipt-header-print img { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+
+        @media (max-width: 950px) {
+            .nav-links { display: none; }
+            .checkout-wrapper { display: flex; flex-direction: column; padding: 20px; }
+            .sticky-card { position: static; }
+            .item-actions { flex-direction: column; align-items: flex-end; gap: 10px;}
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="index.html" class="logo">
+            <img src="logo.png" alt="Teo D' Mango">
+        </a>
+        <div class="nav-links">
+            <a href="welcome.html">HOME</a>
+            <a href="dashboard.html">OVERVIEW</a>
+            <a href="menu.html">MENU</a>
+            <a href="rewards.html">REWARDS</a>
+            <a href="topup.html">TOP-UP RPAY</a>
+            <a href="dashaccsett.html">SETTINGS</a>
+            <a href="index.html" class="btn-logout">LOG OUT</a>
+        </div>
+        <div class="nav-actions">
+            <button class="circle-btn" id="themeToggle" title="Toggle Light/Dark Mode">
+                <i class="fa-solid fa-sun"></i>
+            </button>
+        </div>
+    </nav>
+
+    <main class="checkout-wrapper">
+        
+        <div class="page-header">
+            <span class="page-badge">Secure Checkout</span>
+            <h1>Complete Order</h1>
+        </div>
+
+        <div class="main-col">
+            
+            <div class="glass-bento">
+                <h2 class="bento-title"><i class="fa-solid fa-basket-shopping"></i> Review Purchase</h2>
+                
+                <div class="order-list" id="orderContainer">
+                    </div>
+                
+                <button class="btn-add-more" onclick="window.location.href='menu.html'">
+                    <i class="fa-solid fa-plus"></i> Add More Drinks
+                </button>
+
+                <div class="empty-cart" id="emptyCartMessage">
+                    <i class="fa-solid fa-cart-arrow-down"></i>
+                    <h3>Your cart is empty</h3>
+                    <p>Go back to the menu to add tropical shakes.</p>
+                </div>
+            </div>
+
+            <div class="glass-bento">
+                <h2 class="bento-title"><i class="fa-solid fa-credit-card"></i> Payment Method</h2>
+                
+                <div class="method-grid">
+                
+                    <div class="method-item active" onclick="selectPayment(this, 'teopay')">
+                        <i class="fa-solid fa-qrcode"></i>
+                        <span>Teo Pay</span>
+                    </div>
+                    <div class="method-item" onclick="selectPayment(this, 'cash')">
+                        <i class="fa-solid fa-wallet"></i>
+                        <span>Cash</span>
+                    </div>
+                </div>
+
+            
+
+                <div class="rpay-form active" id="rpayForm">
+                    <h3>Verify Teo Pay Account</h3>
+                    <div class="input-group">
+                        <label>Registered Email</label>
+                        <input type="email" class="rpay-input" id="rpayEmail" placeholder="e.g., user@timsrpay.com">
+                    </div>
+                    <div class="input-group" style="margin-bottom: 0;">
+                        <label>6-Digit Security PIN</label>
+                        <input type="password" class="rpay-input pin-input" id="rpayPin" maxlength="6" placeholder="••••••">
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="side-col">
+            <div class="glass-bento sticky-card">
+                
+                <div class="summary-row">
+                    <span>Subtotal</span> 
+                    <span id="subtotalDisplay">₱0.00</span>
+                </div>
+                
+                <div class="summary-row points-earned">
+                    <span><i class="fa-solid fa-star"></i> Points to Earn</span> 
+                    <span id="pointsDisplay">+0 PTS</span>
+                </div>
+                
+                <div class="total-divider"></div>
+                
+                <span class="grand-total-label">Total Amount</span>
+                <div class="grand-total" id="grandTotalDisplay">₱0.00</div>
+
+                <button class="btn-massive" id="btnConfirm" onclick="handleFinish()">Confirm Order</button>
+                <p class="note"><i class="fa-solid fa-check"></i> Verified In-Store Pickup</p>
+            </div>
+        </div>
+
+    </main>
+
+    <div class="modal-overlay" id="successReceiptModal">
+        <div class="receipt-modal-content">
+            
+            <div class="receipt-inner" id="printableReceipt">
+                <div class="receipt-header-print">
+                    <img src="logo.png" alt="Teo D' Mango" style="height: 40px; margin-bottom: 10px;">
+                    <h2>Official Receipt</h2>
+                    <p id="printDate">March 1, 2026 • 15:20</p>
+                    <p>Order #<strong id="printOrderNum">12345</strong></p>
+                </div>
+                
+                <div id="printItemsList">
+                    </div>
+                
+                <div class="receipt-totals-print">
+                    <div class="summary-row">
+                        <span>Subtotal</span><span id="printSubtotal">₱0.00</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Payment Method</span><span id="printMethod">Teo Pay</span>
+                    </div>
+                    <div class="summary-row total-price">
+                        <span>Total Paid</span><span id="printTotal">₱0.00</span>
+                    </div>
+                    <div class="summary-row pts-row">
+                        <span><strong><i class="fa-solid fa-star"></i> Points Earned</strong></span><span id="printPoints" style="font-weight:900;">+0 PTS</span>
+                    </div>
+                </div>
+                
+                <div class="receipt-footer-print">
+                    <p>Thank you for choosing Teo D' Mango!</p>
+                    <p>Please present this receipt at the counter to claim your order.</p>
+                </div>
+            </div>
+            
+            <div class="receipt-actions no-print">
+                <button class="btn-outline" onclick="window.print()"><i class="fa-solid fa-print"></i> Print</button>
+                <button class="btn-fill" onclick="window.location.href='menu.html'">Back to Menu</button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // --- THEME TOGGLE ---
+        const toggleBtn = document.getElementById('themeToggle');
+        const icon = toggleBtn.querySelector('i');
+        
+        toggleBtn.addEventListener('click', () => {
+            document.body.classList.toggle('light-mode');
+            if (document.body.classList.contains('light-mode')) {
+                icon.classList.replace('fa-sun', 'fa-moon');
+            } else {
+                icon.classList.replace('fa-moon', 'fa-sun');
+            }
+        });
+
+        // --- PAYMENT METHOD LOGIC ---
+        let currentPayment = 'teopay';
+
+        function selectPayment(element, type) {
+            currentPayment = type;
+            
+            document.querySelectorAll('.method-item').forEach(item => item.classList.remove('active'));
+            element.classList.add('active');
+
+            const qrSection = document.getElementById('qrDisplay');
+            const rpayForm = document.getElementById('rpayForm');
+            const qrImg = document.getElementById('paymentQrImg');
+            const qrText = document.getElementById('paymentQrText');
+
+            if(type === 'teopay') {
+                qrSection.classList.remove('active');
+                rpayForm.classList.add('active');
+            } else if (type === 'ebank') {
+                qrSection.classList.add('active');
+                rpayForm.classList.remove('active');
+                qrImg.src = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&color=1A120B&data=Standard_Bank_Transfer";
+                qrText.innerText = "SCAN TO PAY VIA GCASH, MAYA, OR BANK APP";
+            } else {
+                qrSection.classList.remove('active');
+                rpayForm.classList.remove('active');
+            }
+        }
+
+        // --- EDITABLE CART LOGIC ---
+        let checkoutItems = [
+            { id: 1, name: "Mango Bliss (Large)", addons: "+ Graham Crumbs, 100% Sugar", unitPrice: 95.00, qty: 1 },
+            { id: 2, name: "Creamy Buko Slush (Medium)", addons: "No Toppings, 50% Sugar", unitPrice: 75.00, qty: 1 }
+        ];
+
+        function renderCart() {
+            const container = document.getElementById('orderContainer');
+            const emptyMsg = document.getElementById('emptyCartMessage');
+            const btnConfirm = document.getElementById('btnConfirm');
+            const btnAddMore = document.querySelector('.btn-add-more');
+            
+            container.innerHTML = "";
+            let grandTotal = 0;
+
+            if (checkoutItems.length === 0) {
+                emptyMsg.style.display = "block";
+                btnAddMore.style.display = "flex"; 
+                btnConfirm.disabled = true;
+            } else {
+                emptyMsg.style.display = "none";
+                btnAddMore.style.display = "flex";
+                btnConfirm.disabled = false;
+
+                checkoutItems.forEach(item => {
+                    let lineTotal = item.unitPrice * item.qty;
+                    grandTotal += lineTotal;
+
+                    container.innerHTML += `
+                        <div class="order-item" id="item-${item.id}">
+                            <div class="item-info">
+                                <h4>${item.name}</h4>
+                                <p>${item.addons}</p>
+                            </div>
+                            <div class="item-actions">
+                                <div class="qty-edit">
+                                    <button onclick="updateQty(${item.id}, -1)"><i class="fa-solid fa-minus"></i></button>
+                                    <span>${item.qty}</span>
+                                    <button onclick="updateQty(${item.id}, 1)"><i class="fa-solid fa-plus"></i></button>
+                                </div>
+                                <div class="item-price">₱${lineTotal.toFixed(2)}</div>
+                                <button class="btn-remove" onclick="removeItem(${item.id})" title="Remove Item"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            let pointsEarned = Math.floor(grandTotal * 0.10);
+
+            document.getElementById('subtotalDisplay').innerText = `₱${grandTotal.toFixed(2)}`;
+            document.getElementById('grandTotalDisplay').innerText = `₱${grandTotal.toFixed(2)}`;
+            document.getElementById('pointsDisplay').innerText = `+${pointsEarned} PTS`;
+        }
+
+        function updateQty(id, delta) {
+            let item = checkoutItems.find(i => i.id === id);
+            if (item) {
+                item.qty += delta;
+                if (item.qty < 1) item.qty = 1; 
+                renderCart();
+            }
+        }
+
+        function removeItem(id) {
+            checkoutItems = checkoutItems.filter(i => i.id !== id);
+            renderCart();
+        }
+
+        // Initialize Cart
+        renderCart();
+
+        // --- SUBMIT & SHOW RECEIPT LOGIC ---
+        function handleFinish() {
+            if(checkoutItems.length === 0) return;
+
+            // Security Validation for Teo Pay
+            if(currentPayment === 'teopay') {
+                const email = document.getElementById('rpayEmail').value;
+                const pin = document.getElementById('rpayPin').value;
+                if(!email || !email.includes('@')) { alert("Please enter a valid registered email."); return; }
+                if(pin.length !== 6) { alert("Please enter your 6-digit Security PIN."); return; }
+            }
+
+            const btn = document.getElementById('btnConfirm');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+            btn.style.pointerEvents = 'none';
+            btn.style.opacity = '0.7';
+            
+            setTimeout(() => {
+                
+                // 1. Calculate final data for Receipt
+                let grandTotal = 0;
+                let itemsHtml = '';
+                
+                checkoutItems.forEach(item => {
+                    let lineTotal = item.unitPrice * item.qty;
+                    grandTotal += lineTotal;
+                    
+                    // Generate HTML for the printable receipt items
+                    itemsHtml += `
+                        <div class="print-item-row">
+                            <span>${item.qty}x ${item.name}</span>
+                            <span>₱${lineTotal.toFixed(2)}</span>
+                        </div>
+                        <div class="print-item-sub">${item.addons}</div>
+                    `;
+                });
+
+                let pointsEarned = Math.floor(grandTotal * 0.10);
+                let orderNum = Math.floor(Math.random() * 90000) + 10000;
+                let dateStr = new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                
+                let payMethodText = currentPayment === 'teopay' ? "TIMS-RPAY Wallet" : (currentPayment === 'ebank' ? "E-Bank / QR Transfer" : "Cash on Pickup");
+
+                // 2. Inject data into Receipt Modal
+                document.getElementById('printOrderNum').innerText = orderNum;
+                document.getElementById('printDate').innerText = dateStr;
+                document.getElementById('printItemsList').innerHTML = itemsHtml;
+                
+                document.getElementById('printSubtotal').innerText = `₱${grandTotal.toFixed(2)}`;
+                document.getElementById('printTotal').innerText = `₱${grandTotal.toFixed(2)}`;
+                document.getElementById('printPoints').innerText = `+${pointsEarned} PTS`;
+                document.getElementById('printMethod').innerText = payMethodText;
+
+                // 3. Show Modal
+                document.getElementById('successReceiptModal').classList.add('active');
+                document.body.style.overflow = 'hidden';
+
+                // 4. Reset checkout UI underneath
+                btn.innerHTML = 'Confirm Order';
+                btn.style.pointerEvents = 'auto';
+                btn.style.opacity = '1';
+                checkoutItems = [];
+                renderCart();
+
+                // 5. Trigger Print Automatically (Optional - remove if you only want button click)
+                // setTimeout(() => { window.print(); }, 500);
+
+            }, 1500);
+        }
+    </script>
+</body>
+</html>
