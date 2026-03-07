@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teo D' Mango | The Overload Experience</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* --- DYNAMIC THEME VARIABLES (DEFAULT: LIGHT MODE) --- */
+        :root {
+            --mango: #ffc244;
+            --mango-dark: #d4a017;
+            --strawberry: #ff4d6d;
+            
+            /* LIGHT MODE (Default) */
+            --bg-main: #f4f5f7;
+            --text-main: #1a1a1a;
+            --text-muted: #666666;
+            --card-bg: rgba(255, 255, 255, 0.6);
+            --card-border: rgba(0, 0, 0, 0.05);
+            --nav-bg: rgba(244, 245, 247, 0.8);
+            --shadow: 0 20px 50px rgba(0,0,0,0.04);
+            --hover-bg: rgba(255, 255, 255, 1);
+            --icon-bg: rgba(0, 0, 0, 0.03);
+            --glow-opacity: 0.4; 
+            --danger: #ff4d6d;
+            --input-bg: rgba(0, 0, 0, 0.03);
+        }
+
+        /* DARK MODE OVERRIDES */
+        body.dark-mode {
+            --bg-main: #050505;
+            --text-main: #ffffff;
+            --text-muted: #888888;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --nav-bg: rgba(5, 5, 5, 0.7);
+            --shadow: 0 30px 60px rgba(0,0,0,0.5);
+            --hover-bg: rgba(255, 255, 255, 0.06);
+            --icon-bg: rgba(255, 255, 255, 0.05);
+            --glow-opacity: 0.15;
+            --input-bg: rgba(255, 255, 255, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body { 
+            background-color: var(--bg-main); 
+            color: var(--text-main); 
+            overflow-x: hidden; 
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+        /* Glowing Orbs */
+        body::before, body::after { content: ''; position: fixed; border-radius: 50%; z-index: -1; transition: 0.5s ease; pointer-events: none;}
+        body::before { top: -10%; left: -5%; width: 600px; height: 600px; background: var(--mango); filter: blur(120px); opacity: var(--glow-opacity); }
+        body::after { bottom: -10%; right: -5%; width: 500px; height: 500px; background: var(--strawberry); filter: blur(150px); opacity: calc(var(--glow-opacity) - 0.05); }
+
+        /* --- 1. Elegant Navigation --- */
+        nav {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 8%; background: var(--nav-bg);
+            backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            position: fixed; width: 100%; top: 0; z-index: 1000; 
+            border-bottom: 1px solid var(--card-border);
+            transition: background 0.5s ease, border-color 0.5s ease;
+        }
+        
+        .logo { display: flex; align-items: center; }
+        .logo img { 
+            height: 40px; object-fit: contain; 
+            filter: drop-shadow(0 0 2px rgba(255,255,255,0.8)) drop-shadow(0 0 5px var(--mango));
+            transition: 0.3s ease;
+        }
+        .logo img:hover {
+            filter: drop-shadow(0 0 4px rgba(255,255,255,1)) drop-shadow(0 0 10px var(--mango));
+            transform: scale(1.05);
+        }
+
+        .nav-links { display: flex; list-style: none; gap: 30px; align-items: center; }
+        .nav-links a { 
+            text-decoration: none; color: var(--text-muted); font-size: 12px; 
+            font-weight: 800; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; 
+        }
+        .nav-links a:hover, .nav-links a.active { color: var(--text-main); }
+        
+        .nav-actions { display: flex; gap: 15px; align-items: center; }
+        .circle-btn {
+            background: var(--icon-bg); border: 1px solid var(--card-border);
+            color: var(--text-main); width: 40px; height: 40px; border-radius: 50%;
+            display: grid; place-items: center; cursor: pointer; transition: 0.3s;
+        }
+        .circle-btn:hover { background: var(--hover-bg); transform: scale(1.05); color: var(--mango); }
+        .circle-btn:active { transform: scale(0.95); }
+
+        /* --- GLASS BENTO SHARED CLASS --- */
+        .glass-bento {
+            background: var(--card-bg); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
+            border: 1px solid var(--card-border); border-radius: 35px;
+            padding: 40px; box-shadow: var(--shadow); transition: 0.3s ease;
+        }
+        .glass-bento:hover { border-color: rgba(255, 194, 68, 0.3); transform: translateY(-5px); }
+
+        .btn-massive { 
+            background: var(--mango); color: #111; border: none; padding: 20px 40px; 
+            border-radius: 50px; font-weight: 900; font-size: 14px; text-transform: uppercase; 
+            letter-spacing: 1px; cursor: pointer; transition: 0.3s; width: fit-content;
+            box-shadow: 0 15px 30px rgba(255,194,68,0.2); display: inline-block; text-decoration: none;
+        }
+        .btn-massive:hover { background: var(--text-main); color: var(--bg-main); transform: translateY(-3px); box-shadow: 0 20px 40px rgba(0,0,0,0.2);}
+
+        /* --- 2. Exciting Hero --- */
+        .hero {
+            position: relative; height: 100vh;
+            background: url('new banner teo.png') center center/cover no-repeat;
+            display: flex; align-items: center; padding: 0 10%; overflow: hidden;
+        }
+        .hero::before {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(to right, var(--bg-main) 0%, rgba(0,0,0,0.2) 100%);
+            transition: 0.5s ease;
+        }
+
+        .fade-container {
+            display: flex; width: 100%; justify-content: space-between; align-items: center;
+            transition: 0.2s ease-out; z-index: 10; position: relative;
+        }
+
+        .hero-content h1 {
+            font-size: clamp(80px, 15vw, 180px); font-weight: 900; color: var(--text-main);
+            line-height: 0.8; letter-spacing: -5px; text-shadow: 20px 20px 60px rgba(0,0,0,0.8);
+        }
+        .hero-content span.mango-text { color: var(--mango); }
+
+        .hero-shake {
+            height: 700px; filter: drop-shadow(40px 40px 80px rgba(0,0,0,0.6));
+            animation: float 5s ease-in-out infinite; transition: transform 0.2s ease-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-30px) rotate(3deg); }
+        }
+
+        /* --- 3. Assortment (RESTORED TO FLOATING STYLE) --- */
+        .section-padding { padding: 120px 10%; }
+        .section-header { text-align: center; margin-bottom: 80px; }
+        .section-header h2 { font-size: 48px; font-weight: 900; letter-spacing: -2px; color: var(--text-main);}
+        
+        .variant-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 80px; }
+
+        .variant-card {
+            position: relative; display: flex; flex-direction: column; align-items: center;
+            cursor: pointer; transition: 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            padding: 20px;
+        }
+
+        /* The glowing orb behind the item on hover */
+        .variant-card::after {
+            content: ""; position: absolute; top: 20%; width: 250px; height: 250px;
+            border-radius: 50%; z-index: -1; filter: blur(80px); opacity: 0; transition: 0.8s;
+        }
+        .mango-card:hover::after { background: var(--mango); opacity: 0.3; }
+        .strawberry-card:hover::after { background: var(--strawberry); opacity: 0.3; }
+        .avocado-card:hover::after { background: #10b981; opacity: 0.3; }
+
+        .variant-img-wrapper { height: 400px; display: flex; align-items: center; transition: 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+        .variant-img-wrapper img { max-height: 100%; filter: drop-shadow(0 20px 40px rgba(0,0,0,0.5)); }
+        
+        .variant-card:hover .variant-img-wrapper { transform: scale(1.15) translateY(-30px) rotate(-5deg); }
+        
+        .variant-card h3 { font-size: 28px; font-weight: 900; margin-top: 30px; letter-spacing: -1px; color: var(--text-main);}
+        .variant-card span { font-weight: 900; font-size: 20px; margin-top: 10px; color: var(--text-main);}
+
+        /* --- 4. Promotional Overlays --- */
+        .promo-section { 
+            display: flex; padding: 50px 10%; gap: 30px; margin: 0 auto; max-width: 1400px;
+        }
+        
+        .promo-box { 
+            flex: 1; height: 500px; border-radius: 40px; background-size: cover; background-position: center; 
+            transition: 0.6s cubic-bezier(0.25, 1, 0.5, 1); cursor: pointer; position: relative; overflow: hidden; 
+            display: flex; align-items: flex-end; border: 1px solid var(--card-border); box-shadow: var(--shadow);
+        }
+        
+        .promo-box::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 60%); transition: 0.5s;
+        }
+
+        .promo-box:hover { flex: 1.5; border-color: var(--mango); }
+        .promo-box:hover::before { opacity: 0.9; }
+
+        .promo-content {
+            position: relative; z-index: 2; padding: 40px; color: #fff;
+            transform: translateY(20px); transition: 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        .promo-box:hover .promo-content { transform: translateY(0); }
+        .promo-content h3 { font-size: 32px; font-weight: 900; margin-bottom: 5px; letter-spacing: -1px; color: #fff; }
+        .promo-content p {
+            font-size: 14px; color: rgba(255, 255, 255, 0.8); line-height: 1.5;
+            opacity: 0; max-height: 0; transition: 0.5s ease; font-weight: 600;
+        }
+        .promo-box:hover .promo-content p { opacity: 1; max-height: 50px; margin-top: 10px; }
+
+        /* --- 5. Announcements Section --- */
+        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 40px; max-width: 1200px; margin: 0 auto; }
+        
+        .announcement-card {
+            display: flex; flex-direction: column; align-items: flex-start;
+        }
+        .announcement-date { font-size: 11px; font-weight: 900; color: var(--mango-dark); text-transform: uppercase; letter-spacing: 3px; margin-bottom: 20px; }
+        .announcement-card h3 { font-size: 28px; font-weight: 900; letter-spacing: -1px; margin-bottom: 20px; color: var(--text-main);}
+        .announcement-card p { color: var(--text-muted); line-height: 1.6; font-size: 14px; margin-bottom: 40px; flex-grow: 1; font-weight: 600;}
+        
+        .btn-outline {
+            background: transparent; border: 1.5px solid var(--card-border); color: var(--text-main);
+            padding: 12px 30px; border-radius: 50px; font-weight: 900; font-size: 12px;
+            cursor: pointer; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px;
+        }
+        .btn-outline:hover { background: var(--text-main); color: var(--bg-main); border-color: var(--text-main); }
+
+        /* --- 6. Feedback Section --- */
+        .feedback-section { position: relative; z-index: 1; }
+        .feedback-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; max-width: 1200px; margin: 0 auto;}
+        
+        .feedback-card {
+            background: var(--icon-bg); border: 1px solid var(--card-border); 
+            padding: 40px; border-radius: 30px; border-left: 5px solid var(--mango); 
+            transition: 0.4s; animation: floating 6s ease-in-out infinite; margin-bottom: 30px;
+        }
+        .feedback-card:nth-child(2) { animation-delay: 2s; border-left-color: var(--strawberry); }
+        @keyframes floating { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+        .feedback-card:hover { transform: translateY(-15px) scale(1.02); box-shadow: var(--shadow); background: var(--hover-bg); border-color: var(--card-border); }
+        .feedback-card p { font-size: 16px; font-style: italic; color: var(--text-main); margin-bottom: 20px; line-height: 1.6; font-weight: 600;}
+        .feedback-author { font-weight: 900; font-size: 14px; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); }
+
+        .dark-form input, .dark-form textarea { 
+            width: 100%; background: var(--input-bg); color: var(--text-main); 
+            border: 1px solid var(--card-border); border-radius: 15px; padding: 20px; 
+            font-size: 16px; outline: none; transition: 0.4s; margin-bottom: 20px; font-weight: 600;
+        }
+        .dark-form input::placeholder, .dark-form textarea::placeholder { color: var(--text-muted); opacity: 0.7;}
+        .dark-form input:focus, .dark-form textarea:focus { border-color: var(--mango); background: var(--hover-bg); }
+
+        /* --- 7. LOGIN REDIRECT SECTION --- */
+        .login-prompt-wrapper {
+            padding: 80px 20px; max-width: 1000px; margin: 0 auto 80px; text-align: center;
+        }
+        .login-prompt-wrapper .glass-bento {
+            padding: 80px 40px; display: flex; flex-direction: column; align-items: center;
+        }
+        .login-prompt-wrapper h2 { font-size: 48px; font-weight: 900; color: var(--text-main); letter-spacing: -2px; line-height: 1.1; margin-bottom: 20px;}
+        .login-prompt-wrapper p { font-size: 16px; color: var(--text-muted); font-weight: 600; margin-bottom: 40px; max-width: 500px;}
+
+        /* --- 8. Footer --- */
+        footer { border-top: 1px solid var(--card-border); padding: 80px 10% 40px; background: var(--nav-bg); backdrop-filter: blur(20px); text-align: center;}
+        .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 50px; text-align: left; max-width: 1200px; margin: 0 auto;}
+        .footer-about h3 { font-size: 24px; font-weight: 900; margin-bottom: 20px; color: var(--text-main); letter-spacing: -1px;}
+        .footer-about h3 span { color: var(--mango); }
+        .footer-about p { color: var(--text-muted); font-size: 14px; line-height: 1.6; max-width: 300px; font-weight: 600;}
+        .footer-links h4 { margin-bottom: 25px; font-size: 14px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; color: var(--text-main);}
+        .footer-links ul { list-style: none; }
+        .footer-links ul li { margin-bottom: 15px; }
+        .footer-links ul li a { color: var(--text-muted); text-decoration: none; font-size: 13px; transition: 0.3s; display: inline-block; font-weight: 700;}
+        .footer-links ul li a:hover { color: var(--mango); transform: translateX(5px); }
+        .footer-bottom { text-align: center; margin-top: 80px; padding-top: 30px; border-top: 1px solid var(--card-border); color: var(--text-muted); font-size: 12px; font-weight: 700;}
+
+        /* Modals */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(15px);
+            z-index: 2000; display: flex; justify-content: center; align-items: center;
+            opacity: 0; visibility: hidden; transition: 0.4s;
+        }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        
+        .modal-content {
+            background: var(--bg-main); color: var(--text-main); padding: 60px;
+            border-radius: 40px; max-width: 600px; width: 90%; position: relative;
+            transform: translateY(50px); transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid var(--card-border); box-shadow: var(--shadow);
+        }
+        .modal-overlay.active .modal-content { transform: translateY(0); }
+        .close-btn { position: absolute; top: 30px; right: 30px; background: none; border: none; font-size: 24px; font-weight: 900; cursor: pointer; color: var(--text-muted); transition: 0.3s; }
+        .close-btn:hover { color: var(--text-main); }
+
+        @media (max-width: 1024px) {
+            .nav-links { display: none; }
+            .hero { text-align: center; padding-top: 100px; align-items: flex-start;}
+            .hero-shake { display: none; }
+            .promo-section { flex-direction: column; }
+            .feedback-grid, .footer-grid { grid-template-columns: 1fr; }
+            .footer-grid { text-align: center; }
+            .footer-about p { margin: 0 auto; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo">
+            <img src="logo.png" alt="Teo D' Mango">
+        </div>
+        <ul class="nav-links">
+            <li><a href="#home">Home</a></li>
+            <li><a href="#assortment">Menu</a></li>
+            <li><a href="#announcements">Updates</a></li>
+            <li><a href="#feedback">Feedback</a></li>
+        </ul>
+        <div class="nav-actions">
+            <button class="circle-btn" id="themeToggle" title="Toggle Light/Dark Mode">
+                <i class="fa-solid fa-moon"></i>
+            </button>
+            <button class="circle-btn" onclick="window.location.href='login.html'" title="Sign In">
+                <i class="fa-solid fa-user"></i>
+            </button>
+        </div>
+    </nav>
+
+    <section class="hero" id="home">
+        <div class="fade-container" id="hero-fade">
+            <div class="hero-content">
+                <p style="text-transform: uppercase; font-weight: 900; letter-spacing: 3px; color: var(--text-muted); margin-bottom: 20px;">Lemery Batangas's Finest</p>
+                <h1>TEO D'<br><span class="mango-text">MANGO</span></h1>
+                <div style="margin-top: 50px;">
+                    <a href="#assortment" class="btn-massive">Explore Menu</a>
+                </div>
+            </div>
+            <img src="https://www.pngarts.com/files/11/Mango-Smoothie-PNG-Image-Background.png" alt="Shake" class="hero-shake" id="hero-img">
+        </div>
+    </section>
+
+    <section class="section-padding" id="assortment">
+        <div class="section-header">
+            <h2>The Best Sellers</h2>
+            <p style="color: var(--text-muted); font-weight: 600; margin-top: 10px;">Our signature overload shakes made with 100% real fruit.</p>
+        </div>
+        
+        <div class="variant-grid">
+            <div class="variant-card mango-card" onclick="window.location.href='menu.html'">
+                <div class="variant-img-wrapper"><img src="mango (2).png" alt="Classic Mango"></div>
+                <h3>Classic Overload</h3>
+                <span style="color: var(--mango-dark);">₱120.00</span>
+            </div>
+            
+            <div class="variant-card strawberry-card" onclick="window.location.href='menu.html'">
+                <div class="variant-img-wrapper"><img src="STRAWBERRY.png" alt="Strawberry"></div>
+                <h3>Strawberry Bliss</h3>
+                <span style="color: var(--strawberry);">₱140.00</span>
+            </div>
+            
+            <div class="variant-card avocado-card" onclick="window.location.href='menu.html'">
+                <div class="variant-img-wrapper"><img src="avocado.png" alt="Avocado"></div>
+                <h3>Avocado Supreme</h3>
+                <span style="color: #10b981;">₱150.00</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="promo-section" id="about">
+        <div class="promo-box" style="background-image: url('cheers.png');">
+            <div class="promo-content">
+                <h3>Taste the Vibe</h3>
+                <p>Perfect blend of fresh mangoes and premium toppings to beat the heat.</p>
+            </div>
+        </div>
+        <div class="promo-box" style="background-image: url('beach.png');">
+            <div class="promo-content">
+                <h3>Tropical Escape</h3>
+                <p>Take a sip and get transported instantly to your favorite beach destination.</p>
+            </div>
+        </div>
+        <div class="promo-box" style="background-image: url('memem.png');">
+            <div class="promo-content">
+                <h3>Share the Joy</h3>
+                <p>Grab a cup with friends and make every moment a sweet memory.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-padding" id="announcements">
+        <div class="section-header" style="margin-bottom: 80px;">
+            <h2>Latest Updates</h2>
+        </div>
+        <div class="info-grid">
+            <div class="glass-bento announcement-card">
+                <span class="announcement-date">March 1, 2026</span>
+                <h3>New PUP Branch Opening!</h3>
+                <p>We are finally opening our doors right inside the PUP Main Campus. Get ready for exclusive student discounts and our new limited edition flavor.</p>
+                <button class="btn-outline" onclick="openModal('New PUP Branch Opening!', 'March 1, 2026', 'We are thrilled to announce that Teo D\' Mango is expanding to the PUP Main Campus! Starting next week, students and faculty can enjoy our signature overload shakes right between classes. Show your valid school ID for a 10% discount on all classic beverages.')">Read More</button>
+            </div>
+            <div class="glass-bento announcement-card">
+                <span class="announcement-date">Feb 14, 2026</span>
+                <h3>Valentine's Strawberry Promo</h3>
+                <p>Bring a date and get your second Strawberry Bliss at half the price. This promotion runs for the whole week of Valentine's.</p>
+                <button class="btn-outline" onclick="openModal('Valentine\'s Strawberry Promo', 'Feb 14, 2026', 'Love is in the air, and so is the scent of fresh strawberries! Visit any of our branches this week with your significant other (or best friend) and avail of our Buy 1 Get 1 at 50% Off promo for the Strawberry Bliss shake. Terms and conditions apply.')">Read More</button>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-padding feedback-section" id="feedback">
+        <div class="feedback-grid">
+            <div class="glass-bento">
+                <h2 style="font-size: 42px; font-weight: 900; letter-spacing: -1.5px; margin-bottom: 30px; color: var(--text-main);">Tell Us How<br><span style="color: var(--mango-dark);">We Did.</span></h2>
+                <form class="dark-form" onsubmit="event.preventDefault(); alert('Feedback submitted! Thank you.');">
+                    <input type="text" placeholder="Your Name" required>
+                    <textarea placeholder="Your Experience" rows="4" required></textarea>
+                    <button type="submit" class="btn-massive" style="width: 100%;">Submit Feedback</button>
+                </form>
+            </div>
+            <div style="display: flex; flex-direction: column; justify-content: center;">
+                <div class="feedback-card">
+                    <p>"Hands down the best mango shake I've ever had. The chunks on top are so fresh, and it literally overflows! Definitely the overload experience."</p>
+                    <span class="feedback-author">Maria Clara</span>
+                </div>
+                <div class="feedback-card">
+                    <p>"The avocado bliss is a game changer. Perfect sweetness and incredibly creamy. Delivery straight to the campus was super fast too."</p>
+                    <span class="feedback-author">Juan Dela Cruz</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="login-prompt-wrapper">
+        <div class="glass-bento">
+            <h2>Ready for the <span style="color: var(--mango-dark);">Premium</span> Experience?</h2>
+            <p>Log in to access your TIMS-RPAY wallet, skip the lines, earn loyalty points, and secure your exclusive discounts.</p>
+            <a href="login.html" class="btn-massive">Log In / Sign Up</a>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-grid">
+            <div class="footer-about">
+                <h3>Teo D' <span>Mango</span></h3>
+                <p>The ultimate overload experience. Freshly blended, perfectly sweet, and crafted to satisfy your cravings.</p>
+            </div>
+            <div class="footer-links">
+                <h4>Explore</h4>
+                <ul>
+                    <li><a href="#assortment">Menu & Prices</a></li>
+                    <li><a href="#about">Our Story</a></li>
+                    <li><a href="#announcements">Latest Updates</a></li>
+                    <li><a href="#feedback">Customer Feedback</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h4>Connect</h4>
+                <ul>
+                    <li><a href="#">Instagram</a></li>
+                    <li><a href="#">TikTok</a></li>
+                    <li><a href="#">Facebook</a></li>
+                    <li><a href="login.html">Member Portal</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            &copy; 2026 Teo D' Mango Premium. All rights reserved.
+        </div>
+    </footer>
+
+    <div class="modal-overlay" id="announcement-modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+            <span class="announcement-date" id="modal-date" style="display: block; margin-bottom: 15px; color: var(--mango-dark); font-weight: 900; letter-spacing: 2px;"></span>
+            <h3 id="modal-title" style="font-size: 32px; font-weight: 900; letter-spacing: -1px; margin-bottom: 20px;"></h3>
+            <p id="modal-body" style="color: var(--text-muted); line-height: 1.8; font-size: 16px; font-weight: 600;"></p>
+        </div>
+    </div>
+
+    <script>
+        // --- THEME TOGGLE LOGIC ---
+        const toggleBtn = document.getElementById('themeToggle');
+        const icon = toggleBtn.querySelector('i');
+        const body = document.body;
+
+        toggleBtn.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+            
+            if (body.classList.contains('dark-mode')) {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            } else {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+            }
+        });
+
+        // --- HERO ANIMATIONS ---
+        window.addEventListener('scroll', function() {
+            const fade = document.getElementById('hero-fade');
+            const img = document.getElementById('hero-img');
+            const scroll = window.scrollY;
+            if(fade) fade.style.opacity = 1 - (scroll / 600);
+            if(img) img.style.transform = `translateY(${scroll * 0.2}px)`;
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            const img = document.getElementById('hero-img');
+            if(!img) return;
+            const x = (window.innerWidth / 2 - e.pageX) / 50;
+            const y = (window.innerHeight / 2 - e.pageY) / 50;
+            img.style.transform += ` rotateX(${y}deg) rotateY(${x}deg)`;
+        });
+
+        // --- MODAL LOGIC ---
+        function openModal(title, date, bodyText) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-date').innerText = date;
+            document.getElementById('modal-body').innerText = bodyText;
+            document.getElementById('announcement-modal').classList.add('active');
+            document.body.style.overflow = 'hidden'; 
+        }
+
+        function closeModal() {
+            document.getElementById('announcement-modal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        document.getElementById('announcement-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+    </script>
+</body>
+</html>

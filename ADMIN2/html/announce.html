@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teo D' Mango | Announce</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="..\css\aside.css">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
+
+        :root {
+            --mango-yellow: #fcdb05;
+            --mango-orange: #ff8c00;
+            --light-bg: #FDF4E3;
+            --panel-bg: #FFFFFF;
+            --text-dark: #2c1a05;
+            --text-muted: #7c6a55;
+            --sidebar-width: 260px;
+            --border-color: #F0E6D2;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            color: var(--text-dark);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        .nav-menu {
+            padding: 20px 10px;
+            flex: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            text-decoration: none;
+            color: var(--text-muted);
+            font-weight: 600;
+            border-radius: 12px;
+            transition: all 0.2s;
+            margin-bottom: 5px;
+        }
+
+        .nav-item i {
+            margin-right: 15px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .nav-item:hover {
+            background-color: #FFF6E5;
+            color: var(--mango-orange);
+        }
+
+        .nav-item.active {
+            background-color: var(--mango-orange);
+            color: white;
+        }
+
+        /* --- Main Content Area --- */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto; 
+            height: 100vh;
+        }
+
+        .header-card {
+            background: var(--panel-bg);
+            padding: 20px 30px;
+            border-radius: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+        }
+
+        .page-title {
+            font-weight: 800;
+            font-size: 1.8rem;
+            margin: 0;
+        }
+
+        .btn-main {
+            padding: 10px 20px;
+            border-radius: 10px;
+            background-color: var(--text-dark);
+            color: white;
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-main:hover {
+            background-color: #4e342e;
+        }
+
+        /* --- Feed Styling --- */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .post-card {
+            background: var(--panel-bg);
+            padding: 25px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .post-meta {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .post-avatar {
+            width: 50px;
+            height: 50px;
+            background: #F0E6D2;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: var(--mango-orange);
+        }
+
+        .post-title {
+            font-weight: 800;
+            font-size: 1.25rem;
+            margin: 0;
+            color: var(--text-dark);
+        }
+
+        .post-info {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .badge-published { background: #E6FFFA; color: #2D6A4F; }
+        .badge-draft { background: #EDF2F7; color: #4A5568; }
+        .badge-scheduled { background: #FEFCBF; color: #744210; }
+
+        .post-content {
+            color: var(--text-dark);
+            line-height: 1.6;
+            margin-bottom: 15px;
+            white-space: pre-wrap;
+        }
+
+        .post-image {
+            width: 100%;
+            max-height: 400px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-actions {
+            border-top: 1px solid var(--border-color);
+            padding-top: 15px;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .btn-action {
+            background: #FDF4E3;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .btn-action:hover {
+            background: #FFF6E5;
+            color: var(--mango-orange);
+        }
+        
+        .btn-delete:hover {
+            background: #FFF5F5;
+            color: #C53030;
+        }
+
+        .pinned-post {
+            border: 2px solid var(--mango-orange);
+        }
+        
+        .pin-icon {
+            color: var(--mango-orange);
+            margin-right: 5px;
+        }
+
+        /* --- Modal Styling --- */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .modal.show { display: flex; }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            background-color: var(--light-bg);
+        }
+
+        .form-group input[type="file"] {
+            padding: 8px;
+            background-color: white;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        @media (max-width: 900px) {
+            .sidebar { display: none; }
+            .main-content { margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+
+   <aside class="sidebar">
+    <div class="logo-section">
+        <img src="../images/logo.png" alt="Teo D' Mango Logo">
+    </div>
+    <nav class="nav-menu">
+        <a href="dashboard.html" class="nav-item"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+        <a href="accounts.html" class="nav-item"><i class="fa-solid fa-user-gear"></i> Accounts</a>
+        <a href="inventory.html" class="nav-item"><i class="fa-solid fa-boxes-stacked"></i> Inventory</a>
+        <a href="menuman.html" class="nav-item"><i class="fa-solid fa-utensils"></i> Menu Manager</a>
+        <a href="promo.html" class="nav-item"><i class="fa-solid fa-tags"></i> Promos</a>
+        <a href="rewards.html" class="nav-item"><i class="fa-solid fa-gift"></i> Rewards</a>
+        <a href="announce.html" class="nav-item active"><i class="fa-solid fa-bell"></i> Announce</a>
+        <a href="payments.html" class="nav-item"><i class="fa-solid fa-credit-card"></i> Payment Management</a>
+        <a href="settings.html" class="nav-item"><i class="fa-solid fa-cog"></i> Settings</a>
+    </nav>
+    
+
+    <a href="index.html" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Log Out</a>
+</aside>
+
+    <main class="main-content">
+        <header class="header-card">
+            <h1 class="page-title">Announcements</h1>
+            <button class="btn-main" onclick="openModal()"><i class="fas fa-plus"></i> New Post</button>
+        </header>
+
+        <div class="feed-container" id="feedBody">
+            <div class="post-card pinned-post" data-id="1">
+                <div class="post-header">
+                    <div class="post-meta">
+                        <div class="post-avatar"><i class="fas fa-thumbtack"></i></div>
+                        <div>
+                            <h2 class="post-title"><i class="fas fa-thumbtack pin-icon"></i> Grand Opening Sale!</h2>
+                            <div class="post-info">Admin • March 1, 2026 <span class="status-badge badge-published">Published</span></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="post-content">Come visit our new branch at Binangonan! Get 50% off on all mango shakes for the first 100 customers. Valid until Sunday only!</div>
+                <img src="../images/promo-sample.jpg" alt="Announcement Image" class="post-image">
+                <div class="post-actions">
+                    <button class="btn-action" onclick="togglePin(this)"><i class="fas fa-thumbtack"></i> Unpin</button>
+                    <button class="btn-action" onclick="toggleStatus(this)"><i class="fas fa-eye-slash"></i> Unpublish</button>
+                    <button class="btn-action" onclick="editEntry(this)"><i class="fas fa-edit"></i> Edit</button>
+                    <button class="btn-action btn-delete" onclick="deleteEntry(this)"><i class="fas fa-trash"></i></button>
+                    <button class="btn-action" onclick="previewLink()"><i class="fas fa-link"></i> Link</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal" id="announceModal">
+        <div class="modal-content">
+            <h2 class="modal-title" id="modalTitle">Create Post</h2>
+            <form id="announceForm">
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" id="annTitle" required>
+                </div>
+                <div class="form-group">
+                    <label>Content</label>
+                    <textarea id="annContent" rows="5" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Attach Image</label>
+                    <input type="file" id="annImage" accept="image/*">
+                </div>
+                <div class="form-group">
+                    <label>Schedule Date (Optional)</label>
+                    <input type="datetime-local" id="annSchedule">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-main btn-cancel" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn-main">Post</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const modal = document.getElementById('announceModal');
+        const form = document.getElementById('announceForm');
+        let currentPost = null;
+
+        function openModal() {
+            form.reset();
+            document.getElementById('modalTitle').innerText = "Create Post";
+            currentPost = null;
+            modal.classList.add('show');
+        }
+
+        function closeModal() {
+            modal.classList.remove('show');
+        }
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const title = document.getElementById('annTitle').value;
+            const content = document.getElementById('annContent').value;
+            const fileInput = document.getElementById('annImage');
+            const schedule = document.getElementById('annSchedule').value;
+            const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+            
+            let status = 'Published';
+            let badgeClass = 'badge-published';
+            if (schedule) {
+                status = 'Scheduled';
+                badgeClass = 'badge-scheduled';
+            }
+
+            // Create object URL for local image preview
+            let imageHTML = '';
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imgPreview = e.target.result;
+                    // Note: In a real app, you would upload the file to a server here
+                    updatePostHTML(imgPreview);
+                }
+                reader.readAsDataURL(fileInput.files[0]);
+                return; // Wait for reader
+            } else if (currentPost) {
+                // If editing and no new file, keep existing image
+                const existingImg = currentPost.querySelector('.post-image');
+                imageHTML = existingImg ? `<img src="${existingImg.src}" alt="Announcement Image" class="post-image">` : '';
+                updatePostHTML(imageHTML, true);
+            } else {
+                updatePostHTML('', false);
+            }
+
+            function updatePostHTML(imageSource, isEditing = false) {
+                let finalImageHTML = '';
+                if(typeof imageSource === 'string' && imageSource.startsWith('data:')) {
+                    finalImageHTML = `<img src="${imageSource}" alt="Announcement Image" class="post-image">`;
+                } else if(typeof imageSource === 'string') {
+                    finalImageHTML = imageSource;
+                }
+
+                const postHTML = `
+                    <div class="post-header">
+                        <div class="post-meta">
+                            <div class="post-avatar"><i class="fas fa-bullhorn"></i></div>
+                            <div>
+                                <h2 class="post-title">${title}</h2>
+                                <div class="post-info">Admin • ${date} <span class="status-badge ${badgeClass}">${status}</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="post-content">${content}</div>
+                    ${finalImageHTML}
+                    <div class="post-actions">
+                        <button class="btn-action" onclick="togglePin(this)"><i class="fas fa-thumbtack"></i> Pin</button>
+                        <button class="btn-action" onclick="toggleStatus(this)"><i class="fas fa-eye-slash"></i> Unpublish</button>
+                        <button class="btn-action" onclick="editEntry(this)"><i class="fas fa-edit"></i> Edit</button>
+                        <button class="btn-action btn-delete" onclick="deleteEntry(this)"><i class="fas fa-trash"></i></button>
+                        <button class="btn-action" onclick="previewLink()"><i class="fas fa-link"></i> Link</button>
+                    </div>
+                `;
+
+                if (currentPost) {
+                    currentPost.innerHTML = postHTML;
+                } else {
+                    const newPost = document.createElement('div');
+                    newPost.className = 'post-card';
+                    newPost.innerHTML = postHTML;
+                    document.getElementById('feedBody').prepend(newPost);
+                }
+                closeModal();
+            }
+        });
+
+        function editEntry(btn) {
+            currentPost = btn.closest('.post-card');
+            document.getElementById('modalTitle').innerText = "Edit Post";
+            document.getElementById('annTitle').value = currentPost.querySelector('.post-title').innerText;
+            document.getElementById('annContent').value = currentPost.querySelector('.post-content').innerText;
+            
+            // Image file input cannot be pre-filled for security reasons, 
+            // but the UI shows the image exists.
+            modal.classList.add('show');
+        }
+
+        function deleteEntry(btn) {
+            if (confirm("Delete this post permanently?")) {
+                btn.closest('.post-card').remove();
+            }
+        }
+        
+        function togglePin(btn) {
+            const card = btn.closest('.post-card');
+            card.classList.toggle('pinned-post');
+            
+            const titleEl = card.querySelector('.post-title');
+            const pinIcon = '<i class="fas fa-thumbtack pin-icon"></i>';
+            
+            if (card.classList.contains('pinned-post')) {
+                if(!titleEl.innerHTML.includes('fa-thumbtack')) {
+                    titleEl.innerHTML = pinIcon + titleEl.innerText;
+                }
+                btn.innerHTML = '<i class="fas fa-thumbtack"></i> Unpin';
+            } else {
+                titleEl.innerHTML = titleEl.innerText; 
+                btn.innerHTML = '<i class="fas fa-thumbtack"></i> Pin';
+            }
+        }
+        
+        function toggleStatus(btn) {
+            const card = btn.closest('.post-card');
+            const statusSpan = card.querySelector('.status-badge');
+            
+            if (statusSpan.innerText === 'Published') {
+                statusSpan.innerText = 'Draft';
+                statusSpan.className = 'status-badge badge-draft';
+                btn.innerHTML = '<i class="fas fa-eye"></i> Publish';
+            } else {
+                statusSpan.innerText = 'Published';
+                statusSpan.className = 'status-badge badge-published';
+                btn.innerHTML = '<i class="fas fa-eye-slash"></i> Unpublish';
+            }
+        }
+        
+        function previewLink() {
+            alert("Public Preview Link: https://teodmango.com/announcement/123");
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>

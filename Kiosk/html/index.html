@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kiosk - Teo D' Mango</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --mango-deep: #ff8c00;
+            --mango-bright: #ffb703;
+            --mango-pale: #fcdb05;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow: hidden;
+            background-color: #ffffff; 
+        }
+
+        /* --- ANIMATED JUICE MESH --- */
+        .mango-mesh-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            /* Using a large background size to allow movement */
+            background-size: 200% 200%;
+            background-image: 
+                radial-gradient(at 50% 50%, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.1) 80%), 
+                radial-gradient(at 10% 10%, var(--mango-deep) 0, transparent 50%), 
+                radial-gradient(at 90% 90%, var(--mango-bright) 0, transparent 50%),
+                radial-gradient(at 90% 10%, var(--mango-pale) 0, transparent 50%),
+                radial-gradient(at 10% 90%, var(--mango-deep) 0, transparent 50%);
+            animation: juiceFlow 15s infinite alternate ease-in-out;
+        }
+
+        /* The "Juice" movement logic */
+        @keyframes juiceFlow {
+            0% {
+                background-position: 0% 0%;
+                filter: hue-rotate(0deg);
+            }
+            50% {
+                background-position: 100% 100%;
+                filter: hue-rotate(5deg); /* Subtle shift in "ripeness" */
+            }
+            100% {
+                background-position: 0% 100%;
+                filter: hue-rotate(0deg);
+            }
+        }
+
+        /* Full screen tap zone */
+        .kiosk-trigger {
+            position: relative;
+            z-index: 1;
+            text-decoration: none;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+        }
+
+        /* Logo scale and presence */
+        .logo-main {
+            width: 580px; 
+            height: auto;
+            filter: drop-shadow(0 20px 40px rgba(255, 140, 0, 0.15));
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .kiosk-trigger:active .logo-main {
+            transform: scale(0.96);
+        }
+
+        /* Minimalist Footer Instruction */
+        .footer-hint {
+            position: absolute;
+            bottom: 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .hint-text {
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: var(--mango-deep);
+            text-transform: uppercase;
+            letter-spacing: 15px;
+            opacity: 0.6;
+        }
+
+        .hint-line {
+            width: 40px;
+            height: 2px;
+            background: var(--mango-deep);
+            border-radius: 2px;
+            animation: breatheLine 2.5s infinite ease-in-out;
+        }
+
+        @keyframes breatheLine {
+            0%, 100% { width: 40px; opacity: 0.2; }
+            50% { width: 80px; opacity: 0.8; }
+        }
+
+        @media (max-width: 1024px) {
+            .logo-main { width: 440px; }
+            .hint-text { letter-spacing: 10px; font-size: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="mango-mesh-bg"></div>
+
+    <a href="../html/select-order-page.html" class="kiosk-trigger">
+        
+        <img src="../Images/TeoDMangoLogo.png" class="logo-main" alt="Teo D' Mango">
+
+        <div class="footer-hint">
+            <span class="hint-text">Tap anywhere to start</span>
+            <div class="hint-line"></div>
+        </div>
+
+    </a>
+
+</body>
+</html>
