@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Rewards Ledger | Teo D' Mango Staff</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* --- DYNAMIC THEME VARIABLES (DEFAULT: DARK MODE) --- */
+        :root {
+            --mango: #ffc244;
+            --mango-dark: #d4a017;
+            --strawberry: #ff4d6d;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            
+            /* DARK MODE (Default) */
+            --bg-main: #050505;
+            --text-main: #ffffff;
+            --text-muted: #888888;
+            --card-bg: rgba(30, 30, 30, 0.4);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --sidebar-bg: rgba(10, 10, 10, 0.95);
+            --shadow: 0 15px 40px rgba(0,0,0,0.5);
+            --hover-bg: rgba(255, 255, 255, 0.06);
+            --icon-bg: rgba(255, 255, 255, 0.05);
+            --glow-opacity: 0.15;
+            --input-bg: rgba(0,0,0,0.3);
+        }
+
+        body.light-mode {
+            --bg-main: #f4f5f7;
+            --text-main: #1a1a1a;
+            --text-muted: #666666;
+            --card-bg: rgba(255, 255, 255, 0.7);
+            --card-border: rgba(0, 0, 0, 0.05);
+            --sidebar-bg: rgba(255, 255, 255, 0.9);
+            --shadow: 0 10px 30px rgba(0,0,0,0.05);
+            --hover-bg: rgba(255, 255, 255, 1);
+            --icon-bg: rgba(0, 0, 0, 0.03);
+            --glow-opacity: 0.3; 
+            --input-bg: #ffffff;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; scroll-behavior: smooth; }
+        
+        body { 
+            background-color: var(--bg-main); color: var(--text-main); 
+            display: flex; min-height: 100vh; transition: 0.4s ease;
+            position: relative; overflow-x: hidden;
+        }
+
+        /* Glowing Background Orbs */
+        body::before, body::after { content: ''; position: fixed; border-radius: 50%; z-index: -1; pointer-events: none; transition: 0.5s ease; }
+        body::before { top: -10%; left: -5%; width: 500px; height: 500px; background: var(--mango); filter: blur(120px); opacity: var(--glow-opacity); }
+        body::after { bottom: -10%; right: -5%; width: 400px; height: 400px; background: var(--strawberry); filter: blur(150px); opacity: calc(var(--glow-opacity) - 0.05); }
+
+        /* --- SIDEBAR --- */
+        aside {
+            width: 260px; background: var(--sidebar-bg); height: 100vh; position: fixed;
+            border-right: 1px solid var(--card-border); padding: 2rem 1.2rem; display: flex;
+            flex-direction: column; z-index: 1000; backdrop-filter: blur(20px); transition: all 0.4s ease;
+        }
+        .sidebar-logo { padding: 10px 5px; margin-bottom: 2rem; text-align: center; }
+        .sidebar-logo img { max-width: 100%; height: auto; max-height: 50px; display: block; margin: 0 auto; filter: drop-shadow(0 0 5px var(--mango)); }
+        
+        nav { flex: 1; display: flex; flex-direction: column; }
+        nav ul { list-style: none; display: flex; flex-direction: column; height: 100%; }
+        nav a {
+            text-decoration: none; color: var(--text-muted); padding: 1rem 1.2rem;
+            display: flex; align-items: center; gap: 15px; font-weight: 700; font-size: 13px;
+            border-radius: 14px; margin-bottom: 0.5rem; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px;
+        }
+        nav a:hover { color: var(--text-main); background: var(--icon-bg); transform: translateX(5px); }
+        nav li.active a { background: var(--mango); color: #111; box-shadow: 0 8px 20px rgba(245, 158, 11, 0.2); transform: translateX(0); }
+        nav a i { font-size: 16px; width: 20px; text-align: center; }
+
+        /* --- MAIN CONTENT --- */
+        main { margin-left: 260px; flex: 1; padding: 2.5rem 3.5rem; transition: all 0.4s ease; width: calc(100% - 260px); }
+        
+        header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2.5rem; }
+        .page-title { font-size: clamp(1.8rem, 4vw, 2.2rem); font-weight: 900; letter-spacing: -1.5px; color: var(--text-main); }
+        
+        .header-actions { display: flex; align-items: center; gap: 20px; }
+        .theme-btn { background: var(--icon-bg); border: 1px solid var(--card-border); color: var(--text-main); width: 45px; height: 45px; border-radius: 50%; cursor: pointer; transition: 0.3s; display: grid; place-items: center; font-size: 16px;}
+        .theme-btn:hover { background: var(--mango); color: #111; transform: rotate(15deg); }
+
+        /* --- GRID --- */
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 2rem; }
+        .card { background: var(--card-bg); backdrop-filter: blur(20px); border: 1px solid var(--card-border); border-radius: 30px; padding: 2.5rem; box-shadow: var(--shadow); height: fit-content; transition: 0.3s; }
+        .card:hover { box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+        .card h3 { margin-bottom: 1.8rem; font-size: 18px; font-weight: 900; display: flex; align-items: center; gap: 12px; color: var(--text-main);}
+
+        /* FORMS */
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 8px; }
+        .form-group input { 
+            width: 100%; padding: 14px 18px; background: var(--input-bg); border: 2px solid var(--card-border); 
+            border-radius: 14px; color: var(--text-main); font-weight: 700; outline: none; transition: 0.3s;
+        }
+        .form-group input:focus { border-color: var(--mango); }
+
+        .btn-action { 
+            width: 100%; padding: 1.1rem; background: var(--text-main); color: var(--bg-main); border: none; 
+            border-radius: 16px; font-weight: 900; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 10px;
+        }
+        .btn-action:hover { background: var(--mango); color: #111; transform: translateY(-3px); }
+        .btn-otp { background: var(--icon-bg); color: var(--text-main); border: 1px solid var(--card-border); margin-bottom: 10px; }
+
+        /* TABLE */
+        .table-responsive { overflow-x: auto; margin-top: 1rem; width: 100%; }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        th { text-align: left; color: var(--text-muted); font-size: 11px; font-weight: 800; padding: 15px 20px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid var(--card-border); }
+        td { padding: 18px 20px; border-bottom: 1px solid var(--card-border); font-size: 13px; font-weight: 600; color: var(--text-main); }
+        tr:hover td { background: var(--hover-bg); }
+
+        .promo-badge { padding: 6px 14px; border-radius: 100px; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; border: 1px solid transparent; }
+        .eligible { background: rgba(16, 185, 129, 0.1); color: var(--success); border-color: var(--success); }
+        .not-eligible { background: rgba(136, 136, 136, 0.1); color: var(--text-muted); border-color: var(--card-border); }
+
+        .points-bar { width: 100px; height: 8px; background: rgba(255,255,255,0.1); border-radius: 10px; margin-top: 8px; overflow: hidden; border: 1px solid var(--card-border); }
+        .points-fill { height: 100%; background: var(--mango); border-radius: 10px; transition: width 0.5s ease; }
+
+        /* REDEEM MODAL */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); z-index: 2000; align-items: center; justify-content: center; padding: 20px; }
+        .modal.active { display: flex; }
+        .modal-content { background: var(--bg-main); padding: 2.5rem; border-radius: 30px; width: 100%; max-width: 400px; border: 1px solid var(--card-border); text-align: center; }
+
+        @media (max-width: 1100px) { aside { width: 90px; } aside span, .sidebar-logo { display: none; } main { margin-left: 90px; width: calc(100% - 90px); } .dashboard-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+    <aside>
+        <div class="sidebar-logo"><img src="logo.png" alt="Teo D' Mango"></div>
+        <nav>
+            <ul>
+                <li><a href="overview.html"><i class="fa-solid fa-chart-line"></i> <span>Overview</span></a></li>
+                <li><a href="orderstaffs.html"><i class="fa-solid fa-bell-concierge"></i> <span>Orders</span></a></li>
+                <li><a href="menustaff.html"><i class="fa-solid fa-receipt"></i> <span>Menu</span></a></li>
+                <li><a href="inventory.html"><i class="fa-solid fa-boxes-stacked"></i> <span>Inventory</span></a></li>
+                <li><a href="dashboardstaff.html"><i class="fa-solid fa-user-clock"></i> <span>Attendance</span></a></li>
+                <li><a href="topupstaff.html"><i class="fa-solid fa-credit-card"></i> <span>RPAY</span></a></li>
+                <li class="active"><a href="rewardsstaff.html"><i class="fa-solid fa-gift"></i> <span>Rewards</span></a></li>
+                <li><a href="dashaccsettstaff.html"><i class="fa-solid fa-gear"></i> <span>Settings</span></a></li>
+                <li style="margin-top: auto;"><a href="index.html" style="color: var(--danger);"><i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main>
+        <header>
+            <h1 class="page-title">Rewards Ledger</h1>
+            <div class="header-actions">
+                <button class="theme-btn" id="themeToggle"><i class="fa-solid fa-sun"></i></button>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <div class="left-col">
+                <div class="card">
+                    <h3><i class="fa-solid fa-qrcode" style="color: var(--mango);"></i> Redeem Token</h3>
+                    <div class="form-group">
+                        <label>Input Customer Token / QR Code</label>
+                        <input type="text" id="tokenInput" placeholder="TDM-XXXXXX">
+                    </div>
+                    <button class="btn-action" onclick="validateToken()"><i class="fa-solid fa-ticket"></i> Consume Token</button>
+                    
+                    <div style="margin: 2rem 0; border-top: 1px solid var(--card-border); padding-top: 2rem;">
+                        <h3><i class="fa-solid fa-mobile-screen" style="color: var(--mango);"></i> Manual OTP</h3>
+                        <div class="form-group">
+                            <label>Customer Mobile</label>
+                            <input type="text" id="phoneInput" placeholder="0917XXXXXXX">
+                        </div>
+                        <button class="btn-action btn-otp" onclick="requestOTP()"><i class="fa-solid fa-paper-plane"></i> Send OTP Request</button>
+                        <button class="btn-action" onclick="showOTPConfirm()"><i class="fa-solid fa-key"></i> Input Received OTP</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="left-col">
+                <div class="card" style="width: 100%;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h3><i class="fa-solid fa-users" style="color: var(--mango);"></i> Active Members</h3>
+                        <input type="text" placeholder="Search customer..." style="background: var(--input-bg); border: 1px solid var(--card-border); padding: 10px 20px; border-radius: 50px; color: #fff; font-size: 13px; outline: none; width: 200px;">
+                    </div>
+
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Member Name</th>
+                                    <th>Points</th>
+                                    <th>Progression</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Jane Doe</strong><br><small style="color: var(--text-muted);">0917-111-2233</small></td>
+                                    <td>120 pts</td>
+                                    <td><div class="points-bar"><div class="points-fill" style="width: 100%;"></div></div></td>
+                                    <td><span class="promo-badge eligible">Ready</span></td>
+                                    <td><button class="btn-action" style="padding: 8px 15px; font-size: 10px;" onclick="openRedeemModal('Jane Doe', 120)">Redeem</button></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>John Smith</strong><br><small style="color: var(--text-muted);">0918-444-5566</small></td>
+                                    <td>45 pts</td>
+                                    <td><div class="points-bar"><div class="points-fill" style="width: 45%;"></div></div></td>
+                                    <td><span class="promo-badge not-eligible">Collecting</span></td>
+                                    <td><button disabled style="opacity: 0.3; cursor: not-allowed;" class="btn-action">Redeem</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="otpModal" class="modal">
+        <div class="modal-content">
+            <h2 style="margin-bottom: 10px; font-weight: 900;">Enter OTP</h2>
+            <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 2rem;">Verify customer via 6-digit code sent to their phone.</p>
+            <div class="form-group">
+                <input type="text" placeholder="· · · · · ·" style="text-align: center; font-size: 2rem; letter-spacing: 10px;" maxlength="6">
+            </div>
+            <button class="btn-action" onclick="verifyOTP()"><i class="fa-solid fa-shield-check"></i> Verify & Confirm</button>
+            <button style="background:none; border:none; color:var(--text-muted); margin-top: 15px; cursor:pointer; font-weight:700;" onclick="closeModals()">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        // Theme Logic
+        const body = document.body;
+        const themeToggle = document.getElementById('themeToggle');
+        themeToggle.addEventListener('click', () => {
+            body.classList.toggle('light-mode');
+            themeToggle.innerHTML = body.classList.contains('light-mode') ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
+        });
+
+        function validateToken() {
+            const token = document.getElementById('tokenInput').value;
+            if(!token) return alert("Please enter or scan a token.");
+            alert("Token " + token + " Validated! Customer Jane Doe is eligible for 1 Free Mango Graham.");
+            document.getElementById('tokenInput').value = '';
+        }
+
+        function requestOTP() {
+            const phone = document.getElementById('phoneInput').value;
+            if(!phone) return alert("Enter mobile number.");
+            alert("OTP Request sent to " + phone);
+        }
+
+        function showOTPConfirm() {
+            document.getElementById('otpModal').classList.add('active');
+        }
+
+        function verifyOTP() {
+            alert("Verification Successful! Member account verified.");
+            closeModals();
+        }
+
+        function closeModals() {
+            document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
+        }
+
+        function openRedeemModal(name, pts) {
+            if(confirm("Confirm redemption of 100 points for " + name + "?")) {
+                alert("Success! Points deducted and reward issued.");
+            }
+        }
+    </script>
+</body>
+</html>
