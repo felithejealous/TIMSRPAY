@@ -6,204 +6,172 @@
     <title>Teo D' Mango | Settings</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="..\css\aside.css">
-
+    
     <style>
-        /* --- Mango Theme Variables --- */
         :root {
             --mango-yellow: #fcdb05;
             --mango-orange: #ff8c00;
-            --light-bg: #FDF4E3;
-            --panel-bg: #FFFFFF;
-            --text-dark: #2c1a05;
-            --text-muted: #7c6a55;
-            --sidebar-width: 260px;
-            --border-color: #F0E6D2;
-            --success-green: #2D6A4F;
-            --danger-red: #C53030;
+            --mango-dark: #0f0c08; 
+            --text-main: #ffffff;
+            --text-sub: #a1a1aa;
+            --glass-bg: rgba(255, 255, 255, 0.015);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --mesh-color-1: rgba(252, 219, 5, 0.05);
+            --mesh-color-2: rgba(252, 219, 5, 0.02);
+            --logo-filter: brightness(0) invert(1);
+            --sidebar-width: 240px;
+            --modal-overlay: rgba(0,0,0,0.92);
+            --modal-card: #14110e;
         }
+
+        body.light-theme {
+            --mango-dark: #f8f9fa; 
+            --text-main: #1a1a1a;  
+            --text-sub: #4a4a4a;   
+            --glass-bg: rgba(255, 255, 255, 0.8);
+            --glass-border: rgba(0, 0, 0, 0.1);
+            --mesh-color-1: rgba(252, 219, 5, 0.15);
+            --mesh-color-2: rgba(255, 140, 0, 0.05);
+            --logo-filter: none;
+            --modal-card: #ffffff;
+            --modal-overlay: rgba(0,0,0,0.4);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; transition: background 0.3s, color 0.3s, border 0.3s, transform 0.2s; }
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
 
         body {
-            background-color: var(--light-bg);
-            color: var(--text-dark);
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--mango-dark);
+            background-image: 
+                radial-gradient(at 0% 0%, var(--mesh-color-1) 0px, transparent 40%),
+                radial-gradient(at 100% 100%, var(--mesh-color-2) 0px, transparent 40%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            display: flex; min-height: 100vh; overflow: hidden;
         }
 
-       .nav-menu {
-            padding: 20px 10px;
-            flex: 1;
+        .glass { background: var(--glass-bg); backdrop-filter: blur(12px); border: 1px solid var(--glass-border); }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--glass-bg);
+            backdrop-filter: blur(25px);
+            height: 100vh; position: fixed; left: 0; top: 0;
+            border-right: 1px solid var(--glass-border);
+            display: flex; flex-direction: column; z-index: 100;
         }
 
+        .logo-section { padding: 40px 20px; text-align: center; }
+        .logo-section img { width: 120px; filter: var(--logo-filter); }
+
+        .nav-menu { flex: 1; padding: 10px 15px; }
         .nav-item {
-            display: flex;
-            align-items: center;
-            padding: 12px 20px;
-            text-decoration: none;
-            color: var(--text-muted);
-            font-weight: 600;
-            border-radius: 12px;
-            transition: all 0.2s;
-            margin-bottom: 5px;
-        }
-
-        .nav-item i {
-            margin-right: 15px;
-            width: 20px;
-            text-align: center;
-        }
-
-        .nav-item:hover {
-            background-color: #FFF6E5;
-            color: var(--mango-orange);
-        }
-
-        .nav-item.active {
-            background-color: var(--mango-orange);
-            color: white;
-        }
-        
-        .main-content {
-            margin-left: var(--sidebar-width);
-            flex: 1; padding: 30px; overflow-y: auto; height: 100vh;
-        }
-        .header-card {
-            background: var(--panel-bg); padding: 20px 30px; border-radius: 20px;
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 30px; border: 1px solid var(--border-color);
-        }
-        .page-title { font-weight: 800; font-size: 1.8rem; margin: 0; }
-
-        /* --- Settings Grid --- */
-        .settings-card-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-        }
-        .settings-card {
-            background: var(--panel-bg); padding: 25px; border-radius: 20px;
-            border: 1px solid var(--border-color); cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .settings-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px rgba(0,0,0,0.05); }
-        .settings-card i { font-size: 2rem; color: var(--mango-orange); margin-bottom: 15px; }
-        .settings-card h3 { font-weight: 700; margin-bottom: 5px; color: var(--text-dark); }
-        .settings-card p { color: var(--text-muted); font-size: 0.9rem; margin: 0; }
-
-        /* --- Modal Styling --- */
-        .modal-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.5); z-index: 1000;
-            justify-content: center; align-items: center;
-        }
-        .modal-card {
-            background: white; padding: 30px; border-radius: 20px;
-            width: 90%; max-width: 500px;
-        }
-        .modal-header {
-            display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
-        }
-        .close-modal-btn {
-            background: none; border: none; font-size: 1.5rem; color: #999; cursor: pointer;
-        }
-        .close-modal-btn:hover { color: var(--danger-red); }
-        
-        .input-group { margin-bottom: 15px; }
-        .input-group label { display: block; margin-bottom: 5px; font-weight: 600; color: var(--text-dark);}
-        .input-group input {
-            width: 100%; padding: 10px; border-radius: 10px;
-            border: 1px solid var(--border-color); background-color: #FDF4E3;
-        }
-        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; }
-        .btn-save {
-            padding: 10px 20px; border-radius: 10px; background-color: var(--text-dark);
-            color: white; font-weight: 600; border: none; cursor: pointer;
-        }
-        
-        /* Activity Log Styling */
-        .activity-log { list-style: none; padding: 0; margin: 0; max-height: 200px; overflow-y: auto;}
-        .activity-item { padding: 10px 0; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; color: var(--text-muted); }
-        .activity-item strong { color: var(--text-dark); }
-
-        /* --- Toast Notification Styling --- */
-        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; }
-        .toast {
-            background: var(--text-dark); color: #fff; padding: 16px 24px;
-            border-radius: 12px; margin-bottom: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             display: flex; align-items: center; gap: 12px;
-            font-weight: 500; min-width: 250px;
-            animation: slideIn 0.3s ease-out forwards;
+            padding: 12px 18px; margin-bottom: 6px;
+            border-radius: 12px; color: var(--text-sub);
+            text-decoration: none; font-weight: 500; font-size: 0.9rem;
         }
-        .toast.success { border-left: 5px solid var(--success-green); }
-        .toast.info { border-left: 5px solid var(--mango-orange); }
+        .nav-item:hover, .nav-item.active { background: var(--mango-yellow); color: #120f0a !important; font-weight: 700; box-shadow: 0 4px 15px rgba(252, 219, 5, 0.2); }
 
-        @keyframes slideIn { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
-        @keyframes fadeOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(100%); } }
-
-        @media (max-width: 900px) {
-            .sidebar { display: none; }
-            .main-content { margin-left: 0; }
+        .logout-btn {
+            padding: 12px 18px; margin: 15px; border-radius: 12px;
+            color: #ef4444; font-weight: 700; text-decoration: none;
+            display: flex; align-items: center; gap: 10px;
+            border: 1px solid rgba(239, 68, 68, 0.2); font-size: 0.85rem;
         }
+
+        /* --- CONTENT --- */
+        .main-content { margin-left: var(--sidebar-width); flex: 1; padding: 40px; overflow-y: auto; height: 100vh; }
+        .header-card { padding: 25px 40px; border-radius: 24px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .theme-toggle-circle { width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; background: var(--mango-yellow); color: #120f0a; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+
+        /* --- SETTINGS GRID --- */
+        .settings-card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; }
+        .settings-card { padding: 30px; border-radius: 28px; cursor: pointer; transition: 0.3s; }
+        .settings-card:hover { background: rgba(252, 219, 5, 0.05); border-color: var(--mango-yellow); transform: translateY(-5px); }
+        .settings-card i { font-size: 2rem; color: var(--mango-yellow); margin-bottom: 20px; }
+        .settings-card h3 { font-weight: 900; text-transform: uppercase; font-size: 0.9rem; letter-spacing: 1px; margin-bottom: 8px; }
+        .settings-card p { color: var(--text-sub); font-size: 0.8rem; line-height: 1.4; }
+
+        /* --- MODALS --- */
+        .modal-overlay { position: fixed; inset: 0; background: var(--modal-overlay); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(15px); padding: 20px; }
+        .modal-overlay.open { display: flex; }
+        .modal-card { background: var(--modal-card); width: 100%; max-width: 500px; padding: 40px; border-radius: 32px; border: 1px solid var(--glass-border); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+        
+        .input-group label { display: block; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: var(--mango-orange); margin-bottom: 8px; letter-spacing: 1px; }
+        .input-group input, .input-group select { width: 100%; padding: 14px; border-radius: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); color: var(--text-main); outline: none; margin-bottom: 15px; }
+        body.light-theme .input-group input, body.light-theme .input-group select { background: #f1f3f5; color: #000; border: 1px solid #dee2e6; }
+
+        .btn-save { background: var(--mango-yellow); color: #000; padding: 14px 24px; border-radius: 16px; font-weight: 900; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; width: 100%; transition: 0.3s; }
+        
+        .activity-item { padding: 15px 0; border-bottom: 1px solid var(--glass-border); font-size: 0.85rem; color: var(--text-sub); }
+        .activity-item strong { color: var(--mango-yellow); }
+
+        /* --- TOAST --- */
+        #toast-container { position: fixed; bottom: 30px; right: 30px; z-index: 9999; }
+        .toast { background: var(--mango-yellow); color: #000; padding: 16px 24px; border-radius: 16px; margin-top: 10px; font-weight: 900; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 1px; display: flex; align-items: center; gap: 10px; animation: slideIn 0.3s forwards; }
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
     </style>
 </head>
 <body>
 
     <div id="toast-container"></div>
 
-   <aside class="sidebar">
-    <div class="logo-section">
-        <img src="../images/logo.png" alt="Teo D' Mango Logo">
-    </div>
-    <nav class="nav-menu">
-        <a href="dashboard.html" class="nav-item"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
-        <a href="accounts.html" class="nav-item"><i class="fa-solid fa-user-gear"></i> Accounts</a>
-        <a href="inventory.html" class="nav-item"><i class="fa-solid fa-boxes-stacked"></i> Inventory</a>
-        <a href="menuman.html" class="nav-item"><i class="fa-solid fa-utensils"></i> Menu Manager</a>
-        <a href="promo.html" class="nav-item"><i class="fa-solid fa-tags"></i> Promos</a>
-        <a href="rewards.html" class="nav-item"><i class="fa-solid fa-gift"></i> Rewards</a>
-        <a href="announce.html" class="nav-item"><i class="fa-solid fa-bell"></i> Announce</a>
-        <a href="payments.html" class="nav-item"><i class="fa-solid fa-credit-card"></i> Payment Management</a>
-        <a href="settings.html" class="nav-item active"><i class="fa-solid fa-cog"></i> Settings</a>
-        
-    </nav>
-    
-
-    <a href="index.html" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Log Out</a>
-</aside>
+    <aside class="sidebar glass">
+        <div class="logo-section"><img src="../images/logo.png" alt="Logo"></div>
+        <nav class="nav-menu">
+            <a href="dashboard.html" class="nav-item" data-lang="nav_dash"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+            <a href="orders.html" class="nav-item"><i class="fa-solid fa-receipt"></i> Orders</a>
+            <a href="accounts.html" class="nav-item" data-lang="nav_accounts"><i class="fa-solid fa-user-gear"></i> Accounts</a>
+            <a href="inventory.html" class="nav-item" data-lang="nav_inv"><i class="fa-solid fa-boxes-stacked"></i> Inventory</a>
+            <a href="menuman.html" class="nav-item" data-lang="nav_menu"><i class="fa-solid fa-utensils"></i> Menu Manager</a>
+            <a href="promo.html" class="nav-item" data-lang="nav_promo"><i class="fa-solid fa-tags"></i> Promos</a>
+            <a href="rewards.html" class="nav-item" data-lang="nav_rewards"><i class="fa-solid fa-gift"></i> Rewards</a>
+            <a href="announce.html" class="nav-item" data-lang="nav_ann"><i class="fa-solid fa-bell"></i> Announce</a>
+            <a href="payments.html" class="nav-item" data-lang="nav_pay"><i class="fa-solid fa-credit-card"></i> Payments</a>
+            <a href="settings.html" class="nav-item active" data-lang="nav_set"><i class="fa-solid fa-cog"></i> Settings</a>
+        </nav>
+        <a href="index.html" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> <span data-lang="logout">Log Out</span></a>
+    </aside>
 
     <main class="main-content">
-        <header class="header-card">
-            <h1 class="page-title">Settings</h1>
+        <header class="header-card glass">
+            <div>
+                <h1 class="text-2xl font-black uppercase tracking-tighter" style="color: var(--mango-yellow);" data-lang="nav_set">Settings</h1>
+                <p class="text-xs font-mono opacity-60" data-lang="set_sub">System Preferences & Localization</p>
+            </div>
+            <button class="theme-toggle-circle" onclick="toggleTheme()">
+                <i class="fa-solid fa-sun" id="themeIcon"></i>
+            </button>
         </header>
 
         <div class="settings-card-grid">
-            <div class="settings-card" onclick="openModal('profileModal')">
+            <div class="settings-card glass" onclick="openModal('profileModal')">
                 <i class="fa-solid fa-store"></i>
-                <h3>Shop Profile</h3>
-                <p>Update shop name, address, and contact</p>
+                <h3 data-lang="set_shop">Shop Profile</h3>
+                <p data-lang="set_shop_sub">Update shop name, address, and contact</p>
             </div>
-            <div class="settings-card" onclick="openModal('adminProfileModal')">
-                <i class="fa-solid fa-user-tie"></i>
-                <h3>Admin Profile</h3>
-                <p>Update personal information</p>
+            <div class="settings-card glass" onclick="openModal('langModal')">
+                <i class="fa-solid fa-language"></i>
+                <h3 data-lang="set_lang">Language</h3>
+                <p data-lang="set_lang_sub">Switch between English and Tagalog</p>
             </div>
-            <div class="settings-card" onclick="openModal('accountModal')">
+            <div class="settings-card glass" onclick="openModal('accountModal')">
                 <i class="fa-solid fa-shield-halved"></i>
-                <h3>Security</h3>
-                <p>Change admin password</p>
+                <h3 data-lang="set_sec">Security</h3>
+                <p data-lang="set_sec_sub">Change admin password and privacy</p>
             </div>
-            <div class="settings-card" onclick="openModal('notifModal')">
+            <div class="settings-card glass" onclick="openModal('notifModal')">
                 <i class="fa-solid fa-bell"></i>
-                <h3>Notifications</h3>
-                <p>System alerts and email settings</p>
+                <h3 data-lang="set_notif">Notifications</h3>
+                <p data-lang="set_notif_sub">System alerts and inventory warnings</p>
             </div>
-            <div class="settings-card" onclick="openModal('activityModal')">
+            <div class="settings-card glass" onclick="openModal('activityModal')">
                 <i class="fa-solid fa-clock-rotate-left"></i>
-                <h3>Activity Log</h3>
-                <p>Recent actions and logins</p>
+                <h3 data-lang="set_log">Activity Log</h3>
+                <p data-lang="set_log_sub">Recent system actions and logs</p>
             </div>
         </div>
     </main>
@@ -211,10 +179,7 @@
     <div class="modal-overlay" id="modalOverlay">
         
         <div class="modal-card" id="profileModal" style="display:none;">
-            <div class="modal-header">
-                <h3>Shop Profile</h3>
-                <button class="close-modal-btn" onclick="closeAllModals()"><i class="fa-solid fa-xmark"></i></button>
-            </div>
+            <h3 class="text-xl font-black uppercase text-yellow-400 mb-8" data-lang="set_shop">Shop Profile</h3>
             <form onsubmit="handleSettingsSubmit(event, 'Shop profile updated!')">
                 <div class="input-group">
                     <label>Shop Name</label>
@@ -224,132 +189,125 @@
                     <label>Address</label>
                     <input type="text" value="123 Mango Street, Rizal">
                 </div>
-                <div class="modal-actions">
-                    <button type="submit" class="btn-save">Save Changes</button>
-                </div>
+                <button type="submit" class="btn-save">Save Changes</button>
             </form>
         </div>
 
-        <div class="modal-card" id="adminProfileModal" style="display:none;">
-            <div class="modal-header">
-                <h3>Admin Profile</h3>
-                <button class="close-modal-btn" onclick="closeAllModals()"><i class="fa-solid fa-xmark"></i></button>
+        <div class="modal-card" id="langModal" style="display:none;">
+            <h3 class="text-xl font-black uppercase text-yellow-400 mb-8" data-lang="set_lang">Language Prefs</h3>
+            <div class="input-group">
+                <label>Select System Language</label>
+                <select id="langSelect" onchange="changeLanguage(this.value)">
+                    <option value="en">English (US)</option>
+                    <option value="tl">Tagalog (PH)</option>
+                </select>
             </div>
-            <form onsubmit="handleSettingsSubmit(event, 'Admin profile updated!')">
-                <div class="input-group">
-                    <label>Full Name</label>
-                    <input type="text" value="Juan Dela Cruz">
-                </div>
-                <div class="input-group">
-                    <label>Email Address</label>
-                    <input type="email" value="admin@teodmango.com">
-                </div>
-                <div class="modal-actions">
-                    <button type="submit" class="btn-save">Save Changes</button>
-                </div>
-            </form>
-        </div>
-
-        <div class="modal-card" id="accountModal" style="display:none;">
-            <div class="modal-header">
-                <h3>Security</h3>
-                <button class="close-modal-btn" onclick="closeAllModals()"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <form onsubmit="handleSettingsSubmit(event, 'Password updated successfully!')">
-                <div class="input-group">
-                    <label>Current Password</label>
-                    <input type="password">
-                </div>
-                <div class="input-group">
-                    <label>New Password</label>
-                    <input type="password">
-                </div>
-                <div class="modal-actions">
-                    <button type="submit" class="btn-save">Update Password</button>
-                </div>
-            </form>
-        </div>
-
-        <div class="modal-card" id="notifModal" style="display:none;">
-            <div class="modal-header">
-                <h3>System Notifications</h3>
-                <button class="close-modal-btn" onclick="closeAllModals()"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <form onsubmit="handleSettingsSubmit(event, 'Notification settings saved!')">
-                <div class="input-group flex justify-between items-center">
-                    <label>Low Stock Alerts</label>
-                    <input type="checkbox" checked class="w-5 h-5 accent-orange-500">
-                </div>
-                <div class="input-group flex justify-between items-center">
-                    <label>New Order Notifications</label>
-                    <input type="checkbox" checked class="w-5 h-5 accent-orange-500">
-                </div>
-                <div class="input-group flex justify-between items-center">
-                    <label>Email Notifications</label>
-                    <input type="checkbox" class="w-5 h-5 accent-orange-500">
-                </div>
-                <div class="modal-actions">
-                    <button type="submit" class="btn-save">Save Settings</button>
-                </div>
-            </form>
+            <p class="text-xs opacity-50 italic mb-6">Language updates will sync across all admin pages.</p>
+            <button class="btn-save" onclick="closeAllModals()">Close</button>
         </div>
 
         <div class="modal-card" id="activityModal" style="display:none;">
-            <div class="modal-header">
-                <h3>Recent Activities</h3>
-                <button class="close-modal-btn" onclick="closeAllModals()"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="text-xl font-black uppercase text-yellow-400 mb-8" data-lang="set_log">Audit Log</h3>
+            <div class="max-h-[300px] overflow-y-auto pr-4">
+                <div class="activity-item"><strong>Admin Login</strong> - 5 mins ago</div>
+                <div class="activity-item"><strong>Menu Update</strong> - Mango Graham - 1 hr ago</div>
+                <div class="activity-item"><strong>Inventory Alert</strong> - Low Milk - 3 hrs ago</div>
             </div>
-            <ul class="activity-log">
-                <li class="activity-item"><strong>Admin logged in</strong> - 5 mins ago</li>
-                <li class="activity-item"><strong>Updated Menu</strong> - Item: Mango Graham - 1 hour ago</li>
-                <li class="activity-item"><strong>New Order Received</strong> - Order #1045 - 3 hours ago</li>
-                <li class="activity-item"><strong>Admin password changed</strong> - Yesterday</li>
-            </ul>
-            <div class="modal-actions">
-                <button class="btn-save" style="background-color: var(--danger-red);" onclick="closeAllModals()">Close</button>
-            </div>
+            <button class="btn-save mt-8" onclick="closeAllModals()">Close</button>
         </div>
+
     </div>
 
     <script>
-        const overlay = document.getElementById('modalOverlay');
+        const translations = {
+            en: {
+                nav_dash: "Dashboard", nav_accounts: "Accounts", nav_inv: "Inventory",
+                nav_menu: "Menu Manager", nav_promo: "Promos", nav_rewards: "Rewards",
+                nav_ann: "Announce", nav_pay: "Payments", nav_set: "Settings",
+                logout: "Log Out", set_sub: "System Preferences & Localization",
+                set_shop: "Shop Profile", set_shop_sub: "Update shop name, address, and contact",
+                set_lang: "Language", set_lang_sub: "Switch between English and Tagalog",
+                set_sec: "Security", set_sec_sub: "Change admin password and privacy",
+                set_notif: "Notifications", set_notif_sub: "System alerts and inventory warnings",
+                set_log: "Activity Log", set_log_sub: "Recent system actions and logs"
+            },
+            tl: {
+                nav_dash: "Dashbord", nav_accounts: "Mga Account", nav_inv: "Imbentaryo",
+                nav_menu: "Tagapamahala ng Menu", nav_promo: "Mga Promo", nav_rewards: "Mga Gantimpala",
+                nav_ann: "Anunsyo", nav_pay: "Mga Pagbabayad", nav_set: "Settings",
+                logout: "Mag-Log Out", set_sub: "Preperensya ng Sistema at Wika",
+                set_shop: "Profile ng Tindahan", set_shop_sub: "I-update ang pangalan at address",
+                set_lang: "Wika", set_lang_sub: "Magpalit sa English o Tagalog",
+                set_sec: "Seguridad", set_sec_sub: "Palitan ang password at privacy",
+                set_notif: "Abiso", set_notif_sub: "Mga alerto sa sistema at imbentaryo",
+                set_log: "Listahan ng Aktibidad", set_log_sub: "Mga huling ginawa sa system"
+            }
+        };
 
-        function showToast(message, type = 'success') {
+        function changeLanguage(lang) {
+            localStorage.setItem('teoLang', lang);
+            applyLanguage(lang);
+            showToast(`Language set to ${lang === 'en' ? 'English' : 'Tagalog'}`);
+        }
+
+        function applyLanguage(lang) {
+            document.querySelectorAll('[data-lang]').forEach(el => {
+                const key = el.getAttribute('data-lang');
+                if (translations[lang][key]) {
+                    // Preserve icons if they exist
+                    const icon = el.querySelector('i');
+                    if (icon) {
+                        el.innerHTML = '';
+                        el.appendChild(icon);
+                        el.innerHTML += ' ' + translations[lang][key];
+                    } else {
+                        el.textContent = translations[lang][key];
+                    }
+                }
+            });
+            document.getElementById('langSelect').value = lang;
+        }
+
+        function showToast(message) {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.innerHTML = `<i class="fa-solid fa-check-circle"></i> <span>${message}</span>`;
+            toast.className = 'toast';
+            toast.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${message}`;
             container.appendChild(toast);
-            
-            // Auto remove alert
-            setTimeout(() => {
-                toast.style.animation = 'fadeOut 0.3s ease-out forwards';
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
+            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('light-theme');
+            const isLight = document.body.classList.contains('light-theme');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            document.getElementById('themeIcon').className = isLight ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
         }
 
         function openModal(modalId) {
-            overlay.style.display = 'flex';
+            document.getElementById('modalOverlay').classList.add('open');
             document.querySelectorAll('.modal-card').forEach(card => card.style.display = 'none');
             document.getElementById(modalId).style.display = 'block';
         }
 
-        function closeAllModals() {
-            overlay.style.display = 'none';
-        }
+        function closeAllModals() { document.getElementById('modalOverlay').classList.remove('open'); }
 
-        // Close modal if clicking outside the card
-        window.onclick = function(event) {
-            if (event.target == overlay) {
-                closeAllModals();
-            }
-        }
-
-        function handleSettingsSubmit(event, message) {
-            event.preventDefault(); // Stop page reload
-            showToast(message);
+        function handleSettingsSubmit(e, msg) {
+            e.preventDefault();
+            showToast(msg);
             closeAllModals();
         }
+
+        window.onload = () => {
+            const lang = localStorage.getItem('teoLang') || 'en';
+            applyLanguage(lang);
+            
+            const theme = localStorage.getItem('theme');
+            if (theme === 'light') {
+                document.body.classList.add('light-theme');
+                document.getElementById('themeIcon').className = 'fa-solid fa-moon';
+            }
+        };
     </script>
 </body>
 </html>
