@@ -394,7 +394,7 @@ def google_callback(
 
     frontend_redirect = os.getenv(
         "FRONTEND_OAUTH_REDIRECT",
-        "http://127.0.0.1:5500/PUBLICWEB/oauth-callback.html"
+        "https://timsrpay.onrender.com/PUBLICWEB/index.html"
     )
 
     token_res = requests.post(
