@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teo D' Mango | Admin Analytics Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --mango-yellow: #fcdb05;
+            --mango-orange: #ff8c00;
+            --mango-dark: #0f0c08; 
+            --text-main: #ffffff;
+            --text-sub: #a1a1aa;
+            --glass-bg: rgba(255, 255, 255, 0.015);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --mesh-color-1: rgba(252, 219, 5, 0.05);
+            --mesh-color-2: rgba(252, 219, 5, 0.02);
+            --logo-filter: brightness(0) invert(1);
+            --sidebar-width: 240px;
+            --modal-overlay: rgba(0,0,0,0.92);
+            --modal-card: #14110e;
+        }
+
+        /* UPDATED LIGHT THEME STYLING */
+        body.light-theme {
+            --mango-dark: #f8f9fa; 
+            --text-main: #1c1917;  
+            --text-sub: #57534e;   
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(0, 0, 0, 0.1);
+            --mesh-color-1: rgba(252, 219, 5, 0.15);
+            --mesh-color-2: rgba(255, 140, 0, 0.1);
+            --logo-filter: none;
+            --modal-card: #ffffff;
+            --modal-overlay: rgba(255, 255, 255, 0.85);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; transition: background 0.3s, color 0.3s, border 0.3s, box-shadow 0.3s; }
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--mango-dark);
+            background-image: 
+                radial-gradient(at 0% 0%, var(--mesh-color-1) 0px, transparent 40%),
+                radial-gradient(at 100% 100%, var(--mesh-color-2) 0px, transparent 40%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .glass { background: var(--glass-bg); backdrop-filter: blur(12px); border: 1px solid var(--glass-border); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05); }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--glass-bg);
+            backdrop-filter: blur(25px);
+            height: 100vh;
+            position: fixed;
+            left: 0; top: 0;
+            border-right: 1px solid var(--glass-border);
+            display: flex; flex-direction: column;
+            z-index: 100;
+        }
+
+        .logo-section { padding: 40px 20px; text-align: center; }
+        .logo-section img { width: 120px; filter: var(--logo-filter); }
+
+        .nav-menu { flex: 1; padding: 10px 15px; overflow-y: auto; }
+        .nav-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 18px; margin-bottom: 6px;
+            border-radius: 12px; color: var(--text-sub);
+            text-decoration: none; font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .nav-item:hover, .nav-item.active { background: var(--mango-yellow); color: #120f0a !important; font-weight: 700; box-shadow: 0 4px 15px rgba(252, 219, 5, 0.2); }
+
+        .logout-btn {
+            padding: 12px 18px; margin: 15px; border-radius: 12px;
+            color: #ef4444; font-weight: 700; text-decoration: none;
+            display: flex; align-items: center; gap: 10px;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            font-size: 0.85rem;
+        }
+
+        .main-content { margin-left: var(--sidebar-width); flex: 1; padding: 40px; overflow-y: auto; height: 100vh; }
+        .header-card { padding: 20px 40px; border-radius: 24px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .theme-toggle-circle { width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; background: var(--mango-yellow); color: #120f0a; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { padding: 25px; border-radius: 24px; display: flex; align-items: center; gap: 20px; }
+        .stat-icon { width: 55px; height: 55px; border-radius: 16px; display: flex; align-items: center; justify-content: center; background: var(--mango-yellow); color: #120f0a; font-size: 1.25rem; }
+
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 25px; }
+        .chart-card { padding: 25px; border-radius: 24px; position: relative; cursor: pointer; }
+        .chart-card:hover { transform: translateY(-5px); border-color: var(--mango-orange); background: rgba(0,0,0,0.02); box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+        body.dark-theme .chart-card:hover { background: rgba(255,255,255,0.06); box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+        .chart-card h3 { font-size: 1.1rem; font-weight: 800; color: var(--mango-yellow); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; }
+
+        .select-filter { padding: 10px 15px; border-radius: 12px; border: 1px solid var(--glass-border); background: #1a1a1a; color: var(--mango-yellow); outline: none; cursor: pointer; font-size: 0.85rem; font-weight: 700; }
+        body.light-theme .select-filter { background: #fff; color: #1c1917; border-color: #e5e7eb; }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-overlay); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(20px); opacity: 0; transition: opacity 0.4s ease; }
+        .modal.show { display: flex; opacity: 1; }
+        .modal-content { width: 90%; max-width: 950px; height: 85vh; padding: 40px; border-radius: 30px; position: relative; background: var(--modal-card); box-shadow: 0 25px 60px rgba(0,0,0,0.2); transform: scale(0.9); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        body.dark-theme .modal-content { box-shadow: 0 25px 60px rgba(0,0,0,0.8); }
+        .modal.show .modal-content { transform: scale(1); }
+        .close-modal { position: absolute; top: 25px; right: 30px; font-size: 2.5rem; cursor: pointer; color: var(--text-sub); line-height: 1; }
+    </style>
+</head>
+<body class="dark-theme">
+
+    <aside class="sidebar glass">
+        <div class="logo-section"><img src="../images/logo.png" alt="Logo"></div>
+        <nav class="nav-menu">
+            <a href="dashboard.html" class="nav-item active"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+            <a href="orders.html" class="nav-item"><i class="fa-solid fa-receipt"></i> Orders</a>
+            <a href="accounts.html" class="nav-item"><i class="fa-solid fa-user-gear"></i> Accounts</a>
+            <a href="inventory.html" class="nav-item"><i class="fa-solid fa-boxes-stacked"></i> Inventory</a>
+            <a href="menuman.html" class="nav-item"><i class="fa-solid fa-utensils"></i> Menu Manager</a>
+            <a href="promo.html" class="nav-item"><i class="fa-solid fa-tags"></i> Promos</a>
+            <a href="rewards.html" class="nav-item"><i class="fa-solid fa-gift"></i> Rewards</a>
+            <a href="announce.html" class="nav-item"><i class="fa-solid fa-bell"></i> Announce</a>
+            <a href="payments.html" class="nav-item"><i class="fa-solid fa-credit-card"></i> Payments</a>
+            <a href="settings.html" class="nav-item"><i class="fa-solid fa-cog"></i> Settings</a>
+        </nav>
+        <a href="index.html" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Log Out</a>
+    </aside>
+
+    <main class="main-content">
+        <header class="header-card glass">
+            <div>
+                <h1 class="text-2xl font-black uppercase tracking-tighter" style="color: var(--mango-yellow);">Teo Analytics</h1>
+                <p class="text-xs font-mono opacity-60" id="currentDate"></p>
+            </div>
+            <button class="theme-toggle-circle" onclick="toggleTheme()">
+                <i class="fa-solid fa-sun" id="themeIcon"></i>
+            </button>
+        </header>
+
+        <section class="stats-grid">
+            <div class="stat-card glass">
+                <div class="stat-icon"><i class="fas fa-coins"></i></div>
+                <div class="stat-data"><h4 class="text-xs opacity-50 uppercase font-bold">Total Revenue</h4><p id="statRevenue" class="text-2xl font-black tracking-tight">₱0</p></div>
+            </div>
+            <div class="stat-card glass">
+                <div class="stat-icon"><i class="fas fa-gift"></i></div>
+                <div class="stat-data"><h4 class="text-xs opacity-50 uppercase font-bold">Rewards Issued</h4><p id="statRewards" class="text-2xl font-black tracking-tight">0 pts</p></div>
+            </div>
+            <div class="stat-card glass">
+                <div class="stat-icon"><i class="fas fa-boxes"></i></div>
+                <div class="stat-data"><h4 class="text-xs opacity-50 uppercase font-bold">Stock Health</h4><p id="statStock" class="text-2xl font-black tracking-tight">0</p></div>
+            </div>
+        </section>
+
+        <div class="flex justify-between items-center mb-8 px-2">
+            <h2 class="text-sm font-black uppercase tracking-widest opacity-60">System Insights</h2>
+            <div class="flex gap-4">
+                <select class="select-filter" id="timeframeFilter" onchange="updateDashboard()">
+                    <option value="daily">Daily Pulse</option>
+                    <option value="weekly">Weekly Overview</option>
+                </select>
+                <button class="bg-white text-black px-5 py-2 rounded-xl text-sm font-bold shadow-sm" onclick="exportData()">Export CSV</button>
+            </div>
+        </div>
+
+        <section class="dashboard-grid">
+            <div class="chart-card glass" onclick="openModal('salesChart', 'Sales Volume (Orders)')">
+                <h3>Sales Count</h3>
+                <div class="h-[200px]"><canvas id="salesChart"></canvas></div>
+            </div>
+            <div class="chart-card glass" onclick="openModal('revenueChart', 'Gross Revenue (₱)')">
+                <h3>Total Revenue</h3>
+                <div class="h-[200px]"><canvas id="revenueChart"></canvas></div>
+            </div>
+            <div class="chart-card glass" onclick="openModal('inventoryChart', 'Current Stock Levels')">
+                <h3>Inventory Status</h3>
+                <div class="h-[200px]"><canvas id="inventoryChart"></canvas></div>
+            </div>
+            <div class="chart-card glass" onclick="openModal('bestSellersChart', 'Item Popularity')">
+                <h3>Best Sellers</h3>
+                <div class="h-[200px]"><canvas id="bestSellersChart"></canvas></div>
+            </div>
+            <div class="chart-card glass" onclick="openModal('paymentChart', 'Payment Method Breakdown')">
+                <h3>Payments</h3>
+                <div class="h-[200px]"><canvas id="paymentChart"></canvas></div>
+            </div>
+            <div class="chart-card glass" onclick="openModal('rewardsChart', 'TeoPay Loyalty Issued')">
+                <h3>Rewards Issued</h3>
+                <div class="h-[200px]"><canvas id="rewardsChart"></canvas></div>
+            </div>
+        </section>
+    </main>
+
+    <div class="modal" id="chartModal">
+        <div class="modal-content glass">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <h3 id="modalTitle" class="text-2xl font-black uppercase text-yellow-500 mb-8 tracking-widest"></h3>
+            <div class="w-full h-[85%]"><canvas id="modalCanvas"></canvas></div>
+        </div>
+    </div>
+
+    <script>
+        const DB_KEY = 'teoDmango_Store';
+
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-theme');
+            }
+        })();
+
+        function getDB() {
+            const data = localStorage.getItem(DB_KEY);
+            if (!data) {
+                const seed = {
+                    sales: { labels: ['8am', '10am', '12pm', '2pm', '4pm', '6pm', '8pm'], data: [42, 55, 30, 68, 90, 125, 110] },
+                    revenue: { labels: ['8am', '10am', '12pm', '2pm', '4pm', '6pm', '8pm'], data: [4200, 5500, 3000, 6800, 9000, 12500, 11000] },
+                    inventory: { labels: ['Mangoes', 'Graham', 'Cream', 'Pearl', 'Cups'], data: [85, 42, 15, 25, 95] },
+                    bestSellers: { labels: ['Classic', 'Graham', 'Cheese'], data: [450, 620, 210] },
+                    payments: { labels: ['TeoPay', 'Cash', 'GCash'], data: [55, 25, 20] },
+                    rewards: { labels: ['8am', '10am', '12pm', '2pm', '4pm', '6pm', '8pm'], data: [420, 550, 300, 680, 900, 1250, 1100] }
+                };
+                localStorage.setItem(DB_KEY, JSON.stringify(seed));
+                return seed;
+            }
+            return JSON.parse(data);
+        }
+
+        let charts = {};
+        let modalChartInstance = null;
+
+        function toggleTheme() {
+            document.body.classList.toggle('light-theme');
+            const isLight = document.body.classList.contains('light-theme');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            document.getElementById('themeIcon').className = isLight ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+            updateDashboard();
+        }
+
+        function updateDashboard() {
+            const sysData = getDB();
+            const isLight = document.body.classList.contains('light-theme');
+            Chart.defaults.color = isLight ? '#1c1917' : '#d1d5db';
+            const accent = isLight ? '#ff8c00' : '#fcdb05';
+
+            const totalRev = sysData.revenue.data.reduce((a, b) => a + b, 0);
+            const totalPts = sysData.rewards.data.reduce((a, b) => a + b, 0);
+            const avgStock = sysData.inventory.data.reduce((a, b) => a + b, 0) / sysData.inventory.data.length;
+
+            document.getElementById('statRevenue').innerText = `₱${totalRev.toLocaleString()}`;
+            document.getElementById('statRewards').innerText = `${totalPts.toLocaleString()} pts`;
+            document.getElementById('statStock').innerText = `${Math.floor(avgStock)}% Optimized`;
+            document.getElementById('currentDate').innerText = new Date().toDateString();
+
+            renderChart('salesChart', 'line', sysData.sales.labels, sysData.sales.data, accent, 'Orders', true);
+            renderChart('revenueChart', 'bar', sysData.revenue.labels, sysData.revenue.data, '#52c41a', 'Revenue', false);
+            renderChart('inventoryChart', 'bar', sysData.inventory.labels, sysData.inventory.data, '#ef4444', 'Stock Level', false);
+            renderChart('bestSellersChart', 'bar', sysData.bestSellers.labels, sysData.bestSellers.data, accent, 'Units', false);
+            renderChart('paymentChart', 'doughnut', sysData.payments.labels, sysData.payments.data, [accent, '#1890ff', '#ef4444'], 'Payments');
+            renderChart('rewardsChart', 'line', sysData.rewards.labels, sysData.rewards.data, '#a855f7', 'Points', true);
+        }
+
+        function renderChart(id, type, labels, data, color, labelName, isGradient) {
+            const canvas = document.getElementById(id);
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            if (charts[id]) charts[id].destroy();
+
+            const isLight = document.body.classList.contains('light-theme');
+            let bg = Array.isArray(color) ? color : color + '33';
+            if (isGradient) {
+                bg = ctx.createLinearGradient(0, 0, 0, 200);
+                bg.addColorStop(0, color + '66'); bg.addColorStop(1, 'transparent');
+            }
+
+            charts[id] = new Chart(ctx, {
+                type: type,
+                data: {
+                    labels: labels,
+                    datasets: [{ label: labelName, data: data, backgroundColor: bg, borderColor: Array.isArray(color) ? 'transparent' : color, borderWidth: 2.5, tension: 0.4, borderRadius: 8, fill: isGradient }]
+                },
+                options: { 
+                    maintainAspectRatio: false, 
+                    animation: { duration: 1500, easing: 'easeOutQuart' },
+                    plugins: { legend: { display: type === 'doughnut' } }, 
+                    scales: { 
+                        y: { 
+                            display: type !== 'doughnut', 
+                            grid: { color: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.03)' }, 
+                            beginAtZero: true 
+                        }, 
+                        x: { 
+                            display: type !== 'doughnut', 
+                            grid: { display: false } 
+                        } 
+                    } 
+                }
+            });
+        }
+
+        function openModal(chartId, title) {
+            const modal = document.getElementById('chartModal');
+            document.getElementById('modalTitle').innerText = title;
+            modal.classList.add('show');
+            const source = charts[chartId];
+            const ctx = document.getElementById('modalCanvas').getContext('2d');
+            if (modalChartInstance) modalChartInstance.destroy();
+
+            modalChartInstance = new Chart(ctx, {
+                type: source.config.type,
+                data: {
+                    labels: source.config.data.labels,
+                    datasets: source.config.data.datasets.map(ds => ({ ...ds, data: ds.data.map(() => 0) }))
+                },
+                options: {
+                    ...source.config.options,
+                    animation: { duration: 1500, easing: 'easeOutBack' },
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: true } }
+                }
+            });
+
+            setTimeout(() => {
+                modalChartInstance.data.datasets.forEach((dataset, i) => { dataset.data = source.config.data.datasets[i].data; });
+                modalChartInstance.update();
+            }, 100);
+        }
+
+        function closeModal() { document.getElementById('chartModal').classList.remove('show'); }
+
+        window.onload = () => {
+            if (localStorage.getItem('theme') === 'light') {
+                document.getElementById('themeIcon').className = 'fa-solid fa-moon';
+            }
+            updateDashboard();
+        };
+
+        function exportData() {
+            const sysData = getDB();
+            let csv = "Category,Label,Value\n";
+            Object.keys(sysData).forEach(key => { sysData[key].labels.forEach((l, i) => { csv += `${key},${l},${sysData[key].data[i]}\n`; }); });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('href', url);
+            a.setAttribute('download', 'Teo_Reports.csv');
+            a.click();
+        }
+    </script>
+</body>
+</html>

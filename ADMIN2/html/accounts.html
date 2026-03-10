@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teo D' Mango | Staff Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --mango-yellow: #fcdb05;
+            --mango-orange: #ff8c00;
+            --mango-dark: #0f0c08; 
+            --text-main: #ffffff;
+            --text-sub: #a1a1aa;
+            --glass-bg: rgba(255, 255, 255, 0.015);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --mesh-color-1: rgba(252, 219, 5, 0.05);
+            --mesh-color-2: rgba(252, 219, 5, 0.02);
+            --logo-filter: brightness(0) invert(1);
+            --sidebar-width: 240px;
+            --modal-overlay: rgba(0,0,0,0.92);
+            --modal-card: #14110e;
+        }
+
+        /* Improved Light Theme Contrast */
+        body.light-theme {
+            --mango-dark: #f8f9fa; 
+            --text-main: #1a1a1a;  
+            --text-sub: #4a4a4a;   
+            --glass-bg: rgba(255, 255, 255, 0.8);
+            --glass-border: rgba(0, 0, 0, 0.1);
+            --mesh-color-1: rgba(252, 219, 5, 0.15);
+            --mesh-color-2: rgba(255, 140, 0, 0.05);
+            --logo-filter: none;
+            --modal-card: #ffffff;
+            --modal-overlay: rgba(0,0,0,0.4);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; transition: background 0.3s, color 0.3s, border 0.3s, transform 0.2s; }
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--mango-dark);
+            background-image: 
+                radial-gradient(at 0% 0%, var(--mesh-color-1) 0px, transparent 40%),
+                radial-gradient(at 100% 100%, var(--mesh-color-2) 0px, transparent 40%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            display: flex; min-height: 100vh; overflow: hidden;
+        }
+
+        .glass { background: var(--glass-bg); backdrop-filter: blur(12px); border: 1px solid var(--glass-border); }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--glass-bg);
+            backdrop-filter: blur(25px);
+            height: 100vh; position: fixed; left: 0; top: 0;
+            border-right: 1px solid var(--glass-border);
+            display: flex; flex-direction: column; z-index: 100;
+        }
+
+        .logo-section { padding: 40px 20px; text-align: center; }
+        .logo-section img { width: 120px; filter: var(--logo-filter); }
+
+        .nav-menu { flex: 1; padding: 10px 15px; }
+        .nav-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 18px; margin-bottom: 6px;
+            border-radius: 12px; color: var(--text-sub);
+            text-decoration: none; font-weight: 500; font-size: 0.9rem;
+        }
+        .nav-item:hover, .nav-item.active { background: var(--mango-yellow); color: #120f0a !important; font-weight: 700; box-shadow: 0 4px 15px rgba(252, 219, 5, 0.2); }
+
+        .logout-btn {
+            padding: 12px 18px; margin: 15px; border-radius: 12px;
+            color: #ef4444; font-weight: 700; text-decoration: none;
+            display: flex; align-items: center; gap: 10px;
+            border: 1px solid rgba(239, 68, 68, 0.2); font-size: 0.85rem;
+        }
+
+        /* --- CONTENT --- */
+        .main-content { margin-left: var(--sidebar-width); flex: 1; padding: 40px; overflow-y: auto; height: 100vh; }
+        .header-card { padding: 25px 40px; border-radius: 24px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .theme-toggle-circle { width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; background: var(--mango-yellow); color: #120f0a; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+
+        .report-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .report-card { padding: 20px; border-radius: 24px; display: flex; align-items: center; gap: 15px; }
+        .report-icon { width: 50px; height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: var(--mango-yellow); color: #120f0a; }
+
+        /* --- STAFF CARDS --- */
+        .staff-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .staff-card { border-radius: 24px; padding: 25px; text-align: center; cursor: pointer; border: 1px solid var(--glass-border); background: var(--glass-bg); }
+        .staff-card:hover { transform: translateY(-8px); border-color: var(--mango-yellow); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .staff-card.inactive { opacity: 0.4; filter: grayscale(1); }
+        .staff-img { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; margin: 0 auto 15px; border: 3px solid var(--mango-yellow); padding: 3px; }
+
+        .role-badge { padding: 4px 12px; border-radius: 20px; font-size: 0.65rem; font-weight: 900; text-transform: uppercase; display: inline-block; margin-bottom: 10px; }
+        .role-admin { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+        .role-staff { background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2); }
+        .role-kiosk { background: rgba(34, 197, 94, 0.1); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.2); }
+
+        /* --- MODALS --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-overlay); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(15px); padding: 20px; }
+        .modal-overlay.open { display: flex; }
+        .modal-content { background: var(--modal-card); width: 100%; max-width: 500px; padding: 35px; border-radius: 32px; position: relative; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+
+        .input-group label { display: block; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: var(--mango-orange); margin-bottom: 6px; letter-spacing: 1px; }
+        .input-group input, .input-group select { width: 100%; padding: 14px; border-radius: 12px; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); color: var(--text-main); outline: none; }
+        body.light-theme .input-group input, body.light-theme .input-group select { background: #f1f3f5; color: #000; border: 1px solid #dee2e6; }
+
+        .search-container { position: relative; flex: 1; max-width: 400px; }
+        .search-container input { width: 100%; padding: 14px 20px 14px 45px; border-radius: 16px; background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-main); outline: none; }
+        .search-container i { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); opacity: 0.5; }
+
+        .btn-toggle { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .btn-toggle:active { transform: scale(0.95); }
+
+        /* Custom Alert Styling */
+        .alert-modal { background: #1a1612; border: 1px solid var(--mango-orange); text-align: center; }
+        body.light-theme .alert-modal { background: #fff; border-color: var(--mango-orange); }
+
+        #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--mango-yellow); color: #000; padding: 12px 30px; border-radius: 50px; font-weight: 900; text-transform: uppercase; font-size: 10px; letter-spacing: 1px; transition: 0.5s; z-index: 2000; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+        #toast.show { transform: translateX(-50%) translateY(0); }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar glass">
+        <div class="logo-section"><img src="../images/logo.png" alt="Logo"></div>
+        <nav class="nav-menu">
+            <a href="dashboard.html" class="nav-item"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+            <a href="orders.html" class="nav-item"><i class="fa-solid fa-receipt"></i> Orders</a>
+            <a href="accounts.html" class="nav-item active"><i class="fa-solid fa-user-gear"></i> Accounts</a>
+            <a href="inventory.html" class="nav-item"><i class="fa-solid fa-boxes-stacked"></i> Inventory</a>
+            <a href="menuman.html" class="nav-item"><i class="fa-solid fa-utensils"></i> Menu Manager</a>
+            <a href="promo.html" class="nav-item"><i class="fa-solid fa-tags"></i> Promos</a>
+            <a href="rewards.html" class="nav-item"><i class="fa-solid fa-gift"></i> Rewards</a>
+            <a href="announce.html" class="nav-item"><i class="fa-solid fa-bell"></i> Announce</a>
+            <a href="payments.html" class="nav-item"><i class="fa-solid fa-credit-card"></i> Payments</a>
+            <a href="settings.html" class="nav-item"><i class="fa-solid fa-cog"></i> Settings</a>
+        </nav>
+        <a href="index.html" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Log Out</a>
+    </aside>
+
+    <main class="main-content">
+        <header class="header-card glass">
+            <div>
+                <h1 class="text-2xl font-black uppercase tracking-tighter" style="color: var(--mango-yellow);">Accounts Center</h1>
+                <p class="text-xs font-mono opacity-60">System Security & Identity</p>
+            </div>
+            <button class="theme-toggle-circle" onclick="toggleTheme()">
+                <i class="fa-solid fa-sun" id="themeIcon"></i>
+            </button>
+        </header>
+
+        <section class="report-grid">
+            <div class="report-card glass">
+                <div class="report-icon"><i class="fas fa-user-shield"></i></div>
+                <div><h3 class="text-[10px] uppercase font-bold opacity-50">Active Users</h3><p id="activeCount" class="text-xl font-black">0</p></div>
+            </div>
+            <div class="report-card glass">
+                <div class="report-icon"><i class="fas fa-clock"></i></div>
+                <div><h3 class="text-[10px] uppercase font-bold opacity-50">On Duty</h3><p id="checkedInCount" class="text-xl font-black">0</p></div>
+            </div>
+            <div class="report-card glass">
+                <div class="report-icon"><i class="fas fa-users"></i></div>
+                <div><h3 class="text-[10px] uppercase font-bold opacity-50">Total Accounts</h3><p id="totalCount" class="text-xl font-black">0</p></div>
+            </div>
+        </section>
+
+        <div class="flex flex-wrap justify-between items-center mb-8 gap-4">
+            <div class="search-container">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search by name, ID or @user..." onkeyup="searchCards()">
+            </div>
+            <button class="bg-yellow-400 text-black px-6 py-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg hover:scale-105" onclick="openModal('formModal')">
+                <i class="fas fa-plus mr-2"></i> Create Profile
+            </button>
+        </div>
+
+        <div class="staff-grid" id="staffGrid"></div>
+    </main>
+
+    <div class="modal-overlay" id="formModal">
+        <div class="modal-content glass">
+            <button class="absolute top-6 right-8 text-2xl opacity-40 hover:opacity-100" onclick="closeModal('formModal')">&times;</button>
+            <h2 id="modalTitle" class="text-xl font-black uppercase text-yellow-400 mb-8">Access Profile</h2>
+            
+            <form id="accountForm">
+                <input type="hidden" id="editCardId">
+                <div class="text-center mb-8">
+                    <img src="https://via.placeholder.com/100" id="profilePreview" class="w-24 h-24 rounded-full mx-auto border-2 border-dashed border-yellow-400 object-cover p-1 mb-4">
+                    <label for="profilePic" class="text-[10px] font-black uppercase cursor-pointer bg-white/10 px-4 py-2 rounded-full hover:bg-yellow-400 hover:text-black">
+                        Update Photo
+                    </label>
+                    <input type="file" id="profilePic" class="hidden" accept="image/*" onchange="previewImage(event)">
+                </div>
+
+                <div class="grid gap-5">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="input-group">
+                            <label id="idLabel">Account ID</label>
+                            <input type="text" id="officialId" placeholder="Auto-generated" readonly class="opacity-70 cursor-not-allowed">
+                        </div>
+                        <div class="input-group">
+                            <label>Role</label>
+                            <select id="role" onchange="updateIdLabel()">
+                                <option value="Admin">Administrator</option>
+                                <option value="Staff">Staff Web</option>
+                                <option value="Kiosk">Kiosk System</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="input-group"><label>Full Display Name</label><input type="text" id="fullName" required></div>
+                    <div class="input-group"><label>Username</label><input type="text" id="userName" required></div>
+                    <div class="input-group"><label>Email Address</label><input type="email" id="email" required></div>
+                </div>
+
+                <div class="flex justify-between items-center mt-10">
+                    <button type="button" class="text-xs font-bold opacity-50 uppercase" onclick="closeModal('formModal')">Discard</button>
+                    <button type="submit" class="bg-yellow-400 text-black px-8 py-4 rounded-xl font-black uppercase text-xs">Commit Profile</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="profileModal">
+        <div class="modal-content glass" style="max-width: 850px;">
+            <button class="absolute top-6 right-8 text-2xl opacity-40" onclick="closeModal('profileModal')">&times;</button>
+            <div class="flex flex-col md:flex-row gap-10 mt-4">
+                <div class="w-full md:w-2/5 text-center border-b md:border-b-0 md:border-r border-white/10 pb-8 md:pb-0 md:pr-10">
+                    <img src="" id="viewProfileImg" class="w-32 h-32 rounded-full mx-auto border-4 border-yellow-400 object-cover mb-4">
+                    <h2 id="viewProfileName" class="text-2xl font-black"></h2>
+                    <p id="viewProfileId" class="text-xs font-black text-white/40 mb-1"></p>
+                    <p id="viewProfileUsername" class="text-yellow-400 font-mono text-sm mb-4"></p>
+                    <span id="viewProfileRole" class="role-badge"></span>
+                    
+                    <div class="grid gap-3 mt-8">
+                        <button id="toggleInBtn" class="btn-toggle py-3 rounded-xl font-black text-[10px] uppercase" onclick="toggleCheckIn()"></button>
+                        <button class="bg-white/10 py-3 rounded-xl font-bold text-[10px] uppercase hover:bg-white/20" onclick="editAccountFromProfile()">
+                            <i class="fas fa-edit mr-2"></i>Edit Profile
+                        </button>
+                        <button class="bg-blue-600/20 text-blue-400 py-3 rounded-xl font-bold text-[10px] uppercase hover:bg-blue-600/30" onclick="confirmReset()">
+                            <i class="fas fa-key mr-2"></i>Reset Password
+                        </button>
+                        <button id="toggleActiveBtn" class="btn-toggle py-3 rounded-xl font-bold text-[10px] uppercase" onclick="toggleStatus()"></button>
+                    </div>
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-xs font-black uppercase opacity-40 mb-4 tracking-widest">Logs & Activity</h3>
+                    <div id="viewProfileRecords" class="space-y-3">
+                        <div class="bg-white/5 p-4 rounded-xl flex justify-between items-center">
+                            <span class="font-bold text-sm">March 08, 2026</span>
+                            <span class="text-[10px] bg-green-500/20 text-green-400 px-3 py-1 rounded-full font-black">LOGGED IN</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal-content glass alert-modal" style="max-width: 400px;">
+            <div class="text-mango-orange text-4xl mb-4"><i class="fas fa-exclamation-triangle"></i></div>
+            <h2 class="text-xl font-black uppercase mb-2">Confirm Reset?</h2>
+            <p class="text-sm opacity-60 mb-8">This will generate a temporary password and send it to the staff's registered email. This action cannot be undone.</p>
+            <div class="flex gap-4">
+                <button class="flex-1 bg-white/10 py-4 rounded-xl font-bold uppercase text-[10px] hover:bg-white/20" onclick="closeModal('confirmModal')">Cancel</button>
+                <button class="flex-1 bg-mango-orange text-white py-4 rounded-xl font-black uppercase text-[10px] hover:brightness-110" onclick="processReset()">Proceed</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast">Password Reset Link Sent!</div>
+
+    <script>
+        let staffData = JSON.parse(localStorage.getItem('staffData')) || [];
+        let currentEditingId = null;
+
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-theme');
+                document.getElementById('themeIcon').className = 'fa-solid fa-moon';
+            }
+        })();
+
+        function toggleTheme() {
+            document.body.classList.toggle('light-theme');
+            const isLight = document.body.classList.contains('light-theme');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            document.getElementById('themeIcon').className = isLight ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+        }
+
+        function updateIdLabel() {
+            const role = document.getElementById('role').value;
+            document.getElementById('idLabel').innerText = (role === 'Kiosk') ? 'System ID' : 'Employee ID';
+        }
+
+        // Generate Unique 6-Digit ID
+        function generateUniqueId() {
+            let id;
+            do {
+                id = Math.floor(100000 + Math.random() * 900000).toString();
+            } while (staffData.some(s => s.officialId === id));
+            return id;
+        }
+
+        function save() {
+            localStorage.setItem('staffData', JSON.stringify(staffData));
+            renderGrid();
+            updateCounts();
+        }
+
+        function previewImage(event) {
+            const reader = new FileReader();
+            reader.onload = () => document.getElementById('profilePreview').src = reader.result;
+            reader.readAsDataURL(event.target.files[0]);
+        }
+
+        function openModal(id) {
+            if(id === 'formModal' && !currentEditingId) {
+                document.getElementById('accountForm').reset();
+                document.getElementById('editCardId').value = "";
+                document.getElementById('officialId').value = generateUniqueId(); // Set unique ID on new profile
+                document.getElementById('profilePreview').src = "https://via.placeholder.com/100";
+                document.getElementById('modalTitle').innerText = "Create Profile";
+                updateIdLabel();
+            }
+            document.getElementById(id).classList.add('open');
+        }
+
+        function closeModal(id) { 
+            document.getElementById(id).classList.remove('open'); 
+            if(id === 'formModal') currentEditingId = null; 
+        }
+
+        document.getElementById('accountForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const id = document.getElementById('editCardId').value || 'stf-' + Date.now();
+            const newData = {
+                id,
+                officialId: document.getElementById('officialId').value,
+                name: document.getElementById('fullName').value,
+                user: document.getElementById('userName').value,
+                email: document.getElementById('email').value,
+                role: document.getElementById('role').value,
+                imgSrc: document.getElementById('profilePreview').src,
+                checkedIn: false,
+                inactive: false
+            };
+
+            const existingIdx = staffData.findIndex(s => s.id === id);
+            if(existingIdx > -1) staffData[existingIdx] = { ...staffData[existingIdx], ...newData };
+            else staffData.push(newData);
+            
+            save();
+            closeModal('formModal');
+        });
+
+        function renderGrid() {
+            const grid = document.getElementById('staffGrid');
+            grid.innerHTML = '';
+            staffData.forEach(s => {
+                const roleCls = s.role === "Admin" ? "role-admin" : s.role === "Kiosk" ? "role-kiosk" : "role-staff";
+                const card = document.createElement('div');
+                card.className = `staff-card glass ${s.inactive ? 'inactive' : ''}`;
+                card.onclick = () => viewProfile(s.id);
+                card.innerHTML = `
+                    <img src="${s.imgSrc}" class="staff-img">
+                    <h3 class="font-black text-lg">${s.name}</h3>
+                    <p class="text-[10px] opacity-40 font-bold -mt-1 mb-2">#${s.officialId}</p>
+                    <span class="role-badge ${roleCls}">${s.role}</span>
+                    <div class="text-[10px] font-bold opacity-60 mt-2 flex items-center justify-center gap-2">
+                        <span class="w-2 h-2 rounded-full ${s.checkedIn ? 'bg-yellow-400 shadow-[0_0_8px_#fcdb05]' : 'bg-white/20'}"></span>
+                        ${s.checkedIn ? 'ON DUTY' : 'OFFLINE'}
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function viewProfile(id) {
+            currentEditingId = id;
+            const s = staffData.find(x => x.id === id);
+            
+            document.getElementById('viewProfileImg').src = s.imgSrc;
+            document.getElementById('viewProfileName').innerText = s.name;
+            document.getElementById('viewProfileId').innerText = 'ID: ' + s.officialId;
+            document.getElementById('viewProfileUsername').innerText = '@' + s.user;
+            
+            const rb = document.getElementById('viewProfileRole');
+            rb.innerText = s.role;
+            rb.className = `role-badge ${s.role === 'Admin' ? 'role-admin' : s.role === 'Kiosk' ? 'role-kiosk' : 'role-staff'}`;
+            
+            document.getElementById('toggleInBtn').innerText = s.checkedIn ? "Clock Out Now" : "Clock In Now";
+            document.getElementById('toggleInBtn').className = s.checkedIn ? "btn-toggle bg-red-500 text-white py-3 rounded-xl font-black text-[10px] uppercase hover:bg-red-600" : "btn-toggle bg-yellow-400 text-black py-3 rounded-xl font-black text-[10px] uppercase hover:bg-yellow-500";
+
+            document.getElementById('toggleActiveBtn').innerText = s.inactive ? "Reactivate Profile" : "Deactivate Profile";
+            document.getElementById('toggleActiveBtn').className = s.inactive ? "btn-toggle bg-green-500/20 text-green-400 py-3 rounded-xl font-bold text-[10px] uppercase hover:bg-green-500/30" : "btn-toggle bg-red-500/10 text-red-500 py-3 rounded-xl font-bold text-[10px] uppercase hover:bg-red-500/20";
+
+            openModal('profileModal');
+        }
+
+        function editAccountFromProfile() {
+            const s = staffData.find(x => x.id === currentEditingId);
+            closeModal('profileModal');
+            document.getElementById('modalTitle').innerText = "Update Profile";
+            document.getElementById('editCardId').value = s.id;
+            document.getElementById('profilePreview').src = s.imgSrc;
+            document.getElementById('officialId').value = s.officialId;
+            document.getElementById('fullName').value = s.name;
+            document.getElementById('userName').value = s.user;
+            document.getElementById('email').value = s.email;
+            document.getElementById('role').value = s.role;
+            updateIdLabel();
+            openModal('formModal');
+        }
+
+        function confirmReset() { openModal('confirmModal'); }
+
+        function processReset() {
+            closeModal('confirmModal');
+            const toast = document.getElementById('toast');
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function toggleCheckIn() {
+            const s = staffData.find(x => x.id === currentEditingId);
+            s.checkedIn = !s.checkedIn;
+            save();
+            viewProfile(currentEditingId);
+        }
+
+        function toggleStatus() {
+            const s = staffData.find(x => x.id === currentEditingId);
+            s.inactive = !s.inactive;
+            save();
+            viewProfile(currentEditingId);
+        }
+
+        function searchCards() {
+            const val = document.getElementById("searchInput").value.toLowerCase();
+            document.querySelectorAll(".staff-card").forEach(c => {
+                c.style.display = c.innerText.toLowerCase().includes(val) ? "" : "none";
+            });
+        }
+
+        function updateCounts() {
+            document.getElementById('totalCount').innerText = staffData.length;
+            document.getElementById('activeCount').innerText = staffData.filter(s => !s.inactive).length;
+            document.getElementById('checkedInCount').innerText = staffData.filter(s => s.checkedIn).length;
+        }
+
+        window.onload = () => { renderGrid(); updateCounts(); };
+    </script>
+</body>
+</html>

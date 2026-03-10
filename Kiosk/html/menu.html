@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Teo D' Mango - Kiosk Tablet</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --mango-deep: #ff8c00;
+            --mango-bright: #ffb703;
+            --text-dark: #2d1e18;
+            --glass-base: rgba(255, 255, 255, 0.45); 
+            --glass-border: rgba(255, 255, 255, 0.6);
+            --glass-blur: blur(25px);
+        }
+
+        * {
+            margin: 0; padding: 0; box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        ::-webkit-scrollbar { display: none; }
+
+        body {
+            min-height: 100vh;
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        .mango-juice-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -2;
+            background: radial-gradient(at 0% 0%, var(--mango-bright) 0, transparent 50%),
+                        radial-gradient(at 100% 100%, var(--mango-deep) 0, transparent 50%), #fffdf5;
+        }
+
+        header { padding: 30px 0 15px; text-align: center; }
+        header h1 { font-size: 2.2rem; font-weight: 800; color: var(--text-dark); text-transform: uppercase; letter-spacing: 3px; }
+
+        .kiosk-wrapper {
+            flex: 1;
+            width: 92%; 
+            margin: 0 auto;
+            padding-bottom: 140px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .product-card {
+            background: var(--glass-base);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 2px solid var(--glass-border);
+            border-radius: 35px;
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+            cursor: pointer;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            min-height: 380px; 
+        }
+
+        .product-card:active { transform: scale(0.97); }
+
+        .img-wrapper {
+            width: 100%;
+            height: 180px;
+            background: #fff;
+            border-radius: 22px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            border: 1px solid rgba(0,0,0,0.03);
+        }
+
+        .product-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scale(1.15);
+        }
+
+        .product-info { flex: 1; display: flex; flex-direction: column; }
+        .product-info h3 { font-size: 1.1rem; font-weight: 800; color: var(--text-dark); margin-bottom: 6px; text-transform: uppercase; }
+        .product-info p { font-size: 0.8rem; color: #5d4037; line-height: 1.3; margin-bottom: 10px; }
+
+        .price-row { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
+        .price-tag { font-weight: 900; font-size: 1.4rem; color: var(--text-dark); }
+        .add-btn { background: var(--mango-deep); color: white; border: none; padding: 10px 22px; border-radius: 100px; font-weight: 800; font-size: 0.75rem; text-transform: uppercase; }
+
+        .floating-cart-bar {
+            position: fixed;
+            bottom: 35px; left: 50%;
+            transform: translateX(-50%);
+            width: 80%; max-width: 600px; height: 80px;
+            background: var(--glass-base);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 2px solid var(--glass-border);
+            border-radius: 100px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 12px 0 35px;
+            z-index: 100;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .cart-total { font-weight: 900; font-size: 1.6rem; color: var(--text-dark); }
+        .btn-view-cart { background: var(--text-dark); color: white; height: 56px; padding: 0 35px; border-radius: 100px; border: none; font-weight: 800; text-transform: uppercase; }
+
+        /* --- ENHANCED GLASS CART POPUP --- */
+        .cart-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.2); display: none; z-index: 1000; backdrop-filter: blur(15px); }
+        .cart-popup {
+            position: fixed; bottom: -100%; left: 50%; transform: translateX(-50%);
+            width: 95%; max-width: 700px; height: 80vh;
+            background: var(--glass-base);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 2px solid var(--glass-border);
+            border-radius: 45px 45px 0 0; transition: bottom 0.6s cubic-bezier(0.15, 0.85, 0.35, 1);
+            z-index: 1001; display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 -20px 50px rgba(0,0,0,0.1);
+        }
+        .cart-popup.active { bottom: 0; }
+        .cart-header { padding: 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .cart-items { flex: 1; overflow-y: auto; padding: 20px; }
+
+        /* Item Cards */
+        .cart-item { display: flex; flex-direction: column; gap: 12px; padding: 20px; background: rgba(255, 255, 255, 0.5); border-radius: 30px; margin-bottom: 15px; border: 1px solid rgba(255, 255, 255, 0.6); }
+        .item-main-row { display: flex; align-items: center; gap: 15px; }
+        .item-thumb { width: 80px; height: 80px; border-radius: 20px; overflow: hidden; background: white; flex-shrink: 0; }
+        .item-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* Details & Tags */
+        .item-details-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px; }
+        .detail-tag { font-size: 0.7rem; font-weight: 700; color: #5d4037; background: rgba(255,255,255,0.6); padding: 4px 12px; border-radius: 100px; text-transform: uppercase; border: 1px solid rgba(0,0,0,0.03); }
+        .item-note { font-size: 0.75rem; color: var(--mango-deep); font-style: italic; margin-top: 8px; padding-left: 5px; border-left: 2px solid var(--mango-deep); }
+
+        .qty-controls { display: flex; align-items: center; gap: 15px; margin-top: 10px; }
+        .qty-btn { width: 38px; height: 38px; border-radius: 50%; border: none; background: white; font-weight: 800; font-size: 1.2rem; cursor: pointer; }
+        .qty-btn.plus { background: var(--mango-deep); color: white; }
+
+        .checkout-bar { padding: 30px; background: rgba(255,255,255,0.3); display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(0,0,0,0.05); }
+        .btn-checkout { background: var(--text-dark); color: white; border: none; padding: 20px 45px; border-radius: 100px; font-weight: 800; text-transform: uppercase; }
+    </style>
+</head>
+<body>
+
+    <div class="mango-juice-bg"></div>
+
+    <header>
+        <h1>Our Mango Menu</h1>
+    </header>
+
+    <div class="kiosk-wrapper">
+        <div class="product-grid" id="productGrid"></div>
+    </div>
+
+    <div class="floating-cart-bar" id="floatingBar" style="display:none;">
+        <div class="cart-total" id="barTotal">₱ 0.00</div>
+        <button class="btn-view-cart" onclick="toggleCart()">My Tray</button>
+    </div>
+
+    <div class="cart-overlay" id="overlay" onclick="toggleCart()"></div>
+    <div class="cart-popup" id="cartPanel">
+        <div class="cart-header">
+            <h2 style="font-weight:800; text-transform:uppercase;">My Selected Items</h2>
+            <button onclick="toggleCart()" style="border:none; background:rgba(0,0,0,0.05); padding:10px 20px; border-radius:50px; font-weight:800; color: #555;">CLOSE</button>
+        </div>
+        <div id="cartItemsContainer" class="cart-items"></div>
+        <div class="checkout-bar">
+            <div>
+                <p style="font-size:0.75rem; color:#888; text-transform:uppercase; font-weight:800;">Total Amount</p>
+                <h2 id="popupTotal" style="font-weight:900; font-size:2rem; color: var(--text-dark);">₱ 0.00</h2>
+            </div>
+            <button class="btn-checkout" onclick="location.href='payment-options.html'">CHECKOUT</button>
+        </div>
+    </div>
+
+    <script>
+        const products = [
+            { id: 1, name: "Classic Mango", price: 60, desc: "Our signature blend with real mango chunks and graham.", img: "../Images/mangga.png" },
+            { id: 2, name: "Strawberry", price: 60, desc: "Fresh berries mixed with creamy mango base.", img: "../Images/strawberry.png" },
+            { id: 3, name: "Ube Overload", price: 60, desc: "A Filipino favorite ube swirl with mango delight.", img: "../Images/ube.png" },
+            { id: 4, name: "Creamy Avocado", price: 60, desc: "Rich avocado blend for a healthy tropical twist.", img: "../Images/avocado.png" },
+            { id: 5, name: "Buko Pandan", price: 60, desc: "Young coconut and pandan jelly in mango slush.", img: "../Images/Buko.png" },
+            { id: 6, name: "Sweet Lychee", price: 60, desc: "Light and refreshing lychee bits in every sip.", img: "../Images/lychee.png" }
+        ];
+
+        let tray = JSON.parse(localStorage.getItem('teo_tray')) || [];
+
+        function renderProducts() {
+            const grid = document.getElementById('productGrid');
+            grid.innerHTML = products.map(p => `
+                <div class="product-card" onclick="location.href='customize.html?id=${p.id}'">
+                    <div class="img-wrapper"><img src="${p.img}"></div>
+                    <div class="product-info">
+                        <h3>${p.name}</h3>
+                        <p>${p.desc}</p>
+                        <div class="price-row">
+                            <div class="price-tag">₱${p.price.toFixed(2)}</div>
+                            <button class="add-btn">Select</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderTray() {
+            const container = document.getElementById('cartItemsContainer');
+            const floatingBar = document.getElementById('floatingBar');
+            
+            if (tray.length === 0) {
+                container.innerHTML = `<div style="text-align:center; padding-top:100px; color:#999; font-weight:800; text-transform:uppercase; letter-spacing:2px;">Your tray is empty</div>`;
+                floatingBar.style.display = 'none';
+                updateTotals(0);
+                return;
+            }
+
+            floatingBar.style.display = 'flex';
+            container.innerHTML = '';
+            let total = 0;
+
+            tray.forEach((item, index) => {
+                const subtotal = item.price * item.qty;
+                total += subtotal;
+
+                const addonsHtml = item.toppings && item.toppings.length > 0 
+                    ? item.toppings.map(t => `<span class="detail-tag">+ ${t}</span>`).join('') 
+                    : '';
+
+                container.innerHTML += `
+                    <div class="cart-item">
+                        <div class="item-main-row">
+                            <div class="item-thumb"><img src="${item.img}"></div>
+                            <div style="flex:1">
+                                <h4 style="font-weight:800; font-size:1.1rem; color:var(--text-dark);">${item.name}</h4>
+                                <div class="item-details-grid">
+                                    <span class="detail-tag">${item.size || 'Small'}</span>
+                                    <span class="detail-tag">${item.sugarLevel || '100%'} Sugar</span>
+                                    ${addonsHtml}
+                                </div>
+                                ${item.notes ? `<div class="item-note">"${item.notes}"</div>` : ''}
+                            </div>
+                            <div style="text-align:right">
+                                <div style="font-weight:900; font-size:1.3rem; color:var(--text-dark);">₱${subtotal.toFixed(2)}</div>
+                                <div style="font-size:0.7rem; opacity:0.5; font-weight:700;">₱${item.price.toFixed(2)} / ea</div>
+                            </div>
+                        </div>
+                        
+                        <div class="qty-controls">
+                            <button class="qty-btn" onclick="updateQty(${index}, -1, event)">-</button>
+                            <span style="font-weight:900; font-size:1.2rem;">${item.qty}</span>
+                            <button class="qty-btn plus" onclick="updateQty(${index}, 1, event)">+</button>
+                            <div style="flex:1"></div>
+                            <button onclick="updateQty(${index}, -${item.qty}, event)" style="background:none; border:none; color:#ff4444; font-weight:800; font-size:0.7rem; text-transform:uppercase; cursor:pointer;">Remove</button>
+                        </div>
+                    </div>
+                `;
+            });
+            updateTotals(total);
+        }
+
+        function updateQty(index, delta, event) {
+            event.stopPropagation();
+            tray[index].qty += delta;
+            if (tray[index].qty <= 0) tray.splice(index, 1);
+            localStorage.setItem('teo_tray', JSON.stringify(tray));
+            renderTray();
+        }
+
+        function updateTotals(total) {
+            const txt = `₱ ${total.toFixed(2)}`;
+            document.getElementById('barTotal').innerText = txt;
+            document.getElementById('popupTotal').innerText = txt;
+        }
+
+        function toggleCart() {
+            const panel = document.getElementById('cartPanel');
+            const overlay = document.getElementById('overlay');
+            const isActive = panel.classList.toggle('active');
+            overlay.style.display = isActive ? 'block' : 'none';
+        }
+
+        window.onload = () => { renderProducts(); renderTray(); };
+    </script>
+</body>
+</html>

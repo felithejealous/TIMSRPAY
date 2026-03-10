@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teo D' Mango | Secure Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
+
+        :root {
+            /* DARK THEME (Default) */
+            --mango-yellow: #fcdb05;
+            --mango-dark: #120f0a; 
+            --text-main: #ffffff;
+            --text-sub: #9ca3af;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --input-bg: rgba(255, 255, 255, 0.05);
+            --logo-filter: brightness(0) invert(1);
+            --mesh-color-1: rgba(252, 219, 5, 0.08);
+            --mesh-color-2: rgba(252, 219, 5, 0.04);
+        }
+
+        /* LIGHT THEME OVERRIDES */
+        body.light-theme {
+            --mango-dark: #FFFDF5;
+            --text-main: #2d1e18;
+            --text-sub: #5d4037;
+            --glass-bg: rgba(255, 252, 230, 0.6);
+            --glass-border: rgba(252, 219, 5, 0.3);
+            --input-bg: rgba(255, 255, 255, 0.8);
+            --logo-filter: none;
+            --mesh-color-1: rgba(252, 219, 5, 0.3);
+            --mesh-color-2: rgba(255, 140, 0, 0.15);
+        }
+
+        body {
+            background-color: var(--mango-dark);
+            color: var(--text-main);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            transition: background-color 0.4s ease;
+        }
+
+        .page-transition {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #120f0a; z-index: 9999;
+            opacity: 1; transition: opacity 0.5s ease-in-out; pointer-events: none;
+        }
+        .page-transition.fade-out { opacity: 0; }
+
+        .mesh-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: 
+                radial-gradient(circle at 10% 10%, var(--mesh-color-1) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, var(--mesh-color-2) 0%, transparent 40%);
+            z-index: -1;
+        }
+
+        .login-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 40px;
+            padding: 3rem;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+            transition: all 0.4s ease;
+        }
+
+        .input-group input {
+            width: 100%;
+            background: var(--input-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1rem 1rem 1rem 3rem;
+            color: var(--text-main);
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--mango-yellow);
+            box-shadow: 0 0 0 4px rgba(252, 219, 5, 0.2);
+        }
+
+        .input-group { position: relative; margin-bottom: 1.5rem; }
+        .input-icon {
+            position: absolute; left: 1rem; top: 50%;
+            transform: translateY(-50%); color: var(--text-sub);
+        }
+
+        .login-btn {
+            width: 100%;
+            background: var(--mango-yellow);
+            color: #120f0a;
+            font-weight: 800;
+            padding: 1rem;
+            border-radius: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(252, 219, 5, 0.2);
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+
+        .logo-img {
+            filter: var(--logo-filter);
+            transition: filter 0.4s ease;
+        }
+
+        /* Theme Toggle in Login (Optional, but good for UX) */
+        .theme-switch-login {
+            position: absolute; top: 2rem; right: 2rem;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            padding: 8px 15px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            color: var(--text-main);
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div class="page-transition" id="transitionOverlay"></div>
+    <div class="mesh-bg"></div>
+
+    <button class="theme-switch-login" onclick="toggleTheme()">
+        <i class="fas fa-circle-half-stroke mr-2"></i> Theme
+    </button>
+
+    <form class="login-card" id="loginForm">
+        <div class="text-center mb-8">
+            <img src="../images/logo.png" alt="Teo D' Mango" class="h-16 mx-auto mb-4 logo-img">
+            <h2 class="text-3xl font-extrabold">System Login</h2>
+            <p style="color: var(--text-sub);" class="mt-2 font-medium">Secure access to Admin Portal</p>
+        </div>
+        
+        <div class="input-group">
+            <i class="fas fa-user input-icon"></i>
+            <input type="text" id="username" placeholder="Username" required>
+        </div>
+
+        <div class="input-group">
+            <i class="fas fa-lock input-icon"></i>
+            <input type="password" id="password" placeholder="Password" required>
+        </div>
+
+        <button type="submit" class="login-btn">
+            Log In
+        </button>
+        
+        <div class="text-center mt-6">
+            <a href="#" class="text-sm text-yellow-500 hover:text-yellow-400 font-bold">Forgot password?</a>
+        </div>
+    </form>
+
+    <script>
+        // Sync and Toggle Theme
+        function applyTheme() {
+            if (localStorage.getItem('admin-theme') === 'light') {
+                document.body.classList.add('light-theme');
+            } else {
+                document.body.classList.remove('light-theme');
+            }
+        }
+
+        function toggleTheme() {
+            const isLight = document.body.classList.toggle('light-theme');
+            localStorage.setItem('admin-theme', isLight ? 'light' : 'dark');
+        }
+
+        // Run on load
+        applyTheme();
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const overlay = document.getElementById('transitionOverlay');
+            setTimeout(() => {
+                overlay.classList.add('fade-out');
+            }, 100);
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault(); 
+            const overlay = document.getElementById('transitionOverlay');
+            overlay.classList.remove('fade-out');
+            
+            setTimeout(() => {
+                window.location.href = "../html/dashboard.html";
+            }, 500);
+        });
+    </script>
+</body>
+</html>

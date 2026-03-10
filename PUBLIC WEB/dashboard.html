@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Member Rewards | Teo D' Mango Premium</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* --- DYNAMIC THEME VARIABLES --- */
+        :root {
+            --mango: #ffc244;
+            --mango-dark: #d4a017;
+            --strawberry: #ff4d6d;
+            
+            /* DARK MODE (Default) */
+            --bg-main: #050505;
+            --text-main: #ffffff;
+            --text-muted: #888888;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --nav-bg: rgba(5, 5, 5, 0.7);
+            --shadow: 0 30px 60px rgba(0,0,0,0.5);
+            --hover-bg: rgba(255, 255, 255, 0.06);
+            --icon-bg: rgba(255, 255, 255, 0.05);
+            --glow-opacity: 0.15;
+            --danger: #ff4d6d;
+        }
+
+        /* LIGHT MODE */
+        body.light-mode {
+            --bg-main: #f4f5f7;
+            --text-main: #1a1a1a;
+            --text-muted: #666666;
+            --card-bg: rgba(255, 255, 255, 0.6);
+            --card-border: rgba(0, 0, 0, 0.05);
+            --nav-bg: rgba(244, 245, 247, 0.8);
+            --shadow: 0 20px 50px rgba(0,0,0,0.04);
+            --hover-bg: rgba(255, 255, 255, 1);
+            --icon-bg: rgba(0, 0, 0, 0.03);
+            --glow-opacity: 0.4; 
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; scroll-behavior: smooth; }
+        
+        body { 
+            background-color: var(--bg-main); color: var(--text-main);
+            min-height: 100vh; transition: background-color 0.5s ease, color 0.5s ease;
+            overflow-x: hidden; position: relative;
+        }
+
+        /* Glowing Orbs */
+        body::before, body::after { content: ''; position: fixed; border-radius: 50%; z-index: -1; transition: 0.5s ease; }
+        body::before { top: -10%; left: -5%; width: 600px; height: 600px; background: var(--mango); filter: blur(120px); opacity: var(--glow-opacity); }
+        body::after { bottom: -10%; right: -5%; width: 500px; height: 500px; background: var(--strawberry); filter: blur(150px); opacity: calc(var(--glow-opacity) - 0.05); }
+
+        /* --- NAVIGATION --- */
+        nav {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 8%; background: var(--nav-bg);
+            backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--card-border);
+            transition: background 0.5s ease, border-color 0.5s ease;
+        }
+        
+        .logo { display: flex; align-items: center; }
+        .logo img { 
+            height: 40px; object-fit: contain; 
+            filter: drop-shadow(0 0 2px rgba(255,255,255,0.8)) drop-shadow(0 0 5px var(--mango));
+            transition: 0.3s ease;
+        }
+        .logo img:hover {
+            filter: drop-shadow(0 0 4px rgba(255,255,255,1)) drop-shadow(0 0 10px var(--mango));
+            transform: scale(1.05);
+        }
+
+        .nav-links { display: flex; list-style: none; gap: 30px; align-items: center; }
+        .nav-links a { text-decoration: none; color: var(--text-muted); font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; }
+        .nav-links a:hover, .nav-links a.active { color: var(--text-main); }
+        
+        .btn-logout { border: 1.5px solid var(--text-main); padding: 8px 20px; border-radius: 50px; color: var(--text-main) !important; }
+        .btn-logout:hover { background: var(--text-main); color: var(--bg-main) !important; }
+
+        .nav-actions { display: flex; gap: 15px; align-items: center; }
+        .circle-btn {
+            background: var(--icon-bg); border: 1px solid var(--card-border);
+            color: var(--text-main); width: 40px; height: 40px; border-radius: 50%;
+            display: grid; place-items: center; cursor: pointer; transition: 0.3s; position: relative;
+        }
+        .circle-btn:hover { background: var(--hover-bg); transform: scale(1.05); color: var(--mango); }
+        .circle-btn:active { transform: scale(0.95); }
+
+        /* --- PAGE LAYOUT --- */
+        .page-wrapper {
+            max-width: 1200px;
+            margin: 60px auto;
+            padding: 0 20px;
+            display: flex;
+            gap: 40px;
+            align-items: flex-start;
+        }
+
+        /* --- LEFT SIDE: PROMO & INFO --- */
+        .info-side { 
+            flex: 0.8;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            position: sticky;
+            top: 100px;
+        }
+
+        .main-promo-card {
+            background: url('https://images.unsplash.com/photo-1546173159-315724a31696?auto=format&fit=crop&q=80&w=800') center/cover;
+            border-radius: 30px;
+            position: relative;
+            box-shadow: var(--shadow);
+            min-height: 400px;
+            overflow: hidden;
+            display: flex;
+            align-items: flex-end;
+            transition: 0.4s;
+            border: 1px solid var(--card-border);
+        }
+        .main-promo-card:hover { transform: translateY(-5px); border-color: rgba(255,194,68,0.5); }
+        .main-promo-card::after {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.2) 60%);
+        }
+        .promo-content { position: relative; padding: 40px; color: white; z-index: 2; width: 100%;}
+        
+        .mini-promo {
+            background: var(--card-bg); backdrop-filter: blur(20px);
+            padding: 30px; border-radius: 25px; display: flex; align-items: center; gap: 20px;
+            border: 1px solid var(--card-border); transition: 0.3s;
+        }
+        .mini-promo:hover { transform: translateY(-3px); box-shadow: var(--shadow); border-color: var(--text-main); }
+        
+        /* --- RIGHT SIDE: REDEEM & PERSONAL --- */
+        .content-side { 
+            flex: 1.2;
+            background: var(--card-bg); backdrop-filter: blur(40px);
+            padding: 60px; border-radius: 40px; border: 1px solid var(--card-border);
+            box-shadow: var(--shadow);
+        }
+
+        .welcome-back { margin-bottom: 40px; }
+        .welcome-back h4 { font-weight: 800; color: var(--text-muted); text-transform: uppercase; font-size: 13px; letter-spacing: 2px; margin-bottom: 10px;}
+        .welcome-back h1 { font-size: 50px; font-weight: 900; letter-spacing: -2px; line-height: 1; color: var(--text-main); }
+
+        /* Dark Premium Tier Banner */
+        .tier-banner {
+            background: linear-gradient(135deg, #1c1c1c 0%, #050505 100%);
+            border: 1px solid rgba(255, 194, 68, 0.2);
+            color: #fff; padding: 35px 40px; border-radius: 25px;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 40px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); position: relative; overflow: hidden;
+        }
+        .tier-banner::before {
+            content: ''; position: absolute; top: -50px; right: -50px; width: 200px; height: 200px;
+            background: var(--mango); filter: blur(80px); opacity: 0.15; z-index: 1;
+        }
+
+        .tier-info, .points-display { position: relative; z-index: 2; }
+        .points-display { text-align: right; }
+        .points-display span { font-size: 48px; font-weight: 900; color: #fff; display: block; line-height: 1; margin-top: 5px; letter-spacing: -1px;}
+        .points-display small { font-weight: 800; color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; }
+
+        /* Rewards List */
+        .rewards-list { display: flex; flex-direction: column; gap: 20px; }
+        .reward-item {
+            display: flex; align-items: center; gap: 20px;
+            background: var(--icon-bg); padding: 20px; border-radius: 25px;
+            border: 1px solid var(--card-border); transition: 0.4s ease-out;
+        }
+        .reward-item:hover { transform: translateY(-5px); border-color: var(--mango); background: var(--hover-bg); }
+        .reward-img { width: 80px; height: 80px; border-radius: 18px; object-fit: cover; }
+        
+        .reward-info { flex: 1; }
+        .reward-info h5 { font-weight: 900; font-size: 20px; letter-spacing: -0.5px; color: var(--text-main); margin-bottom: 5px;}
+        .reward-info p { font-size: 14px; font-weight: 900; color: var(--mango); letter-spacing: 1px; }
+
+        .btn-claim {
+            background: transparent; border: 2px solid var(--text-main); padding: 12px 25px;
+            border-radius: 50px; font-weight: 900; font-size: 12px; cursor: pointer; transition: 0.3s;
+            text-transform: uppercase; letter-spacing: 1px; color: var(--text-main);
+        }
+        .btn-claim:hover { background: var(--text-main); color: var(--bg-main); transform: translateY(-2px); }
+
+        /* Quick Promo Alert */
+        .promo-alert-box {
+            background: rgba(255, 77, 109, 0.1); border: 1px solid var(--danger);
+            color: var(--danger); padding: 15px 25px; border-radius: 20px; margin-top: 40px;
+            font-size: 14px; font-weight: 800; display: flex; align-items: center; gap: 15px; letter-spacing: 0.5px;
+        }
+
+        /* --- ACCOUNT SIDE PANEL (Slide-over) --- */
+        .panel-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(10px);
+            z-index: 2000; opacity: 0; visibility: hidden; transition: 0.4s;
+        }
+        .panel-overlay.active { opacity: 1; visibility: visible; }
+
+        .side-panel {
+            position: fixed; top: 0; right: -100%; width: 100%; max-width: 450px; height: 100%;
+            background: var(--bg-main); border-left: 1px solid var(--card-border);
+            box-shadow: -20px 0 50px rgba(0,0,0,0.5); display: flex; flex-direction: column;
+            transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1); z-index: 2001;
+        }
+        .side-panel.active { right: 0; }
+        
+        .panel-header { padding: 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--card-border); }
+        .panel-header h2 { font-size: 20px; font-weight: 900; letter-spacing: -0.5px; color: var(--text-main);}
+        .panel-close-btn { background: transparent; border: none; font-size: 24px; color: var(--text-muted); cursor: pointer; transition: 0.3s; }
+        .panel-close-btn:hover { color: var(--text-main); transform: rotate(90deg);}
+
+        .panel-body { padding: 30px; display: flex; flex-direction: column; gap: 30px; flex: 1; overflow-y: auto; }
+        
+        /* Personal Info Profile Card */
+        .profile-card { display: flex; align-items: center; gap: 20px; padding: 20px; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 25px; }
+        .avatar-circle { width: 60px; height: 60px; background: var(--mango); color: #111; border-radius: 50%; display: grid; place-items: center; font-size: 24px; font-weight: 900; }
+        .profile-details h3 { font-size: 18px; font-weight: 900; margin-bottom: 3px; letter-spacing: -0.5px; color: var(--text-main);}
+        .profile-details p { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;}
+        
+        /* Balances Bento Grid */
+        .balance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .balance-item { background: var(--icon-bg); border: 1px solid var(--card-border); padding: 25px 15px; border-radius: 20px; text-align: center; display: flex; flex-direction: column; gap: 8px; transition: 0.3s; }
+        .balance-item:hover { transform: translateY(-5px); border-color: var(--mango); background: rgba(255,194,68,0.05); }
+        .balance-item i { font-size: 24px; color: var(--mango); }
+        .balance-item span { font-size: 22px; font-weight: 900; letter-spacing: -1px; color: var(--text-main); }
+        .balance-item small { font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;}
+        
+        /* Quick Action Links */
+        .account-menu { display: flex; flex-direction: column; gap: 10px; }
+        .acc-link-btn {
+            background: transparent; border: 1px solid var(--card-border); color: var(--text-main);
+            padding: 18px 20px; border-radius: 15px; font-size: 13px; font-weight: 800;
+            text-align: left; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 15px;
+            text-decoration: none;
+        }
+        .acc-link-btn i { font-size: 16px; color: var(--text-muted); width: 20px; text-align: center; transition: 0.3s; }
+        .acc-link-btn:hover { background: var(--hover-bg); border-color: var(--text-main); transform: translateX(5px);}
+        .acc-link-btn:hover i { color: var(--mango); }
+        
+        .acc-link-btn.danger:hover { background: rgba(255, 77, 109, 0.1); border-color: var(--danger); color: var(--danger); }
+        .acc-link-btn.danger:hover i { color: var(--danger); }
+
+        /* Mobile Responsive */
+        @media (max-width: 950px) {
+            .page-wrapper { flex-direction: column; margin-top: 30px;}
+            .info-side { order: 2; position: static; width: 100%; }
+            .content-side { order: 1; padding: 40px 20px; width: 100%;}
+            .main-promo-card { min-height: 250px; }
+            .nav-links { display: none; }
+            .tier-banner { flex-direction: column; align-items: flex-start; gap: 20px;}
+            .points-display { text-align: left; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="index.html" class="logo">
+            <img src="logo.png" alt="Teo D' Mango">
+        </a>
+        <div class="nav-links">
+            <a href="welcome.html">HOME</a>
+            <a href="dashboard.html" class="active">OVERVIEW</a>
+            <a href="menu.html">MENU</a>
+            <a href="rewards.html" >REWARDS</a>
+            <a href="topup.html">TOP-UP RPAY</a>
+            <a href="dashaccsett.html">SETTINGS</a>
+            <a href="index.html" class="btn-logout">LOG OUT</a>
+        </div>
+        <div class="nav-actions">
+            <button class="circle-btn" id="themeToggle" title="Toggle Light/Dark Mode">
+                <i class="fa-solid fa-sun"></i>
+            </button>
+            <button class="circle-btn" onclick="openAccountPanel()" title="Account Info">
+                <i class="fa-solid fa-user"></i>
+            </button>
+        </div>
+    </nav>
+
+    <div class="page-wrapper">
+        <div class="info-side">
+            <div class="main-promo-card">
+                <div class="promo-content">
+                    <span style="background: var(--mango); color: #000; padding: 6px 15px; border-radius: 50px; font-size: 11px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;">ACTIVE PROMO</span>
+                    <h2 style="font-size: 36px; font-weight: 900; margin: 15px 0 10px; letter-spacing: -1px; line-height: 1.1;">Double Points<br>Weekend!</h2>
+                    <p style="font-size: 15px; opacity: 0.9; line-height: 1.5;">Earn 2 points for every ₱50 spent on all Mango Graham flavors until Sunday.</p>
+                </div>
+            </div>
+            
+            <div class="mini-promo">
+                <i class="fa-solid fa-bolt" style="font-size: 24px; color: var(--mango);"></i>
+                <div>
+                    <h4 style="font-size: 18px; font-weight: 900; margin-bottom: 5px; color: var(--text-main);">Flash Deal: Buy 1 Get 1</h4>
+                    <p style="font-size: 13px; color: var(--text-muted); line-height: 1.4;">For Gold Members only. Available 2PM - 5PM today.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-side">
+            <div class="welcome-back">
+                <h4>Welcome back,</h4>
+                <h1>Jane Doe</h1>
+            </div>
+
+            <div class="tier-banner">
+                <div class="tier-info">
+                    <h4 style="font-size: 11px; color: #888; margin: 0 0 5px 0; text-transform: uppercase; letter-spacing: 2px;">Current Status</h4>
+                    <strong style="color: var(--mango); font-size: 22px; font-weight: 900; letter-spacing: -0.5px;">
+                        <i class="fa-solid fa-crown"></i> GOLD MEMBER
+                    </strong>
+                </div>
+                <div class="points-display">
+                    <small>Total Balance</small>
+                    <span>1,250</span>
+                </div>
+            </div>
+
+            <h3 style="font-weight: 900; margin-bottom: 30px; font-size: 24px; letter-spacing: -1px; color: var(--text-main);">Available for Redemption</h3>
+
+            <div class="rewards-list">
+                <div class="reward-item">
+                    <img src="mango.png" class="reward-img" style="background: var(--icon-bg);">
+                    <div class="reward-info">
+                        <h5>Free Large Mango Bliss</h5>
+                        <p>500 POINTS</p>
+                    </div>
+                    <button class="btn-claim" onclick="alert('Redeemed!')">REDEEM</button>
+                </div>
+
+                <div class="reward-item">
+                    <img src="lychee.png" class="reward-img" style="background: var(--icon-bg);">
+                    <div class="reward-info">
+                        <h5>Free Avocado Cream (M)</h5>
+                        <p>450 POINTS</p>
+                    </div>
+                    <button class="btn-claim" onclick="alert('Redeemed!')">REDEEM</button>
+                </div>
+
+                <div class="reward-item">
+                    <div style="width: 80px; height: 80px; background: var(--icon-bg); border-radius: 18px; display: grid; place-items: center;">
+                        <i class="fa-solid fa-plus" style="color: var(--text-main); font-size: 24px;"></i>
+                    </div>
+                    <div class="reward-info">
+                        <h5>Triple Graham Topping</h5>
+                        <p>100 POINTS</p>
+                    </div>
+                    <button class="btn-claim" onclick="alert('Redeemed!')">REDEEM</button>
+                </div>
+            </div>
+
+            <div class="promo-alert-box">
+                <i class="fa-solid fa-circle-exclamation" style="font-size: 18px;"></i>
+                <span>You have 2 coupons expiring in 5 days!</span>
+            </div>
+
+            <p style="text-align: center; margin-top: 40px; font-size: 13px; color: var(--text-muted); font-weight: 600;">
+                Points earned will expire on Dec 2026. <a href="#" style="color: var(--text-main); font-weight: 800; text-decoration: none;">Terms & Conditions</a>
+            </p>
+        </div>
+    </div>
+
+    <div class="panel-overlay" id="mainOverlay" onclick="closeAll()"></div>
+
+    <div class="side-panel" id="accountPanel">
+        <div class="panel-header">
+            <h2>Account Info</h2>
+            <button class="panel-close-btn" onclick="closeAll()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        
+        <div class="panel-body">
+            
+            <div class="profile-card">
+                <div class="avatar-circle">JD</div>
+                <div class="profile-details">
+                    <h3>Jane Doe</h3>
+                    <p>Gold Member</p>
+                </div>
+            </div>
+
+            <div class="balance-grid">
+                <div class="balance-item">
+                    <i class="fa-solid fa-star"></i>
+                    <span>1,250</span>
+                    <small>Reward Points</small>
+                </div>
+                <div class="balance-item">
+                    <i class="fa-solid fa-wallet"></i>
+                    <span>₱850.00</span>
+                    <small>TIMS-RPAY Bal</small>
+                </div>
+            </div>
+
+            <div class="account-menu">
+                <a href="dashaccsett.html" class="acc-link-btn">
+                    <i class="fa-solid fa-gear"></i> Account Settings
+                </a>
+                <a href="rewards.html" class="acc-link-btn">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Transaction History
+                </a>
+                <a href="topup.html" class="acc-link-btn">
+                    <i class="fa-solid fa-plus-circle"></i> Top-Up Wallet
+                </a>
+                <a href="index.html" class="acc-link-btn danger">
+                    <i class="fa-solid fa-right-from-bracket"></i> Log Out
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // --- THEME TOGGLE LOGIC ---
+        const toggleBtn = document.getElementById('themeToggle');
+        const icon = toggleBtn.querySelector('i');
+        const body = document.body;
+
+        toggleBtn.addEventListener('click', () => {
+            body.classList.toggle('light-mode');
+            
+            if (body.classList.contains('light-mode')) {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+            } else {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            }
+        });
+
+        // --- SIDE PANEL CONTROL LOGIC ---
+        function openAccountPanel() {
+            document.getElementById('mainOverlay').classList.add('active');
+            document.getElementById('accountPanel').classList.add('active');
+            document.body.style.overflow = 'hidden'; 
+        }
+
+        function closeAll() {
+            document.getElementById('mainOverlay').classList.remove('active');
+            document.getElementById('accountPanel').classList.remove('active');
+            document.body.style.overflow = 'auto'; 
+        }
+    </script>
+</body>
+</html>

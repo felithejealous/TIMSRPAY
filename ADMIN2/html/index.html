@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teo D' Mango | Admin Gateway</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="ADMIN2\css\aside.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
+
+        :root {
+            /* DARK THEME VARIABLES (Default) */
+            --mango-yellow: #fcdb05;
+            --mango-dark: #120f0a; 
+            --text-main: #ffffff;
+            --text-sub: #d1d5db;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --mesh-color-1: rgba(252, 219, 5, 0.08);
+            --mesh-color-2: rgba(252, 219, 5, 0.04);
+            --logo-filter: brightness(0) invert(1);
+        }
+
+        /* LIGHT THEME OVERRIDES */
+        body.light-theme {
+            --mango-dark: #FFFDF5; /* Creamy Mango background */
+            --text-main: #2d1e18;  /* Deep Brown text */
+            --text-sub: #5d4037;   /* Muted brown */
+            --glass-bg: rgba(255, 252, 230, 0.6);
+            --glass-border: rgba(252, 219, 5, 0.3);
+            --mesh-color-1: rgba(252, 219, 5, 0.3);
+            --mesh-color-2: rgba(255, 140, 0, 0.15);
+            --logo-filter: none;
+        }
+
+        body {
+            background-color: var(--mango-dark);
+            color: var(--text-main);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow: hidden; 
+            height: 100vh;
+            margin: 0;
+            transition: background-color 0.4s ease;
+        }
+
+        .page-transition {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #120f0a; z-index: 9999;
+            opacity: 1; transition: opacity 0.5s ease-in-out; pointer-events: none;
+        }
+        .page-transition.fade-out { opacity: 0; }
+
+        .mesh-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: 
+                radial-gradient(circle at 10% 10%, var(--mesh-color-1) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, var(--mesh-color-2) 0%, transparent 40%);
+            z-index: -1;
+            transition: background 0.4s ease;
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid var(--glass-border);
+            border-radius: 40px;
+            transition: all 0.3s ease;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.1);
+        }
+
+        .btn-launch {
+            background: var(--mango-yellow);
+            color: #120f0a;
+            padding: 1rem 2.5rem;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 1.1rem;
+            box-shadow: 0 10px 30px rgba(252, 219, 5, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .btn-launch:hover {
+            transform: translateY(-3px);
+            filter: brightness(1.1);
+        }
+
+        .glow-text {
+            text-shadow: 0 0 20px rgba(252, 219, 5, 0.2);
+            color: var(--text-main);
+        }
+
+        #theme-toggle {
+            cursor: pointer;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            padding: 10px 18px;
+            border-radius: 50px;
+            color: var(--text-main);
+            font-size: 14px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+
+        #theme-toggle:hover {
+            background: var(--mango-yellow);
+            color: #120f0a;
+        }
+
+        .logo-img {
+            filter: var(--logo-filter);
+            transition: filter 0.4s ease;
+        }
+    </style>
+</head>
+<body class="antialiased flex flex-col justify-between">
+    <div class="page-transition" id="transitionOverlay"></div>
+    <div class="mesh-bg"></div>
+
+    <nav class="w-full px-8 py-6 flex justify-between items-center z-50">
+        <div class="text-[9px] font-bold text-yellow-500 tracking-widest uppercase bg-black/10 px-5 py-2 rounded-full border border-yellow-500/20 backdrop-blur-md">
+            Secure Terminal
+        </div>
+        
+        <button id="theme-toggle" onclick="toggleTheme()">
+            <i class="fas fa-circle-half-stroke mr-2"></i>
+            <span id="theme-text">Light Mode</span>
+        </button>
+    </nav>
+
+    <main class="flex-grow flex items-center justify-center px-6">
+        <div class="glass-card p-12 md:p-16 max-w-3xl w-full text-center flex flex-col items-center">
+            
+            <img src="../images/logo.png" alt="Teo D' Mango Logo" class="h-20 mb-8 logo-img">
+            
+            <h1 class="text-6xl md:text-8xl font-black tracking-tighter mb-6 glow-text leading-[0.9]">
+                Admin <span class="text-yellow-400 italic font-light">Portal</span>
+            </h1>
+
+            <p class="text-lg mb-12 max-w-md leading-relaxed font-medium" style="color: var(--text-sub);">
+                Welcome back to the centralized control system. Proceed to log in to access harvest logistics and sales analytics.
+            </p>
+
+            <div>
+                <a href="login.html" class="btn-launch inline-flex items-center gap-3 group transition-link">
+                    Enter Secure Portal
+                    <i class="fas fa-lock text-xs group-hover:scale-110 transition-transform"></i>
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-center py-6 flex-none">
+        <p class="text-[9px] font-bold uppercase tracking-[0.5em]" style="color: var(--text-sub);">
+            Enterprise Gateway &copy; 2026 Teo D' Mango
+        </p>
+    </footer>
+
+    <script>
+        // --- THEME TOGGLE LOGIC ---
+        function toggleTheme() {
+            const body = document.body;
+            const themeText = document.getElementById('theme-text');
+            
+            body.classList.toggle('light-theme');
+            
+            if (body.classList.contains('light-theme')) {
+                themeText.innerText = "Dark Mode";
+                localStorage.setItem('admin-theme', 'light');
+            } else {
+                themeText.innerText = "Light Mode";
+                localStorage.setItem('admin-theme', 'dark');
+            }
+        }
+
+        // Check for saved theme preference
+        if (localStorage.getItem('admin-theme') === 'light') {
+            document.body.classList.add('light-theme');
+            document.getElementById('theme-text').innerText = "Dark Mode";
+        }
+
+        // --- TRANSITION LOGIC ---
+        window.addEventListener('DOMContentLoaded', () => {
+            const overlay = document.getElementById('transitionOverlay');
+            setTimeout(() => {
+                overlay.classList.add('fade-out');
+            }, 100);
+        });
+
+        document.querySelector('.transition-link').addEventListener('click', function(e) {
+            e.preventDefault();
+            const href = this.getAttribute('href');
+            const overlay = document.getElementById('transitionOverlay');
+            overlay.classList.remove('fade-out');
+            setTimeout(() => {
+                window.location.href = href;
+            }, 500);
+        });
+    </script>
+</body>
+</html>
