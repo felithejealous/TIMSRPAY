@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Signing you in...</title>
+</head>
+<body>
+  <p>Signing you in, please wait...</p>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+
+    if (!token) {
+      document.body.innerHTML = "<p>Login failed: missing token.</p>";
+      throw new Error("Missing token in callback");
+    }
+
+    // Save token
+    localStorage.setItem("access_token", token);
+
+    // (optional) remove token from URL for cleanliness
+    window.history.replaceState({}, document.title, window.location.pathname);
+
+    // Redirect
+    window.location.href = "http://127.0.0.1:5500/PUBLICWEB/index.html"; //http://127.0.0.1:5500/PUBLICWEB\oauth-callback.html
+  </script>
+</body>
+</html>
