@@ -370,6 +370,7 @@ def google_login():
         samesite="lax",
         secure=False,   # set True in prod HTTPS
         max_age=600,
+        domain="127.0.0.1" # Force it to the IP you are using
     )
     return resp
 
@@ -394,7 +395,7 @@ def google_callback(
 
     frontend_redirect = os.getenv(
         "FRONTEND_OAUTH_REDIRECT",
-        "https://timsrpay.onrender.com/PUBLICWEB/index.html"
+        "http://127.0.0.1:8000/PUBLICWEB/oauth-callback.html"
     )
 
     token_res = requests.post(
