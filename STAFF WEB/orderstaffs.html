@@ -72,7 +72,7 @@
         nav a {
             text-decoration: none; color: var(--text-muted); padding: 1rem 1.2rem;
             display: flex; align-items: center; gap: 15px; font-weight: 700; font-size: 13px;
-            border-radius: 14px; margin-bottom: 0.5rem; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px;
+            border-radius: 14px; margin-bottom: 0.5rem; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; cursor: pointer;
         }
         nav a:hover { color: var(--text-main); background: var(--icon-bg); transform: translateX(5px); }
         nav li.active a { background: var(--mango); color: #111; box-shadow: 0 8px 20px rgba(245, 158, 11, 0.2); transform: translateX(0); }
@@ -205,17 +205,19 @@
         <nav>
             <ul>
                 <li><a href="overview.html"><i class="fa-solid fa-chart-line"></i> <span>Overview</span></a></li>
-                <li class="active"><a href="orderstaff.html"><i class="fa-solid fa-bell-concierge"></i> <span>Orders</span></a></li>
+                <li class="active"><a href="orderstaffs.html"><i class="fa-solid fa-bell-concierge"></i> <span>Orders</span></a></li>
                 <li><a href="menustaff.html"><i class="fa-solid fa-receipt"></i> <span>Menu</span></a></li>
                 <li><a href="inventory.html"><i class="fa-solid fa-boxes-stacked"></i> <span>Inventory</span></a></li>
-                
                 <li><a href="dashboardstaff.html"><i class="fa-solid fa-user-clock"></i> <span>Attendance</span></a></li>
-                
                 <li><a href="topupstaff.html"><i class="fa-solid fa-credit-card"></i> <span>RPAY</span></a></li>
                 <li><a href="rewardsstaff.html"><i class="fa-solid fa-gift"></i> <span>Rewards</span></a></li>
-                <li><a href="dashaccsettstaff.html"><i class="fa-solid fa-gear"></i> <span>Settings</span></a></li>
+                <li class="admin-only"><a href="dashaccsettstaff.html"><i class="fa-solid fa-gear"></i> <span>Settings</span></a></li>
                 
-                <li style="margin-top: auto;"><a href="index.html" style="color: var(--danger);"><i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></a></li>
+                <li style="margin-top: auto;">
+                    <a onclick="confirmLogout()" style="color: var(--danger);">
+                        <i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span>
+                    </a>
+                </li>
             </ul>
         </nav>
     </aside>
@@ -244,7 +246,6 @@
         </div>
 
         <div class="queue-container">
-            
             <div class="queue-column kiosk-col">
                 <div class="col-header">
                     <div class="col-title"><i class="fa-solid fa-mobile-screen-button"></i> Kiosk App</div>
@@ -327,6 +328,19 @@
     </div>
 
     <script>
+        // --- ROLE GUARD LOGIC ---
+        const currentRole = 'admin'; // Change to 'cashier' to test restrictions
+        if(currentRole === 'cashier') {
+            document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+        }
+
+        // --- LOGOUT LOGIC ---
+        function confirmLogout() {
+            if(confirm("Are you sure you want to log out?")) {
+                window.location.href = "index.html"; 
+            }
+        }
+
         // --- THEME TOGGLE LOGIC ---
         const body = document.body;
         const themeToggle = document.getElementById('themeToggle');
@@ -338,15 +352,13 @@
         });
 
         // ======================================================================
-        // --- BACKEND INTEGRATION LOGIC (ETO YUNG BAGO) ---
+        // --- BACKEND INTEGRATION LOGIC FOR QUEUES ---
         // ======================================================================
 
-        // 1. Function para gumawa ng HTML cards galing sa JSON
         function renderQueues(orders) {
             const kioskQueue = document.getElementById('kioskQueue');
             const walkinQueue = document.getElementById('walkinQueue');
             
-            // Clear muna
             kioskQueue.innerHTML = '';
             walkinQueue.innerHTML = '';
 
@@ -358,18 +370,16 @@
             }
 
             orders.forEach(order => {
-                // Formatting status text at icons
                 let statusIcon, statusText;
                 if(order.status === 'completed') { statusIcon = 'fa-check-double'; statusText = 'Completed'; }
                 else if(order.status === 'cancelled') { statusIcon = 'fa-ban'; statusText = 'Cancelled'; }
                 else if(order.status === 'unpaid') { statusIcon = 'fa-wallet'; statusText = 'Unpaid'; }
                 else { statusIcon = 'fa-circle-notch fa-spin'; statusText = 'Pending'; }
 
-                // Gumagawa ng listahan ng item pang display sa labas na card
                 const itemsHtmlString = order.itemsData.map(item => `<strong>${item.qty}</strong> ${item.name}`).join('<br>');
                 
-                // Kailangan gawing safe string yung JSON para ipasa sa onclick
-                const safeItemsJson = JSON.stringify(order.itemsData).replace(/"/g, '&quot;');
+                // Safe JSON stringification to prevent HTML injection breaks
+                const safeItemsJson = JSON.stringify(order.itemsData).replace(/"/g, '&quot;').replace(/'/g, "\\'");
 
                 const cardHTML = `
                     <div class="ticket-card order-item" data-status="${order.status}" data-id="${order.id}" 
@@ -395,21 +405,20 @@
                 }
             });
 
-            // Re-apply active filter para mag-update yung header counts
+            // Auto trigger filter to update pending counts
             const activeFilter = document.querySelector('.filter-btn.active');
-            if (activeFilter) filterOrders(activeFilter.innerText.toLowerCase().replace(' orders', ''), activeFilter);
+            if (activeFilter) {
+                filterOrders(activeFilter.innerText.toLowerCase().replace(' orders', ''), activeFilter);
+            }
         }
 
-        // 2. Mock Fetch Request (Dito mo i-k-connect sa API mo)
         async function fetchQueueData() {
             try {
-                /* * TANGGALIN MO YUNG COMMENTS SA BABA PAG READY NA YUNG BACKEND MO:
-                 * const response = await fetch('http://localhost:3000/api/all-orders');
-                 * const data = await response.json();
-                 * renderQueues(data);
-                 */
+                // BACKEND FETCH HERE:
+                // const response = await fetch('/api/all-orders');
+                // const data = await response.json();
 
-                // PANG-TESTING MUNA: Fake data format from backend
+                // MOCK DATA:
                 const mockBackendData = [
                     {
                         id: "K-104", type: "kiosk", source: "Kiosk App", timeText: "2m ago", total: "₱240.00", 
@@ -437,12 +446,10 @@
                 ];
 
                 renderQueues(mockBackendData);
-
             } catch (error) {
                 console.error("Error loading queue:", error);
             }
         }
-
 
         // --- FILTER LOGIC ---
         function filterOrders(status, btnElement) {
@@ -523,7 +530,7 @@
             if (event.target == modal) closeModal();
         }
 
-        // --- ORDER ACTIONS LOGIC (Papunta sa Backend) ---
+        // --- ORDER ACTIONS (SEND TO BACKEND) ---
         function showCancelReason() {
             cancelArea.style.display = 'flex';
         }
@@ -535,9 +542,8 @@
                 return;
             }
             
-            // Backend UPDATE request mo dito
-            // fetch(`/api/orders/${currentOpenOrderId}/cancel`, { method: 'POST', body: JSON.stringify({reason}) })
             console.log(`Sending Cancel Request: ${currentOpenOrderId}, Reason: ${reason}`);
+            // fetch(`/api/orders/${currentOpenOrderId}/cancel`, { method: 'POST', body: JSON.stringify({reason}) })
 
             updateCardStatus(currentOpenOrderId, 'cancelled');
             closeModal();
@@ -547,9 +553,8 @@
         function saveOrderChanges() {
             const newStatus = statusSelect.value;
             
-            // Backend UPDATE request mo dito
-            // fetch(`/api/orders/${currentOpenOrderId}/status`, { method: 'PUT', body: JSON.stringify({status: newStatus}) })
             console.log(`Sending Status Update Request: ${currentOpenOrderId} -> ${newStatus}`);
+            // fetch(`/api/orders/${currentOpenOrderId}/status`, { method: 'PUT', body: JSON.stringify({status: newStatus}) })
 
             updateCardStatus(currentOpenOrderId, newStatus);
             closeModal();
@@ -569,7 +574,6 @@
                     else if(newStatus === 'unpaid') pill.innerHTML = '<i class="fa-solid fa-wallet"></i> Unpaid';
                     else pill.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Pending';
 
-                    // Update onclick para if binuksan ulit ang modal, updated na status
                     const currentOnclick = card.getAttribute('onclick');
                     const updatedOnclick = currentOnclick.replace(/, '(pending|unpaid|completed|cancelled)'\)$/, `, '${newStatus}')`);
                     card.setAttribute('onclick', updatedOnclick);
@@ -577,13 +581,11 @@
             });
 
             const activeFilter = document.querySelector('.filter-btn.active');
-            filterOrders(activeFilter.innerText.toLowerCase().replace(' orders', ''), activeFilter);
+            if(activeFilter) filterOrders(activeFilter.innerText.toLowerCase().replace(' orders', ''), activeFilter);
         }
 
-        // Run fetch on load
-        document.addEventListener('DOMContentLoaded', () => {
-            fetchQueueData();
-        });
+        // Trigger loading queue data
+        document.addEventListener('DOMContentLoaded', fetchQueueData);
     </script>
 </body>
 </html>
