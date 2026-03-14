@@ -72,6 +72,7 @@
             text-decoration: none; color: var(--text-muted); padding: 1rem 1.2rem;
             display: flex; align-items: center; gap: 15px; font-weight: 700; font-size: 13px;
             border-radius: 14px; margin-bottom: 0.5rem; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px;
+            cursor: pointer;
         }
         nav a:hover { color: var(--text-main); background: var(--icon-bg); transform: translateX(5px); }
         nav li.active a { background: var(--mango); color: #111; box-shadow: 0 8px 20px rgba(245, 158, 11, 0.2); transform: translateX(0); }
@@ -161,8 +162,14 @@
                 <li><a href="dashboardstaff.html"><i class="fa-solid fa-user-clock"></i> <span>Attendance</span></a></li>
                 <li><a href="topupstaff.html"><i class="fa-solid fa-credit-card"></i> <span>RPAY</span></a></li>
                 <li><a href="rewardsstaff.html"><i class="fa-solid fa-gift"></i> <span>Rewards</span></a></li>
-                <li><a href="dashaccsettstaff.html"><i class="fa-solid fa-gear"></i> <span>Settings</span></a></li>
-                <li style="margin-top: auto;"><a href="index.html" style="color: var(--danger);"><i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></a></li>
+                
+                <li class="admin-only"><a href="dashaccsettstaff.html"><i class="fa-solid fa-gear"></i> <span>Settings</span></a></li>
+                
+                <li style="margin-top: auto;">
+                    <a onclick="confirmLogout()" style="color: var(--danger);">
+                        <i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span>
+                    </a>
+                </li>
             </ul>
         </nav>
     </aside>
@@ -224,6 +231,19 @@
     </main>
 
     <script>
+        // --- ROLE GUARD LOGIC ---
+        const currentRole = 'admin'; // Change to 'cashier' for testing
+        if(currentRole === 'cashier') {
+            document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+        }
+
+        // --- LOGOUT LOGIC ---
+        function confirmLogout() {
+            if(confirm("Are you sure you want to log out?")) {
+                window.location.href = "index.html"; 
+            }
+        }
+
         // --- STATE VARIABLES ---
         let currentItem = null;
         let selectedSugar = "100%";
@@ -240,13 +260,12 @@
         });
 
         // ======================================================================
-        // --- BACKEND INTEGRATION LOGIC (ETO YUNG BAGO PARA SA MENU ITEMS) ---
+        // --- BACKEND INTEGRATION LOGIC (MENU ITEMS) ---
         // ======================================================================
 
-        // 1. Function para i-drawing ang Product Cards
         function renderMenu(products) {
             const menuGrid = document.getElementById('menuGrid');
-            menuGrid.innerHTML = ''; // Clear loading text
+            menuGrid.innerHTML = ''; 
 
             if(!products || products.length === 0) {
                 menuGrid.innerHTML = '<p style="color: var(--text-muted); grid-column: 1 / -1; text-align: center;">No items available in the menu.</p>';
@@ -254,7 +273,6 @@
             }
 
             products.forEach(product => {
-                // Para maiwasan ang error kung may single quote ang pangalan (e.g. Teo's Mix)
                 const safeName = product.name.replace(/'/g, "\\'"); 
                 
                 const cardHTML = `
@@ -268,16 +286,13 @@
             });
         }
 
-        // 2. Fetch Data from Database API
         async function fetchMenuData() {
             try {
-                /* * TANGGALIN MO YUNG COMMENTS SA BABA PAG READY NA YUNG BACKEND MO:
-                 * const response = await fetch('http://localhost:3000/api/menu');
-                 * const data = await response.json();
-                 * renderMenu(data);
-                 */
+                // PAG READY NA YUNG BACKEND MO:
+                // const response = await fetch('/api/menu');
+                // const data = await response.json();
+                // renderMenu(data);
 
-                // PANG-TESTING MUNA: Mock Menu Data from backend
                 const mockMenuFromDB = [
                     { id: 1, name: "Classic Mango Bliss", price: 85, image: "mango.png" },
                     { id: 2, name: "Summer Lychee Sunset", price: 95, image: "lychee.png" },
@@ -295,10 +310,7 @@
             }
         }
 
-        // Run natin yung fetch pagkload ng pahina
-        document.addEventListener('DOMContentLoaded', () => {
-            fetchMenuData();
-        });
+        document.addEventListener('DOMContentLoaded', fetchMenuData);
 
         // ======================================================================
         // --- ORDERING LOGIC ---
@@ -330,7 +342,6 @@
             let finalPrice = currentItem.basePrice;
             selectedAddons.forEach(a => finalPrice += a.price);
             
-            // Push to our JS array
             cart.push({ 
                 name: currentItem.name,
                 display: `${currentItem.name} (${selectedSugar})`, 
@@ -395,11 +406,12 @@
             
             if(confirm(`Finalize order with total of ₱${total.toFixed(2)}?`)) {
                 
-                // IMPORTANT: Dito natin i-sa-save yung cart array sa browser memory 
-                // para mabasa siya sa paymentstaff.html at maipadala ng buo sa backend database mo.
-                localStorage.setItem('currentOrderCart', JSON.stringify(cart));
-                localStorage.setItem('currentOrderTotal', total);
+                // DITO NA YUNG API POST REQUEST:
+                // Ipapasa mo 'yung cart array sa backend mo bago mag-redirect sa payment page.
+                console.log("Saving pending order to database/session...", { items: cart, grandTotal: total });
+                // fetch('/api/cart/save', { method: 'POST', body: JSON.stringify({ cart, total }) })
                 
+                // Pag success ang post:
                 window.location.href = 'paymentstaff.html';
             }
         }
