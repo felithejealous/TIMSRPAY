@@ -8,33 +8,20 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
+        /* --- CORE VARIABLES --- */
         :root {
-            --mango-yellow: #fcdb05;
-            --mango-orange: #ff8c00;
-            --mango-dark: #0f0c08; 
-            --text-main: #ffffff;
-            --text-sub: #a1a1aa;
-            --glass-bg: rgba(255, 255, 255, 0.015);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --mesh-color-1: rgba(252, 219, 5, 0.05);
-            --mesh-color-2: rgba(252, 219, 5, 0.02);
-            --logo-filter: brightness(0) invert(1);
-            --sidebar-width: 240px;
-            --modal-overlay: rgba(0,0,0,0.92);
-            --modal-card: #14110e;
+            --mango-yellow: #fcdb05; --mango-orange: #ff8c00; --mango-dark: #0f0c08; 
+            --text-main: #ffffff; --text-sub: #a1a1aa; --glass-bg: rgba(255, 255, 255, 0.015);
+            --glass-border: rgba(255, 255, 255, 0.08); --mesh-color-1: rgba(252, 219, 5, 0.05);
+            --mesh-color-2: rgba(252, 219, 5, 0.02); --logo-filter: brightness(0) invert(1);
+            --sidebar-width: 240px; --modal-overlay: rgba(0,0,0,0.92); --modal-card: #14110e;
         }
 
         body.light-theme {
-            --mango-dark: #f8f9fa; 
-            --text-main: #1a1a1a;  
-            --text-sub: #4a4a4a;   
-            --glass-bg: rgba(255, 255, 255, 0.8);
-            --glass-border: rgba(0, 0, 0, 0.1);
-            --mesh-color-1: rgba(252, 219, 5, 0.15);
-            --mesh-color-2: rgba(255, 140, 0, 0.05);
-            --logo-filter: none;
-            --modal-card: #ffffff;
-            --modal-overlay: rgba(0,0,0,0.4);
+            --mango-dark: #f8f9fa; --text-main: #1a1a1a; --text-sub: #4a4a4a;   
+            --glass-bg: rgba(255, 255, 255, 0.8); --glass-border: rgba(0, 0, 0, 0.1);
+            --mesh-color-1: rgba(252, 219, 5, 0.15); --mesh-color-2: rgba(255, 140, 0, 0.05);
+            --logo-filter: none; --modal-card: #ffffff; --modal-overlay: rgba(0,0,0,0.4);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; transition: background 0.3s, color 0.3s, border 0.3s, transform 0.2s; }
@@ -43,44 +30,20 @@
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--mango-dark);
-            background-image: 
-                radial-gradient(at 0% 0%, var(--mesh-color-1) 0px, transparent 40%),
-                radial-gradient(at 100% 100%, var(--mesh-color-2) 0px, transparent 40%);
-            background-attachment: fixed;
-            color: var(--text-main);
-            display: flex; min-height: 100vh; overflow: hidden;
+            background-image: radial-gradient(at 0% 0%, var(--mesh-color-1) 0px, transparent 40%), radial-gradient(at 100% 100%, var(--mesh-color-2) 0px, transparent 40%);
+            background-attachment: fixed; color: var(--text-main); display: flex; min-height: 100vh; overflow: hidden;
         }
 
         .glass { background: var(--glass-bg); backdrop-filter: blur(12px); border: 1px solid var(--glass-border); }
 
         /* --- SIDEBAR --- */
-        .sidebar {
-            width: var(--sidebar-width);
-            background: var(--glass-bg);
-            backdrop-filter: blur(25px);
-            height: 100vh; position: fixed; left: 0; top: 0;
-            border-right: 1px solid var(--glass-border);
-            display: flex; flex-direction: column; z-index: 100;
-        }
-
+        .sidebar { width: var(--sidebar-width); background: var(--glass-bg); backdrop-filter: blur(25px); height: 100vh; position: fixed; left: 0; top: 0; border-right: 1px solid var(--glass-border); display: flex; flex-direction: column; z-index: 100; }
         .logo-section { padding: 40px 20px; text-align: center; }
         .logo-section img { width: 120px; filter: var(--logo-filter); }
-
         .nav-menu { flex: 1; padding: 10px 15px; }
-        .nav-item {
-            display: flex; align-items: center; gap: 12px;
-            padding: 12px 18px; margin-bottom: 6px;
-            border-radius: 12px; color: var(--text-sub);
-            text-decoration: none; font-weight: 500; font-size: 0.9rem;
-        }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 18px; margin-bottom: 6px; border-radius: 12px; color: var(--text-sub); text-decoration: none; font-weight: 500; font-size: 0.9rem; }
         .nav-item:hover, .nav-item.active { background: var(--mango-yellow); color: #120f0a !important; font-weight: 700; box-shadow: 0 4px 15px rgba(252, 219, 5, 0.2); }
-
-        .logout-btn {
-            padding: 12px 18px; margin: 15px; border-radius: 12px;
-            color: #ef4444; font-weight: 700; text-decoration: none;
-            display: flex; align-items: center; gap: 10px;
-            border: 1px solid rgba(239, 68, 68, 0.2); font-size: 0.85rem;
-        }
+        .logout-btn { padding: 12px 18px; margin: 15px; border-radius: 12px; color: #ef4444; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 10px; border: 1px solid rgba(239, 68, 68, 0.2); font-size: 0.85rem; }
 
         /* --- CONTENT --- */
         .main-content { margin-left: var(--sidebar-width); flex: 1; padding: 40px; overflow-y: auto; height: 100vh; }
@@ -89,30 +52,39 @@
 
         /* --- SETTINGS GRID --- */
         .settings-card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; }
-        .settings-card { padding: 30px; border-radius: 28px; cursor: pointer; transition: 0.3s; }
+        .settings-card { padding: 35px; border-radius: 28px; cursor: pointer; border: 1px solid var(--glass-border); transition: 0.3s; display: flex; flex-direction: column; align-items: flex-start; }
         .settings-card:hover { background: rgba(252, 219, 5, 0.05); border-color: var(--mango-yellow); transform: translateY(-5px); }
-        .settings-card i { font-size: 2rem; color: var(--mango-yellow); margin-bottom: 20px; }
-        .settings-card h3 { font-weight: 900; text-transform: uppercase; font-size: 0.9rem; letter-spacing: 1px; margin-bottom: 8px; }
-        .settings-card p { color: var(--text-sub); font-size: 0.8rem; line-height: 1.4; }
+        .settings-card i { font-size: 2.2rem; color: var(--mango-yellow); margin-bottom: 25px; height: 40px; display: flex; align-items: center; }
+        .settings-card h3 { font-weight: 900; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; margin-bottom: 10px; }
+        .settings-card p { color: var(--text-sub); font-size: 0.8rem; line-height: 1.5; }
+
+        /* --- TOGGLE SWITCH --- */
+        .switch { position: relative; display: inline-block; width: 42px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; inset: 0; background-color: rgba(255,255,255,0.1); transition: .4s; border-radius: 24px; border: 1px solid var(--glass-border); }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--mango-yellow); }
+        input:checked + .slider:before { transform: translateX(18px); background-color: #000; }
 
         /* --- MODALS --- */
         .modal-overlay { position: fixed; inset: 0; background: var(--modal-overlay); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(15px); padding: 20px; }
         .modal-overlay.open { display: flex; }
-        .modal-card { background: var(--modal-card); width: 100%; max-width: 500px; padding: 40px; border-radius: 32px; border: 1px solid var(--glass-border); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
-        
-        .input-group label { display: block; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: var(--mango-orange); margin-bottom: 8px; letter-spacing: 1px; }
-        .input-group input, .input-group select { width: 100%; padding: 14px; border-radius: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); color: var(--text-main); outline: none; margin-bottom: 15px; }
-        body.light-theme .input-group input, body.light-theme .input-group select { background: #f1f3f5; color: #000; border: 1px solid #dee2e6; }
+        .modal-card { background: var(--modal-card); width: 100%; max-width: 550px; padding: 40px; border-radius: 32px; border: 1px solid var(--glass-border); max-height: 90vh; overflow-y: auto; }
+        .modal-header-icon { width: 60px; height: 60px; background: rgba(252, 219, 5, 0.1); color: var(--mango-yellow); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 20px; }
 
-        .btn-save { background: var(--mango-yellow); color: #000; padding: 14px 24px; border-radius: 16px; font-weight: 900; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; width: 100%; transition: 0.3s; }
-        
-        .activity-item { padding: 15px 0; border-bottom: 1px solid var(--glass-border); font-size: 0.85rem; color: var(--text-sub); }
-        .activity-item strong { color: var(--mango-yellow); }
+        .input-group label { display: block; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: var(--mango-orange); margin-bottom: 8px; letter-spacing: 1px; }
+        .input-group input, .input-group select, .input-group textarea { width: 100%; padding: 14px; border-radius: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); color: var(--text-main); outline: none; margin-bottom: 15px; font-size: 13px; }
+        body.light-theme .input-group input, body.light-theme .input-group select, body.light-theme .input-group textarea { background: #f1f3f5; color: #000; }
+
+        .btn-save { background: var(--mango-yellow); color: #000; padding: 14px 24px; border-radius: 16px; font-weight: 900; text-transform: uppercase; font-size: 0.75rem; width: 100%; }
 
         /* --- TOAST --- */
         #toast-container { position: fixed; bottom: 30px; right: 30px; z-index: 9999; }
-        .toast { background: var(--mango-yellow); color: #000; padding: 16px 24px; border-radius: 16px; margin-top: 10px; font-weight: 900; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 1px; display: flex; align-items: center; gap: 10px; animation: slideIn 0.3s forwards; }
+        .toast { background: var(--mango-yellow); color: #000; padding: 16px 24px; border-radius: 16px; margin-top: 10px; font-weight: 900; text-transform: uppercase; font-size: 0.7rem; display: flex; align-items: center; gap: 10px; animation: slideIn 0.3s forwards; }
         @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        
+        /* --- LOG ITEM --- */
+        .log-item { border-left: 3px solid var(--mango-yellow); padding: 10px 15px; background: rgba(255,255,255,0.03); border-radius: 0 12px 12px 0; margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -122,25 +94,25 @@
     <aside class="sidebar glass">
         <div class="logo-section"><img src="../images/logo.png" alt="Logo"></div>
         <nav class="nav-menu">
-            <a href="dashboard.html" class="nav-item" data-lang="nav_dash"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+            <a href="dashboard.html" class="nav-item"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
             <a href="orders.html" class="nav-item"><i class="fa-solid fa-receipt"></i> Orders</a>
-            <a href="accounts.html" class="nav-item" data-lang="nav_accounts"><i class="fa-solid fa-user-gear"></i> Accounts</a>
-            <a href="inventory.html" class="nav-item" data-lang="nav_inv"><i class="fa-solid fa-boxes-stacked"></i> Inventory</a>
-            <a href="menuman.html" class="nav-item" data-lang="nav_menu"><i class="fa-solid fa-utensils"></i> Menu Manager</a>
-            <a href="promo.html" class="nav-item" data-lang="nav_promo"><i class="fa-solid fa-tags"></i> Promos</a>
-            <a href="rewards.html" class="nav-item" data-lang="nav_rewards"><i class="fa-solid fa-gift"></i> Rewards</a>
-            <a href="announce.html" class="nav-item" data-lang="nav_ann"><i class="fa-solid fa-bell"></i> Announce</a>
-            <a href="payments.html" class="nav-item" data-lang="nav_pay"><i class="fa-solid fa-credit-card"></i> Payments</a>
-            <a href="settings.html" class="nav-item active" data-lang="nav_set"><i class="fa-solid fa-cog"></i> Settings</a>
+            <a href="accounts.html" class="nav-item"><i class="fa-solid fa-user-gear"></i> Accounts</a>
+            <a href="inventory.html" class="nav-item"><i class="fa-solid fa-boxes-stacked"></i> Inventory</a>
+            <a href="menuman.html" class="nav-item"><i class="fa-solid fa-utensils"></i> Menu Manager</a>
+            <a href="promo.html" class="nav-item"><i class="fa-solid fa-tags"></i> Promos</a>
+            <a href="rewards.html" class="nav-item"><i class="fa-solid fa-gift"></i> Rewards</a>
+            <a href="announce.html" class="nav-item"><i class="fa-solid fa-bell"></i> Announce</a>
+            <a href="payments.html" class="nav-item"><i class="fa-solid fa-credit-card"></i> Payments</a>
+            <a href="settings.html" class="nav-item active"><i class="fa-solid fa-cog"></i> Settings</a>
         </nav>
-        <a href="index.html" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> <span data-lang="logout">Log Out</span></a>
+        <a href="index.html" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Log Out</a>
     </aside>
 
     <main class="main-content">
         <header class="header-card glass">
             <div>
-                <h1 class="text-2xl font-black uppercase tracking-tighter" style="color: var(--mango-yellow);" data-lang="nav_set">Settings</h1>
-                <p class="text-xs font-mono opacity-60" data-lang="set_sub">System Preferences & Localization</p>
+                <h1 class="text-2xl font-black uppercase tracking-tighter" style="color: var(--mango-yellow);">Settings</h1>
+                <p class="text-xs font-mono opacity-60">System Preferences & Localization</p>
             </div>
             <button class="theme-toggle-circle" onclick="toggleTheme()">
                 <i class="fa-solid fa-sun" id="themeIcon"></i>
@@ -150,28 +122,28 @@
         <div class="settings-card-grid">
             <div class="settings-card glass" onclick="openModal('profileModal')">
                 <i class="fa-solid fa-store"></i>
-                <h3 data-lang="set_shop">Shop Profile</h3>
-                <p data-lang="set_shop_sub">Update shop name, address, and contact</p>
+                <h3>Shop Profile</h3>
+                <p>Update shop name, address, and official contact numbers.</p>
             </div>
             <div class="settings-card glass" onclick="openModal('langModal')">
                 <i class="fa-solid fa-language"></i>
-                <h3 data-lang="set_lang">Language</h3>
-                <p data-lang="set_lang_sub">Switch between English and Tagalog</p>
+                <h3>Localization</h3>
+                <p>Set system language and regional currency formats.</p>
             </div>
             <div class="settings-card glass" onclick="openModal('accountModal')">
-                <i class="fa-solid fa-shield-halved"></i>
-                <h3 data-lang="set_sec">Security</h3>
-                <p data-lang="set_sec_sub">Change admin password and privacy</p>
+                <i class="fa-solid fa-fingerprint"></i>
+                <h3>Security</h3>
+                <p>Update administrative passwords and system access keys.</p>
             </div>
             <div class="settings-card glass" onclick="openModal('notifModal')">
                 <i class="fa-solid fa-bell"></i>
-                <h3 data-lang="set_notif">Notifications</h3>
-                <p data-lang="set_notif_sub">System alerts and inventory warnings</p>
+                <h3>Notifications</h3>
+                <p>Manage inventory alerts, order sounds, and system pings.</p>
             </div>
             <div class="settings-card glass" onclick="openModal('activityModal')">
                 <i class="fa-solid fa-clock-rotate-left"></i>
-                <h3 data-lang="set_log">Activity Log</h3>
-                <p data-lang="set_log_sub">Recent system actions and logs</p>
+                <h3>Activity Log</h3>
+                <p>View administrative audit trails and login history.</p>
             </div>
         </div>
     </main>
@@ -179,134 +151,114 @@
     <div class="modal-overlay" id="modalOverlay">
         
         <div class="modal-card" id="profileModal" style="display:none;">
-            <h3 class="text-xl font-black uppercase text-yellow-400 mb-8" data-lang="set_shop">Shop Profile</h3>
-            <form onsubmit="handleSettingsSubmit(event, 'Shop profile updated!')">
-                <div class="input-group">
-                    <label>Shop Name</label>
-                    <input type="text" value="Teo D' Mango">
+            <div class="modal-header-icon"><i class="fa-solid fa-id-card"></i></div>
+            <h3 class="text-xl font-black uppercase text-yellow-400 mb-8">Shop Profile</h3>
+            <form id="profileForm" onsubmit="handleSave(event, 'Profile updated')">
+                <div class="input-group"><label>Shop Name</label><input type="text" id="shop_name" required></div>
+                <div class="input-group"><label>Official Address</label><textarea id="shop_address" rows="2"></textarea></div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="input-group"><label>Contact No.</label><input type="text" id="shop_contact"></div>
+                    <div class="input-group"><label>Email</label><input type="email" id="shop_email"></div>
                 </div>
-                <div class="input-group">
-                    <label>Address</label>
-                    <input type="text" value="123 Mango Street, Rizal">
-                </div>
-                <button type="submit" class="btn-save">Save Changes</button>
+                <button type="submit" class="btn-save">Save Profile</button>
             </form>
         </div>
 
         <div class="modal-card" id="langModal" style="display:none;">
-            <h3 class="text-xl font-black uppercase text-yellow-400 mb-8" data-lang="set_lang">Language Prefs</h3>
-            <div class="input-group">
-                <label>Select System Language</label>
-                <select id="langSelect" onchange="changeLanguage(this.value)">
-                    <option value="en">English (US)</option>
-                    <option value="tl">Tagalog (PH)</option>
-                </select>
+            <div class="modal-header-icon"><i class="fa-solid fa-globe"></i></div>
+            <h3 class="text-xl font-black uppercase text-yellow-400 mb-8">Localization</h3>
+            <form id="localizationForm" onsubmit="handleSave(event, 'Regional settings applied')">
+                <div class="input-group">
+                    <label>System Language</label>
+                    <select id="sys_lang"><option value="en">English</option><option value="tl">Tagalog</option></select>
+                </div>
+                <div class="input-group">
+                    <label>Currency Format</label>
+                    <select id="sys_currency"><option value="PHP">PHP (₱)</option><option value="USD">USD ($)</option></select>
+                </div>
+                <div class="input-group">
+                    <label>Time Zone</label>
+                    <select id="sys_timezone"><option value="GMT+8">GMT+8 (Manila)</option></select>
+                </div>
+                <button type="submit" class="btn-save">Apply Settings</button>
+            </form>
+        </div>
+
+        <div class="modal-card" id="accountModal" style="display:none;">
+            <div class="modal-header-icon"><i class="fa-solid fa-key"></i></div>
+            <h3 class="text-xl font-black uppercase text-yellow-400 mb-8">Security</h3>
+            <form id="securityForm" onsubmit="handleSave(event, 'Credentials updated')">
+                <div class="input-group"><label>Current Password</label><input type="password" id="cur_pass" required></div>
+                <div class="input-group"><label>New Password</label><input type="password" id="new_pass" required></div>
+                <div class="input-group"><label>Confirm Password</label><input type="password" id="confirm_pass" required></div>
+                <div class="flex items-center gap-3 p-3 bg-red-500/10 border border-red-500/20 rounded-xl mb-4">
+                    <i class="fa-solid fa-triangle-exclamation text-red-500"></i>
+                    <p class="text-[10px] text-red-200">Changing passwords will sign out all active sessions.</p>
+                </div>
+                <button type="submit" class="btn-save">Update Credentials</button>
+            </form>
+        </div>
+
+        <div class="modal-card" id="notifModal" style="display:none;">
+            <div class="modal-header-icon"><i class="fa-solid fa-bell"></i></div>
+            <h3 class="text-xl font-black uppercase text-yellow-400 mb-8">System Notifications</h3>
+            <div class="space-y-4 mb-8">
+                <div class="flex justify-between items-center p-4 glass rounded-2xl border-white/5">
+                    <div><h4 class="text-xs font-black uppercase">Low Stock Alerts</h4><p class="text-[10px] opacity-60">Notify when ingredients fall below threshold</p></div>
+                    <label class="switch"><input type="checkbox" id="low_stock_toggle"><span class="slider"></span></label>
+                </div>
+                <div class="flex justify-between items-center p-4 glass rounded-2xl border-white/5">
+                    <div><h4 class="text-xs font-black uppercase">Order Chimes</h4><p class="text-[10px] opacity-60">Play audio cues for incoming orders</p></div>
+                    <label class="switch"><input type="checkbox" id="order_chime_toggle"><span class="slider"></span></label>
+                </div>
+                <div class="flex justify-between items-center p-4 glass rounded-2xl border-white/5">
+                    <div><h4 class="text-xs font-black uppercase">System Logs</h4><p class="text-[10px] opacity-60">Send critical errors to admin email</p></div>
+                    <label class="switch"><input type="checkbox" id="sys_log_toggle"><span class="slider"></span></label>
+                </div>
             </div>
-            <p class="text-xs opacity-50 italic mb-6">Language updates will sync across all admin pages.</p>
-            <button class="btn-save" onclick="closeAllModals()">Close</button>
+            <button class="btn-save" onclick="closeAllModals()">Done</button>
         </div>
 
         <div class="modal-card" id="activityModal" style="display:none;">
-            <h3 class="text-xl font-black uppercase text-yellow-400 mb-8" data-lang="set_log">Audit Log</h3>
-            <div class="max-h-[300px] overflow-y-auto pr-4">
-                <div class="activity-item"><strong>Admin Login</strong> - 5 mins ago</div>
-                <div class="activity-item"><strong>Menu Update</strong> - Mango Graham - 1 hr ago</div>
-                <div class="activity-item"><strong>Inventory Alert</strong> - Low Milk - 3 hrs ago</div>
-            </div>
-            <button class="btn-save mt-8" onclick="closeAllModals()">Close</button>
+            <div class="modal-header-icon"><i class="fa-solid fa-history"></i></div>
+            <h3 class="text-xl font-black uppercase text-yellow-400 mb-8">Audit Trail</h3>
+            <div id="auditLogContainer" class="max-h-[300px] overflow-y-auto pr-2">
+                </div>
+            <button class="btn-save mt-8" onclick="closeAllModals()">Close Log</button>
         </div>
-
     </div>
 
     <script>
-        const translations = {
-            en: {
-                nav_dash: "Dashboard", nav_accounts: "Accounts", nav_inv: "Inventory",
-                nav_menu: "Menu Manager", nav_promo: "Promos", nav_rewards: "Rewards",
-                nav_ann: "Announce", nav_pay: "Payments", nav_set: "Settings",
-                logout: "Log Out", set_sub: "System Preferences & Localization",
-                set_shop: "Shop Profile", set_shop_sub: "Update shop name, address, and contact",
-                set_lang: "Language", set_lang_sub: "Switch between English and Tagalog",
-                set_sec: "Security", set_sec_sub: "Change admin password and privacy",
-                set_notif: "Notifications", set_notif_sub: "System alerts and inventory warnings",
-                set_log: "Activity Log", set_log_sub: "Recent system actions and logs"
-            },
-            tl: {
-                nav_dash: "Dashbord", nav_accounts: "Mga Account", nav_inv: "Imbentaryo",
-                nav_menu: "Tagapamahala ng Menu", nav_promo: "Mga Promo", nav_rewards: "Mga Gantimpala",
-                nav_ann: "Anunsyo", nav_pay: "Mga Pagbabayad", nav_set: "Settings",
-                logout: "Mag-Log Out", set_sub: "Preperensya ng Sistema at Wika",
-                set_shop: "Profile ng Tindahan", set_shop_sub: "I-update ang pangalan at address",
-                set_lang: "Wika", set_lang_sub: "Magpalit sa English o Tagalog",
-                set_sec: "Seguridad", set_sec_sub: "Palitan ang password at privacy",
-                set_notif: "Abiso", set_notif_sub: "Mga alerto sa sistema at imbentaryo",
-                set_log: "Listahan ng Aktibidad", set_log_sub: "Mga huling ginawa sa system"
-            }
-        };
-
-        function changeLanguage(lang) {
-            localStorage.setItem('teoLang', lang);
-            applyLanguage(lang);
-            showToast(`Language set to ${lang === 'en' ? 'English' : 'Tagalog'}`);
+        function toggleTheme() {
+            document.body.classList.toggle('light-theme');
+            const isLight = document.body.classList.contains('light-theme');
+            // Theme preference persistence logic to be added with backend
+            document.getElementById('themeIcon').className = isLight ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
         }
 
-        function applyLanguage(lang) {
-            document.querySelectorAll('[data-lang]').forEach(el => {
-                const key = el.getAttribute('data-lang');
-                if (translations[lang][key]) {
-                    // Preserve icons if they exist
-                    const icon = el.querySelector('i');
-                    if (icon) {
-                        el.innerHTML = '';
-                        el.appendChild(icon);
-                        el.innerHTML += ' ' + translations[lang][key];
-                    } else {
-                        el.textContent = translations[lang][key];
-                    }
-                }
-            });
-            document.getElementById('langSelect').value = lang;
-        }
-
-        function showToast(message) {
+        function showToast(msg) {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             toast.className = 'toast';
-            toast.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${message}`;
+            toast.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${msg}`;
             container.appendChild(toast);
             setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
         }
 
-        function toggleTheme() {
-            document.body.classList.toggle('light-theme');
-            const isLight = document.body.classList.contains('light-theme');
-            localStorage.setItem('theme', isLight ? 'light' : 'dark');
-            document.getElementById('themeIcon').className = isLight ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
-        }
-
-        function openModal(modalId) {
+        function openModal(id) {
             document.getElementById('modalOverlay').classList.add('open');
-            document.querySelectorAll('.modal-card').forEach(card => card.style.display = 'none');
-            document.getElementById(modalId).style.display = 'block';
+            document.querySelectorAll('.modal-card').forEach(c => c.style.display = 'none');
+            document.getElementById(id).style.display = 'block';
         }
 
         function closeAllModals() { document.getElementById('modalOverlay').classList.remove('open'); }
+        function handleSave(e, msg) { e.preventDefault(); showToast(msg); closeAllModals(); }
 
-        function handleSettingsSubmit(e, msg) {
-            e.preventDefault();
-            showToast(msg);
-            closeAllModals();
-        }
-
+        window.onclick = (e) => { if (e.target.id === 'modalOverlay') closeAllModals(); }
+        
+        // Final UI preparation: Ensure everything is clear for backend data binding
         window.onload = () => {
-            const lang = localStorage.getItem('teoLang') || 'en';
-            applyLanguage(lang);
-            
-            const theme = localStorage.getItem('theme');
-            if (theme === 'light') {
-                document.body.classList.add('light-theme');
-                document.getElementById('themeIcon').className = 'fa-solid fa-moon';
-            }
+            console.log("Settings module ready for API binding.");
         };
     </script>
 </body>

@@ -26,18 +26,20 @@
 
         body.light-theme {
             --mango-dark: #f8f9fa; 
-            --text-main: #1a1a1a;  
-            --text-sub: #4a4a4a;   
-            --glass-bg: rgba(255, 255, 255, 0.8);
+            --text-main: #1c1917;  
+            --text-sub: #57534e;   
+            --glass-bg: rgba(255, 255, 255, 0.7);
             --glass-border: rgba(0, 0, 0, 0.1);
             --mesh-color-1: rgba(252, 219, 5, 0.15);
-            --mesh-color-2: rgba(255, 140, 0, 0.05);
+            --mesh-color-2: rgba(255, 140, 0, 0.1);
             --logo-filter: none;
             --modal-card: #ffffff;
-            --modal-overlay: rgba(0,0,0,0.4);
+            --modal-overlay: rgba(255, 255, 255, 0.85);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; transition: background 0.3s, color 0.3s, border 0.3s, transform 0.2s; }
+        /* Seamless Transitions */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        .nav-item, .post-card, .theme-toggle-circle, .btn-main { transition: all 0.2s ease; }
         ::-webkit-scrollbar { width: 0px; background: transparent; }
 
         body {
@@ -53,7 +55,7 @@
 
         .glass { background: var(--glass-bg); backdrop-filter: blur(12px); border: 1px solid var(--glass-border); }
 
-        /* --- SIDEBAR --- */
+        /* Sidebar */
         .sidebar {
             width: var(--sidebar-width);
             background: var(--glass-bg);
@@ -62,10 +64,8 @@
             border-right: 1px solid var(--glass-border);
             display: flex; flex-direction: column; z-index: 100;
         }
-
         .logo-section { padding: 40px 20px; text-align: center; }
         .logo-section img { width: 120px; filter: var(--logo-filter); }
-
         .nav-menu { flex: 1; padding: 10px 15px; }
         .nav-item {
             display: flex; align-items: center; gap: 12px;
@@ -75,50 +75,42 @@
         }
         .nav-item:hover, .nav-item.active { background: var(--mango-yellow); color: #120f0a !important; font-weight: 700; box-shadow: 0 4px 15px rgba(252, 219, 5, 0.2); }
 
-        .logout-btn {
-            padding: 12px 18px; margin: 15px; border-radius: 12px;
-            color: #ef4444; font-weight: 700; text-decoration: none;
-            display: flex; align-items: center; gap: 10px;
-            border: 1px solid rgba(239, 68, 68, 0.2); font-size: 0.85rem;
-        }
-
-        /* --- CONTENT --- */
+        /* Content Area */
         .main-content { margin-left: var(--sidebar-width); flex: 1; padding: 40px; overflow-y: auto; height: 100vh; }
         .header-card { padding: 25px 40px; border-radius: 24px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .theme-toggle-circle { width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; background: var(--mango-yellow); color: #120f0a; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .theme-toggle-circle { width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; background: var(--mango-yellow); color: #120f0a; border: none; }
 
-        /* --- FEED STYLING --- */
-        .feed-container { max-width: 800px; margin: 0 auto; }
-        .post-card { padding: 30px; border-radius: 28px; border: 1px solid var(--glass-border); margin-bottom: 25px; transition: 0.3s; }
-        .pinned-post { border: 2px solid var(--mango-yellow); box-shadow: 0 0 20px rgba(252, 219, 5, 0.1); }
+        /* Feed */
+        .post-card { padding: 30px; border-radius: 28px; border: 1px solid var(--glass-border); margin-bottom: 25px; background: var(--glass-bg); }
+        .pinned-post { border: 2px solid var(--mango-yellow); }
+        .status-badge { font-size: 0.6rem; padding: 4px 10px; border-radius: 20px; font-weight: 900; text-transform: uppercase; }
         
-        .post-avatar { width: 45px; height: 45px; border-radius: 50%; background: var(--mango-yellow); color: #000; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
-        .post-title { font-weight: 900; font-size: 1.3rem; color: var(--text-main); text-transform: uppercase; letter-spacing: -0.5px; }
-        
-        .status-badge { font-size: 0.6rem; padding: 4px 10px; border-radius: 20px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; margin-left: 10px; }
-        .badge-published { background: rgba(34, 197, 94, 0.15); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.2); }
-        .badge-draft { background: rgba(255, 255, 255, 0.1); color: var(--text-sub); }
-        .badge-scheduled { background: rgba(252, 219, 5, 0.15); color: var(--mango-yellow); }
+        /* Modal Logic (Standardized) */
+        .modal { display: none; position: fixed; inset: 0; background: var(--modal-overlay); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(20px); opacity: 0; transition: opacity 0.4s ease; }
+        .modal.show { display: flex; opacity: 1; }
+        .modal-content { background: var(--modal-card); width: 90%; max-width: 600px; padding: 40px; border-radius: 32px; position: relative; transform: scale(0.9); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .modal.show .modal-content { transform: scale(1); }
 
-        .post-image { width: 100%; max-height: 400px; object-fit: cover; border-radius: 20px; margin: 20px 0; border: 1px solid var(--glass-border); }
-
-        /* --- BUTTONS --- */
-        .btn-main { background: var(--mango-yellow); color: #000; padding: 12px 24px; border-radius: 16px; font-weight: 900; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; transition: 0.3s; box-shadow: 0 4px 15px rgba(252, 219, 5, 0.2); }
-        .btn-action { background: rgba(255, 255, 255, 0.05); color: var(--text-sub); padding: 8px 16px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-        .btn-action:hover { background: var(--mango-yellow); color: #000; }
-        .btn-delete:hover { background: #ef4444; color: #fff; }
-
-        /* --- MODALS --- */
-        .modal { position: fixed; inset: 0; background: var(--modal-overlay); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(15px); padding: 20px; }
-        .modal.show { display: flex; }
-        .modal-content { background: var(--modal-card); width: 100%; max-width: 600px; padding: 40px; border-radius: 32px; border: 1px solid var(--glass-border); }
-
-        .form-group label { display: block; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: var(--mango-orange); margin-bottom: 8px; letter-spacing: 1px; }
-        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 14px; border-radius: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); color: var(--text-main); outline: none; margin-bottom: 20px; font-size: 0.9rem; }
+        .form-group label { display: block; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: var(--mango-orange); margin-bottom: 8px; }
+        .form-group input, .form-group textarea { width: 100%; padding: 14px; border-radius: 12px; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); color: var(--text-main); outline: none; margin-bottom: 20px; }
         body.light-theme .form-group input, body.light-theme .form-group textarea { background: #f1f3f5; color: #000; border: 1px solid #dee2e6; }
+        
+        #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--mango-yellow); color: #000; padding: 12px 30px; border-radius: 50px; font-weight: 900; text-transform: uppercase; font-size: 10px; transition: 0.5s; z-index: 2000; }
+        #toast.show { transform: translateX(-50%) translateY(0); }
     </style>
+
+    <script>
+        // Immediate Theme Application (No Flash)
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            if (savedTheme === 'light') document.documentElement.classList.add('light-theme-applied');
+        })();
+    </script>
 </head>
 <body>
+    <script>
+        if (document.documentElement.classList.contains('light-theme-applied')) document.body.classList.add('light-theme');
+    </script>
 
     <aside class="sidebar glass">
         <div class="logo-section"><img src="../images/logo.png" alt="Logo"></div>
@@ -144,7 +136,7 @@
                 <p class="text-xs font-mono opacity-60">Customer Broadcast Feed</p>
             </div>
             <div class="flex items-center gap-4">
-                <button class="btn-main hover:scale-105" onclick="openModal()">
+                <button class="bg-yellow-400 text-black px-6 py-3 rounded-xl font-black text-xs uppercase hover:scale-105" onclick="openModal('announceModal')">
                     <i class="fas fa-plus mr-2"></i> New Post
                 </button>
                 <button class="theme-toggle-circle" onclick="toggleTheme()">
@@ -153,171 +145,98 @@
             </div>
         </header>
 
-        <div class="feed-container" id="feedBody">
-            <div class="post-card glass pinned-post">
-                <div class="flex justify-between items-start">
-                    <div class="flex gap-4">
-                        <div class="post-avatar"><i class="fas fa-thumbtack"></i></div>
-                        <div>
-                            <h2 class="post-title">Grand Opening Sale!</h2>
-                            <div class="text-[10px] font-mono opacity-50 uppercase tracking-widest mt-1">
-                                Admin • March 1, 2026 <span class="status-badge badge-published">Published</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="mt-6 text-sm leading-relaxed opacity-80">
-                    Come visit our new branch at Binangonan! Get 50% off on all mango shakes for the first 100 customers. Valid until Sunday only!
-                </div>
-                <img src="../images/promo-sample.jpg" class="post-image">
-                <div class="flex justify-end gap-3 pt-4 border-t border-white/5">
-                    <button class="btn-action" onclick="togglePin(this)"><i class="fas fa-thumbtack mr-2"></i> Unpin</button>
-                    <button class="btn-action" onclick="toggleStatus(this)"><i class="fas fa-eye-slash mr-2"></i> Unpublish</button>
-                    <button class="btn-action" onclick="editEntry(this)"><i class="fas fa-edit mr-2"></i> Edit</button>
-                    <button class="btn-action btn-delete" onclick="deleteEntry(this)"><i class="fas fa-trash"></i></button>
-                </div>
+        <div class="max-w-3xl mx-auto space-y-6" id="feedBody">
             </div>
-        </div>
     </main>
 
     <div class="modal" id="announceModal">
         <div class="modal-content glass">
+            <button class="absolute top-6 right-8 text-2xl opacity-40 hover:opacity-100" onclick="closeModal('announceModal')">&times;</button>
             <h2 class="text-xl font-black uppercase text-yellow-400 mb-8" id="modalTitle">Broadcast Message</h2>
             <form id="announceForm">
-                <div class="form-group">
-                    <label>Headline Title</label>
-                    <input type="text" id="annTitle" required placeholder="e.g. New Seasonal Flavor!">
-                </div>
-                <div class="form-group">
-                    <label>Content Body</label>
-                    <textarea id="annContent" rows="5" required placeholder="Details about the announcement..."></textarea>
-                </div>
+                <input type="hidden" id="postId">
+                <div class="form-group"><label>Headline Title</label><input type="text" id="annTitle" required></div>
+                <div class="form-group"><label>Content Body</label><textarea id="annContent" rows="4" required></textarea></div>
                 <div class="grid grid-cols-2 gap-4">
-                    <div class="form-group">
-                        <label>Featured Image</label>
-                        <input type="file" id="annImage" accept="image/*" class="text-xs">
-                    </div>
-                    <div class="form-group">
-                        <label>Schedule Publish</label>
-                        <input type="datetime-local" id="annSchedule">
-                    </div>
+                    <div class="form-group"><label>Image URL</label><input type="text" id="annImageUrl"></div>
+                    <div class="form-group"><label>Schedule</label><input type="datetime-local" id="annSchedule"></div>
                 </div>
-                <div class="flex justify-between items-center mt-8">
-                    <button type="button" class="btn-action" onclick="closeModal()">Discard</button>
-                    <button type="submit" class="btn-main">Deploy Post</button>
+                <div class="flex justify-between items-center mt-6">
+                    <button type="button" class="text-xs font-bold opacity-40 uppercase" onclick="closeModal('announceModal')">Discard</button>
+                    <button type="submit" class="bg-yellow-400 text-black px-8 py-4 rounded-xl font-black uppercase text-xs">Deploy Post</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <script>
-        // THEME SYNC
-        (function() {
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'light') {
-                document.body.classList.add('light-theme');
-                document.getElementById('themeIcon').className = 'fa-solid fa-moon';
-            }
-        })();
+    <div id="toast">Action Successful!</div>
 
-        function toggleTheme() {
-            document.body.classList.toggle('light-theme');
+    <script>
+        const API_BASE_URL = 'https://api.yourdomain.com/v1';
+        let state = { posts: [] };
+
+        function updateThemeUI() {
             const isLight = document.body.classList.contains('light-theme');
-            localStorage.setItem('theme', isLight ? 'light' : 'dark');
             document.getElementById('themeIcon').className = isLight ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
         }
 
-        // ANNOUNCEMENT LOGIC
-        const modal = document.getElementById('announceModal');
-        const form = document.getElementById('announceForm');
-        let currentPost = null;
-
-        function openModal() {
-            form.reset();
-            document.getElementById('modalTitle').innerText = "Broadcast Message";
-            currentPost = null;
-            modal.classList.add('show');
+        function toggleTheme() {
+            document.body.classList.toggle('light-theme');
+            localStorage.setItem('theme', document.body.classList.contains('light-theme') ? 'light' : 'dark');
+            updateThemeUI();
         }
 
-        function closeModal() { modal.classList.remove('show'); }
+        function openModal(id) {
+            const m = document.getElementById(id);
+            m.style.display = 'flex';
+            setTimeout(() => m.classList.add('show'), 10);
+        }
 
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const title = document.getElementById('annTitle').value;
-            const content = document.getElementById('annContent').value;
-            const schedule = document.getElementById('annSchedule').value;
-            const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-            
-            let status = schedule ? 'Scheduled' : 'Published';
-            let badgeClass = schedule ? 'badge-scheduled' : 'badge-published';
+        function closeModal(id) {
+            const m = document.getElementById(id);
+            m.classList.remove('show');
+            setTimeout(() => m.style.display = 'none', 400);
+        }
 
-            const postHTML = `
-                <div class="flex justify-between items-start">
-                    <div class="flex gap-4">
-                        <div class="post-avatar"><i class="fas fa-bullhorn"></i></div>
-                        <div>
-                            <h2 class="post-title">${title}</h2>
-                            <div class="text-[10px] font-mono opacity-50 uppercase tracking-widest mt-1">
-                                Admin • ${date} <span class="status-badge ${badgeClass}">${status}</span>
+        async function initApp() {
+            try {
+                const res = await fetch(`${API_BASE_URL}/announcements`);
+                if(res.ok) {
+                    state.posts = await res.json();
+                    renderFeed();
+                }
+            } catch(e) { console.warn("API Offline. Feed empty."); }
+        }
+
+        function renderFeed() {
+            const feed = document.getElementById('feedBody');
+            feed.innerHTML = state.posts.length ? state.posts.map(post => `
+                <div class="post-card glass ${post.isPinned ? 'pinned-post' : ''}">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex gap-4 items-center">
+                            <div class="w-10 h-10 rounded-xl bg-yellow-400 text-black flex items-center justify-center"><i class="fas fa-bullhorn"></i></div>
+                            <div>
+                                <h2 class="font-black text-lg">${post.title}</h2>
+                                <p class="text-[10px] opacity-40 font-mono">${post.date} • Admin</p>
                             </div>
                         </div>
                     </div>
+                    <p class="text-sm opacity-80 leading-relaxed">${post.content}</p>
+                    <div class="flex justify-end gap-4 mt-6 pt-6 border-t border-white/5">
+                        <button class="text-[10px] font-black uppercase opacity-40 hover:opacity-100">Pin</button>
+                        <button class="text-[10px] font-black uppercase opacity-40 hover:opacity-100">Edit</button>
+                        <button class="text-[10px] font-black uppercase text-red-500">Delete</button>
+                    </div>
                 </div>
-                <div class="mt-6 text-sm leading-relaxed opacity-80">${content}</div>
-                <div class="flex justify-end gap-3 pt-4 border-t border-white/5 mt-6">
-                    <button class="btn-action" onclick="togglePin(this)"><i class="fas fa-thumbtack mr-2"></i> Pin</button>
-                    <button class="btn-action" onclick="toggleStatus(this)"><i class="fas fa-eye-slash mr-2"></i> Unpublish</button>
-                    <button class="btn-action" onclick="editEntry(this)"><i class="fas fa-edit mr-2"></i> Edit</button>
-                    <button class="btn-action btn-delete" onclick="deleteEntry(this)"><i class="fas fa-trash"></i></button>
-                </div>
-            `;
-
-            if (currentPost) {
-                currentPost.innerHTML = postHTML;
-            } else {
-                const newPost = document.createElement('div');
-                newPost.className = 'post-card glass';
-                newPost.innerHTML = postHTML;
-                document.getElementById('feedBody').prepend(newPost);
-            }
-            closeModal();
-        });
-
-        function editEntry(btn) {
-            currentPost = btn.closest('.post-card');
-            document.getElementById('modalTitle').innerText = "Update Broadcast";
-            document.getElementById('annTitle').value = currentPost.querySelector('.post-title').innerText;
-            document.getElementById('annContent').value = currentPost.querySelector('.post-content').innerText;
-            modal.classList.add('show');
+            `).join('') : '<p class="text-center opacity-30 py-20 uppercase text-xs tracking-widest">No active broadcasts.</p>';
         }
 
-        function deleteEntry(btn) {
-            if (confirm("Permanently delete this announcement?")) btn.closest('.post-card').remove();
-        }
-        
-        function togglePin(btn) {
-            const card = btn.closest('.post-card');
-            card.classList.toggle('pinned-post');
-            btn.innerHTML = card.classList.contains('pinned-post') ? 
-                '<i class="fas fa-thumbtack mr-2"></i> Unpin' : 
-                '<i class="fas fa-thumbtack mr-2"></i> Pin';
-        }
-        
-        function toggleStatus(btn) {
-            const card = btn.closest('.post-card');
-            const statusSpan = card.querySelector('.status-badge');
-            if (statusSpan.innerText === 'PUBLISHED') {
-                statusSpan.innerText = 'DRAFT';
-                statusSpan.className = 'status-badge badge-draft';
-                btn.innerHTML = '<i class="fas fa-eye mr-2"></i> Publish';
-            } else {
-                statusSpan.innerText = 'PUBLISHED';
-                statusSpan.className = 'status-badge badge-published';
-                btn.innerHTML = '<i class="fas fa-eye-slash mr-2"></i> Unpublish';
-            }
-        }
+        window.onload = () => {
+            updateThemeUI();
+            initApp();
+        };
 
-        window.onclick = (e) => { if (e.target == modal) closeModal(); }
+        window.onclick = (e) => { if (e.target.classList.contains('modal')) closeModal(e.target.id); }
     </script>
 </body>
 </html>

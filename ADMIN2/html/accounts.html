@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
+        /* --- CORE VARIABLES --- */
         :root {
             --mango-yellow: #fcdb05;
             --mango-orange: #ff8c00;
@@ -24,7 +25,7 @@
             --modal-card: #14110e;
         }
 
-        /* Improved Light Theme Contrast */
+        /* --- LIGHT THEME OVERRIDES --- */
         body.light-theme {
             --mango-dark: #f8f9fa; 
             --text-main: #1a1a1a;  
@@ -56,43 +57,31 @@
 
         /* --- SIDEBAR --- */
         .sidebar {
-            width: var(--sidebar-width);
-            background: var(--glass-bg);
-            backdrop-filter: blur(25px);
-            height: 100vh; position: fixed; left: 0; top: 0;
-            border-right: 1px solid var(--glass-border);
+            width: var(--sidebar-width); background: var(--glass-bg); backdrop-filter: blur(25px);
+            height: 100vh; position: fixed; left: 0; top: 0; border-right: 1px solid var(--glass-border);
             display: flex; flex-direction: column; z-index: 100;
         }
-
         .logo-section { padding: 40px 20px; text-align: center; }
         .logo-section img { width: 120px; filter: var(--logo-filter); }
-
         .nav-menu { flex: 1; padding: 10px 15px; }
         .nav-item {
-            display: flex; align-items: center; gap: 12px;
-            padding: 12px 18px; margin-bottom: 6px;
-            border-radius: 12px; color: var(--text-sub);
-            text-decoration: none; font-weight: 500; font-size: 0.9rem;
+            display: flex; align-items: center; gap: 12px; padding: 12px 18px; margin-bottom: 6px;
+            border-radius: 12px; color: var(--text-sub); text-decoration: none; font-weight: 500; font-size: 0.9rem;
         }
         .nav-item:hover, .nav-item.active { background: var(--mango-yellow); color: #120f0a !important; font-weight: 700; box-shadow: 0 4px 15px rgba(252, 219, 5, 0.2); }
-
-        .logout-btn {
-            padding: 12px 18px; margin: 15px; border-radius: 12px;
-            color: #ef4444; font-weight: 700; text-decoration: none;
-            display: flex; align-items: center; gap: 10px;
-            border: 1px solid rgba(239, 68, 68, 0.2); font-size: 0.85rem;
-        }
+        .logout-btn { padding: 12px 18px; margin: 15px; border-radius: 12px; color: #ef4444; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 10px; border: 1px solid rgba(239, 68, 68, 0.2); font-size: 0.85rem; }
 
         /* --- CONTENT --- */
         .main-content { margin-left: var(--sidebar-width); flex: 1; padding: 40px; overflow-y: auto; height: 100vh; }
         .header-card { padding: 25px 40px; border-radius: 24px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         .theme-toggle-circle { width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; background: var(--mango-yellow); color: #120f0a; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
 
+        /* --- REPORT CARDS --- */
         .report-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
         .report-card { padding: 20px; border-radius: 24px; display: flex; align-items: center; gap: 15px; }
         .report-icon { width: 50px; height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: var(--mango-yellow); color: #120f0a; }
 
-        /* --- STAFF CARDS --- */
+        /* --- STAFF GRID --- */
         .staff-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
         .staff-card { border-radius: 24px; padding: 25px; text-align: center; cursor: pointer; border: 1px solid var(--glass-border); background: var(--glass-bg); }
         .staff-card:hover { transform: translateY(-8px); border-color: var(--mango-yellow); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
@@ -107,28 +96,33 @@
         /* --- MODALS --- */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-overlay); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(15px); padding: 20px; }
         .modal-overlay.open { display: flex; }
-        .modal-content { background: var(--modal-card); width: 100%; max-width: 500px; padding: 35px; border-radius: 32px; position: relative; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+        .modal-content { background: var(--modal-card); width: 100%; max-width: 600px; padding: 35px; border-radius: 32px; position: relative; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
 
-        .input-group label { display: block; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: var(--mango-orange); margin-bottom: 6px; letter-spacing: 1px; }
-        .input-group input, .input-group select { width: 100%; padding: 14px; border-radius: 12px; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); color: var(--text-main); outline: none; }
+        .input-group label { display: block; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: var(--mango-orange); margin-bottom: 6px; letter-spacing: 1px; }
+        .input-group input, .input-group select { width: 100%; padding: 12px; border-radius: 12px; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); color: var(--text-main); outline: none; margin-bottom: 12px; font-size: 0.85rem; }
         body.light-theme .input-group input, body.light-theme .input-group select { background: #f1f3f5; color: #000; border: 1px solid #dee2e6; }
+        
+        .section-title { font-size: 0.75rem; font-weight: 900; text-transform: uppercase; color: var(--mango-yellow); border-bottom: 1px solid var(--glass-border); padding-bottom: 5px; margin: 20px 0 15px; }
 
         .search-container { position: relative; flex: 1; max-width: 400px; }
         .search-container input { width: 100%; padding: 14px 20px 14px 45px; border-radius: 16px; background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-main); outline: none; }
         .search-container i { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); opacity: 0.5; }
 
-        .btn-toggle { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .btn-toggle:active { transform: scale(0.95); }
-
-        /* Custom Alert Styling */
-        .alert-modal { background: #1a1612; border: 1px solid var(--mango-orange); text-align: center; }
-        body.light-theme .alert-modal { background: #fff; border-color: var(--mango-orange); }
-
         #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--mango-yellow); color: #000; padding: 12px 30px; border-radius: 50px; font-weight: 900; text-transform: uppercase; font-size: 10px; letter-spacing: 1px; transition: 0.5s; z-index: 2000; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
         #toast.show { transform: translateX(-50%) translateY(0); }
     </style>
+
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            if (savedTheme === 'light') document.documentElement.classList.add('light-theme-applied');
+        })();
+    </script>
 </head>
 <body>
+    <script>
+        if (document.documentElement.classList.contains('light-theme-applied')) document.body.classList.add('light-theme');
+    </script>
 
     <aside class="sidebar glass">
         <div class="logo-section"><img src="../images/logo.png" alt="Logo"></div>
@@ -195,30 +189,57 @@
                 <input type="hidden" id="editCardId">
                 <div class="text-center mb-8">
                     <img src="https://via.placeholder.com/100" id="profilePreview" class="w-24 h-24 rounded-full mx-auto border-2 border-dashed border-yellow-400 object-cover p-1 mb-4">
-                    <label for="profilePic" class="text-[10px] font-black uppercase cursor-pointer bg-white/10 px-4 py-2 rounded-full hover:bg-yellow-400 hover:text-black">
-                        Update Photo
-                    </label>
+                    <label for="profilePic" class="text-[10px] font-black uppercase cursor-pointer bg-white/10 px-4 py-2 rounded-full hover:bg-yellow-400 hover:text-black">Update Photo</label>
                     <input type="file" id="profilePic" class="hidden" accept="image/*" onchange="previewImage(event)">
                 </div>
 
-                <div class="grid gap-5">
+                <div class="section-title">Identity & Credentials</div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="input-group">
+                        <label id="idLabel">Account ID</label>
+                        <input type="text" id="officialId" placeholder="Auto-generated" readonly class="opacity-70 cursor-not-allowed">
+                    </div>
+                    <div class="input-group">
+                        <label>System Role</label>
+                        <select id="role" onchange="toggleStaffFields()">
+                            <option value="Admin">Administrator</option>
+                            <option value="Staff">Staff Web</option>
+                            <option value="Kiosk">Kiosk System</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="input-group"><label>Display Name</label><input type="text" id="fullName" required></div>
+                    <div class="input-group"><label>Username</label><input type="text" id="userName" required></div>
+                </div>
+                
+                <div class="input-group"><label>Email Address</label><input type="email" id="email" required></div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="input-group"><label>Password</label><input type="password" id="password" required placeholder="create password"></div>
+                    <div class="input-group"><label>Confirm</label><input type="password" required placeholder="retype password"></div>
+                </div>
+
+                <div id="staffOnlyFields" style="display:none;">
+                    <div class="section-title">Duty & Logistics</div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="input-group">
-                            <label id="idLabel">Account ID</label>
-                            <input type="text" id="officialId" placeholder="Auto-generated" readonly class="opacity-70 cursor-not-allowed">
+                            <label>Shift Schedule</label>
+                            <select id="shift">
+                                <option value="morning">Morning Shift</option>
+                                <option value="afternoon">Afternoon Shift</option>
+                                <option value="full">Full Day</option>
+                            </select>
                         </div>
                         <div class="input-group">
-                            <label>Role</label>
-                            <select id="role" onchange="updateIdLabel()">
-                                <option value="Admin">Administrator</option>
-                                <option value="Staff">Staff Web</option>
-                                <option value="Kiosk">Kiosk System</option>
+                            <label>Attendance Tracking</label>
+                            <select id="attendance">
+                                <option value="enabled">Enabled</option>
+                                <option value="disabled">Disabled</option>
                             </select>
                         </div>
                     </div>
-                    <div class="input-group"><label>Full Display Name</label><input type="text" id="fullName" required></div>
-                    <div class="input-group"><label>Username</label><input type="text" id="userName" required></div>
-                    <div class="input-group"><label>Email Address</label><input type="email" id="email" required></div>
                 </div>
 
                 <div class="flex justify-between items-center mt-10">
@@ -241,80 +262,62 @@
                     <span id="viewProfileRole" class="role-badge"></span>
                     
                     <div class="grid gap-3 mt-8">
-                        <button id="toggleInBtn" class="btn-toggle py-3 rounded-xl font-black text-[10px] uppercase" onclick="toggleCheckIn()"></button>
+                        <button id="toggleInBtn" class="py-3 rounded-xl font-black text-[10px] uppercase" onclick="toggleCheckIn()"></button>
                         <button class="bg-white/10 py-3 rounded-xl font-bold text-[10px] uppercase hover:bg-white/20" onclick="editAccountFromProfile()">
                             <i class="fas fa-edit mr-2"></i>Edit Profile
                         </button>
                         <button class="bg-blue-600/20 text-blue-400 py-3 rounded-xl font-bold text-[10px] uppercase hover:bg-blue-600/30" onclick="confirmReset()">
                             <i class="fas fa-key mr-2"></i>Reset Password
                         </button>
-                        <button id="toggleActiveBtn" class="btn-toggle py-3 rounded-xl font-bold text-[10px] uppercase" onclick="toggleStatus()"></button>
+                        <button id="toggleActiveBtn" class="py-3 rounded-xl font-bold text-[10px] uppercase" onclick="toggleStatus()"></button>
                     </div>
                 </div>
                 <div class="flex-1">
                     <h3 class="text-xs font-black uppercase opacity-40 mb-4 tracking-widest">Logs & Activity</h3>
                     <div id="viewProfileRecords" class="space-y-3">
-                        <div class="bg-white/5 p-4 rounded-xl flex justify-between items-center">
-                            <span class="font-bold text-sm">March 08, 2026</span>
-                            <span class="text-[10px] bg-green-500/20 text-green-400 px-3 py-1 rounded-full font-black">LOGGED IN</span>
                         </div>
-                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="modal-overlay" id="confirmModal">
-        <div class="modal-content glass alert-modal" style="max-width: 400px;">
-            <div class="text-mango-orange text-4xl mb-4"><i class="fas fa-exclamation-triangle"></i></div>
-            <h2 class="text-xl font-black uppercase mb-2">Confirm Reset?</h2>
-            <p class="text-sm opacity-60 mb-8">This will generate a temporary password and send it to the staff's registered email. This action cannot be undone.</p>
-            <div class="flex gap-4">
-                <button class="flex-1 bg-white/10 py-4 rounded-xl font-bold uppercase text-[10px] hover:bg-white/20" onclick="closeModal('confirmModal')">Cancel</button>
-                <button class="flex-1 bg-mango-orange text-white py-4 rounded-xl font-black uppercase text-[10px] hover:brightness-110" onclick="processReset()">Proceed</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="toast">Password Reset Link Sent!</div>
+    <div id="toast">Operation Successful!</div>
 
     <script>
-        let staffData = JSON.parse(localStorage.getItem('staffData')) || [];
+        // API Base Placeholder
+        const API_BASE_URL = 'https://api.yourdomain.com/v1';
+        let staffData = []; 
         let currentEditingId = null;
 
-        (function() {
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'light') {
-                document.body.classList.add('light-theme');
-                document.getElementById('themeIcon').className = 'fa-solid fa-moon';
-            }
-        })();
-
-        function toggleTheme() {
-            document.body.classList.toggle('light-theme');
+        function updateThemeUI() {
             const isLight = document.body.classList.contains('light-theme');
-            localStorage.setItem('theme', isLight ? 'light' : 'dark');
             document.getElementById('themeIcon').className = isLight ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
         }
 
-        function updateIdLabel() {
+        function toggleTheme() {
+            document.body.classList.toggle('light-theme');
+            localStorage.setItem('theme', document.body.classList.contains('light-theme') ? 'light' : 'dark');
+            updateThemeUI();
+        }
+
+        function toggleStaffFields() {
             const role = document.getElementById('role').value;
+            document.getElementById('staffOnlyFields').style.display = (role === 'Staff') ? 'block' : 'none';
             document.getElementById('idLabel').innerText = (role === 'Kiosk') ? 'System ID' : 'Employee ID';
         }
 
-        // Generate Unique 6-Digit ID
-        function generateUniqueId() {
-            let id;
-            do {
-                id = Math.floor(100000 + Math.random() * 900000).toString();
-            } while (staffData.some(s => s.officialId === id));
-            return id;
+        function openModal(id) {
+            if(id === 'formModal' && !currentEditingId) {
+                document.getElementById('accountForm').reset();
+                document.getElementById('officialId').value = Math.floor(100000 + Math.random() * 900000);
+                document.getElementById('profilePreview').src = "https://via.placeholder.com/100";
+            }
+            document.getElementById(id).classList.add('open');
         }
 
-        function save() {
-            localStorage.setItem('staffData', JSON.stringify(staffData));
-            renderGrid();
-            updateCounts();
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('open');
+            if(id === 'formModal') currentEditingId = null;
         }
 
         function previewImage(event) {
@@ -323,128 +326,7 @@
             reader.readAsDataURL(event.target.files[0]);
         }
 
-        function openModal(id) {
-            if(id === 'formModal' && !currentEditingId) {
-                document.getElementById('accountForm').reset();
-                document.getElementById('editCardId').value = "";
-                document.getElementById('officialId').value = generateUniqueId(); // Set unique ID on new profile
-                document.getElementById('profilePreview').src = "https://via.placeholder.com/100";
-                document.getElementById('modalTitle').innerText = "Create Profile";
-                updateIdLabel();
-            }
-            document.getElementById(id).classList.add('open');
-        }
-
-        function closeModal(id) { 
-            document.getElementById(id).classList.remove('open'); 
-            if(id === 'formModal') currentEditingId = null; 
-        }
-
-        document.getElementById('accountForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const id = document.getElementById('editCardId').value || 'stf-' + Date.now();
-            const newData = {
-                id,
-                officialId: document.getElementById('officialId').value,
-                name: document.getElementById('fullName').value,
-                user: document.getElementById('userName').value,
-                email: document.getElementById('email').value,
-                role: document.getElementById('role').value,
-                imgSrc: document.getElementById('profilePreview').src,
-                checkedIn: false,
-                inactive: false
-            };
-
-            const existingIdx = staffData.findIndex(s => s.id === id);
-            if(existingIdx > -1) staffData[existingIdx] = { ...staffData[existingIdx], ...newData };
-            else staffData.push(newData);
-            
-            save();
-            closeModal('formModal');
-        });
-
-        function renderGrid() {
-            const grid = document.getElementById('staffGrid');
-            grid.innerHTML = '';
-            staffData.forEach(s => {
-                const roleCls = s.role === "Admin" ? "role-admin" : s.role === "Kiosk" ? "role-kiosk" : "role-staff";
-                const card = document.createElement('div');
-                card.className = `staff-card glass ${s.inactive ? 'inactive' : ''}`;
-                card.onclick = () => viewProfile(s.id);
-                card.innerHTML = `
-                    <img src="${s.imgSrc}" class="staff-img">
-                    <h3 class="font-black text-lg">${s.name}</h3>
-                    <p class="text-[10px] opacity-40 font-bold -mt-1 mb-2">#${s.officialId}</p>
-                    <span class="role-badge ${roleCls}">${s.role}</span>
-                    <div class="text-[10px] font-bold opacity-60 mt-2 flex items-center justify-center gap-2">
-                        <span class="w-2 h-2 rounded-full ${s.checkedIn ? 'bg-yellow-400 shadow-[0_0_8px_#fcdb05]' : 'bg-white/20'}"></span>
-                        ${s.checkedIn ? 'ON DUTY' : 'OFFLINE'}
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
-        }
-
-        function viewProfile(id) {
-            currentEditingId = id;
-            const s = staffData.find(x => x.id === id);
-            
-            document.getElementById('viewProfileImg').src = s.imgSrc;
-            document.getElementById('viewProfileName').innerText = s.name;
-            document.getElementById('viewProfileId').innerText = 'ID: ' + s.officialId;
-            document.getElementById('viewProfileUsername').innerText = '@' + s.user;
-            
-            const rb = document.getElementById('viewProfileRole');
-            rb.innerText = s.role;
-            rb.className = `role-badge ${s.role === 'Admin' ? 'role-admin' : s.role === 'Kiosk' ? 'role-kiosk' : 'role-staff'}`;
-            
-            document.getElementById('toggleInBtn').innerText = s.checkedIn ? "Clock Out Now" : "Clock In Now";
-            document.getElementById('toggleInBtn').className = s.checkedIn ? "btn-toggle bg-red-500 text-white py-3 rounded-xl font-black text-[10px] uppercase hover:bg-red-600" : "btn-toggle bg-yellow-400 text-black py-3 rounded-xl font-black text-[10px] uppercase hover:bg-yellow-500";
-
-            document.getElementById('toggleActiveBtn').innerText = s.inactive ? "Reactivate Profile" : "Deactivate Profile";
-            document.getElementById('toggleActiveBtn').className = s.inactive ? "btn-toggle bg-green-500/20 text-green-400 py-3 rounded-xl font-bold text-[10px] uppercase hover:bg-green-500/30" : "btn-toggle bg-red-500/10 text-red-500 py-3 rounded-xl font-bold text-[10px] uppercase hover:bg-red-500/20";
-
-            openModal('profileModal');
-        }
-
-        function editAccountFromProfile() {
-            const s = staffData.find(x => x.id === currentEditingId);
-            closeModal('profileModal');
-            document.getElementById('modalTitle').innerText = "Update Profile";
-            document.getElementById('editCardId').value = s.id;
-            document.getElementById('profilePreview').src = s.imgSrc;
-            document.getElementById('officialId').value = s.officialId;
-            document.getElementById('fullName').value = s.name;
-            document.getElementById('userName').value = s.user;
-            document.getElementById('email').value = s.email;
-            document.getElementById('role').value = s.role;
-            updateIdLabel();
-            openModal('formModal');
-        }
-
-        function confirmReset() { openModal('confirmModal'); }
-
-        function processReset() {
-            closeModal('confirmModal');
-            const toast = document.getElementById('toast');
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
-        }
-
-        function toggleCheckIn() {
-            const s = staffData.find(x => x.id === currentEditingId);
-            s.checkedIn = !s.checkedIn;
-            save();
-            viewProfile(currentEditingId);
-        }
-
-        function toggleStatus() {
-            const s = staffData.find(x => x.id === currentEditingId);
-            s.inactive = !s.inactive;
-            save();
-            viewProfile(currentEditingId);
-        }
-
+        // Search logic
         function searchCards() {
             const val = document.getElementById("searchInput").value.toLowerCase();
             document.querySelectorAll(".staff-card").forEach(c => {
@@ -452,13 +334,12 @@
             });
         }
 
-        function updateCounts() {
-            document.getElementById('totalCount').innerText = staffData.length;
-            document.getElementById('activeCount').innerText = staffData.filter(s => !s.inactive).length;
-            document.getElementById('checkedInCount').innerText = staffData.filter(s => s.checkedIn).length;
-        }
+        window.onload = () => {
+            updateThemeUI();
+            // Data loading would happen here
+        };
 
-        window.onload = () => { renderGrid(); updateCounts(); };
+        window.onclick = (e) => { if (e.target.classList.contains('modal-overlay')) closeModal(e.target.id); }
     </script>
 </body>
 </html>

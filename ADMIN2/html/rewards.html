@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
+        /* --- CORE VARIABLES --- */
         :root {
             --mango-yellow: #fcdb05;
             --mango-orange: #ff8c00;
@@ -24,6 +25,7 @@
             --modal-card: #14110e;
         }
 
+        /* --- UNIFIED LIGHT THEME --- */
         body.light-theme {
             --mango-dark: #f8f9fa; 
             --text-main: #1a1a1a;  
@@ -55,34 +57,21 @@
 
         /* --- SIDEBAR --- */
         .sidebar {
-            width: var(--sidebar-width);
-            background: var(--glass-bg);
-            backdrop-filter: blur(25px);
-            height: 100vh; position: fixed; left: 0; top: 0;
-            border-right: 1px solid var(--glass-border);
+            width: var(--sidebar-width); background: var(--glass-bg); backdrop-filter: blur(25px);
+            height: 100vh; position: fixed; left: 0; top: 0; border-right: 1px solid var(--glass-border);
             display: flex; flex-direction: column; z-index: 100;
         }
-
         .logo-section { padding: 40px 20px; text-align: center; }
         .logo-section img { width: 120px; filter: var(--logo-filter); }
-
         .nav-menu { flex: 1; padding: 10px 15px; }
         .nav-item {
-            display: flex; align-items: center; gap: 12px;
-            padding: 12px 18px; margin-bottom: 6px;
-            border-radius: 12px; color: var(--text-sub);
-            text-decoration: none; font-weight: 500; font-size: 0.9rem;
+            display: flex; align-items: center; gap: 12px; padding: 12px 18px; margin-bottom: 6px;
+            border-radius: 12px; color: var(--text-sub); text-decoration: none; font-weight: 500; font-size: 0.9rem;
         }
         .nav-item:hover, .nav-item.active { background: var(--mango-yellow); color: #120f0a !important; font-weight: 700; box-shadow: 0 4px 15px rgba(252, 219, 5, 0.2); }
+        .logout-btn { padding: 12px 18px; margin: 15px; border-radius: 12px; color: #ef4444; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 10px; border: 1px solid rgba(239, 68, 68, 0.2); font-size: 0.85rem; }
 
-        .logout-btn {
-            padding: 12px 18px; margin: 15px; border-radius: 12px;
-            color: #ef4444; font-weight: 700; text-decoration: none;
-            display: flex; align-items: center; gap: 10px;
-            border: 1px solid rgba(239, 68, 68, 0.2); font-size: 0.85rem;
-        }
-
-        /* --- CONTENT --- */
+        /* --- CONTENT AREA --- */
         .main-content { margin-left: var(--sidebar-width); flex: 1; padding: 40px; overflow-y: auto; height: 100vh; }
         .header-card { padding: 25px 40px; border-radius: 24px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         .theme-toggle-circle { width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; background: var(--mango-yellow); color: #120f0a; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
@@ -95,13 +84,14 @@
         .icon-redeemed { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
         .icon-balance { background: rgba(252, 219, 5, 0.1); color: var(--mango-yellow); }
 
-        /* --- CONTENT AREA --- */
+        /* --- CONTENT CONTAINER --- */
         .content-container { background: var(--glass-bg); border-radius: 28px; border: 1px solid var(--glass-border); padding: 30px; }
         .search-container { position: relative; flex: 1; max-width: 400px; }
         .search-container input { width: 100%; padding: 12px 20px 12px 45px; border-radius: 16px; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); color: var(--text-main); outline: none; }
+        body.light-theme .search-container input { background: #f1f3f5; color: #1a1a1a; }
         .search-container i { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); opacity: 0.5; }
 
-        .btn-main { background: var(--mango-yellow); color: #000; padding: 12px 24px; border-radius: 16px; font-weight: 900; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; transition: 0.3s; box-shadow: 0 4px 15px rgba(252, 219, 5, 0.2); }
+        .btn-main { background: var(--mango-yellow); color: #000; padding: 12px 24px; border-radius: 16px; font-weight: 900; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; }
 
         /* --- TABLE --- */
         .data-table { width: 100%; border-collapse: collapse; }
@@ -121,8 +111,19 @@
         .form-group input, .form-group select { width: 100%; padding: 14px; border-radius: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); color: var(--text-main); outline: none; margin-bottom: 15px; }
         body.light-theme .form-group input, body.light-theme .form-group select { background: #f1f3f5; color: #000; border: 1px solid #dee2e6; }
     </style>
+
+    <script>
+        /* --- THEME SYNC --- */
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            if (savedTheme === 'light') document.documentElement.classList.add('light-theme-applied');
+        })();
+    </script>
 </head>
 <body>
+    <script>
+        if (document.documentElement.classList.contains('light-theme-applied')) document.body.classList.add('light-theme');
+    </script>
 
     <aside class="sidebar glass">
         <div class="logo-section"><img src="../images/logo.png" alt="Logo"></div>
@@ -155,15 +156,15 @@
         <div class="stats-grid">
             <div class="stat-card glass">
                 <div class="stat-icon icon-issued"><i class="fas fa-arrow-down"></i></div>
-                <div><p class="text-[10px] uppercase font-bold opacity-40">Total Issued</p><h4 class="text-xl font-black">24,500 pts</h4></div>
+                <div><p class="text-[10px] uppercase font-bold opacity-40">Total Issued</p><h4 id="statIssued" class="text-xl font-black">0 pts</h4></div>
             </div>
             <div class="stat-card glass">
                 <div class="stat-icon icon-redeemed"><i class="fas fa-arrow-up"></i></div>
-                <div><p class="text-[10px] uppercase font-bold opacity-40">Total Redeemed</p><h4 class="text-xl font-black">12,200 pts</h4></div>
+                <div><p class="text-[10px] uppercase font-bold opacity-40">Total Redeemed</p><h4 id="statRedeemed" class="text-xl font-black">0 pts</h4></div>
             </div>
             <div class="stat-card glass">
                 <div class="stat-icon icon-balance"><i class="fas fa-wallet"></i></div>
-                <div><p class="text-[10px] uppercase font-bold opacity-40">Current Balance</p><h4 class="text-xl font-black">12,300 pts</h4></div>
+                <div><p class="text-[10px] uppercase font-bold opacity-40">Current Balance</p><h4 id="statBalance" class="text-xl font-black">0 pts</h4></div>
             </div>
         </div>
 
@@ -171,7 +172,7 @@
             <div class="flex justify-between items-center mb-8 gap-4">
                 <div class="search-container">
                     <i class="fas fa-search"></i>
-                    <input type="text" id="searchInput" placeholder="Search customer or card..." onkeyup="filterTable()">
+                    <input type="text" id="searchInput" placeholder="Search customer or card..." onkeyup="handleSearch()">
                 </div>
                 <button class="btn-main hover:scale-105" onclick="openModal()">
                     <i class="fas fa-plus mr-2"></i> Register Record
@@ -190,18 +191,7 @@
                     </tr>
                 </thead>
                 <tbody id="tableBody">
-                    <tr>
-                        <td class="font-bold">Juan Dela Cruz</td>
-                        <td class="font-mono text-xs opacity-60">TDM-0001</td>
-                        <td class="text-xs">2026-03-09</td>
-                        <td><span class="points-badge badge-issued">Issued</span></td>
-                        <td class="font-black text-green-500">+500</td>
-                        <td style="text-align: right;">
-                            <button class="text-yellow-400 mr-3" onclick="editEntry(this)"><i class="fas fa-edit"></i></button>
-                            <button class="text-red-500/50 hover:text-red-500" onclick="deleteEntry(this)"><i class="fas fa-trash"></i></button>
-                        </td>
-                    </tr>
-                </tbody>
+                    </tbody>
             </table>
         </div>
     </main>
@@ -236,7 +226,7 @@
                     <input type="number" id="custPoints" required>
                 </div>
                 <div class="flex justify-between mt-10">
-                    <button type="button" class="btn-main bg-white/5 text-white/40 uppercase text-[10px]" onclick="closeModal()">Cancel</button>
+                    <button type="button" class="btn-main bg-white/5 text-white/40 uppercase text-[10px] font-bold" onclick="closeModal()">Cancel</button>
                     <button type="submit" class="btn-main">Commit Record</button>
                 </div>
             </form>
@@ -244,15 +234,10 @@
     </div>
 
     <script>
-        // THEME LOGIC
-        (function() {
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'light') {
-                document.body.classList.add('light-theme');
-                document.getElementById('themeIcon').className = 'fa-solid fa-moon';
-            }
-        })();
+        const API_BASE_URL = 'https://api.yourdomain.com/v1';
+        let records = [];
 
+        /* --- THEME --- */
         function toggleTheme() {
             document.body.classList.toggle('light-theme');
             const isLight = document.body.classList.contains('light-theme');
@@ -260,75 +245,80 @@
             document.getElementById('themeIcon').className = isLight ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
         }
 
-        // REWARDS LOGIC
+        /* --- UI LOGIC --- */
         const modal = document.getElementById('rewardModal');
         const rewardForm = document.getElementById('rewardForm');
-        let currentRow = null;
 
         function openModal() {
             rewardForm.reset();
             document.getElementById('modalTitle').innerText = "Register Record";
             document.getElementById('custDate').valueAsDate = new Date();
-            currentRow = null;
             modal.classList.add('show');
         }
 
         function closeModal() { modal.classList.remove('show'); }
 
-        function filterTable() {
+        function handleSearch() {
             const filter = document.getElementById("searchInput").value.toUpperCase();
-            const rows = document.getElementById("tableBody").getElementsByTagName("tr");
-            for (let row of rows) {
-                const name = row.cells[0].innerText;
-                const card = row.cells[1].innerText;
-                row.style.display = (name.toUpperCase().includes(filter) || card.toUpperCase().includes(filter)) ? "" : "none";
-            }
+            renderTable(records.filter(r => 
+                r.customer.toUpperCase().includes(filter) || 
+                r.cardId.toUpperCase().includes(filter)
+            ));
+        }
+
+        /* --- BACKEND READY ACTIONS --- */
+        async function initApp() {
+            try {
+                const res = await fetch(`${API_BASE_URL}/rewards`);
+                if(res.ok) {
+                    records = await res.json();
+                    renderTable(records);
+                }
+            } catch(e) { console.warn("Waiting for API connection..."); }
+        }
+
+        function renderTable(data) {
+            const body = document.getElementById('tableBody');
+            body.innerHTML = '';
+            data.forEach(r => {
+                const isIssued = r.status === 'Issued';
+                body.innerHTML += `
+                    <tr>
+                        <td class="font-bold">${r.customer}</td>
+                        <td class="font-mono text-xs opacity-60">${r.cardId}</td>
+                        <td class="text-xs">${r.date}</td>
+                        <td><span class="points-badge ${isIssued ? 'badge-issued' : 'badge-redeemed'}">${r.status}</span></td>
+                        <td class="font-black ${isIssued ? 'text-green-500' : 'text-red-500'}">${isIssued ? '+' : '-'}${r.points}</td>
+                        <td style="text-align: right;">
+                            <button class="text-yellow-400 mr-3" onclick="handleEdit('${r.id}')"><i class="fas fa-edit"></i></button>
+                            <button class="text-red-500/50 hover:text-red-500" onclick="handleDelete('${r.id}')"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>`;
+            });
+            updateStats(data);
+        }
+
+        function updateStats(data) {
+            const issued = data.filter(r => r.status === 'Issued').reduce((sum, r) => sum + parseInt(r.points), 0);
+            const redeemed = data.filter(r => r.status === 'Redeemed').reduce((sum, r) => sum + parseInt(r.points), 0);
+            document.getElementById('statIssued').innerText = issued.toLocaleString() + ' pts';
+            document.getElementById('statRedeemed').innerText = redeemed.toLocaleString() + ' pts';
+            document.getElementById('statBalance').innerText = (issued - redeemed).toLocaleString() + ' pts';
         }
 
         rewardForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            const name = document.getElementById('custName').value;
-            const card = document.getElementById('cardNumber').value;
-            const date = document.getElementById('custDate').value;
-            const type = document.getElementById('custType').value;
-            const points = document.getElementById('custPoints').value;
-            const isIssued = type === 'Issued';
-
-            const rowHTML = `
-                <td class="font-bold">${name}</td>
-                <td class="font-mono text-xs opacity-60">${card}</td>
-                <td class="text-xs">${date}</td>
-                <td><span class="points-badge ${isIssued ? 'badge-issued' : 'badge-redeemed'}">${type}</span></td>
-                <td class="font-black ${isIssued ? 'text-green-500' : 'text-red-500'}">${isIssued ? '+' : '-'}${points}</td>
-                <td style="text-align: right;">
-                    <button class="text-yellow-400 mr-3" onclick="editEntry(this)"><i class="fas fa-edit"></i></button>
-                    <button class="text-red-500/50 hover:text-red-500" onclick="deleteEntry(this)"><i class="fas fa-trash"></i></button>
-                </td>
-            `;
-
-            if (currentRow) {
-                currentRow.innerHTML = rowHTML;
-            } else {
-                const newRow = document.getElementById('tableBody').insertRow();
-                newRow.innerHTML = rowHTML;
-            }
+            // Logic for POST/PUT request to backend
+            console.log("Committing reward record...");
             closeModal();
         });
 
-        function editEntry(btn) {
-            currentRow = btn.closest('tr');
-            document.getElementById('modalTitle').innerText = "Edit Record";
-            document.getElementById('custName').value = currentRow.cells[0].innerText;
-            document.getElementById('cardNumber').value = currentRow.cells[1].innerText;
-            document.getElementById('custDate').value = currentRow.cells[2].innerText;
-            document.getElementById('custType').value = currentRow.cells[3].innerText;
-            document.getElementById('custPoints').value = currentRow.cells[4].innerText.replace(/[^0-9]/g, '');
-            modal.classList.add('show');
-        }
-
-        function deleteEntry(btn) {
-            if (confirm("Permanently delete record?")) btn.closest('tr').remove();
-        }
+        window.onload = () => {
+            initApp();
+            // Sync theme UI
+            const isLight = document.body.classList.contains('light-theme');
+            document.getElementById('themeIcon').className = isLight ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+        };
 
         window.onclick = (e) => { if (e.target == modal) closeModal(); }
     </script>

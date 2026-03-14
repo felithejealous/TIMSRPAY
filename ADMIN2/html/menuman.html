@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
+        /* --- CORE VARIABLES --- */
         :root {
             --mango-yellow: #fcdb05;
             --mango-orange: #ff8c00;
@@ -24,6 +25,7 @@
             --modal-card: #14110e;
         }
 
+        /* --- UNIFIED LIGHT THEME --- */
         body.light-theme {
             --mango-dark: #f8f9fa; 
             --text-main: #1a1a1a;  
@@ -55,61 +57,44 @@
 
         /* --- SIDEBAR --- */
         .sidebar {
-            width: var(--sidebar-width);
-            background: var(--glass-bg);
-            backdrop-filter: blur(25px);
-            height: 100vh; position: fixed; left: 0; top: 0;
-            border-right: 1px solid var(--glass-border);
+            width: var(--sidebar-width); background: var(--glass-bg); backdrop-filter: blur(25px);
+            height: 100vh; position: fixed; left: 0; top: 0; border-right: 1px solid var(--glass-border);
             display: flex; flex-direction: column; z-index: 100;
         }
-
         .logo-section { padding: 40px 20px; text-align: center; }
         .logo-section img { width: 120px; filter: var(--logo-filter); }
-
         .nav-menu { flex: 1; padding: 10px 15px; }
         .nav-item {
-            display: flex; align-items: center; gap: 12px;
-            padding: 12px 18px; margin-bottom: 6px;
-            border-radius: 12px; color: var(--text-sub);
-            text-decoration: none; font-weight: 500; font-size: 0.9rem;
+            display: flex; align-items: center; gap: 12px; padding: 12px 18px; margin-bottom: 6px;
+            border-radius: 12px; color: var(--text-sub); text-decoration: none; font-weight: 500; font-size: 0.9rem;
         }
         .nav-item:hover, .nav-item.active { background: var(--mango-yellow); color: #120f0a !important; font-weight: 700; box-shadow: 0 4px 15px rgba(252, 219, 5, 0.2); }
+        .logout-btn { padding: 12px 18px; margin: 15px; border-radius: 12px; color: #ef4444; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 10px; border: 1px solid rgba(239, 68, 68, 0.2); font-size: 0.85rem; }
 
-        .logout-btn {
-            padding: 12px 18px; margin: 15px; border-radius: 12px;
-            color: #ef4444; font-weight: 700; text-decoration: none;
-            display: flex; align-items: center; gap: 10px;
-            border: 1px solid rgba(239, 68, 68, 0.2); font-size: 0.85rem;
-        }
-
-        /* --- CONTENT --- */
+        /* --- MAIN CONTENT --- */
         .main-content { margin-left: var(--sidebar-width); flex: 1; padding: 40px; overflow-y: auto; height: 100vh; }
         .header-card { padding: 25px 40px; border-radius: 24px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         .theme-toggle-circle { width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; background: var(--mango-yellow); color: #120f0a; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
 
         /* --- TABS --- */
         .tab-container { margin-bottom: 25px; display: flex; gap: 10px; background: var(--glass-bg); padding: 6px; border-radius: 18px; border: 1px solid var(--glass-border); width: fit-content; }
-        .tab-btn { padding: 10px 20px; border-radius: 14px; font-weight: 700; color: var(--text-sub); font-size: 0.85rem; transition: 0.3s; }
+        .tab-btn { padding: 10px 20px; border-radius: 14px; font-weight: 700; color: var(--text-sub); font-size: 0.85rem; cursor: pointer; }
         .tab-btn.active { background: var(--mango-yellow); color: #000; }
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.4s ease; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- DATA TABLES --- */
+        /* --- CONTENT WRAPPER --- */
         .content-container { background: var(--glass-bg); border-radius: 28px; border: 1px solid var(--glass-border); padding: 30px; }
         .data-table { width: 100%; border-collapse: collapse; }
         .data-table th { text-align: left; padding: 15px; font-size: 0.7rem; text-transform: uppercase; color: var(--mango-yellow); border-bottom: 1px solid var(--glass-border); letter-spacing: 1px; }
         .data-table td { padding: 15px; border-bottom: 1px solid var(--glass-border); font-size: 0.9rem; }
 
-        /* --- UI COMPONENTS --- */
-        .btn-add { background: var(--mango-yellow); color: #000; padding: 12px 24px; border-radius: 16px; font-weight: 900; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(252, 219, 5, 0.2); }
-        .status-badge { font-size: 0.65rem; padding: 6px 12px; border-radius: 20px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
-        .status-online { background: rgba(34, 197, 94, 0.1); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.2); }
-
+        /* --- PRODUCT IMAGE --- */
         .prod-img-preview { width: 45px; height: 45px; border-radius: 12px; object-fit: cover; border: 2px solid var(--glass-border); }
 
-        /* --- TOGGLE SWITCH --- */
+        /* --- SWITCH COMPONENT --- */
         .switch { position: relative; display: inline-block; width: 42px; height: 24px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; inset: 0; background-color: rgba(255,255,255,0.1); transition: .4s; border-radius: 24px; border: 1px solid var(--glass-border); }
@@ -124,439 +109,231 @@
         
         .input-group label { display: block; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: var(--mango-orange); margin-bottom: 8px; letter-spacing: 1px; }
         .input-group input, .input-group select, .input-group textarea { width: 100%; padding: 14px; border-radius: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); color: var(--text-main); outline: none; margin-bottom: 20px; }
-        body.light-theme .input-group input, body.light-theme .input-group select { background: #f1f3f5; color: #000; border: 1px solid #dee2e6; }
+        body.light-theme .input-group input, body.light-theme .input-group select, body.light-theme .input-group textarea { background: #f1f3f5; color: #000; border: 1px solid #dee2e6; }
 
-        .recipe-box { background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); padding: 20px; border-radius: 18px; }
-        .file-input-wrapper { border: 2px dashed var(--glass-border); padding: 15px; border-radius: 18px; cursor: pointer; text-align: center; background: rgba(0,0,0,0.2); }
-
+        .btn-add { background: var(--mango-yellow); color: #000; padding: 12px 24px; border-radius: 16px; font-weight: 900; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; }
         .btn-gray { background: rgba(255,255,255,0.05); color: var(--text-sub); padding: 12px 24px; border-radius: 14px; font-weight: 700; font-size: 0.8rem; }
+        .file-input-wrapper { border: 2px dashed var(--glass-border); padding: 15px; border-radius: 18px; cursor: pointer; text-align: center; background: rgba(0,0,0,0.2); }
     </style>
+    
+    <script>
+        /* --- THEME SYNC --- */
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            if (savedTheme === 'light') document.documentElement.classList.add('light-theme-applied');
+        })();
+    </script>
 </head>
 <body>
+    <script>
+        if (document.documentElement.classList.contains('light-theme-applied')) document.body.classList.add('light-theme');
+    </script>
 
-<aside class="sidebar glass">
-    <div class="logo-section"><img src="../images/logo.png" alt="Logo"></div>
-    <nav class="nav-menu">
-        <a href="dashboard.html" class="nav-item"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
-        <a href="orders.html" class="nav-item"><i class="fa-solid fa-receipt"></i> Orders</a>
-        <a href="accounts.html" class="nav-item"><i class="fa-solid fa-user-gear"></i> Accounts</a>
-        <a href="inventory.html" class="nav-item"><i class="fa-solid fa-boxes-stacked"></i> Inventory</a>
-        <a href="menuman.html" class="nav-item active"><i class="fa-solid fa-utensils"></i> Menu Manager</a>
-        <a href="promo.html" class="nav-item"><i class="fa-solid fa-tags"></i> Promos</a>
-        <a href="rewards.html" class="nav-item"><i class="fa-solid fa-gift"></i> Rewards</a>
-        <a href="announce.html" class="nav-item"><i class="fa-solid fa-bell"></i> Announce</a>
-        <a href="payments.html" class="nav-item"><i class="fa-solid fa-credit-card"></i> Payments</a>
-        <a href="settings.html" class="nav-item"><i class="fa-solid fa-cog"></i> Settings</a>
-    </nav>
-    <a href="index.html" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Log Out</a>
-</aside>
+    <aside class="sidebar glass">
+        <div class="logo-section"><img src="../images/logo.png" alt="Logo"></div>
+        <nav class="nav-menu">
+            <a href="dashboard.html" class="nav-item"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+            <a href="orders.html" class="nav-item"><i class="fa-solid fa-receipt"></i> Orders</a>
+            <a href="accounts.html" class="nav-item"><i class="fa-solid fa-user-gear"></i> Accounts</a>
+            <a href="inventory.html" class="nav-item"><i class="fa-solid fa-boxes-stacked"></i> Inventory</a>
+            <a href="menuman.html" class="nav-item active"><i class="fa-solid fa-utensils"></i> Menu Manager</a>
+            <a href="promo.html" class="nav-item"><i class="fa-solid fa-tags"></i> Promos</a>
+            <a href="rewards.html" class="nav-item"><i class="fa-solid fa-gift"></i> Rewards</a>
+            <a href="announce.html" class="nav-item"><i class="fa-solid fa-bell"></i> Announce</a>
+            <a href="payments.html" class="nav-item"><i class="fa-solid fa-credit-card"></i> Payments</a>
+            <a href="settings.html" class="nav-item"><i class="fa-solid fa-cog"></i> Settings</a>
+        </nav>
+        <a href="index.html" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Log Out</a>
+    </aside>
 
-<main class="main-content">
-    <header class="header-card glass">
-        <div>
-            <h1 class="text-2xl font-black uppercase tracking-tighter" style="color: var(--mango-yellow);">Menu Manager</h1>
-            <p class="text-xs font-mono opacity-60">Kiosk & Staff Interface Controller</p>
-        </div>
-        <div class="flex items-center gap-4">
-            <span class="status-badge status-online"><i class="fa-solid fa-circle text-[8px] mr-2"></i>Sync Active</span>
+    <main class="main-content">
+        <header class="header-card glass">
+            <div>
+                <h1 class="text-2xl font-black uppercase tracking-tighter" style="color: var(--mango-yellow);">Menu Manager</h1>
+                <p class="text-xs font-mono opacity-60">Kiosk & Staff Interface Controller</p>
+            </div>
             <button class="theme-toggle-circle" onclick="toggleTheme()">
                 <i class="fa-solid fa-sun" id="themeIcon"></i>
             </button>
-        </div>
-    </header>
+        </header>
 
-    <div class="tab-container">
-        <button class="tab-btn active" onclick="switchTab('products', this)">Products</button>
-        <button class="tab-btn" onclick="switchTab('recipes', this)">Recipe Editor</button>
-        <button class="tab-btn" onclick="switchTab('addons', this)">Add-ons</button>
-        <button class="tab-btn" onclick="switchTab('sizes', this)">Sizes</button>
-    </div>
-
-    <div class="content-container glass">
-        <div id="productsTab" class="tab-content active">
-            <div class="flex justify-between items-center mb-8">
-                <h3 class="text-lg font-black uppercase tracking-widest text-yellow-400">Master Product List</h3>
-                <button class="btn-add hover:scale-105" onclick="openProductModal()"><i class="fa-solid fa-plus mr-2"></i> New Product</button>
-            </div>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Img</th>
-                        <th>Name</th>
-                        <th>Category</th>
-                        <th>Price</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="productTableBody"></tbody>
-            </table>
+        <div class="tab-container">
+            <button class="tab-btn active" onclick="switchTab('products', this)">Products</button>
+            <button class="tab-btn" onclick="switchTab('recipes', this)">Recipe Editor</button>
+            <button class="tab-btn" onclick="switchTab('addons', this)">Add-ons</button>
+            <button class="tab-btn" onclick="switchTab('sizes', this)">Sizes</button>
         </div>
 
-        <div id="recipesTab" class="tab-content">
-            <h3 class="text-lg font-black uppercase tracking-widest text-yellow-400 mb-8">Bulk Recipe Controller</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="md:col-span-1">
-                    <div class="input-group">
-                        <label>Target Product</label>
-                        <select id="recipeProductSelect" onchange="loadRecipe()">
-                            <option value="">-- Select Product --</option>
-                        </select>
-                    </div>
-                    <div id="currentRecipeView" class="recipe-box hidden">
-                        <h4 class="text-[10px] font-black uppercase opacity-40 mb-2">Live Recipe</h4>
-                        <p id="recipeDisplay" class="text-sm font-mono"></p>
-                    </div>
+        <div class="content-container glass">
+            <div id="productsTab" class="tab-content active">
+                <div class="flex justify-between items-center mb-8">
+                    <h3 class="text-lg font-black uppercase tracking-widest text-yellow-400">Master Product List</h3>
+                    <button class="btn-add hover:scale-105" onclick="openProductModal()"><i class="fa-solid fa-plus mr-2"></i> New Product</button>
                 </div>
-                <div class="md:col-span-2">
-                    <div class="input-group">
-                        <label>Formula Editor</label>
-                        <textarea id="bulkRecipeInput" rows="10" placeholder="e.g. Mango: 100g, Ice: 1 cup"></textarea>
+                <table class="data-table">
+                    <thead>
+                        <tr><th>Img</th><th>Name</th><th>Category</th><th>Price</th><th>Status</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody id="productTableBody"></tbody>
+                </table>
+            </div>
+
+            <div id="recipesTab" class="tab-content">
+                <h3 class="text-lg font-black uppercase tracking-widest text-yellow-400 mb-8">Bulk Recipe Controller</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="md:col-span-1">
+                        <div class="input-group">
+                            <label>Target Product</label>
+                            <select id="recipeProductSelect" onchange="loadRecipe()"></select>
+                        </div>
                     </div>
-                    <div class="flex justify-end">
-                        <button class="btn-add" onclick="saveBulkRecipe()">Commit Formula</button>
+                    <div class="md:col-span-2">
+                        <div class="input-group">
+                            <label>Formula Editor</label>
+                            <textarea id="bulkRecipeInput" rows="10"></textarea>
+                        </div>
+                        <div class="flex justify-end"><button class="btn-add">Commit Formula</button></div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div id="addonsTab" class="tab-content">
-            <div class="flex justify-between items-center mb-8">
-                <h3 class="text-lg font-black uppercase tracking-widest text-yellow-400">Side Add-ons</h3>
-                <button class="btn-add" onclick="openAddonModal('addon')"><i class="fa-solid fa-plus mr-2"></i> New Addon</button>
-            </div>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Price</th>
-                        <th>Active</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="addonTableBody"></tbody>
-            </table>
-        </div>
-
-        <div id="sizesTab" class="tab-content">
-            <div class="flex justify-between items-center mb-8">
-                <h3 class="text-lg font-black uppercase tracking-widest text-yellow-400">Cup Sizes</h3>
-                <button class="btn-add" onclick="openAddonModal('size')"><i class="fa-solid fa-plus mr-2"></i> New Size</button>
-            </div>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Adjustment</th>
-                        <th>Active</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="sizeTableBody"></tbody>
-            </table>
-        </div>
-    </div>
-</main>
-
-<div class="modal-overlay" id="modalOverlay">
-    <div class="modal-card" id="productModal" style="display: none;">
-        <h3 class="text-xl font-black uppercase text-yellow-400 mb-8" id="productModalTitle">Access Product</h3>
-        <input type="hidden" id="prodId">
-        <div class="grid grid-cols-4 gap-6 mb-4">
-            <div class="col-span-1">
-                <label for="prodImgInput" class="file-input-wrapper block">
-                    <img id="imgPreview" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" class="w-full h-20 object-cover rounded-xl mb-2">
-                    <i class="fa-solid fa-camera text-xs"></i>
-                    <input type="file" id="prodImgInput" accept="image/*" class="hidden" onchange="previewImage(this)">
-                </label>
-            </div>
-            <div class="col-span-3">
-                <div class="input-group">
-                    <label>Product Name</label>
-                    <input type="text" id="prodName">
+            <div id="addonsTab" class="tab-content">
+                <div class="flex justify-between items-center mb-8">
+                    <h3 class="text-lg font-black uppercase tracking-widest text-yellow-400">Side Add-ons</h3>
+                    <button class="btn-add"><i class="fa-solid fa-plus mr-2"></i> New Addon</button>
                 </div>
-                <div class="grid grid-cols-2 gap-4">
+                <table class="data-table">
+                    <thead><tr><th>Name</th><th>Price</th><th>Active</th><th>Actions</th></tr></thead>
+                    <tbody id="addonTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-card" id="productModal">
+            <h3 class="text-xl font-black uppercase text-yellow-400 mb-8" id="productModalTitle">Access Product</h3>
+            <input type="hidden" id="prodId">
+            <div class="grid grid-cols-4 gap-6 mb-4">
+                <div class="col-span-1">
+                    <label for="prodImgInput" class="file-input-wrapper block">
+                        <img id="imgPreview" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" class="w-full h-20 object-cover rounded-xl mb-2">
+                        <i class="fa-solid fa-camera text-xs"></i>
+                        <input type="file" id="prodImgInput" accept="image/*" class="hidden" onchange="previewImage(this)">
+                    </label>
+                </div>
+                <div class="col-span-3">
                     <div class="input-group">
-                        <label>Base Price (₱)</label>
-                        <input type="number" id="prodPrice">
+                        <label>Product Name</label>
+                        <input type="text" id="prodName">
                     </div>
-                    <div class="input-group">
-                        <label>Loyalty Points</label>
-                        <input type="number" id="prodPoints">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="input-group"><label>Base Price (₱)</label><input type="number" id="prodPrice"></div>
+                        <div class="input-group"><label>Loyalty Points</label><input type="number" id="prodPoints"></div>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="input-group">
-            <label>Menu Category</label>
-            <select id="prodCategory">
-                <option value="Milk Tea">Milk Tea</option>
-                <option value="Fruit Tea">Fruit Tea</option>
-                <option value="Snacks">Snacks</option>
-            </select>
-        </div>
-        <div class="flex justify-between items-center mt-10">
-            <button class="btn-gray uppercase text-[10px] tracking-widest" onclick="closeModals()">Discard</button>
-            <button class="btn-add" onclick="saveProduct()">Commit Product</button>
+            <div class="input-group">
+                <label>Menu Category</label>
+                <select id="prodCategory">
+                    <option value="Milk Tea">Milk Tea</option>
+                    <option value="Fruit Tea">Fruit Tea</option>
+                    <option value="Snacks">Snacks</option>
+                </select>
+            </div>
+            <div class="flex justify-between items-center mt-10">
+                <button class="btn-gray uppercase text-[10px] tracking-widest" onclick="closeModals()">Discard</button>
+                <button class="btn-add" onclick="handleSaveProduct()">Commit Product</button>
+            </div>
         </div>
     </div>
 
-    <div class="modal-card" id="addonModal" style="display: none;">
-        <h3 class="text-xl font-black uppercase text-yellow-400 mb-8" id="addonModalTitle">Option Profile</h3>
-        <input type="hidden" id="addonId">
-        <input type="hidden" id="addonTypeField">
-        <div class="input-group">
-            <label>Option Name</label>
-            <input type="text" id="addonName">
-        </div>
-        <div class="input-group">
-            <label>Cost / Price Adjust (₱)</label>
-            <input type="number" id="addonPrice">
-        </div>
-        <div class="flex justify-between items-center mt-10">
-            <button class="btn-gray uppercase text-[10px] tracking-widest" onclick="closeModals()">Discard</button>
-            <button class="btn-add" onclick="saveAddon()">Save Option</button>
-        </div>
-    </div>
-</div>
+    <script>
+        const API_BASE_URL = 'https://api.yourdomain.com/v1';
+        let products = [];
 
-<script>
-    // --- THEME SYNC ---
-    (function() {
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'light') {
-            document.body.classList.add('light-theme');
-            document.getElementById('themeIcon').className = 'fa-solid fa-moon';
+        /* --- THEME --- */
+        function updateThemeUI() {
+            const isLight = document.body.classList.contains('light-theme');
+            document.getElementById('themeIcon').className = isLight ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
         }
-    })();
 
-    function toggleTheme() {
-        document.body.classList.toggle('light-theme');
-        const isLight = document.body.classList.contains('light-theme');
-        localStorage.setItem('theme', isLight ? 'light' : 'dark');
-        document.getElementById('themeIcon').className = isLight ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
-    }
-
-    // --- LOGIC ---
-    const GlobalMenuData = {
-        products: JSON.parse(localStorage.getItem('teoProducts')) || [],
-        options: JSON.parse(localStorage.getItem('teoOptions')) || []
-    };
-
-    function broadcastUpdate() {
-        localStorage.setItem('teoProducts', JSON.stringify(GlobalMenuData.products));
-        localStorage.setItem('teoOptions', JSON.stringify(GlobalMenuData.options));
-        renderProducts();
-        renderOptions();
-    }
-
-    function switchTab(tab, btn) {
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(tab + 'Tab').classList.add('active');
-        btn.classList.add('active');
-    }
-
-    const overlay = document.getElementById('modalOverlay');
-    function openModal(modalId) {
-        overlay.classList.add('open');
-        document.querySelectorAll('.modal-card').forEach(m => m.style.display = 'none');
-        document.getElementById(modalId).style.display = 'block';
-    }
-    function closeModals() { overlay.classList.remove('open'); }
-
-    function previewImage(input) {
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = (e) => document.getElementById('imgPreview').src = e.target.result;
-            reader.readAsDataURL(input.files[0]);
+        function toggleTheme() {
+            document.body.classList.toggle('light-theme');
+            localStorage.setItem('theme', document.body.classList.contains('light-theme') ? 'light' : 'dark');
+            updateThemeUI();
         }
-    }
 
-    function renderProducts() {
-        const tbody = document.getElementById('productTableBody');
-        const select = document.getElementById('recipeProductSelect');
-        tbody.innerHTML = '';
-        select.innerHTML = '<option value="">-- Select Product --</option>';
-        GlobalMenuData.products.forEach(p => {
-            const imgSrc = p.image || 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
-            tbody.innerHTML += `
-                <tr class="hover:bg-white/5 transition">
-                    <td><img src="${imgSrc}" class="prod-img-preview"></td>
-                    <td class="font-black text-xs uppercase tracking-wider">${p.name}</td>
-                    <td class="text-xs opacity-60">${p.category}</td>
-                    <td class="font-bold text-yellow-400">₱${p.price}</td>
-                    <td>
-                        <label class="switch">
-                            <input type="checkbox" ${p.isActive ? 'checked' : ''} onchange="toggleProduct(${p.id})">
-                            <span class="slider"></span>
-                        </label>
-                    </td>
-                    <td>
-                        <button class="text-xs font-bold text-sub hover:text-white mr-4" onclick="editProduct(${p.id})">EDIT</button>
-                        <button class="text-xs font-bold text-red-500/50 hover:text-red-500" onclick="deleteProduct(${p.id})">DEL</button>
-                    </td>
-                </tr>
-            `;
-            select.innerHTML += `<option value="${p.id}">${p.name}</option>`;
-        });
-    }
+        /* --- TABS --- */
+        function switchTab(tab, btn) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tab + 'Tab').classList.add('active');
+            btn.classList.add('active');
+        }
 
-    function openProductModal() {
-        document.getElementById('productModalTitle').innerText = "New Product";
-        document.getElementById('prodId').value = '';
-        document.getElementById('prodName').value = '';
-        document.getElementById('prodPrice').value = '';
-        document.getElementById('prodPoints').value = '';
-        document.getElementById('imgPreview').src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
-        openModal('productModal');
-    }
+        /* --- MODAL --- */
+        const overlay = document.getElementById('modalOverlay');
+        function openProductModal() {
+            overlay.classList.add('open');
+            document.getElementById('productModal').style.display = 'block';
+            document.getElementById('productModalTitle').innerText = "New Product";
+            document.getElementById('imgPreview').src = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
+        }
+        function closeModals() { overlay.classList.remove('open'); }
 
-    function editProduct(id) {
-        const p = GlobalMenuData.products.find(prod => prod.id === id);
-        document.getElementById('productModalTitle').innerText = "Edit Product";
-        document.getElementById('prodId').value = p.id;
-        document.getElementById('prodName').value = p.name;
-        document.getElementById('prodPrice').value = p.price;
-        document.getElementById('prodPoints').value = p.points;
-        document.getElementById('prodCategory').value = p.category;
-        document.getElementById('imgPreview').src = p.image || 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
-        openModal('productModal');
-    }
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => document.getElementById('imgPreview').src = e.target.result;
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
 
-    function saveProduct() {
-        const id = document.getElementById('prodId').value;
-        const img = document.getElementById('imgPreview').src;
-        const prodData = {
-            id: id ? parseInt(id) : Date.now(),
-            name: document.getElementById('prodName').value,
-            price: parseInt(document.getElementById('prodPrice').value),
-            points: parseInt(document.getElementById('prodPoints').value),
-            category: document.getElementById('prodCategory').value,
-            isActive: true,
-            recipe: "",
-            image: img.startsWith('data:image/gif') ? "" : img
+        /* --- BACKEND --- */
+        async function initApp() {
+            try {
+                const res = await fetch(`${API_BASE_URL}/menu`);
+                if(res.ok) {
+                    products = await res.json();
+                    renderProducts();
+                }
+            } catch(e) { console.warn("API Connection Pending..."); }
+        }
+
+        function renderProducts() {
+            const tbody = document.getElementById('productTableBody');
+            tbody.innerHTML = '';
+            products.forEach(p => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-white/5 transition">
+                        <td><img src="${p.image || ''}" class="prod-img-preview"></td>
+                        <td class="font-black text-xs uppercase tracking-wider">${p.name}</td>
+                        <td class="text-xs opacity-60">${p.category}</td>
+                        <td class="font-bold text-yellow-400">₱${p.price}</td>
+                        <td>
+                            <label class="switch">
+                                <input type="checkbox" ${p.isActive ? 'checked' : ''}>
+                                <span class="slider"></span>
+                            </label>
+                        </td>
+                        <td><button class="text-xs font-bold text-sub hover:text-white">EDIT</button></td>
+                    </tr>`;
+            });
+        }
+
+        function handleSaveProduct() {
+            // Backend POST/PUT logic
+            console.log("Saving product...");
+            closeModals();
+        }
+
+        window.onload = () => {
+            updateThemeUI();
+            initApp();
         };
-        if(id) {
-            const idx = GlobalMenuData.products.findIndex(p => p.id === parseInt(id));
-            GlobalMenuData.products[idx] = {...GlobalMenuData.products[idx], ...prodData};
-        } else {
-            GlobalMenuData.products.push(prodData);
-        }
-        broadcastUpdate(); closeModals();
-    }
 
-    function toggleProduct(id) {
-        const p = GlobalMenuData.products.find(prod => prod.id === id);
-        p.isActive = !p.isActive;
-        broadcastUpdate();
-    }
-
-    function deleteProduct(id) {
-        if(confirm("Confirm deletion?")) {
-            GlobalMenuData.products = GlobalMenuData.products.filter(p => p.id !== id);
-            broadcastUpdate();
-        }
-    }
-
-    function loadRecipe() {
-        const prodId = document.getElementById('recipeProductSelect').value;
-        const p = GlobalMenuData.products.find(prod => prod.id == prodId);
-        const view = document.getElementById('currentRecipeView');
-        if(p) {
-            view.classList.remove('hidden');
-            document.getElementById('recipeDisplay').innerText = p.recipe || "Default formula.";
-            document.getElementById('bulkRecipeInput').value = p.recipe || "";
-        } else {
-            view.classList.add('hidden');
-        }
-    }
-
-    function saveBulkRecipe() {
-        const prodId = document.getElementById('recipeProductSelect').value;
-        if(!prodId) return;
-        const index = GlobalMenuData.products.findIndex(p => p.id == prodId);
-        GlobalMenuData.products[index].recipe = document.getElementById('bulkRecipeInput').value;
-        broadcastUpdate(); loadRecipe();
-    }
-
-    function renderOptions() {
-        const addonTbody = document.getElementById('addonTableBody');
-        const sizeTbody = document.getElementById('sizeTableBody');
-        addonTbody.innerHTML = ''; sizeTbody.innerHTML = '';
-        GlobalMenuData.options.forEach(o => {
-            const row = `
-                <tr class="hover:bg-white/5 transition">
-                    <td class="font-black text-xs uppercase tracking-wider">${o.name}</td>
-                    <td class="font-bold text-yellow-400">₱${o.price}</td>
-                    <td>
-                        <label class="switch">
-                            <input type="checkbox" ${o.isActive ? 'checked' : ''} onchange="toggleOption(${o.id})">
-                            <span class="slider"></span>
-                        </label>
-                    </td>
-                    <td>
-                        <button class="text-xs font-bold text-sub hover:text-white mr-4" onclick="editOption(${o.id})">EDIT</button>
-                        <button class="text-xs font-bold text-red-500/50 hover:text-red-500" onclick="deleteOption(${o.id})">DEL</button>
-                    </td>
-                </tr>
-            `;
-            if(o.type === 'addon') addonTbody.innerHTML += row;
-            else sizeTbody.innerHTML += row;
-        });
-    }
-
-    function openAddonModal(type) {
-        document.getElementById('addonId').value = '';
-        document.getElementById('addonName').value = '';
-        document.getElementById('addonPrice').value = '';
-        document.getElementById('addonTypeField').value = type;
-        document.getElementById('addonModalTitle').innerText = "New " + type;
-        openModal('addonModal');
-    }
-
-    function editOption(id) {
-        const o = GlobalMenuData.options.find(opt => opt.id === id);
-        document.getElementById('addonId').value = o.id;
-        document.getElementById('addonName').value = o.name;
-        document.getElementById('addonPrice').value = o.price;
-        document.getElementById('addonTypeField').value = o.type;
-        openModal('addonModal');
-    }
-
-    function saveAddon() {
-        const id = document.getElementById('addonId').value;
-        const optData = {
-            id: id ? parseInt(id) : Date.now(),
-            name: document.getElementById('addonName').value,
-            type: document.getElementById('addonTypeField').value,
-            price: parseInt(document.getElementById('addonPrice').value),
-            isActive: true
-        };
-        if(id) {
-            const idx = GlobalMenuData.options.findIndex(o => o.id === parseInt(id));
-            GlobalMenuData.options[idx] = {...GlobalMenuData.options[idx], ...optData};
-        } else {
-            GlobalMenuData.options.push(optData);
-        }
-        broadcastUpdate(); closeModals();
-    }
-    
-    function toggleOption(id) {
-        const o = GlobalMenuData.options.find(opt => opt.id === id);
-        o.isActive = !o.isActive;
-        broadcastUpdate();
-    }
-
-    function deleteOption(id) {
-        if(confirm("Confirm deletion?")) {
-            GlobalMenuData.options = GlobalMenuData.options.filter(o => o.id !== id);
-            broadcastUpdate();
-        }
-    }
-
-    renderProducts();
-    renderOptions();
-</script>
+        window.onclick = (e) => { if (e.target === overlay) closeModals(); }
+    </script>
 </body>
 </html>
