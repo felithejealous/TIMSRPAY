@@ -71,7 +71,7 @@
         nav a {
             text-decoration: none; color: var(--text-muted); padding: 1rem 1.2rem;
             display: flex; align-items: center; gap: 15px; font-weight: 700; font-size: 13px;
-            border-radius: 14px; margin-bottom: 0.5rem; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px;
+            border-radius: 14px; margin-bottom: 0.5rem; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; cursor: pointer;
         }
         nav a:hover { color: var(--text-main); background: var(--icon-bg); transform: translateX(5px); }
         nav li.active a { background: var(--mango); color: #111; box-shadow: 0 8px 20px rgba(245, 158, 11, 0.2); transform: translateX(0); }
@@ -156,17 +156,19 @@
       <nav>
             <ul>
                 <li class="active"><a href="overview.html"><i class="fa-solid fa-chart-line"></i> <span>Overview</span></a></li>
-                <li><a href="orderstaff.html"><i class="fa-solid fa-bell-concierge"></i> <span>Orders</span></a></li>
+                <li><a href="orderstaffs.html"><i class="fa-solid fa-bell-concierge"></i> <span>Orders</span></a></li>
                 <li><a href="menustaff.html"><i class="fa-solid fa-receipt"></i> <span>Menu</span></a></li>
                 <li><a href="inventory.html"><i class="fa-solid fa-boxes-stacked"></i> <span>Inventory</span></a></li>
-                
                 <li><a href="dashboardstaff.html"><i class="fa-solid fa-user-clock"></i> <span>Attendance</span></a></li>
-                
                 <li><a href="topupstaff.html"><i class="fa-solid fa-credit-card"></i> <span>RPAY</span></a></li>
                 <li><a href="rewardsstaff.html"><i class="fa-solid fa-gift"></i> <span>Rewards</span></a></li>
-                <li><a href="dashaccsettstaff.html"><i class="fa-solid fa-gear"></i> <span>Settings</span></a></li>
+                <li class="admin-only"><a href="dashaccsettstaff.html"><i class="fa-solid fa-gear"></i> <span>Settings</span></a></li>
                 
-                <li style="margin-top: auto;"><a href="index.html" style="color: var(--danger);"><i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></a></li>
+                <li style="margin-top: auto;">
+                    <a onclick="confirmLogout()" style="color: var(--danger);">
+                        <i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span>
+                    </a>
+                </li>
             </ul>
         </nav>
     </aside>
@@ -203,8 +205,8 @@
                 <div class="card" style="margin-bottom: 2rem;">
                     <div class="card-title"><i class="fa-solid fa-search" style="color:var(--mango)"></i> Points Inquiry</div>
                     <div class="lookup-group">
-                        <input type="text" placeholder="Mobile Number...">
-                        <button><i class="fa-solid fa-arrow-right"></i></button>
+                        <input type="text" id="pointsPhoneInput" placeholder="Mobile Number...">
+                        <button onclick="checkPoints()"><i class="fa-solid fa-arrow-right"></i></button>
                     </div>
                     <div style="font-size: 11px; padding: 12px; border-radius: 12px; background: var(--icon-bg); border: 1px dashed var(--card-border); color: var(--text-muted); text-align: center; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">
                         Enter number to verify rewards
@@ -222,13 +224,22 @@
     </main>
 
     <script>
-        // --- ROLE CHECKING LOGIC ---
-        const currentRole = localStorage.getItem('staffRole') || 'cashier'; 
+        // --- ROLE CHECKING LOGIC (No more localStorage) ---
+        const currentRole = 'admin'; // Change to 'cashier' to test restrictions
+        
         if(currentRole === 'admin') {
             document.getElementById('welcomeText').innerText = "Manager Overview";
             document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'flex');
         } else {
             document.getElementById('welcomeText').innerText = "Dashboard Overview";
+            document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+        }
+
+        // --- LOGOUT LOGIC ---
+        function confirmLogout() {
+            if(confirm("Are you sure you want to log out?")) {
+                window.location.href = "index.html"; 
+            }
         }
 
         // --- THEME TOGGLE LOGIC ---
@@ -250,25 +261,22 @@
 
 
         // ======================================================================
-        // --- BACKEND INTEGRATION LOGIC (ETO YUNG KAILANGAN MO PARA SA DB) ---
+        // --- BACKEND INTEGRATION LOGIC ---
         // ======================================================================
 
-        // 1. Function para i-drawing ang Orders sa HTML
         function renderOrders(ordersData) {
             const queueContainer = document.getElementById('orderQueue');
-            queueContainer.innerHTML = ''; // Clear muna ang container
+            queueContainer.innerHTML = '';
 
             if (!ordersData || ordersData.length === 0) {
                 queueContainer.innerHTML = '<p style="color: var(--text-muted); padding: 10px;">No active orders right now.</p>';
                 return;
             }
 
-            // Loop through each order galing sa database at gawing HTML
             ordersData.forEach(order => {
                 const orderCard = document.createElement('div');
                 orderCard.className = 'order-card';
                 
-                // Pinalitan yung hardcode ng variables tulad ng ${order.id}, ${order.itemName}, etc.
                 orderCard.innerHTML = `
                     <span class="order-id">
                         <span>#${order.id}</span> 
@@ -286,7 +294,6 @@
             });
         }
 
-        // 2. Function para i-drawing ang Low Stock Alerts sa HTML
         function renderAlerts(alertsData) {
             const alertsContainer = document.getElementById('alertsContainer');
             alertsContainer.innerHTML = '';
@@ -298,7 +305,6 @@
 
             alertsData.forEach(item => {
                 const alertDiv = document.createElement('div');
-                // Kung "critical" ang status, red color (--danger). Kung "warning", orange color (--warning).
                 const isWarning = item.status === 'warning';
                 alertDiv.className = `alert-item ${isWarning ? 'alert-warning' : ''}`;
                 
@@ -316,16 +322,9 @@
             });
         }
 
-        // 3. Eto yung part na mag-fe-fetch ka sa sarili mong Backend API
         async function fetchDashboardData() {
             try {
-                /* * TANGGALIN MO YUNG COMMENTS SA BABA PAG READY NA YUNG BACKEND MO:
-                 * const response = await fetch('http://localhost:3000/api/active-orders');
-                 * const data = await response.json();
-                 * renderOrders(data.orders);
-                 */
-
-                // PANG-TESTING MUNA: Fake data para makita mong gumagana
+                // Mock Backend Data (Replace with real fetch API later)
                 const mockBackendOrders = [
                     { id: '88241', timeText: '5m ago', qty: 2, itemName: 'Mango Bliss (L)', modifiers: 'Graham, Extra Pearls • 100% Sugar' },
                     { id: '88242', timeText: '2m ago', qty: 1, itemName: 'Avocado Dream (M)', modifiers: 'No Add-ons • 0% Sugar' },
@@ -337,32 +336,40 @@
                     { itemName: 'Pearls (Large)', remaining: '2 Packs', status: 'warning' }
                 ];
 
-                // I-pasa yung data sa UI
                 renderOrders(mockBackendOrders);
                 renderAlerts(mockBackendAlerts);
 
             } catch (error) {
-                console.error("Error fetching data from backend:", error);
+                console.error("Error fetching data:", error);
                 document.getElementById('orderQueue').innerHTML = '<p style="color: var(--danger);">Failed to load orders.</p>';
             }
         }
 
-        // Action button function na i-coconnect mo sa UPDATE query ng database mo
         function markOrderReady(orderId) {
             console.log(`Sending update to backend: Order ${orderId} is ready!`);
-            // Dito mo ipapasok ang POST/PUT request papuntang backend
-            // Example: fetch(`/api/orders/${orderId}/complete`, { method: 'PUT' });
+            // fetch(`/api/orders/${orderId}/complete`, { method: 'PUT' });
             
-            // For now, re-render natin para kunwari nawala na sa queue
             alert(`Order #${orderId} marked as ready!`);
-            // Refresh data from backend manually
-            // fetchDashboardData();
+            // To update UI instantly for demo:
+            event.target.closest('.order-card').remove(); 
         }
 
-        // Run natin yung fetch pagkload ng pahina
-        document.addEventListener('DOMContentLoaded', () => {
-            fetchDashboardData();
-        });
+        // Points Inquiry Lookup
+        function checkPoints() {
+            const phone = document.getElementById('pointsPhoneInput').value;
+            if(!phone) {
+                alert("Please enter a mobile number first.");
+                return;
+            }
+            
+            // Backend lookup simulation
+            console.log("Checking points for:", phone);
+            alert(`Member Verification: Jane Doe (${phone})\nCurrent Points: 120 pts`);
+            document.getElementById('pointsPhoneInput').value = '';
+        }
+
+        // Run fetch on load
+        document.addEventListener('DOMContentLoaded', fetchDashboardData);
     </script>
 </body>
 </html>
