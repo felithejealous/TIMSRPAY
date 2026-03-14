@@ -177,37 +177,8 @@
                 <button class="theme-btn" id="themeToggle"><i class="fa-solid fa-sun"></i></button>
             </header>
 
-            <div class="menu-grid">
-                <div class="product-card" onclick="selectItem('Mango Bliss', 85)">
-                    <img src="mango.png" alt="Mango">
-                    <h4>Classic Mango Bliss</h4>
-                    <p class="product-price">₱85.00</p>
-                </div>
-                <div class="product-card" onclick="selectItem('Avocado Dream', 95)">
-                    <img src="lychee.png" alt="Avocado">
-                    <h4>Summer Lychee Sunset</h4>
-                    <p class="product-price">₱95.00</p>
-                </div>
-                <div class="product-card" onclick="selectItem('Classic Ube', 75)">
-                    <img src="ube2.png" alt="Ube">
-                    <h4>Ube Macapuno Slush</h4>
-                    <p class="product-price">₱75.00</p>
-                </div>
-                 <div class="product-card" onclick="selectItem('Mango Bliss', 85)">
-                    <img src="avo2.png" alt="Mango">
-                    <h4>Avocado Supreme</h4>
-                    <p class="product-price">₱85.00</p>
-                </div>
-                <div class="product-card" onclick="selectItem('Avocado Dream', 95)">
-                    <img src="buko2.png" alt="Avocado">
-                    <h4>Creamy Buko Slush</h4>
-                    <p class="product-price">₱95.00</p>
-                </div>
-                <div class="product-card" onclick="selectItem('Classic Ube', 75)">
-                    <img src="berry2.png" alt="Ube">
-                    <h4>Strawberry Dream</h4>
-                    <p class="product-price">₱75.00</p>
-                </div>
+            <div class="menu-grid" id="menuGrid">
+                <p style="color: var(--text-muted); font-size: 14px; grid-column: 1 / -1; text-align: center;">Loading menu items...</p>
             </div>
         </section>
 
@@ -239,7 +210,7 @@
             <button class="btn-add-cart" onclick="addToCart()">Add to Cart</button>
 
             <div class="cart-list" id="cartList">
-                <div style="text-align: center; color: var(--text-muted); font-size: 12px; margin-top: 20px;">Cart is empty</div>
+                <div id="emptyCartText" style="text-align: center; color: var(--text-muted); font-size: 12px; margin-top: 20px;">Cart is empty</div>
             </div>
 
             <div class="checkout-section">
@@ -253,6 +224,7 @@
     </main>
 
     <script>
+        // --- STATE VARIABLES ---
         let currentItem = null;
         let selectedSugar = "100%";
         let selectedAddons = [];
@@ -266,6 +238,71 @@
             const isLight = document.body.classList.contains('light-mode');
             themeToggle.innerHTML = isLight ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
         });
+
+        // ======================================================================
+        // --- BACKEND INTEGRATION LOGIC (ETO YUNG BAGO PARA SA MENU ITEMS) ---
+        // ======================================================================
+
+        // 1. Function para i-drawing ang Product Cards
+        function renderMenu(products) {
+            const menuGrid = document.getElementById('menuGrid');
+            menuGrid.innerHTML = ''; // Clear loading text
+
+            if(!products || products.length === 0) {
+                menuGrid.innerHTML = '<p style="color: var(--text-muted); grid-column: 1 / -1; text-align: center;">No items available in the menu.</p>';
+                return;
+            }
+
+            products.forEach(product => {
+                // Para maiwasan ang error kung may single quote ang pangalan (e.g. Teo's Mix)
+                const safeName = product.name.replace(/'/g, "\\'"); 
+                
+                const cardHTML = `
+                    <div class="product-card" onclick="selectItem('${safeName}', ${product.price})">
+                        <img src="${product.image}" alt="${product.name}">
+                        <h4>${product.name}</h4>
+                        <p class="product-price">₱${product.price.toFixed(2)}</p>
+                    </div>
+                `;
+                menuGrid.innerHTML += cardHTML;
+            });
+        }
+
+        // 2. Fetch Data from Database API
+        async function fetchMenuData() {
+            try {
+                /* * TANGGALIN MO YUNG COMMENTS SA BABA PAG READY NA YUNG BACKEND MO:
+                 * const response = await fetch('http://localhost:3000/api/menu');
+                 * const data = await response.json();
+                 * renderMenu(data);
+                 */
+
+                // PANG-TESTING MUNA: Mock Menu Data from backend
+                const mockMenuFromDB = [
+                    { id: 1, name: "Classic Mango Bliss", price: 85, image: "mango.png" },
+                    { id: 2, name: "Summer Lychee Sunset", price: 95, image: "lychee.png" },
+                    { id: 3, name: "Ube Macapuno Slush", price: 75, image: "ube2.png" },
+                    { id: 4, name: "Avocado Supreme", price: 85, image: "avo2.png" },
+                    { id: 5, name: "Creamy Buko Slush", price: 95, image: "buko2.png" },
+                    { id: 6, name: "Strawberry Dream", price: 75, image: "berry2.png" }
+                ];
+
+                renderMenu(mockMenuFromDB);
+
+            } catch (error) {
+                console.error("Error loading menu:", error);
+                document.getElementById('menuGrid').innerHTML = '<p style="color: var(--danger); grid-column: 1 / -1; text-align: center;">Failed to load menu data.</p>';
+            }
+        }
+
+        // Run natin yung fetch pagkload ng pahina
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchMenuData();
+        });
+
+        // ======================================================================
+        // --- ORDERING LOGIC ---
+        // ======================================================================
 
         function selectItem(name, price) {
             currentItem = { name, basePrice: price };
@@ -289,36 +326,80 @@
 
         function addToCart() {
             if(!currentItem) return alert("Select a drink first!");
+            
             let finalPrice = currentItem.basePrice;
             selectedAddons.forEach(a => finalPrice += a.price);
-            cart.push({ display: `${currentItem.name} (${selectedSugar})`, details: selectedAddons.map(a => a.name).join(", ") || "No Add-ons", price: finalPrice });
+            
+            // Push to our JS array
+            cart.push({ 
+                name: currentItem.name,
+                display: `${currentItem.name} (${selectedSugar})`, 
+                details: selectedAddons.map(a => a.name).join(", ") || "No Add-ons", 
+                price: finalPrice,
+                sugar: selectedSugar,
+                addons: selectedAddons.map(a => a.name)
+            });
+            
             updateCartUI();
             resetSelection();
         }
 
         function updateCartUI() {
             const list = document.getElementById('cartList');
+            
+            if (cart.length === 0) {
+                list.innerHTML = '<div id="emptyCartText" style="text-align: center; color: var(--text-muted); font-size: 12px; margin-top: 20px;">Cart is empty</div>';
+                document.getElementById('totalPrice').innerText = `₱0.00`;
+                total = 0;
+                return;
+            }
+
             list.innerHTML = "";
             total = 0;
+            
             cart.forEach((item, index) => {
                 total += item.price;
-                list.innerHTML += `<div class="cart-item"><div><div class="cart-item-name">${item.display}</div><div class="cart-item-addons">${item.details}</div></div><div style="display:flex; align-items:center;"><div class="cart-item-price">₱${item.price.toFixed(2)}</div><i class="fa-solid fa-xmark cart-delete" onclick="removeItem(${index})"></i></div></div>`;
+                list.innerHTML += `
+                    <div class="cart-item">
+                        <div>
+                            <div class="cart-item-name">${item.display}</div>
+                            <div class="cart-item-addons">${item.details}</div>
+                        </div>
+                        <div style="display:flex; align-items:center;">
+                            <div class="cart-item-price">₱${item.price.toFixed(2)}</div>
+                            <i class="fa-solid fa-xmark cart-delete" onclick="removeItem(${index})" title="Remove Item"></i>
+                        </div>
+                    </div>`;
             });
+            
             document.getElementById('totalPrice').innerText = `₱${total.toFixed(2)}`;
         }
 
-        function removeItem(index) { cart.splice(index, 1); updateCartUI(); }
+        function removeItem(index) { 
+            cart.splice(index, 1); 
+            updateCartUI(); 
+        }
 
         function resetSelection() {
-            currentItem = null; selectedAddons = [];
+            currentItem = null; 
+            selectedAddons = [];
             document.getElementById('selectedItemDisplay').innerHTML = `<i class="fa-solid fa-circle-info"></i> Select an item from the menu`;
             document.querySelectorAll('#addonOptions .option-chip').forEach(c => c.classList.remove('active'));
         }
 
+        // ======================================================================
+        // --- PASS DATA TO PAYMENT PAGE ---
+        // ======================================================================
         function proceedToPayment() {
             if(cart.length === 0) return alert("Cart is empty!");
+            
             if(confirm(`Finalize order with total of ₱${total.toFixed(2)}?`)) {
-                // Eto yung redirect sa payment page
+                
+                // IMPORTANT: Dito natin i-sa-save yung cart array sa browser memory 
+                // para mabasa siya sa paymentstaff.html at maipadala ng buo sa backend database mo.
+                localStorage.setItem('currentOrderCart', JSON.stringify(cart));
+                localStorage.setItem('currentOrderTotal', total);
+                
                 window.location.href = 'paymentstaff.html';
             }
         }
