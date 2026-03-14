@@ -70,6 +70,7 @@
             text-decoration: none; color: var(--text-muted); padding: 1rem 1.2rem;
             display: flex; align-items: center; gap: 15px; font-weight: 700; font-size: 13px;
             border-radius: 14px; margin-bottom: 0.5rem; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px;
+            cursor: pointer;
         }
         nav a:hover { color: var(--text-main); background: var(--icon-bg); transform: translateX(5px); }
         nav li.active a { background: var(--mango); color: #111; box-shadow: 0 8px 20px rgba(245, 158, 11, 0.2); transform: translateX(0); }
@@ -172,7 +173,11 @@
                 <li><a href="rewardsstaff.html"><i class="fa-solid fa-gift"></i> <span>Rewards</span></a></li>
                 <li><a href="dashaccsettstaff.html"><i class="fa-solid fa-gear"></i> <span>Settings</span></a></li>
                 
-                <li style="margin-top: auto;"><a href="index.html" style="color: var(--danger);"><i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></a></li>
+                <li style="margin-top: auto;">
+                    <a onclick="confirmLogout()" style="color: var(--danger);">
+                        <i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span>
+                    </a>
+                </li>
             </ul>
         </nav>
     </aside>
@@ -200,7 +205,7 @@
                 <div class="icon-circle" style="color: var(--success);"><i class="fa-solid fa-clock"></i></div>
                 <div>
                     <h4 style="font-size: 10px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px;">Weekly Total</h4>
-                    <div style="font-size: 20px; font-weight: 900; color: var(--text-main);">32.5 Hours</div>
+                    <div id="weeklyTotalDisplay" style="font-size: 20px; font-weight: 900; color: var(--text-main);">0.0 Hours</div>
                 </div>
             </div>
         </div>
@@ -249,7 +254,7 @@
                         </thead>
                         <tbody id="historyBody">
                             <tr>
-                                <td colspan="5" class="empty-state">No logs recorded for this session yet.</td>
+                                <td colspan="5" class="empty-state">Loading attendance logs...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -260,8 +265,8 @@
 
     <script>
         // --- ROLE CHECKING LOGIC ---
-        // Reads the role saved from loginstaff.html
-        const currentRole = localStorage.getItem('staffRole') || 'cashier'; 
+        // Tinanggal na ang localStorage. Gamitin na lang ang variables galing sa Backend session.
+        const currentRole = 'admin'; // Change to 'cashier' para ma-test mo
         
         if(currentRole === 'admin') {
             document.getElementById('welcomeText').innerText = "Manager Portal";
@@ -279,6 +284,14 @@
             themeToggle.innerHTML = isLight ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
         });
 
+        // --- LOGOUT FUNCTION ---
+        function confirmLogout() {
+            if(confirm("Are you sure you want to log out?")) {
+                // Ilagay dito yung fetch request papunta sa logout endpoint mo kung meron man
+                window.location.href = "index.html"; 
+            }
+        }
+
         // --- CLOCK & ATTENDANCE LOGIC ---
         function updateClock() {
             const now = new Date();
@@ -291,20 +304,47 @@
         let breakStart = null;
         let totalBreakTime = 0;
         let breakLogs = [];
+        let shiftTimerInterval;
 
         const clockInBtn = document.getElementById('clockInBtn');
         const clockOutBtn = document.getElementById('clockOutBtn');
         const breakBtn = document.getElementById('breakBtn');
         const breakArea = document.getElementById('breakArea');
         const statusLabel = document.getElementById('statusLabel');
+        const shiftTimerDisplay = document.getElementById('shiftTimer');
+
+        // Function para patakbuhin yung live timer (00:00:00 format)
+        function updateShiftTimer() {
+            if (!shiftStart) return;
+            
+            const now = new Date();
+            // Kung naka break, hindi dadagdag sa active time
+            let activeMs = (now - shiftStart) - totalBreakTime;
+            
+            if (breakStart) {
+                // i-pause lang yung display kung naka-break
+                activeMs = (breakStart - shiftStart) - totalBreakTime; 
+            }
+
+            const hrs = Math.floor(activeMs / 3600000).toString().padStart(2, '0');
+            const mins = Math.floor((activeMs % 3600000) / 60000).toString().padStart(2, '0');
+            const secs = Math.floor((activeMs % 60000) / 1000).toString().padStart(2, '0');
+            
+            shiftTimerDisplay.textContent = `${hrs}:${mins}:${secs}`;
+        }
 
         clockInBtn.onclick = () => {
+            // Eto pwede mo lagyan ng fetch() papuntang backend para i-save ang clock-in time
+            // fetch('/api/attendance/clockin', { method: 'POST' });
+            
             shiftStart = new Date();
             clockInBtn.style.display = 'none';
             clockOutBtn.style.display = 'flex';
             breakArea.style.display = 'flex';
             statusLabel.textContent = 'Active';
             statusLabel.style.color = 'var(--success)';
+            
+            shiftTimerInterval = setInterval(updateShiftTimer, 1000);
         };
 
         breakBtn.onclick = () => {
@@ -312,6 +352,8 @@
             const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
             if (!breakStart) {
+                // START BREAK
+                // fetch('/api/attendance/break-start', { method: 'POST' });
                 breakStart = now;
                 breakBtn.classList.add('active');
                 breakBtn.innerHTML = `<i class="fa-solid fa-play"></i> End Break`;
@@ -319,6 +361,8 @@
                 statusLabel.style.color = 'var(--warning)';
                 breakLogs.push(timeStr);
             } else {
+                // END BREAK
+                // fetch('/api/attendance/break-end', { method: 'POST' });
                 totalBreakTime += (now - breakStart);
                 breakStart = null;
                 breakBtn.classList.remove('active');
@@ -330,27 +374,27 @@
         };
 
         clockOutBtn.onclick = () => {
-            if(!confirm('Are you sure you want to end your shift?')) return;
-            const shiftEnd = new Date();
-            const dateStr = shiftEnd.toLocaleDateString([], { month: 'short', day: 'numeric' });
-            const inTime = shiftStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            const outTime = shiftEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            
-            const totalMs = (shiftEnd - shiftStart) - totalBreakTime;
-            const h = Math.floor(totalMs / 3600000);
-            const m = Math.floor((totalMs % 3600000) / 60000);
+            // Option: Prevent clock out kung hindi pa naka-check lahat ng nasa checklist
+            // Pwede mo i-uncomment ito kung gusto mo strict ang closing:
+            /*
+            const checkboxes = document.querySelectorAll('.checklist-item input[type="checkbox"]');
+            const allChecked = Array.from(checkboxes).every(box => box.checked);
+            if(!allChecked) {
+                alert("Please complete the Closing Checklist before ending your shift.");
+                return;
+            }
+            */
 
-            const row = `<tr>
-                <td style="color: var(--mango);"><strong>${dateStr}</strong></td>
-                <td>${inTime}</td>
-                <td style="color: var(--text-muted);">${breakLogs.join(', ') || '<span style="opacity:0.5">No breaks</span>'}</td>
-                <td>${outTime}</td>
-                <td><strong style="color: var(--text-main); font-size: 15px;">${h}h ${m}m</strong></td>
-            </tr>`;
+            if(!confirm('Are you sure you want to end your shift?')) return;
             
-            const tbody = document.getElementById('historyBody');
-            if(tbody.innerText.includes('No logs')) tbody.innerHTML = '';
-            tbody.insertAdjacentHTML('afterbegin', row);
+            const shiftEnd = new Date();
+            
+            // fetch('/api/attendance/clockout', { method: 'POST' });
+            
+            clearInterval(shiftTimerInterval);
+
+            // Re-render the history (for demo purposes)
+            fetchAttendanceLogs();
 
             // Reset UI
             clockInBtn.style.display = 'flex';
@@ -358,9 +402,58 @@
             breakArea.style.display = 'none';
             statusLabel.textContent = 'Offline';
             statusLabel.style.color = '#888';
+            shiftTimerDisplay.textContent = '00:00:00';
             breakLogs = [];
             totalBreakTime = 0;
+            shiftStart = null;
         };
+
+        // ======================================================================
+        // --- BACKEND INTEGRATION LOGIC (MOCK FETCH FOR LOGS) ---
+        // ======================================================================
+        async function fetchAttendanceLogs() {
+            const tbody = document.getElementById('historyBody');
+            
+            try {
+                // * PAG READY NA ANG API:
+                // const response = await fetch('/api/attendance/history');
+                // const logsData = await response.json();
+
+                // MOCK DATA:
+                const logsData = [
+                    { date: "Oct 15", in: "08:00 AM", breaks: "12:00 PM - 01:00 PM", out: "05:00 PM", total: "8h 0m" },
+                    { date: "Oct 14", in: "08:15 AM", breaks: "12:30 PM - 01:15 PM", out: "05:15 PM", total: "8h 15m" },
+                    { date: "Oct 13", in: "07:55 AM", breaks: "12:00 PM - 01:00 PM", out: "05:05 PM", total: "8h 10m" }
+                ];
+
+                if(!logsData || logsData.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No logs recorded yet.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = '';
+                logsData.forEach(log => {
+                    const row = `<tr>
+                        <td style="color: var(--mango);"><strong>${log.date}</strong></td>
+                        <td>${log.in}</td>
+                        <td style="color: var(--text-muted);">${log.breaks || '<span style="opacity:0.5">No breaks</span>'}</td>
+                        <td>${log.out}</td>
+                        <td><strong style="color: var(--text-main); font-size: 15px;">${log.total}</strong></td>
+                    </tr>`;
+                    tbody.insertAdjacentHTML('beforeend', row);
+                });
+
+                // Compute mock weekly total
+                document.getElementById('weeklyTotalDisplay').innerText = "24.4 Hours";
+
+            } catch(e) {
+                console.error("Error loading history:", e);
+                tbody.innerHTML = '<tr><td colspan="5" class="empty-state" style="color: var(--danger);">Failed to load logs.</td></tr>';
+            }
+        }
+
+        // Load history upon opening the page
+        document.addEventListener('DOMContentLoaded', fetchAttendanceLogs);
     </script>
 </body>
 </html>
