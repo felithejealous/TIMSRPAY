@@ -198,28 +198,27 @@
                 <div class="icon-circle" style="background: rgba(59, 130, 246, 0.1); color: var(--info);"><i class="fa-solid fa-layer-group"></i></div>
                 <div class="stat-info">
                     <h4>Total Items</h4>
-                    <div>24</div>
+                    <div id="totalItemsStat">0</div>
                 </div>
             </div>
             <div class="stat-card" style="border-bottom: 4px solid var(--danger);">
                 <div class="icon-circle" style="background: rgba(239, 68, 68, 0.1); color: var(--danger);"><i class="fa-solid fa-triangle-exclamation"></i></div>
                 <div class="stat-info">
                     <h4>Low Stock</h4>
-                    <div style="color: var(--danger);">3</div>
+                    <div id="lowStockStat" style="color: var(--danger);">0</div>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="icon-circle" style="background: rgba(16, 185, 129, 0.1); color: var(--success);"><i class="fa-solid fa-rotate"></i></div>
                 <div class="stat-info">
                     <h4>Refilled Today</h4>
-                    <div style="color: var(--success);">8</div>
-                </div>
+                    <div style="color: var(--success);">8</div> </div>
             </div>
             <div class="stat-card">
                 <div class="icon-circle" style="background: rgba(245, 158, 11, 0.1); color: var(--warning);"><i class="fa-solid fa-tags"></i></div>
                 <div class="stat-info">
                     <h4>Categories</h4>
-                    <div>5</div>
+                    <div id="categoriesStat">0</div>
                 </div>
             </div>
         </div>
@@ -227,8 +226,8 @@
         <div class="card">
             <div class="table-header">
                 <div class="filter-tabs">
-                    <div class="tab active">All Items</div>
-                    <div class="tab">Low Stock</div>
+                    <div class="tab active" onclick="filterTable('all', this)">All Items</div>
+                    <div class="tab" onclick="filterTable('low', this)">Low Stock</div>
                 </div>
                 <button class="btn-add admin-action"><i class="fa-solid fa-plus"></i> Add Item</button>
             </div>
@@ -244,51 +243,8 @@
                             <th class="admin-action">Action</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>Fresh Mangoes</strong><br><small style="color: var(--text-muted);">Kilograms (kg)</small></td>
-                            <td>Fruits</td>
-                            <td>
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <strong>12 / 50</strong>
-                                    <div class="progress-wrapper">
-                                        <div class="progress-fill" style="width: 24%; background: var(--danger);"></div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td><span style="color: var(--danger); font-weight: 800; font-size: 11px; letter-spacing: 1px;"><i class="fa-solid fa-circle"></i> Low</span></td>
-                            <td class="admin-action"><button class="btn-edit" onclick="showModal('Fresh Mangoes', 12)">Update</button></td>
-                        </tr>
-
-                        <tr>
-                            <td><strong>Large Cups (22oz)</strong><br><small style="color: var(--text-muted);">Pieces (pcs)</small></td>
-                            <td>Packaging</td>
-                            <td>
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <strong>450 / 500</strong>
-                                    <div class="progress-wrapper">
-                                        <div class="progress-fill" style="width: 90%; background: var(--success);"></div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td><span style="color: var(--success); font-weight: 800; font-size: 11px; letter-spacing: 1px;"><i class="fa-solid fa-circle"></i> Good</span></td>
-                            <td class="admin-action"><button class="btn-edit" onclick="showModal('Large Cups (22oz)', 450)">Update</button></td>
-                        </tr>
-
-                        <tr>
-                            <td><strong>Tapioca Pearls</strong><br><small style="color: var(--text-muted);">Packs (1kg)</small></td>
-                            <td>Add-ons</td>
-                            <td>
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <strong>4 / 20</strong>
-                                    <div class="progress-wrapper">
-                                        <div class="progress-fill" style="width: 20%; background: var(--warning);"></div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td><span style="color: var(--warning); font-weight: 800; font-size: 11px; letter-spacing: 1px;"><i class="fa-solid fa-circle"></i> Warning</span></td>
-                            <td class="admin-action"><button class="btn-edit" onclick="showModal('Tapioca Pearls', 4)">Update</button></td>
-                        </tr>
+                    <tbody id="inventoryTableBody">
+                        <tr><td colspan="5" style="text-align:center; color: var(--text-muted);">Loading inventory data...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -302,6 +258,8 @@
                 <i class="fa-solid fa-xmark" style="font-size: 20px; color: var(--text-muted); cursor: pointer;" onclick="hideModal()"></i>
             </div>
             
+            <input type="hidden" id="modalItemId">
+
             <div style="margin-bottom: 1.5rem;">
                 <label>Item Name</label>
                 <input type="text" id="modalItemName" disabled style="opacity: 0.6; cursor: not-allowed;">
@@ -324,15 +282,18 @@
         // --- ROLE LOGIC (Guards) ---
         const currentRole = localStorage.getItem('staffRole') || 'cashier'; 
         
-        if(currentRole === 'cashier') {
-            document.getElementById('pageTitle').innerText = "Inventory View";
-            document.getElementById('pageDesc').innerText = "Read-only access to stock levels.";
-            // Hide Admin Actions
-            document.querySelectorAll('.admin-action').forEach(el => el.style.display = 'none');
-        } else {
-            document.getElementById('pageTitle').innerText = "Inventory Management";
-            document.getElementById('pageDesc').innerText = "Update and monitor real-time stock levels.";
+        function enforceRoleUI() {
+            if(currentRole === 'cashier') {
+                document.getElementById('pageTitle').innerText = "Inventory View";
+                document.getElementById('pageDesc').innerText = "Read-only access to stock levels.";
+                document.querySelectorAll('.admin-action').forEach(el => el.style.display = 'none');
+            } else {
+                document.getElementById('pageTitle').innerText = "Inventory Management";
+                document.getElementById('pageDesc').innerText = "Update and monitor real-time stock levels.";
+                document.querySelectorAll('.admin-action').forEach(el => el.style.display = ''); // show
+            }
         }
+        enforceRoleUI();
 
         // --- THEME TOGGLE LOGIC ---
         const body = document.body;
@@ -344,10 +305,126 @@
             themeToggle.innerHTML = isLight ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
         });
 
-        // --- MODAL LOGIC ---
+        // ======================================================================
+        // --- BACKEND INTEGRATION LOGIC ---
+        // ======================================================================
+        let allInventoryData = [];
+
+        function renderInventory(items) {
+            const tbody = document.getElementById('inventoryTableBody');
+            tbody.innerHTML = '';
+
+            let lowStockCount = 0;
+            let uniqueCategories = new Set();
+
+            if(!items || items.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No inventory data available.</td></tr>';
+                return;
+            }
+
+            items.forEach(item => {
+                uniqueCategories.add(item.category);
+                
+                // Computation ng bar at colors
+                const percentage = (item.current / item.max) * 100;
+                let statusColor, statusText;
+
+                if (percentage <= 25) {
+                    statusColor = 'var(--danger)';
+                    statusText = 'Low';
+                    lowStockCount++;
+                } else if (percentage <= 50) {
+                    statusColor = 'var(--warning)';
+                    statusText = 'Warning';
+                } else {
+                    statusColor = 'var(--success)';
+                    statusText = 'Good';
+                }
+
+                // Safely format name for onclick (to avoid single quote errors)
+                const safeName = item.name.replace(/'/g, "\\'");
+
+                const row = document.createElement('tr');
+                row.setAttribute('data-status', statusText.toLowerCase()); // For filtering
+                
+                row.innerHTML = `
+                    <td>
+                        <strong>${item.name}</strong><br>
+                        <small style="color: var(--text-muted);">${item.unit}</small>
+                    </td>
+                    <td>${item.category}</td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <strong>${item.current} / ${item.max}</strong>
+                            <div class="progress-wrapper">
+                                <div class="progress-fill" style="width: ${percentage}%; background: ${statusColor};"></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span style="color: ${statusColor}; font-weight: 800; font-size: 11px; letter-spacing: 1px;">
+                            <i class="fa-solid fa-circle"></i> ${statusText}
+                        </span>
+                    </td>
+                    <td class="admin-action">
+                        <button class="btn-edit" onclick="showModal('${item.id}', '${safeName}', ${item.current})">Update</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            // Update stats grid
+            document.getElementById('totalItemsStat').innerText = items.length;
+            document.getElementById('lowStockStat').innerText = lowStockCount;
+            document.getElementById('categoriesStat').innerText = uniqueCategories.size;
+
+            // Run role guard again kasi baka may generated rows na hindi naka-hide yung update buttons
+            enforceRoleUI();
+        }
+
+        async function fetchInventoryData() {
+            try {
+                /* * PAG READY NA YUNG BACKEND API MO:
+                 * const response = await fetch('/api/inventory');
+                 * allInventoryData = await response.json();
+                 * renderInventory(allInventoryData);
+                 */
+
+                // MOCK DATA PARA SA TESTING:
+                allInventoryData = [
+                    { id: "INV-001", name: "Fresh Mangoes", unit: "Kilograms (kg)", category: "Fruits", current: 12, max: 50 },
+                    { id: "INV-002", name: "Large Cups (22oz)", unit: "Pieces (pcs)", category: "Packaging", current: 450, max: 500 },
+                    { id: "INV-003", name: "Tapioca Pearls", unit: "Packs (1kg)", category: "Add-ons", current: 4, max: 20 },
+                    { id: "INV-004", name: "Evaporated Milk", unit: "Cans (370ml)", category: "Dairy", current: 15, max: 40 }
+                ];
+
+                renderInventory(allInventoryData);
+            } catch (error) {
+                console.error("Error loading inventory:", error);
+            }
+        }
+
+        // Filtering logic (All vs Low Stock)
+        function filterTable(filterType, btnElement) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            btnElement.classList.add('active');
+
+            const rows = document.querySelectorAll('#inventoryTableBody tr');
+            rows.forEach(row => {
+                if(filterType === 'all') {
+                    row.style.display = '';
+                } else if(filterType === 'low') {
+                    const status = row.getAttribute('data-status');
+                    row.style.display = (status === 'low') ? '' : 'none';
+                }
+            });
+        }
+
+        // --- MODAL LOGIC FOR UPDATING (Papunta sa Backend) ---
         const modal = document.getElementById('updateModal');
         
-        function showModal(name, qty) {
+        function showModal(id, name, qty) {
+            document.getElementById('modalItemId').value = id;
             document.getElementById('modalItemName').value = name;
             document.getElementById('modalQty').value = qty;
             modal.style.display = 'grid';
@@ -358,10 +435,18 @@
         }
         
         function saveData() { 
+            const itemId = document.getElementById('modalItemId').value;
             const newQty = document.getElementById('modalQty').value;
-            const item = document.getElementById('modalItemName').value;
-            alert(`Successfully updated ${item} to ${newQty} units.`); 
+            const itemName = document.getElementById('modalItemName').value;
+            
+            // DITO PUMAPASOK YUNG UPDATE MO SA DATABASE:
+            // fetch(`/api/inventory/${itemId}`, { method: 'PUT', body: JSON.stringify({ current: newQty }) })
+            console.log(`Sending PUT request for ${itemId} to update stock to ${newQty}`);
+
+            alert(`Successfully updated ${itemName} to ${newQty} units.`); 
             hideModal(); 
+            
+            // Pwede mo i-call ulit yung fetchInventoryData() dito para mag-refresh yung table galing sa DB.
         }
 
         window.onclick = function(event) {
@@ -369,6 +454,9 @@
                 hideModal();
             }
         }
+
+        // Load data on start
+        document.addEventListener('DOMContentLoaded', fetchInventoryData);
     </script>
 </body>
 </html>
