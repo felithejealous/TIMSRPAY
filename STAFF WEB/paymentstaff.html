@@ -69,7 +69,7 @@
         nav a {
             text-decoration: none; color: var(--text-muted); padding: 1rem 1.2rem;
             display: flex; align-items: center; gap: 15px; font-weight: 700; font-size: 13px;
-            border-radius: 14px; margin-bottom: 0.5rem; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px;
+            border-radius: 14px; margin-bottom: 0.5rem; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; cursor: pointer;
         }
         nav a:hover { color: var(--text-main); background: var(--icon-bg); transform: translateX(5px); }
         nav li.active a { background: var(--mango); color: #111; box-shadow: 0 8px 20px rgba(245, 158, 11, 0.2); }
@@ -150,7 +150,7 @@
 
     <aside>
         <div class="sidebar-logo"><img src="logo.png" alt="Teo D' Mango"></div>
-          <nav>
+        <nav>
             <ul>
                 <li><a href="overview.html"><i class="fa-solid fa-chart-line"></i> <span>Overview</span></a></li>
                 <li><a href="orderstaffs.html"><i class="fa-solid fa-bell-concierge"></i> <span>Orders</span></a></li>
@@ -159,8 +159,12 @@
                 <li><a href="dashboardstaff.html"><i class="fa-solid fa-user-clock"></i> <span>Attendance</span></a></li>
                 <li><a href="topupstaff.html"><i class="fa-solid fa-credit-card"></i> <span>RPAY</span></a></li>
                 <li><a href="rewardsstaff.html"><i class="fa-solid fa-gift"></i> <span>Rewards</span></a></li>
-                <li><a href="dashaccsettstaff.html"><i class="fa-solid fa-gear"></i> <span>Settings</span></a></li>
-                <li style="margin-top: auto;"><a href="index.html" style="color: var(--danger);"><i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></a></li>
+                <li class="admin-only"><a href="dashaccsettstaff.html"><i class="fa-solid fa-gear"></i> <span>Settings</span></a></li>
+                <li style="margin-top: auto;">
+                    <a onclick="confirmLogout()" style="color: var(--danger);">
+                        <i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span>
+                    </a>
+                </li>
             </ul>
         </nav>
     </aside>
@@ -170,7 +174,7 @@
             <header>
                 <div>
                     <h1 class="page-title">Checkout</h1>
-                    <p style="color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 13px; letter-spacing: 1px;">Processing Order #88245</p>
+                    <p id="orderIdDisplay" style="color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 13px; letter-spacing: 1px;">Processing Order...</p>
                 </div>
                 <button class="theme-btn" id="themeToggle"><i class="fa-solid fa-sun"></i></button>
             </header>
@@ -209,21 +213,21 @@
                 <div class="receipt-header">
                     <strong style="font-size: 1.2rem;">TEO D' MANGO</strong><br>
                     <small>SM Manila Main Branch</small><br>
-                    <small id="dateTime">2026-03-01 07:22 PM</small>
+                    <small id="dateTime">Loading time...</small>
                 </div>
 
                 <div class="receipt-body">
-                    <div class="receipt-row"><span>Mango Bliss (L)</span><span>115.00</span></div>
-                    <div class="receipt-row" style="font-size: 11px; color: #555; padding-left: 10px;"><span>+ Graham, Pearls</span><span>0.00</span></div>
-                    <div class="receipt-row"><span>Avocado Dream (M) x2</span><span>190.00</span></div>
+                    <div id="receiptBodyItems">
+                        <div style="text-align: center; color: #555; padding: 10px;">Loading items...</div>
+                    </div>
 
                     <div class="receipt-divider"></div>
-                    <div class="receipt-row"><span>Subtotal</span><span>272.32</span></div>
-                    <div class="receipt-row"><span>VAT (12%)</span><span>32.68</span></div>
+                    <div class="receipt-row"><span>Subtotal</span><span id="displaySubtotal">0.00</span></div>
+                    <div class="receipt-row"><span>VAT (12%)</span><span id="displayTax">0.00</span></div>
                     
                     <div class="receipt-divider"></div>
                     <div class="receipt-row" style="font-size: 1.3rem; font-weight: 900;">
-                        <span>TOTAL</span><span>₱305.00</span>
+                        <span>TOTAL</span><span id="displayTotal">₱0.00</span>
                     </div>
 
                     <div class="receipt-divider"></div>
@@ -239,7 +243,7 @@
             </div>
 
             <div class="action-stack">
-                <button class="btn-complete" onclick="finish()">
+                <button class="btn-complete" onclick="finishTransaction()">
                     <i class="fa-solid fa-print"></i> Pay & Print Receipt
                 </button>
                 <button class="btn-void" onclick="voidTransaction()">
@@ -250,14 +254,19 @@
     </main>
 
     <script>
-        let total = 305.00;
+        // --- BACKEND-READY VARIABLES ---
+        const currentRole = 'admin'; // Replace sa session mo (e.g. 'cashier' / 'admin')
+        let total = 0;
         let tendered = 0;
+        let currentOrderId = "ORD-" + Math.floor(Math.random() * 100000); 
 
-        // Role Guard Logic
-        const currentRole = localStorage.getItem('staffRole') || 'cashier';
-        if (currentRole === 'cashier') {
-            document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+        // Role Guard UI
+        function enforceRoleUI() {
+            if (currentRole === 'cashier') {
+                document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+            }
         }
+        enforceRoleUI();
 
         // Theme Toggle
         const themeToggle = document.getElementById('themeToggle');
@@ -266,6 +275,75 @@
             const isLight = document.body.classList.contains('light-mode');
             themeToggle.innerHTML = isLight ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
         });
+
+        // Logout
+        function confirmLogout() {
+            if(confirm("Are you sure you want to log out?")) {
+                window.location.href = "index.html"; 
+            }
+        }
+
+        // ======================================================================
+        // --- DYNAMIC RECEIPT GENERATION ---
+        // ======================================================================
+
+        function updateReceiptTime() {
+            const now = new Date();
+            document.getElementById('dateTime').innerText = now.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric'}) + " " + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        }
+
+        async function fetchPendingOrder() {
+            try {
+                // KAPAG MAY BACKEND NA:
+                // const response = await fetch('/api/pending-order-details');
+                // const orderData = await response.json();
+
+                // MOCK DATA (Sample Items from Cart):
+                const orderData = [
+                    { name: "Mango Bliss (L)", details: "+ Graham, Pearls", price: 115.00, qty: 1 },
+                    { name: "Avocado Dream (M)", details: "No Add-ons", price: 95.00, qty: 2 }
+                ];
+
+                renderReceipt(orderData);
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        function renderReceipt(items) {
+            const container = document.getElementById('receiptBodyItems');
+            container.innerHTML = '';
+            let subtotal = 0;
+
+            items.forEach(item => {
+                const itemTotal = item.price * item.qty;
+                subtotal += itemTotal;
+                
+                // Draw each item in the receipt paper
+                container.innerHTML += `
+                    <div class="receipt-row"><span>${item.name} x${item.qty}</span><span>${itemTotal.toFixed(2)}</span></div>
+                    <div class="receipt-row" style="font-size: 11px; color: #555; padding-left: 10px; margin-bottom: 8px;"><span>${item.details}</span><span></span></div>
+                `;
+            });
+
+            // Calculate Tax & Total
+            const tax = subtotal * 0.12;
+            total = subtotal + tax;
+
+            // Update HTML text
+            document.getElementById('displaySubtotal').innerText = subtotal.toFixed(2);
+            document.getElementById('displayTax').innerText = tax.toFixed(2);
+            document.getElementById('displayTotal').innerText = `₱${total.toFixed(2)}`;
+            
+            // Set Page Headers
+            document.getElementById('orderIdDisplay').innerText = `Processing Order #${currentOrderId}`;
+            
+            updateUI(); // refresh change calculation
+        }
+
+        // ======================================================================
+        // --- PAYMENT & CALCULATOR LOGIC ---
+        // ======================================================================
 
         function setMethod(name, isCash) {
             document.getElementById('methodLabel').innerText = name;
@@ -276,7 +354,7 @@
             event.currentTarget.classList.add('active');
             
             if(!isCash) {
-                tendered = total;
+                tendered = total; // Auto-exact amount for RPAY/Card
                 updateUI();
             } else {
                 resetMoney();
@@ -289,24 +367,48 @@
         function updateUI() {
             document.getElementById('tenderedText').innerText = `₱ ${tendered.toFixed(2)}`;
             document.getElementById('receiptTendered').innerText = tendered.toFixed(2);
+            
             const change = tendered - total;
             document.getElementById('receiptChange').innerText = Math.max(0, change).toFixed(2);
         }
 
+        // ======================================================================
+        // --- TRANSACTION FINALIZATION ---
+        // ======================================================================
+
         function voidTransaction() {
-            if(confirm("Are you sure you want to VOID this transaction? This will clear the current cart.")) {
+            if(confirm("Are you sure you want to VOID this transaction? This will clear the current order.")) {
+                // fetch('/api/orders/void', {method: 'POST'})
                 window.location.href = "menustaff.html";
             }
         }
 
-        function finish() {
+        function finishTransaction() {
             if(tendered < total) {
-                alert("Insufficient payment amount!");
+                alert("Insufficient payment amount! Please check cash received.");
                 return;
             }
-            alert("Payment successful! Order #88245 marked as PAID.");
+
+            // DITO NA YUNG PAGS-SAVE SA DATABASE:
+            const paymentDetails = {
+                orderId: currentOrderId,
+                method: document.getElementById('methodLabel').innerText,
+                amountPaid: tendered,
+                totalBill: total
+            };
+            
+            console.log("Saving transaction to DB:", paymentDetails);
+            // fetch('/api/orders/pay', { method: 'POST', body: JSON.stringify(paymentDetails) })
+
+            alert(`Payment successful! Order #${currentOrderId} marked as PAID.`);
             window.location.href = "overview.html";
         }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            updateReceiptTime();
+            fetchPendingOrder();
+        });
     </script>
 </body>
 </html>
