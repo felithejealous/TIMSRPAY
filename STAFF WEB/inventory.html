@@ -72,6 +72,7 @@
             text-decoration: none; color: var(--text-muted); padding: 1rem 1.2rem;
             display: flex; align-items: center; gap: 15px; font-weight: 700; font-size: 13px;
             border-radius: 14px; margin-bottom: 0.5rem; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px;
+            cursor: pointer;
         }
         nav a:hover { color: var(--text-main); background: var(--icon-bg); transform: translateX(5px); }
         nav li.active a { background: var(--mango); color: #111; box-shadow: 0 8px 20px rgba(245, 158, 11, 0.2); transform: translateX(0); }
@@ -89,7 +90,7 @@
 
         /* STAT CARDS */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem; }
-        .stat-card { background: var(--card-bg); backdrop-filter: blur(20px); border: 1px solid var(--card-border); padding: 1.5rem; border-radius: 24px; box-shadow: var(--shadow); display: flex; align-items: center; gap: 1.2rem; transition: 0.3s; }
+        .stat-card { background: var(--card-bg); backdrop-filter: blur(20px); border: 1px solid var(--card-border); padding: 1.5rem; border-radius: 24px; box-shadow: var(--shadow); display: flex; align-items: center; gap: 1.2rem; transition: 0.3s; cursor: pointer; }
         .stat-card:hover { transform: translateY(-5px); border-color: var(--mango); }
         .icon-circle { width: 50px; height: 50px; border-radius: 16px; display: grid; place-items: center; font-size: 1.2rem; }
         
@@ -121,7 +122,7 @@
         .btn-edit { background: var(--icon-bg); color: var(--text-main); border: 1px solid var(--card-border); padding: 8px 15px; border-radius: 8px; font-weight: 800; font-size: 11px; cursor: pointer; transition: 0.3s; text-transform: uppercase;}
         .btn-edit:hover { background: var(--mango); color: #111; border-color: var(--mango); }
 
-        /* MODAL */
+        /* MODALS */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); z-index: 2000; place-items: center; padding: 1rem; }
         .modal-content { background: var(--bg-main); padding: 2.5rem; border-radius: 24px; width: 100%; max-width: 450px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); border: 1px solid var(--card-border); animation: slideUp 0.3s ease;}
         
@@ -175,9 +176,13 @@
                 <li><a href="dashboardstaff.html"><i class="fa-solid fa-user-clock"></i> <span>Attendance</span></a></li>
                 <li><a href="topupstaff.html"><i class="fa-solid fa-credit-card"></i> <span>RPAY</span></a></li>
                 <li><a href="rewardsstaff.html"><i class="fa-solid fa-gift"></i> <span>Rewards</span></a></li>
-                <li class="admin-only"><a href="dashaccsettstaff.html"><i class="fa-solid fa-gear"></i> <span>Settings</span></a></li>
+                <li class="admin-action"><a href="dashaccsettstaff.html"><i class="fa-solid fa-gear"></i> <span>Settings</span></a></li>
                 
-                <li style="margin-top: auto;"><a href="index.html" style="color: var(--danger);"><i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></a></li>
+                <li style="margin-top: auto;">
+                    <a onclick="confirmLogout()" style="color: var(--danger);">
+                        <i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span>
+                    </a>
+                </li>
             </ul>
         </nav>
     </aside>
@@ -185,8 +190,8 @@
     <main>
         <header>
             <div>
-                <h1 id="pageTitle">Inventory Tracking</h1>
-                <p id="pageDesc">Real-time stock levels and ingredient tracking.</p>
+                <h1 id="pageTitle">Inventory Management</h1>
+                <p id="pageDesc">Update and monitor real-time stock levels.</p>
             </div>
             <button class="theme-btn" id="themeToggle" title="Toggle Light/Dark Mode">
                 <i class="fa-solid fa-sun"></i>
@@ -194,14 +199,14 @@
         </header>
 
         <div class="stats-grid">
-            <div class="stat-card">
+            <div class="stat-card" onclick="filterTable('all', document.getElementById('tabAll'))">
                 <div class="icon-circle" style="background: rgba(59, 130, 246, 0.1); color: var(--info);"><i class="fa-solid fa-layer-group"></i></div>
                 <div class="stat-info">
                     <h4>Total Items</h4>
                     <div id="totalItemsStat">0</div>
                 </div>
             </div>
-            <div class="stat-card" style="border-bottom: 4px solid var(--danger);">
+            <div class="stat-card" style="border-bottom: 4px solid var(--danger);" onclick="filterTable('low', document.getElementById('tabLow'))">
                 <div class="icon-circle" style="background: rgba(239, 68, 68, 0.1); color: var(--danger);"><i class="fa-solid fa-triangle-exclamation"></i></div>
                 <div class="stat-info">
                     <h4>Low Stock</h4>
@@ -212,7 +217,8 @@
                 <div class="icon-circle" style="background: rgba(16, 185, 129, 0.1); color: var(--success);"><i class="fa-solid fa-rotate"></i></div>
                 <div class="stat-info">
                     <h4>Refilled Today</h4>
-                    <div style="color: var(--success);">8</div> </div>
+                    <div style="color: var(--success);">8</div>
+                </div>
             </div>
             <div class="stat-card">
                 <div class="icon-circle" style="background: rgba(245, 158, 11, 0.1); color: var(--warning);"><i class="fa-solid fa-tags"></i></div>
@@ -226,10 +232,10 @@
         <div class="card">
             <div class="table-header">
                 <div class="filter-tabs">
-                    <div class="tab active" onclick="filterTable('all', this)">All Items</div>
-                    <div class="tab" onclick="filterTable('low', this)">Low Stock</div>
+                    <div class="tab active" id="tabAll" onclick="filterTable('all', this)">All Items</div>
+                    <div class="tab" id="tabLow" onclick="filterTable('low', this)">Low Stock</div>
                 </div>
-                <button class="btn-add admin-action"><i class="fa-solid fa-plus"></i> Add Item</button>
+                <button class="btn-add admin-action" onclick="showAddModal()"><i class="fa-solid fa-plus"></i> Add Item</button>
             </div>
 
             <div class="table-responsive">
@@ -255,7 +261,7 @@
         <div class="modal-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
                 <h2 style="font-size: 22px; font-weight: 900; color: var(--text-main); letter-spacing: -1px;">Update Stock Level</h2>
-                <i class="fa-solid fa-xmark" style="font-size: 20px; color: var(--text-muted); cursor: pointer;" onclick="hideModal()"></i>
+                <i class="fa-solid fa-xmark" style="font-size: 20px; color: var(--text-muted); cursor: pointer;" onclick="hideUpdateModal()"></i>
             </div>
             
             <input type="hidden" id="modalItemId">
@@ -273,14 +279,55 @@
                 </div>
             </div>
             
-            <button class="save-btn" onclick="saveData()"><i class="fa-solid fa-check-double"></i> Confirm Update</button>
-            <button onclick="hideModal()" style="width: 100%; background: none; border: none; margin-top: 1rem; color: var(--text-muted); cursor: pointer; font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Cancel</button>
+            <button class="save-btn" onclick="saveUpdateData()"><i class="fa-solid fa-check-double"></i> Confirm Update</button>
+            <button onclick="hideUpdateModal()" style="width: 100%; background: none; border: none; margin-top: 1rem; color: var(--text-muted); cursor: pointer; font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Cancel</button>
+        </div>
+    </div>
+
+    <div id="addModal" class="modal">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h2 style="font-size: 22px; font-weight: 900; color: var(--text-main); letter-spacing: -1px;">Add New Inventory Item</h2>
+                <i class="fa-solid fa-xmark" style="font-size: 20px; color: var(--text-muted); cursor: pointer;" onclick="hideAddModal()"></i>
+            </div>
+            
+            <div style="margin-bottom: 1.5rem;">
+                <label>Item Name</label>
+                <input type="text" id="newItemName" placeholder="e.g. Strawberry Syrup">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 1.5rem;">
+                <div>
+                    <label>Category</label>
+                    <input type="text" id="newItemCategory" placeholder="e.g. Syrups">
+                </div>
+                <div>
+                    <label>Unit</label>
+                    <input type="text" id="newItemUnit" placeholder="e.g. Bottles">
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 2rem;">
+                <div>
+                    <label>Current Quantity</label>
+                    <input type="number" id="newCurrentQty" placeholder="0">
+                </div>
+                <div>
+                    <label>Max Quantity</label>
+                    <input type="number" id="newMaxQty" placeholder="100">
+                </div>
+            </div>
+            
+            <button class="save-btn" style="background: var(--text-main); color: var(--bg-main);" onclick="saveNewItem()"><i class="fa-solid fa-plus"></i> Add to Inventory</button>
+            <button onclick="hideAddModal()" style="width: 100%; background: none; border: none; margin-top: 1rem; color: var(--text-muted); cursor: pointer; font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Cancel</button>
         </div>
     </div>
 
     <script>
-        // --- ROLE LOGIC (Guards) ---
-        const currentRole = localStorage.getItem('staffRole') || 'cashier'; 
+        // --- TINANGGAL NA ANG LOCAL STORAGE PARA SA ROLE ---
+        // Pinalitan ko na lang ng hardcoded variable, para kita mo lahat ng admin actions for now.
+        // Sa backend/PHP mo na lalagyan ng condition para itago ito sa Cashiers.
+        const currentRole = 'admin'; 
         
         function enforceRoleUI() {
             if(currentRole === 'cashier') {
@@ -290,7 +337,7 @@
             } else {
                 document.getElementById('pageTitle').innerText = "Inventory Management";
                 document.getElementById('pageDesc').innerText = "Update and monitor real-time stock levels.";
-                document.querySelectorAll('.admin-action').forEach(el => el.style.display = ''); // show
+                document.querySelectorAll('.admin-action').forEach(el => el.style.display = ''); 
             }
         }
         enforceRoleUI();
@@ -304,6 +351,14 @@
             const isLight = body.classList.contains('light-mode');
             themeToggle.innerHTML = isLight ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
         });
+
+        // --- LOGOUT FUNCTION ---
+        function confirmLogout() {
+            if(confirm("Are you sure you want to log out?")) {
+                // Backend logout API or session destroy should be called here
+                window.location.href = "index.html"; 
+            }
+        }
 
         // ======================================================================
         // --- BACKEND INTEGRATION LOGIC ---
@@ -341,11 +396,10 @@
                     statusText = 'Good';
                 }
 
-                // Safely format name for onclick (to avoid single quote errors)
                 const safeName = item.name.replace(/'/g, "\\'");
 
                 const row = document.createElement('tr');
-                row.setAttribute('data-status', statusText.toLowerCase()); // For filtering
+                row.setAttribute('data-status', statusText.toLowerCase()); 
                 
                 row.innerHTML = `
                     <td>
@@ -367,7 +421,7 @@
                         </span>
                     </td>
                     <td class="admin-action">
-                        <button class="btn-edit" onclick="showModal('${item.id}', '${safeName}', ${item.current})">Update</button>
+                        <button class="btn-edit" onclick="showUpdateModal('${item.id}', '${safeName}', ${item.current})">Update</button>
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -377,19 +431,10 @@
             document.getElementById('totalItemsStat').innerText = items.length;
             document.getElementById('lowStockStat').innerText = lowStockCount;
             document.getElementById('categoriesStat').innerText = uniqueCategories.size;
-
-            // Run role guard again kasi baka may generated rows na hindi naka-hide yung update buttons
-            enforceRoleUI();
         }
 
         async function fetchInventoryData() {
             try {
-                /* * PAG READY NA YUNG BACKEND API MO:
-                 * const response = await fetch('/api/inventory');
-                 * allInventoryData = await response.json();
-                 * renderInventory(allInventoryData);
-                 */
-
                 // MOCK DATA PARA SA TESTING:
                 allInventoryData = [
                     { id: "INV-001", name: "Fresh Mangoes", unit: "Kilograms (kg)", category: "Fruits", current: 12, max: 50 },
@@ -404,10 +449,10 @@
             }
         }
 
-        // Filtering logic (All vs Low Stock)
+        // --- FILTERING LOGIC ---
         function filterTable(filterType, btnElement) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            btnElement.classList.add('active');
+            if(btnElement) btnElement.classList.add('active');
 
             const rows = document.querySelectorAll('#inventoryTableBody tr');
             rows.forEach(row => {
@@ -420,39 +465,91 @@
             });
         }
 
-        // --- MODAL LOGIC FOR UPDATING (Papunta sa Backend) ---
-        const modal = document.getElementById('updateModal');
+        // ======================================================================
+        // --- MODAL LOGIC (UPDATE ITEM) ---
+        // ======================================================================
+        const updateModal = document.getElementById('updateModal');
         
-        function showModal(id, name, qty) {
+        function showUpdateModal(id, name, qty) {
             document.getElementById('modalItemId').value = id;
             document.getElementById('modalItemName').value = name;
             document.getElementById('modalQty').value = qty;
-            modal.style.display = 'grid';
+            updateModal.style.display = 'grid';
         }
         
-        function hideModal() { 
-            modal.style.display = 'none'; 
-        }
+        function hideUpdateModal() { updateModal.style.display = 'none'; }
         
-        function saveData() { 
+        function saveUpdateData() { 
             const itemId = document.getElementById('modalItemId').value;
-            const newQty = document.getElementById('modalQty').value;
+            const newQty = parseInt(document.getElementById('modalQty').value) || 0;
             const itemName = document.getElementById('modalItemName').value;
             
-            // DITO PUMAPASOK YUNG UPDATE MO SA DATABASE:
-            // fetch(`/api/inventory/${itemId}`, { method: 'PUT', body: JSON.stringify({ current: newQty }) })
-            console.log(`Sending PUT request for ${itemId} to update stock to ${newQty}`);
+            // Backend update fetch goes here
+
+            // UPDATE UI for Demo:
+            const itemIndex = allInventoryData.findIndex(item => item.id === itemId);
+            if(itemIndex > -1) {
+                allInventoryData[itemIndex].current = newQty;
+                renderInventory(allInventoryData);
+            }
 
             alert(`Successfully updated ${itemName} to ${newQty} units.`); 
-            hideModal(); 
-            
-            // Pwede mo i-call ulit yung fetchInventoryData() dito para mag-refresh yung table galing sa DB.
+            hideUpdateModal(); 
         }
 
-        window.onclick = function(event) {
-            if (event.target == modal) {
-                hideModal();
+        // ======================================================================
+        // --- MODAL LOGIC (ADD NEW ITEM) ---
+        // ======================================================================
+        const addModal = document.getElementById('addModal');
+
+        function showAddModal() { addModal.style.display = 'grid'; }
+        function hideAddModal() { addModal.style.display = 'none'; }
+
+        function saveNewItem() {
+            const name = document.getElementById('newItemName').value;
+            const category = document.getElementById('newItemCategory').value;
+            const unit = document.getElementById('newItemUnit').value;
+            const currentQty = parseInt(document.getElementById('newCurrentQty').value) || 0;
+            const maxQty = parseInt(document.getElementById('newMaxQty').value) || 1; 
+
+            if(!name || !category) {
+                alert("Please fill in at least the Item Name and Category.");
+                return;
             }
+
+            // Create new item object
+            const newItem = {
+                id: "INV-NEW-" + Math.floor(Math.random() * 1000), 
+                name: name,
+                unit: unit || "Units",
+                category: category,
+                current: currentQty,
+                max: maxQty
+            };
+
+            // Backend INSERT fetch goes here (e.g., fetch('/api/inventory/add'...))
+            console.log("Adding new item to database:", newItem);
+
+            // Add to array and re-render for UI demo
+            allInventoryData.push(newItem);
+            renderInventory(allInventoryData);
+            
+            alert(`${name} has been added to the inventory!`);
+            
+            // Reset input fields
+            document.getElementById('newItemName').value = '';
+            document.getElementById('newItemCategory').value = '';
+            document.getElementById('newItemUnit').value = '';
+            document.getElementById('newCurrentQty').value = '';
+            document.getElementById('newMaxQty').value = '';
+
+            hideAddModal();
+        }
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            if (event.target == updateModal) hideUpdateModal();
+            if (event.target == addModal) hideAddModal();
         }
 
         // Load data on start
