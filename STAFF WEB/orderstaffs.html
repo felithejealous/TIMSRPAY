@@ -58,7 +58,7 @@
         body::before { top: -10%; left: -5%; width: 500px; height: 500px; background: var(--mango); filter: blur(120px); opacity: var(--glow-opacity); }
         body::after { bottom: -10%; right: -5%; width: 400px; height: 400px; background: var(--strawberry); filter: blur(150px); opacity: calc(var(--glow-opacity) - 0.05); }
 
-        /* --- SIDEBAR (Styles applied to your exact HTML structure) --- */
+        /* --- SIDEBAR --- */
         aside {
             width: 260px; background: var(--sidebar-bg); height: 100vh; position: fixed;
             border-right: 1px solid var(--card-border); padding: 2rem 1.2rem; display: flex;
@@ -154,7 +154,7 @@
         .close-icon { cursor: pointer; font-size: 1.5rem; transition: 0.3s; }
         .close-icon:hover { color: var(--danger); transform: rotate(90deg);}
 
-        /* Receipt Body (Paper Look even in dark mode for realism) */
+        /* Receipt Body */
         .receipt-body { padding: 2rem; background: #fffdf5; font-family: 'Courier New', Courier, monospace; color: #111; overflow-y: auto; flex: 1;}
         .receipt-item-row { display: flex; justify-content: space-between; font-weight: 800; font-size: 14px; margin-top: 10px; }
         .receipt-addon-row { display: flex; justify-content: space-between; font-size: 12px; color: #555; padding-left: 20px; margin-top: 2px; position: relative; font-weight: 600;}
@@ -205,7 +205,7 @@
         <nav>
             <ul>
                 <li><a href="overview.html"><i class="fa-solid fa-chart-line"></i> <span>Overview</span></a></li>
-                <li class="active"><a href="orderstaffs.html"><i class="fa-solid fa-bell-concierge"></i> <span>Orders</span></a></li>
+                <li class="active"><a href="orderstaff.html"><i class="fa-solid fa-bell-concierge"></i> <span>Orders</span></a></li>
                 <li><a href="menustaff.html"><i class="fa-solid fa-receipt"></i> <span>Menu</span></a></li>
                 <li><a href="inventory.html"><i class="fa-solid fa-boxes-stacked"></i> <span>Inventory</span></a></li>
                 
@@ -228,7 +228,7 @@
             </div>
             <div class="header-actions">
                 <div style="text-align: right; background: var(--card-bg); padding: 10px 20px; border-radius: 15px; border: 1px solid var(--card-border);">
-                    <span style="font-weight: 900; font-size: 1.2rem; display: block; color: var(--text-main);" id="pendingCount">4</span>
+                    <span style="font-weight: 900; font-size: 1.2rem; display: block; color: var(--text-main);" id="pendingCount">0</span>
                     <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 800; letter-spacing: 1px;">Pending Items</span>
                 </div>
                 <button class="theme-btn" id="themeToggle" title="Toggle Theme"><i class="fa-solid fa-sun"></i></button>
@@ -251,41 +251,7 @@
                     <span class="badge">Online</span>
                 </div>
                 <div class="card-scroller" id="kioskQueue">
-                    
-                    <div class="ticket-card order-item" data-status="pending" data-id="K-104" onclick='openOrder("K-104", "Kiosk App", [
-                        {qty:"2x", name:"Mango Graham (L)", price:"220.00", addons:["Extra Pearl", "Less Ice"]},
-                        {qty:"1x", name:"Mineral Water", price:"20.00", addons:[]}
-                    ], "₱240.00", "Please add extra tissue and separate the pearls for the second cup.", "pending")'>
-                        <div class="ticket-header">
-                            <span class="ticket-id">#K-104</span>
-                            <span class="ticket-time">2m ago</span>
-                        </div>
-                        <div class="ticket-items">
-                            <strong>2x</strong> Mango Graham (L)<br>
-                            <strong>1x</strong> Mineral Water
-                        </div>
-                        <div class="ticket-footer">
-                            <span class="status-pill status-pending"><i class="fa-solid fa-circle-notch fa-spin"></i> Pending</span>
-                            <i class="fa-solid fa-chevron-right" style="color:var(--text-muted)"></i>
-                        </div>
-                    </div>
-
-                    <div class="ticket-card order-item" data-status="completed" data-id="K-102" onclick='openOrder("K-102", "Kiosk App", [
-                        {qty:"1x", name:"Avocado Dream (M)", price:"120.00", addons:["No Milk"]}
-                    ], "₱120.00", "", "completed")'>
-                        <div class="ticket-header">
-                            <span class="ticket-id">#K-102</span>
-                            <span class="ticket-time">15m ago</span>
-                        </div>
-                        <div class="ticket-items">
-                            <strong>1x</strong> Avocado Dream (M)
-                        </div>
-                        <div class="ticket-footer">
-                            <span class="status-pill status-completed"><i class="fa-solid fa-check-double"></i> Completed</span>
-                            <i class="fa-solid fa-chevron-right" style="color:var(--text-muted)"></i>
-                        </div>
-                    </div>
-
+                    <p style="color: var(--text-muted); font-size: 14px;">Loading Kiosk orders...</p>
                 </div>
             </div>
 
@@ -295,39 +261,7 @@
                     <span class="badge">In-Store</span>
                 </div>
                 <div class="card-scroller" id="walkinQueue">
-                    
-                    <div class="ticket-card order-item" data-status="unpaid" data-id="W-882" onclick='openOrder("W-882", "POS Counter 1", [
-                        {qty:"4x", name:"Mango Loco (Family)", price:"680.00", addons:["Separate Sauce", "Extra Spoon"]}
-                    ], "₱680.00", "ALLERGY ALERT: No nuts on one serving.", "unpaid")'>
-                        <div class="ticket-header">
-                            <span class="ticket-id">#W-882</span>
-                            <span class="ticket-time">Just Now</span>
-                        </div>
-                        <div class="ticket-items">
-                            <strong>4x</strong> Mango Loco (Family)
-                        </div>
-                        <div class="ticket-footer">
-                            <span class="status-pill status-unpaid"><i class="fa-solid fa-wallet"></i> Unpaid</span>
-                            <i class="fa-solid fa-chevron-right" style="color:var(--text-muted)"></i>
-                        </div>
-                    </div>
-
-                    <div class="ticket-card order-item" data-status="cancelled" data-id="W-880" onclick='openOrder("W-880", "POS Counter 1", [
-                        {qty:"1x", name:"Strawberry Slush", price:"110.00", addons:[]}
-                    ], "₱110.00", "Customer changed mind.", "cancelled")'>
-                        <div class="ticket-header">
-                            <span class="ticket-id">#W-880</span>
-                            <span class="ticket-time">30m ago</span>
-                        </div>
-                        <div class="ticket-items">
-                            <strong>1x</strong> Strawberry Slush
-                        </div>
-                        <div class="ticket-footer">
-                            <span class="status-pill status-cancelled"><i class="fa-solid fa-ban"></i> Cancelled</span>
-                            <i class="fa-solid fa-chevron-right" style="color:var(--text-muted)"></i>
-                        </div>
-                    </div>
-
+                    <p style="color: var(--text-muted); font-size: 14px;">Loading Walk-in orders...</p>
                 </div>
             </div>
         </div>
@@ -368,7 +302,6 @@
             </div>
 
             <div class="modal-actions">
-                
                 <div class="status-update-row">
                     <label>Set Status:</label>
                     <select id="statusSelect" class="status-dropdown">
@@ -389,7 +322,6 @@
                     <input type="text" id="cancelReasonInput" placeholder="Reason for cancellation (required)...">
                     <button class="btn-confirm-cancel" onclick="confirmCancel()"><i class="fa-solid fa-trash-can"></i> Confirm Cancellation</button>
                 </div>
-
             </div>
         </div>
     </div>
@@ -405,13 +337,118 @@
             themeToggle.innerHTML = isLight ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
         });
 
+        // ======================================================================
+        // --- BACKEND INTEGRATION LOGIC (ETO YUNG BAGO) ---
+        // ======================================================================
+
+        // 1. Function para gumawa ng HTML cards galing sa JSON
+        function renderQueues(orders) {
+            const kioskQueue = document.getElementById('kioskQueue');
+            const walkinQueue = document.getElementById('walkinQueue');
+            
+            // Clear muna
+            kioskQueue.innerHTML = '';
+            walkinQueue.innerHTML = '';
+
+            if(!orders || orders.length === 0) {
+                kioskQueue.innerHTML = '<p style="color: var(--text-muted); font-size: 14px;">No kiosk orders.</p>';
+                walkinQueue.innerHTML = '<p style="color: var(--text-muted); font-size: 14px;">No walk-in orders.</p>';
+                document.getElementById('pendingCount').innerText = '0';
+                return;
+            }
+
+            orders.forEach(order => {
+                // Formatting status text at icons
+                let statusIcon, statusText;
+                if(order.status === 'completed') { statusIcon = 'fa-check-double'; statusText = 'Completed'; }
+                else if(order.status === 'cancelled') { statusIcon = 'fa-ban'; statusText = 'Cancelled'; }
+                else if(order.status === 'unpaid') { statusIcon = 'fa-wallet'; statusText = 'Unpaid'; }
+                else { statusIcon = 'fa-circle-notch fa-spin'; statusText = 'Pending'; }
+
+                // Gumagawa ng listahan ng item pang display sa labas na card
+                const itemsHtmlString = order.itemsData.map(item => `<strong>${item.qty}</strong> ${item.name}`).join('<br>');
+                
+                // Kailangan gawing safe string yung JSON para ipasa sa onclick
+                const safeItemsJson = JSON.stringify(order.itemsData).replace(/"/g, '&quot;');
+
+                const cardHTML = `
+                    <div class="ticket-card order-item" data-status="${order.status}" data-id="${order.id}" 
+                         onclick="openOrder('${order.id}', '${order.source}', ${safeItemsJson}, '${order.total}', '${order.note || ''}', '${order.status}')">
+                        <div class="ticket-header">
+                            <span class="ticket-id">#${order.id}</span>
+                            <span class="ticket-time">${order.timeText}</span>
+                        </div>
+                        <div class="ticket-items">
+                            ${itemsHtmlString}
+                        </div>
+                        <div class="ticket-footer">
+                            <span class="status-pill status-${order.status}"><i class="fa-solid ${statusIcon}"></i> ${statusText}</span>
+                            <i class="fa-solid fa-chevron-right" style="color:var(--text-muted)"></i>
+                        </div>
+                    </div>
+                `;
+
+                if(order.type === 'kiosk') {
+                    kioskQueue.innerHTML += cardHTML;
+                } else if (order.type === 'walkin') {
+                    walkinQueue.innerHTML += cardHTML;
+                }
+            });
+
+            // Re-apply active filter para mag-update yung header counts
+            const activeFilter = document.querySelector('.filter-btn.active');
+            if (activeFilter) filterOrders(activeFilter.innerText.toLowerCase().replace(' orders', ''), activeFilter);
+        }
+
+        // 2. Mock Fetch Request (Dito mo i-k-connect sa API mo)
+        async function fetchQueueData() {
+            try {
+                /* * TANGGALIN MO YUNG COMMENTS SA BABA PAG READY NA YUNG BACKEND MO:
+                 * const response = await fetch('http://localhost:3000/api/all-orders');
+                 * const data = await response.json();
+                 * renderQueues(data);
+                 */
+
+                // PANG-TESTING MUNA: Fake data format from backend
+                const mockBackendData = [
+                    {
+                        id: "K-104", type: "kiosk", source: "Kiosk App", timeText: "2m ago", total: "₱240.00", 
+                        note: "Please add extra tissue and separate the pearls for the second cup.", status: "pending",
+                        itemsData: [
+                            { qty: "2x", name: "Mango Graham (L)", price: "220.00", addons: ["Extra Pearl", "Less Ice"] },
+                            { qty: "1x", name: "Mineral Water", price: "20.00", addons: [] }
+                        ]
+                    },
+                    {
+                        id: "K-102", type: "kiosk", source: "Kiosk App", timeText: "15m ago", total: "₱120.00", 
+                        note: "", status: "completed",
+                        itemsData: [ { qty: "1x", name: "Avocado Dream (M)", price: "120.00", addons: ["No Milk"] } ]
+                    },
+                    {
+                        id: "W-882", type: "walkin", source: "POS Counter 1", timeText: "Just Now", total: "₱680.00", 
+                        note: "ALLERGY ALERT: No nuts on one serving.", status: "unpaid",
+                        itemsData: [ { qty: "4x", name: "Mango Loco (Family)", price: "680.00", addons: ["Separate Sauce", "Extra Spoon"] } ]
+                    },
+                    {
+                        id: "W-880", type: "walkin", source: "POS Counter 1", timeText: "30m ago", total: "₱110.00", 
+                        note: "Customer changed mind.", status: "cancelled",
+                        itemsData: [ { qty: "1x", name: "Strawberry Slush", price: "110.00", addons: [] } ]
+                    }
+                ];
+
+                renderQueues(mockBackendData);
+
+            } catch (error) {
+                console.error("Error loading queue:", error);
+            }
+        }
+
+
         // --- FILTER LOGIC ---
         function filterOrders(status, btnElement) {
-            // Update active tab
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
             btnElement.classList.add('active');
 
-            // Filter cards
             const orders = document.querySelectorAll('.order-item');
             let pendingCount = 0;
 
@@ -423,7 +460,6 @@
                     order.classList.add('hidden');
                 }
 
-                // Recalculate pending/unpaid count for header
                 if(orderStatus === 'pending' || orderStatus === 'unpaid') {
                     pendingCount++;
                 }
@@ -446,7 +482,6 @@
             document.getElementById('modalSource').innerText = source + ' • ' + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             document.getElementById('modalTotal').innerText = total;
 
-            // Render Items
             const itemsContainer = document.getElementById('receiptItems');
             itemsContainer.innerHTML = ''; 
             items.forEach(item => {
@@ -465,7 +500,6 @@
                 }
             });
 
-            // Note Logic
             if (note && note.trim() !== "") {
                 noteText.innerText = note;
                 noteContainer.style.display = 'block';
@@ -473,7 +507,6 @@
                 noteContainer.style.display = 'none';
             }
 
-            // Reset Action Panel
             statusSelect.value = currentStatus;
             cancelArea.style.display = 'none';
             document.getElementById('cancelReasonInput').value = '';
@@ -490,7 +523,7 @@
             if (event.target == modal) closeModal();
         }
 
-        // --- ORDER ACTIONS LOGIC ---
+        // --- ORDER ACTIONS LOGIC (Papunta sa Backend) ---
         function showCancelReason() {
             cancelArea.style.display = 'flex';
         }
@@ -501,6 +534,11 @@
                 alert("Please enter a reason for cancellation.");
                 return;
             }
+            
+            // Backend UPDATE request mo dito
+            // fetch(`/api/orders/${currentOpenOrderId}/cancel`, { method: 'POST', body: JSON.stringify({reason}) })
+            console.log(`Sending Cancel Request: ${currentOpenOrderId}, Reason: ${reason}`);
+
             updateCardStatus(currentOpenOrderId, 'cancelled');
             closeModal();
             alert(`Order ${currentOpenOrderId} cancelled. Reason: ${reason}`);
@@ -508,18 +546,21 @@
 
         function saveOrderChanges() {
             const newStatus = statusSelect.value;
+            
+            // Backend UPDATE request mo dito
+            // fetch(`/api/orders/${currentOpenOrderId}/status`, { method: 'PUT', body: JSON.stringify({status: newStatus}) })
+            console.log(`Sending Status Update Request: ${currentOpenOrderId} -> ${newStatus}`);
+
             updateCardStatus(currentOpenOrderId, newStatus);
             closeModal();
         }
 
         function updateCardStatus(orderId, newStatus) {
-            // Find the card in DOM
             const cards = document.querySelectorAll('.order-item');
             cards.forEach(card => {
                 if(card.getAttribute('data-id') === orderId) {
                     card.setAttribute('data-status', newStatus);
                     
-                    // Update pill UI
                     const pill = card.querySelector('.status-pill');
                     pill.className = `status-pill status-${newStatus}`;
                     
@@ -528,15 +569,21 @@
                     else if(newStatus === 'unpaid') pill.innerHTML = '<i class="fa-solid fa-wallet"></i> Unpaid';
                     else pill.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Pending';
 
-                    // Update onclick to pass new status
-                    // Note: In a real DB driven app, this updates via backend. Here we just visually change it.
+                    // Update onclick para if binuksan ulit ang modal, updated na status
+                    const currentOnclick = card.getAttribute('onclick');
+                    const updatedOnclick = currentOnclick.replace(/, '(pending|unpaid|completed|cancelled)'\)$/, `, '${newStatus}')`);
+                    card.setAttribute('onclick', updatedOnclick);
                 }
             });
 
-            // Re-trigger current filter to update counts/visibility
             const activeFilter = document.querySelector('.filter-btn.active');
             filterOrders(activeFilter.innerText.toLowerCase().replace(' orders', ''), activeFilter);
         }
+
+        // Run fetch on load
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchQueueData();
+        });
     </script>
 </body>
 </html>
