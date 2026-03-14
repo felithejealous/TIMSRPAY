@@ -70,7 +70,7 @@
         nav a {
             text-decoration: none; color: var(--text-muted); padding: 1rem 1.2rem;
             display: flex; align-items: center; gap: 15px; font-weight: 700; font-size: 13px;
-            border-radius: 14px; margin-bottom: 0.5rem; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px;
+            border-radius: 14px; margin-bottom: 0.5rem; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; cursor: pointer;
         }
         nav a:hover { color: var(--text-main); background: var(--icon-bg); transform: translateX(5px); }
         nav li.active a { background: var(--mango); color: #111; box-shadow: 0 8px 20px rgba(245, 158, 11, 0.2); transform: translateX(0); }
@@ -107,6 +107,7 @@
         }
         .btn-action:hover { background: var(--mango); color: #111; transform: translateY(-3px); }
         .btn-otp { background: var(--icon-bg); color: var(--text-main); border: 1px solid var(--card-border); margin-bottom: 10px; }
+        .btn-otp:hover { background: var(--hover-bg); color: var(--mango); border-color: var(--mango); }
 
         /* TABLE */
         .table-responsive { overflow-x: auto; margin-top: 1rem; width: 100%; }
@@ -128,6 +129,18 @@
         .modal-content { background: var(--bg-main); padding: 2.5rem; border-radius: 30px; width: 100%; max-width: 400px; border: 1px solid var(--card-border); text-align: center; }
 
         @media (max-width: 1100px) { aside { width: 90px; } aside span, .sidebar-logo { display: none; } main { margin-left: 90px; width: calc(100% - 90px); } .dashboard-grid { grid-template-columns: 1fr; } }
+        @media screen and (max-width: 850px) {
+            aside {
+                width: 100%; height: 70px; position: fixed; bottom: 0; top: auto;
+                flex-direction: row; border-right: none; border-top: 1px solid var(--card-border); padding: 0; backdrop-filter: blur(30px);
+            }
+            nav { width: 100%; }
+            nav ul { display: flex; justify-content: space-around; align-items: center; height: 100%; flex-direction: row;}
+            nav li { margin-bottom: 0; }
+            nav a { flex-direction: column; gap: 4px; font-size: 0.65rem; padding: 8px; border-radius: 0; }
+            nav li.active a { background: none; color: var(--mango); box-shadow: none; transform: translateY(-3px);}
+            main { margin-left: 0; margin-bottom: 70px; padding: 1.5rem; width: 100%; }
+        }
     </style>
 </head>
 <body>
@@ -142,9 +155,16 @@
                 <li><a href="inventory.html"><i class="fa-solid fa-boxes-stacked"></i> <span>Inventory</span></a></li>
                 <li><a href="dashboardstaff.html"><i class="fa-solid fa-user-clock"></i> <span>Attendance</span></a></li>
                 <li><a href="topupstaff.html"><i class="fa-solid fa-credit-card"></i> <span>RPAY</span></a></li>
+                
                 <li class="active"><a href="rewardsstaff.html"><i class="fa-solid fa-gift"></i> <span>Rewards</span></a></li>
-                <li><a href="dashaccsettstaff.html"><i class="fa-solid fa-gear"></i> <span>Settings</span></a></li>
-                <li style="margin-top: auto;"><a href="index.html" style="color: var(--danger);"><i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></a></li>
+                
+                <li class="admin-only"><a href="dashaccsettstaff.html"><i class="fa-solid fa-gear"></i> <span>Settings</span></a></li>
+                
+                <li style="margin-top: auto;">
+                    <a onclick="confirmLogout()" style="color: var(--danger);">
+                        <i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span>
+                    </a>
+                </li>
             </ul>
         </nav>
     </aside>
@@ -181,9 +201,9 @@
 
             <div class="left-col">
                 <div class="card" style="width: 100%;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 15px;">
                         <h3><i class="fa-solid fa-users" style="color: var(--mango);"></i> Active Members</h3>
-                        <input type="text" placeholder="Search customer..." style="background: var(--input-bg); border: 1px solid var(--card-border); padding: 10px 20px; border-radius: 50px; color: #fff; font-size: 13px; outline: none; width: 200px;">
+                        <input type="text" id="searchInput" onkeyup="searchMember(this.value)" placeholder="Search name or number..." style="background: var(--input-bg); border: 1px solid var(--card-border); padding: 10px 20px; border-radius: 50px; color: var(--text-main); font-size: 13px; outline: none; width: 220px; font-weight: 600;">
                     </div>
 
                     <div class="table-responsive">
@@ -197,21 +217,8 @@
                                     <th>Action</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr>
-                                    <td><strong>Jane Doe</strong><br><small style="color: var(--text-muted);">0917-111-2233</small></td>
-                                    <td>120 pts</td>
-                                    <td><div class="points-bar"><div class="points-fill" style="width: 100%;"></div></div></td>
-                                    <td><span class="promo-badge eligible">Ready</span></td>
-                                    <td><button class="btn-action" style="padding: 8px 15px; font-size: 10px;" onclick="openRedeemModal('Jane Doe', 120)">Redeem</button></td>
-                                </tr>
-                                <tr>
-                                    <td><strong>John Smith</strong><br><small style="color: var(--text-muted);">0918-444-5566</small></td>
-                                    <td>45 pts</td>
-                                    <td><div class="points-bar"><div class="points-fill" style="width: 45%;"></div></div></td>
-                                    <td><span class="promo-badge not-eligible">Collecting</span></td>
-                                    <td><button disabled style="opacity: 0.3; cursor: not-allowed;" class="btn-action">Redeem</button></td>
-                                </tr>
+                            <tbody id="membersTableBody">
+                                <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Loading members...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -222,18 +229,31 @@
 
     <div id="otpModal" class="modal">
         <div class="modal-content">
-            <h2 style="margin-bottom: 10px; font-weight: 900;">Enter OTP</h2>
+            <h2 style="margin-bottom: 10px; font-weight: 900; color: var(--text-main);">Enter OTP</h2>
             <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 2rem;">Verify customer via 6-digit code sent to their phone.</p>
             <div class="form-group">
                 <input type="text" placeholder="· · · · · ·" style="text-align: center; font-size: 2rem; letter-spacing: 10px;" maxlength="6">
             </div>
             <button class="btn-action" onclick="verifyOTP()"><i class="fa-solid fa-shield-check"></i> Verify & Confirm</button>
-            <button style="background:none; border:none; color:var(--text-muted); margin-top: 15px; cursor:pointer; font-weight:700;" onclick="closeModals()">Cancel</button>
+            <button style="background:none; border:none; color:var(--text-muted); margin-top: 15px; cursor:pointer; font-weight:700; text-transform: uppercase;" onclick="closeModals()">Cancel</button>
         </div>
     </div>
 
     <script>
-        // Theme Logic
+        // --- ROLE GUARD LOGIC ---
+        const currentRole = 'admin'; // Change to 'cashier' sa testing
+        if(currentRole === 'cashier') {
+            document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+        }
+
+        // --- LOGOUT LOGIC ---
+        function confirmLogout() {
+            if(confirm("Are you sure you want to log out?")) {
+                window.location.href = "index.html"; 
+            }
+        }
+
+        // --- THEME TOGGLE LOGIC ---
         const body = document.body;
         const themeToggle = document.getElementById('themeToggle');
         themeToggle.addEventListener('click', () => {
@@ -241,16 +261,99 @@
             themeToggle.innerHTML = body.classList.contains('light-mode') ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
         });
 
+        // ======================================================================
+        // --- BACKEND-READY MEMBERS DATA LOGIC ---
+        // ======================================================================
+        let allMembersData = [];
+
+        async function fetchMembersData() {
+            try {
+                // Pag ready na ang API:
+                // const response = await fetch('/api/members');
+                // allMembersData = await response.json();
+
+                // Mock Data for Testing
+                allMembersData = [
+                    { id: "M001", name: "Jane Doe", phone: "0917-111-2233", points: 120 },
+                    { id: "M002", name: "John Smith", phone: "0918-444-5566", points: 45 },
+                    { id: "M003", name: "Maria Clara", phone: "0919-777-8899", points: 250 },
+                    { id: "M004", name: "Juan Dela Cruz", phone: "0920-123-4567", points: 80 }
+                ];
+                
+                renderMembers(allMembersData);
+            } catch(e) {
+                console.error("Failed to load members:", e);
+            }
+        }
+
+        function renderMembers(data) {
+            const tbody = document.getElementById('membersTableBody');
+            tbody.innerHTML = '';
+
+            if(!data || data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: var(--text-muted);">No members found.</td></tr>';
+                return;
+            }
+
+            data.forEach(member => {
+                // Calculation para sa progress bar (Cap at 100% for 1st reward visual)
+                const percentage = Math.min((member.points / 100) * 100, 100);
+                const isEligible = member.points >= 100;
+                
+                const badgeStr = isEligible ? `<span class="promo-badge eligible">Ready</span>` : `<span class="promo-badge not-eligible">Collecting</span>`;
+                
+                const btnStr = isEligible 
+                    ? `<button class="btn-action" style="padding: 8px 15px; font-size: 10px;" onclick="openRedeemModal('${member.name}', ${member.points})">Redeem</button>` 
+                    : `<button disabled style="opacity: 0.3; cursor: not-allowed; padding: 8px 15px; font-size: 10px;" class="btn-action">Redeem</button>`;
+
+                const row = `
+                    <tr>
+                        <td><strong>${member.name}</strong><br><small style="color: var(--text-muted);">${member.phone}</small></td>
+                        <td>${member.points} pts</td>
+                        <td>
+                            <div class="points-bar">
+                                <div class="points-fill" style="width: ${percentage}%;"></div>
+                            </div>
+                        </td>
+                        <td>${badgeStr}</td>
+                        <td>${btnStr}</td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+        }
+
+        function searchMember(query) {
+            const filtered = allMembersData.filter(m => 
+                m.name.toLowerCase().includes(query.toLowerCase()) || 
+                m.phone.includes(query)
+            );
+            renderMembers(filtered);
+        }
+
+
+        // ======================================================================
+        // --- REDEMPTION & OTP ACTIONS ---
+        // ======================================================================
+
         function validateToken() {
             const token = document.getElementById('tokenInput').value;
             if(!token) return alert("Please enter or scan a token.");
-            alert("Token " + token + " Validated! Customer Jane Doe is eligible for 1 Free Mango Graham.");
+            
+            // Backend request here
+            console.log("Validating token:", token);
+
+            alert("Token " + token + " Validated! Customer is eligible for 1 Free Mango Graham.");
             document.getElementById('tokenInput').value = '';
         }
 
         function requestOTP() {
             const phone = document.getElementById('phoneInput').value;
             if(!phone) return alert("Enter mobile number.");
+            
+            // Backend trigger SMS API here
+            console.log("Requesting OTP for:", phone);
+
             alert("OTP Request sent to " + phone);
         }
 
@@ -259,6 +362,7 @@
         }
 
         function verifyOTP() {
+            // Backend verification logic here
             alert("Verification Successful! Member account verified.");
             closeModals();
         }
@@ -268,10 +372,15 @@
         }
 
         function openRedeemModal(name, pts) {
-            if(confirm("Confirm redemption of 100 points for " + name + "?")) {
+            if(confirm(`Confirm redemption of 100 points for ${name}? Current points: ${pts}`)) {
+                // Backend deduction API here
                 alert("Success! Points deducted and reward issued.");
+                // Option: fetchMembersData() to refresh the table points
             }
         }
+
+        // Initialize Data on Load
+        document.addEventListener('DOMContentLoaded', fetchMembersData);
     </script>
 </body>
 </html>
