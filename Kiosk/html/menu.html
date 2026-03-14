@@ -121,7 +121,7 @@
         .cart-total { font-weight: 900; font-size: 1.6rem; color: var(--text-dark); }
         .btn-view-cart { background: var(--text-dark); color: white; height: 56px; padding: 0 35px; border-radius: 100px; border: none; font-weight: 800; text-transform: uppercase; }
 
-        /* --- ENHANCED GLASS CART POPUP --- */
+        /* --- CART POPUP --- */
         .cart-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.2); display: none; z-index: 1000; backdrop-filter: blur(15px); }
         .cart-popup {
             position: fixed; bottom: -100%; left: 50%; transform: translateX(-50%);
@@ -138,13 +138,11 @@
         .cart-header { padding: 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.05); }
         .cart-items { flex: 1; overflow-y: auto; padding: 20px; }
 
-        /* Item Cards */
         .cart-item { display: flex; flex-direction: column; gap: 12px; padding: 20px; background: rgba(255, 255, 255, 0.5); border-radius: 30px; margin-bottom: 15px; border: 1px solid rgba(255, 255, 255, 0.6); }
         .item-main-row { display: flex; align-items: center; gap: 15px; }
         .item-thumb { width: 80px; height: 80px; border-radius: 20px; overflow: hidden; background: white; flex-shrink: 0; }
         .item-thumb img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* Details & Tags */
         .item-details-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px; }
         .detail-tag { font-size: 0.7rem; font-weight: 700; color: #5d4037; background: rgba(255,255,255,0.6); padding: 4px 12px; border-radius: 100px; text-transform: uppercase; border: 1px solid rgba(0,0,0,0.03); }
         .item-note { font-size: 0.75rem; color: var(--mango-deep); font-style: italic; margin-top: 8px; padding-left: 5px; border-left: 2px solid var(--mango-deep); }
@@ -186,27 +184,37 @@
                 <p style="font-size:0.75rem; color:#888; text-transform:uppercase; font-weight:800;">Total Amount</p>
                 <h2 id="popupTotal" style="font-weight:900; font-size:2rem; color: var(--text-dark);">₱ 0.00</h2>
             </div>
-            <button class="btn-checkout" onclick="location.href='payment-options.html'">CHECKOUT</button>
+            <button class="btn-checkout" id="checkoutBtn">CHECKOUT</button>
         </div>
     </div>
 
     <script>
-        const products = [
-            { id: 1, name: "Classic Mango", price: 60, desc: "Our signature blend with real mango chunks and graham.", img: "../Images/mangga.png" },
-            { id: 2, name: "Strawberry", price: 60, desc: "Fresh berries mixed with creamy mango base.", img: "../Images/strawberry.png" },
-            { id: 3, name: "Ube Overload", price: 60, desc: "A Filipino favorite ube swirl with mango delight.", img: "../Images/ube.png" },
-            { id: 4, name: "Creamy Avocado", price: 60, desc: "Rich avocado blend for a healthy tropical twist.", img: "../Images/avocado.png" },
-            { id: 5, name: "Buko Pandan", price: 60, desc: "Young coconut and pandan jelly in mango slush.", img: "../Images/Buko.png" },
-            { id: 6, name: "Sweet Lychee", price: 60, desc: "Light and refreshing lychee bits in every sip.", img: "../Images/lychee.png" }
-        ];
+        // Backend integration point: Replace this array with a fetch() call to your API
+        let products = [];
+        let tray = [];
 
-        let tray = JSON.parse(localStorage.getItem('teo_tray')) || [];
+        async function fetchMenu() {
+            // Sample API Call Structure:
+            // const response = await fetch('/api/menu');
+            // products = await response.json();
+            
+            // Mocking data for now, but structured for easy replacement
+            products = [
+                { id: 1, name: "Classic Mango", price: 60, desc: "Our signature blend with real mango chunks and graham.", img: "../Images/mangga.png" },
+                { id: 2, name: "Strawberry", price: 60, desc: "Fresh berries mixed with creamy mango base.", img: "../Images/strawberry.png" },
+                { id: 3, name: "Ube Overload", price: 60, desc: "A Filipino favorite ube swirl with mango delight.", img: "../Images/ube.png" },
+                { id: 4, name: "Creamy Avocado", price: 60, desc: "Rich avocado blend for a healthy tropical twist.", img: "../Images/avocado.png" },
+                { id: 5, name: "Buko Pandan", price: 60, desc: "Young coconut and pandan jelly in mango slush.", img: "../Images/Buko.png" },
+                { id: 6, name: "Sweet Lychee", price: 60, desc: "Light and refreshing lychee bits in every sip.", img: "../Images/lychee.png" }
+            ];
+            renderProducts();
+        }
 
         function renderProducts() {
             const grid = document.getElementById('productGrid');
             grid.innerHTML = products.map(p => `
-                <div class="product-card" onclick="location.href='customize.html?id=${p.id}'">
-                    <div class="img-wrapper"><img src="${p.img}"></div>
+                <div class="product-card" onclick="goToCustomization(${p.id})">
+                    <div class="img-wrapper"><img src="${p.img}" alt="${p.name}"></div>
                     <div class="product-info">
                         <h3>${p.name}</h3>
                         <p>${p.desc}</p>
@@ -217,6 +225,11 @@
                     </div>
                 </div>
             `).join('');
+        }
+
+        function goToCustomization(id) {
+            // Pass the ID to the customization page
+            window.location.href = `customize.html?id=${id}`;
         }
 
         function renderTray() {
@@ -237,10 +250,7 @@
             tray.forEach((item, index) => {
                 const subtotal = item.price * item.qty;
                 total += subtotal;
-
-                const addonsHtml = item.toppings && item.toppings.length > 0 
-                    ? item.toppings.map(t => `<span class="detail-tag">+ ${t}</span>`).join('') 
-                    : '';
+                const addonsHtml = item.toppings ? item.toppings.map(t => `<span class="detail-tag">+ ${t}</span>`).join('') : '';
 
                 container.innerHTML += `
                     <div class="cart-item">
@@ -249,8 +259,8 @@
                             <div style="flex:1">
                                 <h4 style="font-weight:800; font-size:1.1rem; color:var(--text-dark);">${item.name}</h4>
                                 <div class="item-details-grid">
-                                    <span class="detail-tag">${item.size || 'Small'}</span>
-                                    <span class="detail-tag">${item.sugarLevel || '100%'} Sugar</span>
+                                    <span class="detail-tag">${item.size}</span>
+                                    <span class="detail-tag">${item.sugarLevel} Sugar</span>
                                     ${addonsHtml}
                                 </div>
                                 ${item.notes ? `<div class="item-note">"${item.notes}"</div>` : ''}
@@ -260,7 +270,6 @@
                                 <div style="font-size:0.7rem; opacity:0.5; font-weight:700;">₱${item.price.toFixed(2)} / ea</div>
                             </div>
                         </div>
-                        
                         <div class="qty-controls">
                             <button class="qty-btn" onclick="updateQty(${index}, -1, event)">-</button>
                             <span style="font-weight:900; font-size:1.2rem;">${item.qty}</span>
@@ -278,7 +287,6 @@
             event.stopPropagation();
             tray[index].qty += delta;
             if (tray[index].qty <= 0) tray.splice(index, 1);
-            localStorage.setItem('teo_tray', JSON.stringify(tray));
             renderTray();
         }
 
@@ -295,7 +303,25 @@
             overlay.style.display = isActive ? 'block' : 'none';
         }
 
-        window.onload = () => { renderProducts(); renderTray(); };
+        document.getElementById('checkoutBtn').addEventListener('click', () => {
+            if (tray.length > 0) {
+                // Backend integration point: 
+                // Send 'tray' object to your backend via POST
+                handleCheckout(tray);
+            }
+        });
+
+        function handleCheckout(currentTray) {
+            // Visual feedback
+            console.log("Proceeding to checkout with:", currentTray);
+            window.location.href = 'payment-options.html';
+        }
+
+        window.onload = () => { 
+            fetchMenu();
+            // Initialize tray from state if returning from customization
+            renderTray(); 
+        };
     </script>
 </body>
 </html>

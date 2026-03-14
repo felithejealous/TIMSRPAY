@@ -90,7 +90,6 @@
         .pin-dot { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--mango-deep); transition: 0.2s; }
         .pin-dot.filled { background: var(--mango-deep); transform: scale(1.2); }
 
-        /* --- LOADING & CONFIRMATION --- */
         .verifying-content { display: none; flex-direction: column; align-items: center; gap: 20px; }
         .loader-ring {
             width: 80px; height: 80px; border: 8px solid rgba(255,255,255,0.3);
@@ -117,7 +116,6 @@
         }
         .icon-box { width: 60px; height: 60px; margin-bottom: 15px; color: var(--mango-deep); }
 
-        /* --- MODAL --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.4); backdrop-filter: blur(8px);
@@ -134,7 +132,6 @@
             width: 100%; margin-top: 20px; cursor: pointer;
         }
 
-        /* --- KEYBOARD --- */
         .keyboard-container {
             position: fixed; bottom: 0; left: 0; width: 100%;
             background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(30px);
@@ -221,11 +218,13 @@
     </div>
 
     <script>
+        // BACKEND STATE VARIABLES
         let currentMode = '';
         let phase = 'selection';
         let isShift = true;
         let isAlt = false;
         let pinCode = "";
+        
         const input = document.getElementById('loginInput');
         const layout = document.getElementById('keyboardLayout');
 
@@ -325,14 +324,6 @@
             ok ? btn.classList.add('ready') : btn.classList.remove('ready');
         }
 
-        function showPinError() {
-            document.getElementById('errorModal').style.display = 'flex';
-            const container = document.getElementById('pinContainer');
-            container.classList.add('shake');
-            setTimeout(() => container.classList.remove('shake'), 500);
-            document.getElementById('keyboard').style.display = 'flex';
-        }
-
         function closeError() {
             document.getElementById('errorModal').style.display = 'none';
             pinCode = "";
@@ -351,11 +342,13 @@
                 switchUI('verifyingPhase'); 
                 document.getElementById('pageTitle').style.display = 'none';
                 
+                // BACKEND INTEGRATION:
+                // Send currentMode, input.value, and pinCode to your API
+                // On success: proceed to authorizedPhase
+                // On fail: showPinError()
+                
                 setTimeout(() => {
-                    // SHOW AUTHORIZATION CONFIRMATION
                     switchUI('authorizedPhase');
-                    
-                    // AUTO-PROCEED TO RECEIPT
                     setTimeout(() => {
                         window.location.href = 'receipt.html';
                     }, 2000); 

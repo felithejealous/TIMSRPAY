@@ -127,7 +127,6 @@
         .key:active { background: white; transform: translateY(2px); box-shadow: none; }
         .key.space { flex: 4; font-size: 0.9rem; letter-spacing: 3px; }
 
-        /* THE NEW CONFIRM (DONE) BUTTON */
         .key.done { 
             flex: 2; 
             background: var(--text-dark); 
@@ -233,20 +232,22 @@
         }
 
         function processOrder() {
-            localStorage.setItem('customerName', input.value.trim());
-            // Close keyboard immediately
+            const finalName = input.value.trim();
+            
+            // Backend Integration point:
+            // Send 'finalName' to your API via fetch/POST
+            // console.log("Processing order for:", finalName);
+
             kb.classList.remove('show');
             document.body.classList.remove('keyboard-open');
-            
-            // Show processing screen
             overlay.classList.add('active');
             
+            // Simulating API processing time
             setTimeout(() => {
                 window.location.href = 'receipt.html';
             }, 3500);
         }
 
-        // Close keyboard if clicking outside
         document.addEventListener('click', (e) => {
             if (!kb.contains(e.target) && e.target !== input) {
                 kb.classList.remove('show');

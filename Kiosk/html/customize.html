@@ -37,138 +37,53 @@
         }
 
         .unified-card {
-            width: 88%; 
-            max-width: 850px;
-            height: 90vh;
+            width: 88%; max-width: 850px; height: 90vh;
             background: var(--glass-base);
             backdrop-filter: var(--glass-blur);
             -webkit-backdrop-filter: var(--glass-blur);
             border: 2px solid var(--glass-border);
             border-radius: 40px;
-            display: flex;
-            flex-direction: column;
+            display: flex; flex-direction: column;
             box-shadow: 0 30px 60px rgba(0,0,0,0.12);
             overflow: hidden;
             transition: transform 0.4s ease, filter 0.4s ease;
         }
 
-        /* Blur background when typing */
-        body.is-typing .unified-card {
-            transform: scale(0.95);
-            filter: blur(10px);
-            pointer-events: none;
-        }
+        body.is-typing .unified-card { transform: scale(0.95); filter: blur(10px); pointer-events: none; }
 
-        /* --- HERO SECTION --- */
-        .hero-header {
-            padding: 30px 40px 10px;
-            text-align: center;
-            flex-shrink: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .hero-img-wrap {
-            width: 150px; height: 150px;
-            margin: 0 auto 15px;
-            background: #fff;
-            border-radius: 30px;
-            overflow: hidden; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        }
-        
-        .hero-img-wrap img { 
-            width: 100%; height: 100%; 
-            object-fit: cover; transform: scale(1.1);
-        }
-
+        .hero-header { padding: 30px 40px 10px; text-align: center; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
+        .hero-img-wrap { width: 150px; height: 150px; margin: 0 auto 15px; background: #fff; border-radius: 30px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .hero-img-wrap img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.1); }
         .hero-header h2 { font-size: 1.8rem; font-weight: 800; color: var(--text-dark); text-transform: uppercase; }
         .hero-header p { font-size: 0.9rem; color: #5d4037; opacity: 0.6; margin-top: 4px; }
 
-        /* --- OPTIONS AREA --- */
-        .options-area {
-            flex: 1;
-            padding: 0 50px 20px;
-            overflow-y: auto;
-            scrollbar-width: none;
-        }
+        .options-area { flex: 1; padding: 0 50px 20px; overflow-y: auto; scrollbar-width: none; }
         .options-area::-webkit-scrollbar { display: none; }
-
-        .section-label {
-            font-weight: 800; font-size: 0.8rem; color: var(--text-dark);
-            margin: 20px 0 10px; display: block; text-transform: uppercase;
-            letter-spacing: 1.2px; opacity: 0.4;
-        }
+        .section-label { font-weight: 800; font-size: 0.8rem; color: var(--text-dark); margin: 20px 0 10px; display: block; text-transform: uppercase; letter-spacing: 1.2px; opacity: 0.4; }
 
         .pill-group { display: flex; gap: 10px; }
-        .pill-btn {
-            flex: 1; padding: 14px; border-radius: 15px;
-            border: 1.5px solid rgba(255,255,255,0.5); background: rgba(255,255,255,0.7);
-            cursor: pointer; font-weight: 700; transition: 0.2s;
-            display: flex; flex-direction: column; align-items: center;
-            font-size: 0.9rem;
-        }
+        .pill-btn { flex: 1; padding: 14px; border-radius: 15px; border: 1.5px solid rgba(255,255,255,0.5); background: rgba(255,255,255,0.7); cursor: pointer; font-weight: 700; transition: 0.2s; display: flex; flex-direction: column; align-items: center; font-size: 0.9rem; color: var(--text-dark); }
         .pill-btn.active { background: var(--mango-deep); border-color: var(--mango-deep); color: white; }
         
         .addon-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .check-pill {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 14px 18px; background: rgba(255,255,255,0.7); border-radius: 15px;
-            border: 1.5px solid rgba(255,255,255,0.5); cursor: pointer; font-weight: 700; font-size: 0.85rem;
-        }
+        .check-pill { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; background: rgba(255,255,255,0.7); border-radius: 15px; border: 1.5px solid rgba(255,255,255,0.5); cursor: pointer; font-weight: 700; font-size: 0.85rem; color: var(--text-dark); }
         .check-pill.active { border-color: var(--mango-deep); color: var(--mango-deep); background: #fff; }
         .check-pill input { display: none; }
 
-        /* Notes Style */
-        .notes-field {
-            width: 100%; padding: 16px 20px; border-radius: 15px;
-            border: 1.5px solid rgba(255,255,255,0.5); background: rgba(255,255,255,0.7);
-            font-size: 0.95rem; color: var(--text-dark); outline: none;
-            cursor: pointer;
-        }
+        .notes-field { width: 100%; padding: 16px 20px; border-radius: 15px; border: 1.5px solid rgba(255,255,255,0.5); background: rgba(255,255,255,0.7); font-size: 0.95rem; color: var(--text-dark); outline: none; cursor: pointer; }
 
-        /* --- NOTE POP-OUT MODAL --- */
-        .note-focus-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.2);
-            backdrop-filter: blur(15px);
-            display: none; flex-direction: column; align-items: center;
-            padding-top: 10vh; z-index: 200;
-        }
+        .note-focus-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.2); backdrop-filter: blur(15px); display: none; flex-direction: column; align-items: center; padding-top: 10vh; z-index: 200; }
         .note-focus-overlay.active { display: flex; }
-
-        .floating-input-card {
-            width: 80%; max-width: 600px;
-            background: white; padding: 25px;
-            border-radius: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.2);
-            text-align: center;
-        }
+        .floating-input-card { width: 80%; max-width: 600px; background: white; padding: 25px; border-radius: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); text-align: center; }
         .floating-input-card h3 { margin-bottom: 15px; color: var(--text-dark); }
-        .floating-input-card input {
-            width: 100%; padding: 20px; border: 2px solid var(--mango-deep);
-            border-radius: 15px; font-size: 1.2rem; font-weight: 600;
-            background: #fff9f0; outline: none;
-        }
+        .floating-input-card input { width: 100%; padding: 20px; border: 2px solid var(--mango-deep); border-radius: 15px; font-size: 1.2rem; font-weight: 600; background: #fff9f0; outline: none; }
 
-        /* QTY & FOOTER */
-        .qty-row {
-            display: flex; align-items: center; justify-content: space-between;
-            margin-top: 20px; padding: 15px 0; border-top: 1px solid rgba(0,0,0,0.06);
-        }
+        .qty-row { display: flex; align-items: center; justify-content: space-between; margin-top: 20px; padding: 15px 0; border-top: 1px solid rgba(0,0,0,0.06); }
         .qty-stepper { display: flex; align-items: center; gap: 8px; background: white; padding: 6px; border-radius: 100px; }
-        .step-btn {
-            width: 42px; height: 42px; background: var(--mango-deep);
-            color: white; border: none; border-radius: 50%;
-            font-size: 1.4rem; font-weight: 800; cursor: pointer;
-        }
+        .step-btn { width: 42px; height: 42px; background: var(--mango-deep); color: white; border: none; border-radius: 50%; font-size: 1.4rem; font-weight: 800; cursor: pointer; }
         .qty-val { width: 50px; text-align: center; font-weight: 800; font-size: 1.4rem; color: var(--text-dark); }
 
-        .unified-footer {
-            background: var(--text-dark); padding: 15px 40px;
-            display: flex; align-items: center; justify-content: space-between;
-            border-radius: 0 0 40px 40px;
-        }
+        .unified-footer { background: var(--text-dark); padding: 15px 40px; display: flex; align-items: center; justify-content: space-between; border-radius: 0 0 40px 40px; }
         .footer-total h2 { color: white; font-size: 2rem; font-weight: 900; }
         .footer-total p { color: rgba(255,255,255,0.4); font-size: 0.65rem; text-transform: uppercase; font-weight: 800; }
         
@@ -177,18 +92,9 @@
         .btn-back { background: rgba(255,255,255,0.12); color: white; }
         .btn-confirm { background: var(--mango-deep); color: white; }
 
-        /* Keyboard */
-        .keyboard-overlay {
-            position: fixed; bottom: -100%; left: 0; width: 100%;
-            background: #cbd5e0; padding: 10px; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 300; display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px;
-        }
+        .keyboard-overlay { position: fixed; bottom: -100%; left: 0; width: 100%; background: #cbd5e0; padding: 10px; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: 300; display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; }
         .keyboard-overlay.show { bottom: 0; }
-        .key {
-            background: white; padding: 18px 0; border-radius: 8px;
-            text-align: center; font-weight: 700; cursor: pointer; font-size: 1.2rem;
-            box-shadow: 0 3px 0 #a0aec0;
-        }
+        .key { background: white; padding: 18px 0; border-radius: 8px; text-align: center; font-weight: 700; cursor: pointer; font-size: 1.2rem; box-shadow: 0 3px 0 #a0aec0; color: #1a202c; }
         .key:active { transform: translateY(2px); box-shadow: none; }
         .key.wide { grid-column: span 1.5; background: #718096; color: white; }
         .key.space { grid-column: span 5; }
@@ -200,10 +106,10 @@
     <div class="unified-card" id="mainCard">
         <div class="hero-header">
             <div class="hero-img-wrap">
-                <img id="productImg" src="" alt="Drink">
+                <img id="productImg" src="" alt="">
             </div>
-            <h2 id="productTitle">Loading...</h2>
-            <p id="productDesc">Tailor your mango experience below.</p>
+            <h2 id="productTitle"></h2>
+            <p id="productDesc"></p>
         </div>
 
         <div class="options-area" id="scrollArea">
@@ -248,7 +154,7 @@
                 <h2 id="totalDisplay">₱ 0.00</h2>
             </div>
             <div class="action-group">
-                <button class="btn btn-back" onclick="window.location.href='menu.html'">Back</button>
+                <button class="btn btn-back" onclick="window.history.back()">Back</button>
                 <button class="btn btn-confirm" id="addToCartBtn">Add to Tray</button>
             </div>
         </div>
@@ -265,93 +171,70 @@
     <div class="keyboard-overlay" id="kb"></div>
 
     <script>
-        const products = [
-            { id: 1, name: "Classic Mango", price: 60, desc: "Tropical mango slush with signature layers.", img: "../Images/mangga.png" },
-            { id: 2, name: "Strawberry", price: 60, desc: "Sweet and tangy strawberry fruity blend.", img: "../Images/strawberry.png" },
-            { id: 3, name: "Ube", price: 60, desc: "Rich and creamy purple yam experience.", img: "../Images/ube.png" },
-            { id: 4, name: "Avocado", price: 60, desc: "Smooth tropical avocado goodness.", img: "../Images/avocado.png" },
-            { id: 5, name: "Buko", price: 60, desc: "Refreshing coconut milk base.", img: "../Images/Buko.png" },
-            { id: 6, name: "Lychee", price: 60, desc: "Light and floral lychee blend.", img: "../Images/lychee.png" }
-        ];
-
+        /* --- BACKEND STATE --- */
         let currentProduct = null;
         let quantity = 1;
-        let editIndex = null;
 
-        // Keyboard Logic
-        const kb = document.getElementById('kb');
+        // UI References
         const mainNotes = document.getElementById('orderNotes');
         const floatingNotes = document.getElementById('floatingNotes');
+        const kb = document.getElementById('kb');
 
+        // Virtual Keyboard
         "QWERTYUIOPASDFGHJKLZXCVBNM".split("").forEach(char => {
             const k = document.createElement('div'); k.className = 'key'; k.innerText = char;
             k.onclick = () => floatingNotes.value += char; kb.appendChild(k);
         });
-
         const del = document.createElement('div'); del.className = 'key wide'; del.innerText = 'DEL';
         del.onclick = () => floatingNotes.value = floatingNotes.value.slice(0, -1); kb.appendChild(del);
-
         const space = document.createElement('div'); space.className = 'key space'; space.innerText = 'SPACE';
         space.onclick = () => floatingNotes.value += ' '; kb.appendChild(space);
-
         const done = document.createElement('div'); done.className = 'key close'; done.innerText = 'DONE';
         done.onclick = () => closeNoteFocus(); kb.appendChild(done);
 
         function openNoteFocus() {
             document.body.classList.add('is-typing');
             document.getElementById('noteOverlay').classList.add('active');
-            floatingNotes.value = mainNotes.value; // Sync text
+            floatingNotes.value = mainNotes.value;
             kb.classList.add('show');
         }
 
         function closeNoteFocus() {
             document.body.classList.remove('is-typing');
             document.getElementById('noteOverlay').classList.remove('active');
-            mainNotes.value = floatingNotes.value; // Sync back
+            mainNotes.value = floatingNotes.value;
             kb.classList.remove('show');
         }
 
-        // Core App Logic
-        window.onload = () => {
+        /* --- API HOOKS --- */
+        async function loadProduct() {
             const urlParams = new URLSearchParams(window.location.search);
-            const editIdxParam = urlParams.get('editIndex');
-            let productId = parseInt(urlParams.get('id'));
+            const productId = urlParams.get('id');
             
-            if (editIdxParam !== null) {
-                editIndex = parseInt(editIdxParam);
-                const tray = JSON.parse(localStorage.getItem('teo_tray')) || [];
-                const itemToEdit = tray[editIndex];
-                if (itemToEdit) {
-                    productId = itemToEdit.productId;
-                    document.getElementById('addToCartBtn').innerText = "Update Tray";
-                    quantity = itemToEdit.qty;
-                    document.getElementById('qtyDisplay').innerText = quantity;
-                    mainNotes.value = itemToEdit.notes || "";
-                    document.querySelectorAll('#sizeGroup .pill-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.val === itemToEdit.size));
-                    document.querySelectorAll('#sugarGroup .pill-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.val === itemToEdit.sugarLevel));
-                    document.querySelectorAll('#addonsGroup input').forEach(input => {
-                        input.checked = itemToEdit.toppings.includes(input.dataset.val);
-                        input.parentElement.classList.toggle('active', input.checked);
-                    });
-                }
+            // Backend Dev: Fetch product details from DB using productId
+            // currentProduct = await api.getProduct(productId);
+            
+            if (currentProduct) {
+                document.getElementById('productTitle').innerText = currentProduct.name;
+                document.getElementById('productDesc').innerText = currentProduct.desc;
+                document.getElementById('productImg').src = currentProduct.img;
+                updatePrice();
             }
-            currentProduct = products.find(p => p.id === (productId || 1)) || products[0];
-            document.getElementById('productTitle').innerText = currentProduct.name;
-            document.getElementById('productDesc').innerText = currentProduct.desc;
-            document.getElementById('productImg').src = currentProduct.img;
-            updatePrice();
-        };
+        }
 
+        // Selection Logic
         document.querySelectorAll('.pill-btn').forEach(btn => {
             btn.onclick = function() {
                 this.parentElement.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active'); updatePrice();
+                this.classList.add('active'); 
+                updatePrice();
             };
         });
 
         document.querySelectorAll('.check-pill input').forEach(input => {
             input.onchange = function() {
-                this.parentElement.classList.toggle('active', this.checked); updatePrice();
+                this.parentElement.classList.toggle('active', this.checked); 
+                updatePrice();
             };
         });
 
@@ -363,26 +246,19 @@
 
         function updatePrice() {
             if (!currentProduct) return;
-            let total = currentProduct.price;
-            total += parseInt(document.querySelector('#sizeGroup .active').dataset.price);
-            document.querySelectorAll('#addonsGroup input:checked').forEach(addon => total += parseInt(addon.dataset.price));
-            document.getElementById('totalDisplay').innerText = `₱${(total * quantity).toFixed(2)}`;
+            let unitPrice = currentProduct.price || 0;
+            unitPrice += parseInt(document.querySelector('#sizeGroup .active').dataset.price);
+            document.querySelectorAll('#addonsGroup input:checked').forEach(addon => unitPrice += parseInt(addon.dataset.price));
+            document.getElementById('totalDisplay').innerText = `₱${(unitPrice * quantity).toFixed(2)}`;
         }
 
         document.getElementById('addToCartBtn').onclick = () => {
-            const tray = JSON.parse(localStorage.getItem('teo_tray')) || [];
             const size = document.querySelector('#sizeGroup .active').dataset.val;
             const sugar = document.querySelector('#sugarGroup .active').dataset.val;
             const toppings = Array.from(document.querySelectorAll('#addonsGroup input:checked')).map(input => input.dataset.val);
-            let unitPrice = currentProduct.price + parseInt(document.querySelector('#sizeGroup .active').dataset.price);
-            document.querySelectorAll('#addonsGroup input:checked').forEach(input => unitPrice += parseInt(input.dataset.price));
 
-            const newItem = {
-                id: editIndex !== null ? tray[editIndex].id : Date.now(),
-                productId: currentProduct.id,
-                name: currentProduct.name,
-                img: currentProduct.img,
-                price: unitPrice,
+            const orderItem = {
+                productId: currentProduct ? currentProduct.id : null,
                 qty: quantity,
                 size: size,
                 sugarLevel: sugar,
@@ -390,10 +266,12 @@
                 notes: mainNotes.value
             };
 
-            if (editIndex !== null) tray[editIndex] = newItem; else tray.push(newItem);
-            localStorage.setItem('teo_tray', JSON.stringify(tray));
+            // Backend Dev: Send orderItem to server-side tray
+            // await api.addToTray(orderItem);
             window.location.href = "menu.html";
         };
+
+        window.onload = loadProduct;
     </script>
 </body>
 </html>

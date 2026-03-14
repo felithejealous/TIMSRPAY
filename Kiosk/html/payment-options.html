@@ -37,72 +37,43 @@
             animation: gradientMove 15s ease infinite;
         }
 
-        /* --- REFINED MINIMALIST BACK BUTTON --- */
         .back-btn {
-            position: fixed; 
-            top: 1.5rem; 
-            left: 1.5rem;
+            position: fixed; top: 1.5rem; left: 1.5rem;
             background: var(--glass-base); 
             border: 1.5px solid var(--glass-border);
-            width: 3rem; 
-            height: 3rem; 
-            border-radius: 1rem;
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-            z-index: 100; 
-            backdrop-filter: var(--glass-blur);
+            width: 3rem; height: 3rem; border-radius: 1rem;
+            display: flex; align-items: center; justify-content: center;
+            z-index: 100; backdrop-filter: var(--glass-blur);
             -webkit-backdrop-filter: var(--glass-blur);
-            color: var(--text-dark);
-            transition: all 0.2s ease;
-            cursor: pointer;
+            color: var(--text-dark); transition: all 0.2s ease; cursor: pointer;
         }
 
-        .back-btn:active {
-            transform: scale(0.9);
-            background: rgba(255, 255, 255, 0.6);
-        }
+        .back-btn:active { transform: scale(0.9); background: rgba(255, 255, 255, 0.6); }
 
         .container {
-            width: 90%;
-            max-width: 850px;
-            text-align: center;
-            display: flex; flex-direction: column; align-items: center;
-            z-index: 10;
+            width: 90%; max-width: 850px; text-align: center;
+            display: flex; flex-direction: column; align-items: center; z-index: 10;
         }
 
         h1 {
-            font-size: 2.2rem;
-            font-weight: 800;
-            color: var(--text-dark);
-            text-transform: uppercase;
-            letter-spacing: 4px;
-            margin-bottom: 50px;
+            font-size: 2.2rem; font-weight: 800; color: var(--text-dark);
+            text-transform: uppercase; letter-spacing: 4px; margin-bottom: 50px;
         }
 
         .order-options {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            margin-bottom: 60px;
-            width: 100%;
+            display: flex; gap: 20px; justify-content: center;
+            margin-bottom: 60px; width: 100%;
         }
 
-        /* --- OPTION CARDS --- */
         .option-card {
             background: var(--glass-base);
             backdrop-filter: var(--glass-blur);
             -webkit-backdrop-filter: var(--glass-blur);
             border: 2px solid var(--glass-border);
-            border-radius: 45px;
-            width: 300px; 
-            padding: 40px 20px;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-radius: 45px; width: 300px; padding: 40px 20px;
+            cursor: pointer; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             display: flex; flex-direction: column; align-items: center;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.05);
-            text-align: center;
-            color: var(--text-dark);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.05); text-align: center; color: var(--text-dark);
         }
 
         .option-card:active { transform: scale(0.96); }
@@ -114,72 +85,28 @@
             box-shadow: 0 20px 40px rgba(255, 183, 3, 0.2);
         }
 
-        .icon-box {
-            width: 120px;
-            height: 120px;
-            display: flex; align-items: center; justify-content: center;
-            margin-bottom: 25px;
-            border-radius: 20px;
-        }
+        .icon-box { width: 120px; height: 120px; display: flex; align-items: center; justify-content: center; margin-bottom: 25px; border-radius: 20px; }
+        .icon-box svg { width: 80px; color: var(--mango-deep); }
+        .icon-box img.teo-pay-img { width: 90%; height: 90%; object-fit: contain; }
 
-        .icon-box svg { 
-            width: 80px; 
-            color: var(--mango-deep); 
-        }
+        .option-label { font-size: 1.25rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; line-height: 1.2; }
 
-        .icon-box img.teo-pay-img {
-            width: 90%;
-            height: 90%;
-            object-fit: contain;
-        }
-
-        .option-label {
-            font-size: 1.25rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            line-height: 1.2;
-        }
-
-        /* --- NEXT BUTTON --- */
         .footer-btn {
-            background: var(--text-dark);
-            color: white;
-            border: none;
-            padding: 22px 60px;
-            border-radius: 100px;
-            font-weight: 800;
-            font-size: 1rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-            opacity: 0.5;
-            pointer-events: none;
+            background: var(--text-dark); color: white; border: none; padding: 22px 60px;
+            border-radius: 100px; font-weight: 800; font-size: 1rem;
+            text-transform: uppercase; letter-spacing: 2px; cursor: pointer;
+            transition: all 0.3s ease; box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            opacity: 0.5; pointer-events: none;
         }
 
-        .footer-btn.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
+        .footer-btn.active { opacity: 1; pointer-events: auto; }
         .footer-btn:active { transform: scale(0.98); }
 
-        /* TOAST MESSAGE */
         .toast {
-            position: fixed; 
-            bottom: 40px; 
-            left: 50%; 
-            transform: translateX(-50%); 
-            background: rgba(0,0,0,0.8); 
-            color: white; 
-            padding: 12px 24px; 
-            border-radius: 30px; 
-            z-index: 9999; 
-            font-weight: 800; 
-            text-transform: uppercase; 
-            font-size: 0.8rem;
+            position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); 
+            background: rgba(0,0,0,0.8); color: white; padding: 12px 24px; 
+            border-radius: 30px; z-index: 9999; font-weight: 800; 
+            text-transform: uppercase; font-size: 0.8rem;
             animation: fadeInOut 2.5s ease forwards;
         }
 
@@ -189,7 +116,6 @@
             85% { opacity: 1; transform: translate(-50%, 0); }
             100% { opacity: 0; transform: translate(-50%, -20px); }
         }
-
     </style>
 </head>
 <body>
@@ -204,7 +130,7 @@
         <h1>Select payment mode</h1>
 
         <div class="order-options">
-            <button class="option-card" data-target="../html/counter.html">
+            <button class="option-card" data-method="Counter" data-target="../html/counter.html">
                 <div class="icon-box">
                     <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M10 90V75C10 68 15 64 22 64H78C85 64 90 68 90 75V90" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
@@ -215,7 +141,7 @@
                 <span class="option-label">Pay at the counter</span>
             </button>
 
-            <button class="option-card" data-target="../html/teopaycardid.html">
+            <button class="option-card" data-method="TeoPay" data-target="../html/teopaycardid.html">
                 <div class="icon-box">
                     <img src="../Images/mango-icon.png" alt="Teo Pay" class="teo-pay-img">
                 </div>
@@ -230,6 +156,7 @@
         const optionCards = document.querySelectorAll('.option-card');
         const nextBtn = document.getElementById('nextBtn');
         let selectedTarget = null;
+        let selectedMethod = null;
 
         optionCards.forEach(card => {
             card.addEventListener('click', () => {
@@ -237,24 +164,25 @@
                 card.classList.add('selected');
                 
                 selectedTarget = card.getAttribute('data-target');
-                
-                if (selectedTarget.includes('teopaycardid')) {
-                    localStorage.setItem('paymentMethod', 'Teo Pay');
-                } else {
-                    localStorage.setItem('paymentMethod', 'Counter');
-                }
+                selectedMethod = card.getAttribute('data-method');
                 
                 nextBtn.classList.add('active');
             });
         });
 
         nextBtn.addEventListener('click', () => {
-            if (selectedTarget) {
-                window.location.href = selectedTarget;
+            if (selectedTarget && selectedMethod) {
+                handleNext(selectedMethod, selectedTarget);
             } else {
-                showToast("Please select an order type first!");
+                showToast("Please select a payment mode first!");
             }
         });
+
+        function handleNext(method, target) {
+            // Backend Dev: Hook into 'method' (Counter or TeoPay) 
+            // example: await api.updatePaymentMode(method);
+            window.location.href = target;
+        }
 
         function showToast(text) {
             const msg = document.createElement('div');
