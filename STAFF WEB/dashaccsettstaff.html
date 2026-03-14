@@ -72,6 +72,7 @@
             text-decoration: none; color: var(--text-muted); padding: 1rem 1.2rem;
             display: flex; align-items: center; gap: 15px; font-weight: 700; font-size: 13px;
             border-radius: 14px; margin-bottom: 0.5rem; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px;
+            cursor: pointer;
         }
         nav a:hover { color: var(--text-main); background: var(--icon-bg); transform: translateX(5px); }
         nav li.active a { background: var(--mango); color: #111; box-shadow: 0 8px 20px rgba(245, 158, 11, 0.2); transform: translateX(0); }
@@ -174,8 +175,14 @@
                 <li><a href="dashboardstaff.html"><i class="fa-solid fa-user-clock"></i> <span>Attendance</span></a></li>
                 <li><a href="topupstaff.html"><i class="fa-solid fa-credit-card"></i> <span>RPAY</span></a></li>
                 <li><a href="rewardsstaff.html"><i class="fa-solid fa-gift"></i> <span>Rewards</span></a></li>
-                <li class="active"><a href="dashaccsettstaff.html"><i class="fa-solid fa-gear"></i> <span>Settings</span></a></li>
-                <li style="margin-top: auto;"><a href="index.html" style="color: var(--danger);"><i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></a></li>
+                
+                <li class="active admin-only"><a href="dashaccsettstaff.html"><i class="fa-solid fa-gear"></i> <span>Settings</span></a></li>
+                
+                <li style="margin-top: auto;">
+                    <a onclick="confirmLogout()" style="color: var(--danger);">
+                        <i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span>
+                    </a>
+                </li>
             </ul>
         </nav>
     </aside>
@@ -197,30 +204,30 @@
             <div class="left-col">
                 <div class="card">
                     <div class="profile-header">
-                        <div class="avatar-box">JD</div>
-                        <h2 style="font-weight: 900; font-size: 24px; color: var(--text-main); margin-bottom: 5px;">Jane Doe</h2>
-                        <p id="roleDisplay" style="color: var(--mango); font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: 2px;">Store Manager</p>
+                        <div class="avatar-box" id="avatarInitials">JD</div>
+                        <h2 id="displayName" style="font-weight: 900; font-size: 24px; color: var(--text-main); margin-bottom: 5px;">Loading...</h2>
+                        <p id="roleDisplay" style="color: var(--mango); font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: 2px;">Loading...</p>
                     </div>
 
                     <h3 style="border-bottom: 1px solid var(--card-border); padding-bottom: 15px; margin-bottom: 20px;"><i class="fa-solid fa-user-pen" style="color: var(--mango);"></i> Personal Details</h3>
                     <div class="form-group">
                         <label>Full Name</label>
-                        <input type="text" value="Jane Doe">
+                        <input type="text" id="profileName" placeholder="Enter full name">
                     </div>
                     <div class="form-group">
                         <label>Employee ID</label>
-                        <input type="text" value="EMP-00001" disabled title="Contact HR to change">
+                        <input type="text" id="profileId" disabled title="Contact HR to change">
                     </div>
                     <div class="form-group">
                         <label>Email Address</label>
-                        <input type="email" value="jane.doe@teodmango.com">
+                        <input type="email" id="profileEmail" placeholder="Enter email address">
                     </div>
                     <div class="form-group">
                         <label>Mobile Number</label>
-                        <input type="text" value="0917-123-4567">
+                        <input type="text" id="profilePhone" placeholder="Enter mobile number">
                     </div>
                     
-                    <button class="btn-save" style="margin-top: 30px;" onclick="alert('Profile Updated Successfully!')"><i class="fa-solid fa-floppy-disk"></i> Update Profile</button>
+                    <button class="btn-save" style="margin-top: 30px;" onclick="updateProfile()"><i class="fa-solid fa-floppy-disk"></i> Update Profile</button>
                 </div>
             </div>
 
@@ -229,11 +236,11 @@
                     <h3 style="border-bottom: 1px solid var(--card-border); padding-bottom: 15px; margin-bottom: 15px;"><i class="fa-solid fa-chart-pie" style="color: var(--success);"></i> Performance Overview</h3>
                     <div class="summary-item">
                         <div class="summary-label">Shift Accuracy</div>
-                        <div class="summary-value" style="color: var(--success);">98.5%</div>
+                        <div class="summary-value" id="perfAccuracy" style="color: var(--success);">0%</div>
                     </div>
                     <div class="summary-item">
                         <div class="summary-label">Average Work Hours</div>
-                        <div class="summary-value">42.5 hrs / week</div>
+                        <div class="summary-value" id="perfHours">0 hrs / week</div>
                     </div>
                     <div class="summary-item">
                         <div class="summary-label">Break Policy Adherence</div>
@@ -241,7 +248,7 @@
                     </div>
                     <div class="summary-item">
                         <div class="summary-label">System Access Level</div>
-                        <div class="summary-value"><span class="badge-info" id="accessBadge">ADMIN</span></div>
+                        <div class="summary-value"><span class="badge-info" id="accessBadge">LOADING</span></div>
                     </div>
                 </div>
 
@@ -249,39 +256,124 @@
                     <h3 style="border-bottom: 1px solid var(--card-border); padding-bottom: 15px; margin-bottom: 20px;"><i class="fa-solid fa-shield-check" style="color: var(--danger);"></i> Login & Security</h3>
                     <div class="form-group">
                         <label>Current Password</label>
-                        <input type="password" placeholder="••••••••">
+                        <input type="password" id="currentPassword" placeholder="••••••••">
                     </div>
                     <div class="form-group">
                         <label>New Password</label>
-                        <input type="password" placeholder="Enter new password">
+                        <input type="password" id="newPassword" placeholder="Enter new password">
                     </div>
                     <div class="form-group">
                         <label>Confirm Password</label>
-                        <input type="password" placeholder="Confirm new password">
+                        <input type="password" id="confirmPassword" placeholder="Confirm new password">
                     </div>
-                    <button class="btn-danger-outline" style="margin-top: 30px;" onclick="alert('Password securely updated.')"><i class="fa-solid fa-lock"></i> Secure Account</button>
+                    <button class="btn-danger-outline" style="margin-top: 30px;" onclick="updatePassword()"><i class="fa-solid fa-lock"></i> Secure Account</button>
                 </div>
             </div>
         </div>
     </main>
 
     <script>
-        // --- ROLE LOGIC ---
-        const currentRole = localStorage.getItem('staffRole') || 'cashier'; 
-        
-        if(currentRole === 'admin') {
-            document.getElementById('roleDisplay').innerText = "Store Manager";
-            document.getElementById('accessBadge').innerText = "ADMINISTRATOR";
-            // Show Admin links in sidebar
-            document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'flex');
-        } else {
-            // Note: Cashiers usually shouldn't see this page based on your nav rules, 
-            // but if they do, it will display as Cashier.
-            document.getElementById('roleDisplay').innerText = "Store Cashier";
-            document.getElementById('accessBadge').innerText = "RESTRICTED";
-            document.getElementById('accessBadge').style.color = "var(--warning)";
-            document.getElementById('accessBadge').style.borderColor = "var(--warning)";
-            document.getElementById('accessBadge').style.background = "rgba(245, 158, 11, 0.15)";
+        // --- BACKEND-READY ROLE & DATA LOGIC ---
+        // Tinanggal na ang localStorage. Ang variable na ito ay dapat i-inject mula sa backend PHP/Node.
+        const currentRole = 'admin'; 
+
+        // Mock data to simulate API response for the logged-in user
+        const mockUserData = {
+            fullName: "Jane Doe",
+            employeeId: "EMP-00001",
+            email: "jane.doe@teodmango.com",
+            phone: "0917-123-4567",
+            performance: {
+                accuracy: "98.5%",
+                avgHours: "42.5 hrs / week"
+            }
+        };
+
+        // --- LOAD DATA ON START ---
+        function loadUserProfile() {
+            // Populating Form Fields
+            document.getElementById('profileName').value = mockUserData.fullName;
+            document.getElementById('profileId').value = mockUserData.employeeId;
+            document.getElementById('profileEmail').value = mockUserData.email;
+            document.getElementById('profilePhone').value = mockUserData.phone;
+
+            // Populating Display Areas
+            document.getElementById('displayName').innerText = mockUserData.fullName;
+            
+            // Get Initials (e.g. "Jane Doe" -> "JD")
+            const initials = mockUserData.fullName.split(' ').map(n => n[0]).join('');
+            document.getElementById('avatarInitials').innerText = initials;
+
+            // Populating Performance
+            document.getElementById('perfAccuracy').innerText = mockUserData.performance.accuracy;
+            document.getElementById('perfHours').innerText = mockUserData.performance.avgHours;
+
+            // Role display logic
+            if(currentRole === 'admin') {
+                document.getElementById('roleDisplay').innerText = "Store Manager";
+                document.getElementById('accessBadge').innerText = "ADMINISTRATOR";
+                document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'flex');
+            } else {
+                document.getElementById('roleDisplay').innerText = "Store Cashier";
+                document.getElementById('accessBadge').innerText = "RESTRICTED";
+                document.getElementById('accessBadge').style.color = "var(--warning)";
+                document.getElementById('accessBadge').style.borderColor = "var(--warning)";
+                document.getElementById('accessBadge').style.background = "rgba(245, 158, 11, 0.15)";
+            }
+        }
+
+        // --- FORM ACTION LOGIC ---
+        function updateProfile() {
+            const newName = document.getElementById('profileName').value;
+            const newEmail = document.getElementById('profileEmail').value;
+            const newPhone = document.getElementById('profilePhone').value;
+
+            if(!newName || !newEmail) return alert("Name and Email are required.");
+
+            // Dito mangyayari ang backend API call (e.g., fetch('/api/user/update', ...))
+            console.log("Sending Profile Data to DB:", { newName, newEmail, newPhone });
+
+            // Update UI instantly for demo
+            document.getElementById('displayName').innerText = newName;
+            document.getElementById('avatarInitials').innerText = newName.split(' ').map(n => n[0]).join('').substring(0,2);
+            
+            alert('Profile Updated Successfully!');
+        }
+
+        function updatePassword() {
+            const currentPass = document.getElementById('currentPassword').value;
+            const newPass = document.getElementById('newPassword').value;
+            const confirmPass = document.getElementById('confirmPassword').value;
+
+            if(!currentPass || !newPass || !confirmPass) {
+                return alert("Please fill in all password fields.");
+            }
+
+            if(newPass !== confirmPass) {
+                return alert("New passwords do not match!");
+            }
+
+            if(newPass.length < 6) {
+                return alert("Password must be at least 6 characters long.");
+            }
+
+            // Dito mangyayari ang backend API call para sa password change
+            console.log("Sending Password Update Request to Backend...");
+            
+            alert('Password securely updated.');
+            
+            // Clear fields after saving
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+        }
+
+        // --- LOGOUT LOGIC ---
+        function confirmLogout() {
+            if(confirm("Are you sure you want to log out?")) {
+                // Redirect to login page
+                window.location.href = "index.html"; 
+            }
         }
 
         // --- THEME TOGGLE LOGIC ---
@@ -293,6 +385,9 @@
             const isLight = body.classList.contains('light-mode');
             themeToggle.innerHTML = isLight ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
         });
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', loadUserProfile);
     </script>
 </body>
 </html>
