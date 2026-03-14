@@ -3,109 +3,172 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Teo D' Mango | Order Review Pro</title>
+    <title>Order Review | Teo D' Mango Staff</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        /* --- DYNAMIC THEME VARIABLES (Same as Menu) --- */
         :root {
-            --primary: #fcd34d;
-            --primary-dark: #f59e0b;
-            --dark: #111111;
-            --light: #f9fafb;
+            --mango: #ffc244;
+            --mango-dark: #d4a017;
+            --strawberry: #ff4d6d;
             --success: #10b981;
             --danger: #ef4444;
-            --text-muted: #6b7280;
-            --card-radius: 24px;
-            --card-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            --warning: #f59e0b;
+            --info: #3b82f6; 
+            
+            /* DARK MODE (Default) */
+            --bg-main: #050505;
+            --text-main: #ffffff;
+            --text-muted: #888888;
+            --card-bg: rgba(30, 30, 30, 0.4);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --sidebar-bg: rgba(10, 10, 10, 0.95);
+            --shadow: 0 15px 40px rgba(0,0,0,0.5);
+            --hover-bg: rgba(255, 255, 255, 0.06);
+            --icon-bg: rgba(255, 255, 255, 0.05);
+            --glow-opacity: 0.15;
+            --input-bg: rgba(0,0,0,0.3);
+            --panel-bg: #0a0a0a;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        body { background-color: var(--light); color: var(--dark); display: flex; min-height: 100vh; transition: background 0.3s; }
+        /* --- LIGHT MODE OVERRIDES --- */
+        body.light-mode {
+            --bg-main: #f4f5f7;
+            --text-main: #1a1a1a;
+            --text-muted: #666666;
+            --card-bg: rgba(255, 255, 255, 0.7);
+            --card-border: rgba(0, 0, 0, 0.05);
+            --sidebar-bg: rgba(255, 255, 255, 0.9);
+            --shadow: 0 10px 30px rgba(0,0,0,0.05);
+            --hover-bg: rgba(255, 255, 255, 1);
+            --icon-bg: rgba(0, 0, 0, 0.03);
+            --glow-opacity: 0.3; 
+            --input-bg: #ffffff;
+            --panel-bg: #ffffff;
+        }
 
-        /* --- ENHANCED RESPONSIVE SIDEBAR --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; scroll-behavior: smooth; }
+        
+        body { 
+            background-color: var(--bg-main); color: var(--text-main); 
+            display: flex; min-height: 100vh; transition: 0.4s ease;
+            position: relative; overflow: hidden;
+        }
+
+        /* Glowing Background Orbs */
+        body::before, body::after { content: ''; position: fixed; border-radius: 50%; z-index: -1; pointer-events: none; transition: 0.5s ease; }
+        body::before { top: -10%; left: -5%; width: 500px; height: 500px; background: var(--mango); filter: blur(120px); opacity: var(--glow-opacity); }
+        body::after { bottom: -10%; right: -5%; width: 400px; height: 400px; background: var(--strawberry); filter: blur(150px); opacity: calc(var(--glow-opacity) - 0.05); }
+
+        /* --- SIDEBAR --- */
         aside {
-            width: 260px; background: white; height: 100vh; position: fixed;
-            border-right: 1px solid #e5e7eb; padding: 2rem 1.2rem; display: flex;
-            flex-direction: column; z-index: 1000; transition: all 0.4s ease;
+            width: 260px; background: var(--sidebar-bg); height: 100vh; position: fixed;
+            border-right: 1px solid var(--card-border); padding: 2rem 1.2rem; display: flex;
+            flex-direction: column; z-index: 1000; backdrop-filter: blur(20px); transition: all 0.4s ease;
         }
         .sidebar-logo { padding: 10px 5px; margin-bottom: 2rem; text-align: center; }
-        .sidebar-logo img { max-width: 100%; height: auto; max-height: 60px; display: block; margin: 0 auto; }
+        .sidebar-logo img { max-width: 100%; height: auto; max-height: 50px; display: block; margin: 0 auto; filter: drop-shadow(0 0 5px var(--mango)); }
         
-        nav ul { list-style: none; }
+        nav { flex: 1; display: flex; flex-direction: column; }
+        nav ul { list-style: none; display: flex; flex-direction: column; height: 100%; }
         nav a {
-            text-decoration: none; color: var(--text-muted); padding: 0.9rem 1.1rem;
-            display: flex; align-items: center; gap: 15px; font-weight: 600;
-            border-radius: 14px; margin-bottom: 0.5rem; transition: 0.2s;
+            text-decoration: none; color: var(--text-muted); padding: 1rem 1.2rem;
+            display: flex; align-items: center; gap: 15px; font-weight: 700; font-size: 13px;
+            border-radius: 14px; margin-bottom: 0.5rem; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; cursor: pointer;
         }
-        nav li.active a { background: var(--primary); color: var(--dark); font-weight: 700; box-shadow: 0 4px 12px rgba(252, 211, 77, 0.2); }
+        nav a:hover { color: var(--text-main); background: var(--icon-bg); transform: translateX(5px); }
+        nav li.active a { background: var(--mango); color: #111; box-shadow: 0 8px 20px rgba(245, 158, 11, 0.2); transform: translateX(0); }
+        nav a i { font-size: 16px; width: 20px; text-align: center; }
 
-        /* --- MAIN LAYOUT & RESPONSIVE SPLIT --- */
-        main { margin-left: 260px; flex: 1; display: flex; height: 100vh; transition: all 0.4s ease; }
+        /* --- MAIN LAYOUT --- */
+        main { margin-left: 260px; flex: 1; display: flex; height: 100vh; width: calc(100% - 260px); transition: all 0.4s ease; }
 
         /* REVIEW SECTION */
-        .review-section { flex: 1.5; padding: 2.5rem; overflow-y: auto; }
-        .card { background: white; border-radius: var(--card-radius); padding: 2rem; box-shadow: var(--card-shadow); margin-bottom: 1.5rem; border: 1px solid rgba(0,0,0,0.02); }
+        .review-section { flex: 1.5; padding: 2.5rem 3.5rem; overflow-y: auto; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem; }
+        .page-title { font-size: clamp(1.8rem, 4vw, 2.2rem); font-weight: 900; letter-spacing: -1px; color: var(--text-main); margin-bottom: 5px; line-height: 1;}
+        .page-desc { color: var(--text-muted); font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .theme-btn { background: var(--icon-bg); border: 1px solid var(--card-border); color: var(--text-main); width: 45px; height: 45px; border-radius: 50%; cursor: pointer; transition: 0.3s; display: grid; place-items: center; font-size: 16px;}
+        .theme-btn:hover { background: var(--mango); color: #111; transform: rotate(15deg); }
+
+        .back-btn { background: var(--icon-bg); border: 1px solid var(--card-border); color: var(--text-main); width: 45px; height: 45px; border-radius: 12px; display: grid; place-items: center; text-decoration: none; transition: 0.3s; font-size: 18px; }
+        .back-btn:hover { background: var(--hover-bg); transform: translateX(-3px); }
+
+        .card { background: var(--card-bg); backdrop-filter: blur(20px); border-radius: 30px; padding: 2rem; box-shadow: var(--shadow); border: 1px solid var(--card-border); margin-bottom: 1.5rem; transition: 0.3s; }
+        .card:hover { box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
         
         .order-item-detail { 
             display: flex; justify-content: space-between; align-items: center; 
-            padding: 1.5rem 0; border-bottom: 1px solid #f1f5f9; flex-wrap: wrap; gap: 15px;
+            padding: 1.5rem 0; border-bottom: 1px dashed var(--card-border); flex-wrap: wrap; gap: 15px;
         }
         .order-item-detail:last-child { border-bottom: none; }
         
-        .item-info h4 { font-size: 1.1rem; font-weight: 800; margin-bottom: 5px; letter-spacing: -0.5px; }
-        .item-info p { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; }
+        .item-info h4 { font-size: 1.1rem; font-weight: 800; margin-bottom: 5px; color: var(--text-main); }
+        .item-info p { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; }
+        .item-price { color: var(--mango); font-size: 1.1rem; font-weight: 900; display: block; margin-top: 5px; }
 
-        .qty-control { display: flex; align-items: center; gap: 15px; background: #f1f5f9; padding: 8px 18px; border-radius: 14px; }
-        .qty-btn { background: none; border: none; cursor: pointer; font-size: 1.1rem; color: var(--dark); padding: 5px; transition: 0.2s; }
-        .qty-btn:hover { color: var(--primary-dark); }
-
-        /* SUMMARY PANEL */
-        .summary-panel { width: 420px; background: white; border-left: 1px solid #e5e7eb; padding: 2.5rem; display: flex; flex-direction: column; overflow-y: auto; }
+        .qty-control { display: flex; align-items: center; gap: 15px; background: var(--input-bg); padding: 8px 18px; border-radius: 14px; border: 1px solid var(--card-border); }
+        .qty-btn { background: none; border: none; cursor: pointer; font-size: 1.1rem; color: var(--text-main); padding: 5px; transition: 0.2s; }
+        .qty-btn:hover { color: var(--mango); }
         
-        .quick-add-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
-        .quick-btn { 
-            padding: 14px; background: #f8fafc; border: 1.5px solid #edf2f7; border-radius: 16px; 
-            font-size: 0.8rem; font-weight: 800; cursor: pointer; text-align: center; transition: 0.3s;
-        }
-        .quick-btn:hover { border-color: var(--primary); background: #fffdf5; transform: translateY(-2px); }
+        .btn-trash { color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.1); width: 40px; height: 40px; border-radius: 12px; cursor: pointer; transition: 0.2s; }
+        .btn-trash:hover { background: var(--danger); color: white; }
 
-        .payment-summary { margin-top: auto; padding-top: 2rem; border-top: 2px solid var(--light); }
-        .summary-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 0.95rem; font-weight: 500; }
-        .total-row { display: flex; justify-content: space-between; font-size: 1.6rem; font-weight: 900; margin-top: 15px; color: var(--dark); letter-spacing: -1px; }
+        .btn-add-more { background: var(--icon-bg); color: var(--text-main); border: 1px solid var(--card-border); padding: 14px 28px; border-radius: 16px; font-weight: 800; cursor: pointer; transition: 0.3s; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;}
+        .btn-add-more:hover { background: var(--hover-bg); border-color: var(--mango); color: var(--mango); }
+
+        /* SUMMARY PANEL (Matches Menu Panel) */
+        .summary-panel { 
+            width: 400px; background: var(--panel-bg); border-left: 1px solid var(--card-border); 
+            padding: 2.5rem; display: flex; flex-direction: column; height: 100vh; box-shadow: -10px 0 30px rgba(0,0,0,0.2); overflow-y: auto;
+        }
+        
+        .panel-title { font-weight: 900; font-size: 18px; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px; color: var(--text-main); }
+        
+        .quick-add-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .quick-btn { 
+            padding: 12px; background: var(--input-bg); border: 1px solid var(--card-border); border-radius: 12px; 
+            font-size: 12px; font-weight: 800; cursor: pointer; text-align: center; transition: 0.3s; color: var(--text-main);
+        }
+        .quick-btn:hover { border-color: var(--mango); background: var(--mango); color: #111; transform: translateY(-2px); }
+
+        .payment-summary { margin-top: auto; padding-top: 2rem; border-top: 2px dashed var(--card-border); }
+        .summary-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;}
+        .summary-row span:last-child { color: var(--text-main); font-weight: 800; }
+        .total-row { display: flex; justify-content: space-between; font-size: 24px; font-weight: 900; margin-top: 15px; color: var(--text-main); align-items: center;}
 
         .btn-finalize { 
-            width: 100%; padding: 1.2rem; background: var(--dark); color: white; border: none; 
-            border-radius: 18px; font-weight: 800; font-size: 1.1rem; cursor: pointer; margin-top: 2rem;
-            display: flex; align-items: center; justify-content: center; gap: 12px; transition: 0.3s;
+            width: 100%; padding: 1.2rem; background: var(--success); color: white; border: none; 
+            border-radius: 16px; font-weight: 900; font-size: 14px; cursor: pointer; margin-top: 2rem;
+            display: flex; align-items: center; justify-content: center; gap: 12px; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px;
         }
-        .btn-finalize:hover { background: var(--success); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(16, 185, 129, 0.2); }
+        .btn-finalize:hover { background: #059669; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(16, 185, 129, 0.2); }
 
         /* --- MEDIA QUERIES --- */
-
-        /* TABLET OPTIMIZATION */
         @media screen and (max-width: 1100px) {
-            aside { width: 85px; padding: 2rem 0.5rem; }
+            aside { width: 90px; padding: 2rem 0.5rem; }
             aside span, .sidebar-logo img { display: none; }
             nav a { justify-content: center; padding: 1.2rem; }
-            main { margin-left: 85px; }
-            .summary-panel { width: 350px; }
+            main { margin-left: 90px; width: calc(100% - 90px); }
+            .review-section { padding: 2rem; }
         }
 
-        /* MOBILE OPTIMIZATION */
         @media screen and (max-width: 850px) {
+            body { overflow: auto; }
             aside {
                 width: 100%; height: 70px; position: fixed; bottom: 0; top: auto;
-                flex-direction: row; border-right: none; border-top: 1px solid #e5e7eb; padding: 0;
+                flex-direction: row; border-right: none; border-top: 1px solid var(--card-border); padding: 0; backdrop-filter: blur(30px);
             }
             nav { width: 100%; }
             nav ul { display: flex; justify-content: space-around; align-items: center; height: 100%; }
             nav li { margin-bottom: 0; }
             nav a { flex-direction: column; gap: 4px; font-size: 0.65rem; padding: 8px; border-radius: 0; }
-            nav li.active a { background: none; color: var(--primary-dark); box-shadow: none; }
+            nav li.active a { background: none; color: var(--mango); box-shadow: none; transform: translateY(-3px);}
             
-            main { margin-left: 0; margin-bottom: 75px; flex-direction: column; height: auto; }
+            main { margin-left: 0; margin-bottom: 75px; flex-direction: column; height: auto; width: 100%; }
             .review-section, .summary-panel { width: 100%; flex: none; height: auto; overflow: visible; border-left: none; }
-            .summary-panel { padding: 2rem; background: #f1f5f9; border-top: 2px solid #ddd; }
-            .quick-add-grid { grid-template-columns: 1fr 1fr; }
+            .summary-panel { padding: 2rem; border-top: 1px solid var(--card-border); }
         }
     </style>
 </head>
@@ -122,98 +185,224 @@
                 <li><a href="dashboardstaff.html"><i class="fa-solid fa-user-clock"></i> <span>Attendance</span></a></li>
                 <li><a href="topupstaff.html"><i class="fa-solid fa-credit-card"></i> <span>RPAY</span></a></li>
                 <li><a href="rewardsstaff.html"><i class="fa-solid fa-gift"></i> <span>Rewards</span></a></li>
-                <li style="margin-top: auto;"><a href="dashaccsettstaff.html"><i class="fa-solid fa-gear"></i> <span>Settings</span></a></li>
+                <li><a href="dashaccsettstaff.html"><i class="fa-solid fa-gear"></i> <span>Settings</span></a></li>
+                
+                <li style="margin-top: auto;">
+                    <a onclick="confirmLogout()" style="color: var(--danger);">
+                        <i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span>
+                    </a>
+                </li>
             </ul>
         </nav>
     </aside>
 
     <main>
         <section class="review-section">
-            <header style="margin-bottom: 2rem; display: flex; align-items: center; gap: 15px;">
-                <a href="menustaff.html" style="background: white; width: 45px; height: 45px; display: grid; place-items: center; border-radius: 12px; color: var(--dark); box-shadow: var(--card-shadow); text-decoration: none;">
-                    <i class="fa-solid fa-arrow-left"></i>
-                </a>
-                <div>
-                    <h1 style="font-size: clamp(1.8rem, 4vw, 2.3rem); letter-spacing: -1.5px;">Confirm Order</h1>
-                    <p style="color: var(--text-muted); font-weight: 500;">Review items before finalizing payment.</p>
+            <header>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <a href="menustaff.html" class="back-btn">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </a>
+                    <div>
+                        <h1 class="page-title">Confirm Order</h1>
+                        <p class="page-desc">Review items before finalizing payment.</p>
+                    </div>
                 </div>
+                <button class="theme-btn" id="themeToggle" title="Toggle Light/Dark Mode">
+                    <i class="fa-solid fa-sun"></i>
+                </button>
             </header>
 
             <div class="card">
                 <h3 style="margin-bottom: 1.5rem; font-weight: 800; display: flex; align-items: center; gap: 10px;">
-                    <i class="fa-solid fa-clipboard-list" style="color: var(--primary-dark);"></i> Order Summary
+                    <i class="fa-solid fa-clipboard-list" style="color: var(--mango);"></i> Order Summary
                 </h3>
                 
-                <div class="order-item-detail">
-                    <div class="item-info">
-                        <h4>Mango Bliss (L)</h4>
-                        <p>Sugar: 100% • Add-ons: Graham, Pearls</p>
-                        <strong style="color: var(--primary-dark); font-size: 1.1rem;">₱115.00</strong>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 20px;">
-                        <div class="qty-control">
-                            <button class="qty-btn"><i class="fa-solid fa-minus"></i></button>
-                            <strong style="font-size: 1.1rem;">1</strong>
-                            <button class="qty-btn"><i class="fa-solid fa-plus"></i></button>
-                        </div>
-                        <button style="color: var(--danger); border: none; background: #fff1f2; width: 40px; height: 40px; border-radius: 10px; cursor: pointer;"><i class="fa-solid fa-trash-alt"></i></button>
-                    </div>
+                <div id="orderItemsList">
+                    <p style="color: var(--text-muted); text-align: center; padding: 20px;">Loading order details...</p>
                 </div>
-
-                <div class="order-item-detail">
-                    <div class="item-info">
-                        <h4>Avocado Dream (M)</h4>
-                        <p>Sugar: 50% • No Add-ons</p>
-                        <strong style="color: var(--primary-dark); font-size: 1.1rem;">₱95.00</strong>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 20px;">
-                        <div class="qty-control">
-                            <button class="qty-btn"><i class="fa-solid fa-minus"></i></button>
-                            <strong style="font-size: 1.1rem;">2</strong>
-                            <button class="qty-btn"><i class="fa-solid fa-plus"></i></button>
-                        </div>
-                        <button style="color: var(--danger); border: none; background: #fff1f2; width: 40px; height: 40px; border-radius: 10px; cursor: pointer;"><i class="fa-solid fa-trash-alt"></i></button>
-                    </div>
-                </div>
+                
             </div>
 
             <div style="text-align: right;">
-                <button onclick="window.location.href='menustaff.html'" style="background: var(--dark); color: white; padding: 14px 28px; border-radius: 16px; border: none; font-weight: 800; cursor: pointer; transition: 0.3s; box-shadow: var(--card-shadow);">
+                <button onclick="window.location.href='menustaff.html'" class="btn-add-more">
                     <i class="fa-solid fa-plus-circle"></i> Add More Items
                 </button>
             </div>
         </section>
 
         <section class="summary-panel">
-            <h3 style="font-weight: 800; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px;">
-                <i class="fa-solid fa-sparkles" style="color: var(--primary-dark);"></i> Quick Upsell
+            <h3 class="panel-title">
+                <i class="fa-solid fa-sparkles" style="color: var(--mango);"></i> Quick Upsell
             </h3>
-            <p style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">Popular additions:</p>
+            <p style="font-size: 11px; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Popular additions:</p>
             <div class="quick-add-grid">
-                <button class="quick-btn">+ Graham (₱15)</button>
-                <button class="quick-btn">+ Pearls (₱15)</button>
-                <button class="quick-btn">+ Cheese (₱15)</button>
-                <button class="quick-btn">+ Mango (₱20)</button>
+                <button class="quick-btn" onclick="addQuickUpsell('Extra Graham', 15)">+ Graham (₱15)</button>
+                <button class="quick-btn" onclick="addQuickUpsell('Extra Pearls', 15)">+ Pearls (₱15)</button>
+                <button class="quick-btn" onclick="addQuickUpsell('Extra Cheese', 15)">+ Cheese (₱15)</button>
+                <button class="quick-btn" onclick="addQuickUpsell('Extra Mango Bits', 20)">+ Mango (₱20)</button>
             </div>
 
             <div class="payment-summary">
-                <div class="summary-row"><span>Subtotal</span><span>₱305.00</span></div>
-                <div class="summary-row"><span>Tax (12% VAT)</span><span>₱36.60</span></div>
-                <div class="summary-row" style="color: var(--success); font-weight: 800;"><span>Loyalty Discount</span><span>-₱0.00</span></div>
+                <div class="summary-row"><span>Subtotal</span><span id="summarySubtotal">₱0.00</span></div>
+                <div class="summary-row"><span>Tax (12% VAT)</span><span id="summaryTax">₱0.00</span></div>
+                <div class="summary-row"><span>Loyalty Discount</span><span id="summaryDiscount" style="color: var(--success);">-₱0.00</span></div>
                 
                 <div class="total-row">
-                    <span>Total Bill</span>
-                    <span style="color: var(--primary-dark);">₱341.60</span>
+                    <span style="font-size: 14px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 800;">Total Bill</span>
+                    <span id="summaryTotal" style="color: var(--mango);">₱0.00</span>
                 </div>
                 
-                <button class="btn-finalize" onclick="window.location.href='paymentstaff.html'">
-                    Next: Select Payment <i class="fa-solid fa-arrow-right"></i>
+                <button class="btn-finalize" onclick="proceedToPayment()">
+                    Proceed to Pay <i class="fa-solid fa-arrow-right"></i>
                 </button>
-                <p style="text-align: center; font-size: 0.75rem; color: var(--text-muted); margin-top: 20px; font-weight: 500;">
-                    <i class="fa-solid fa-info-circle"></i> This will deduct stocks from inventory once paid.
+                <p style="text-align: center; font-size: 11px; color: var(--text-muted); margin-top: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">
+                    <i class="fa-solid fa-info-circle"></i> Stocks deduct upon payment.
                 </p>
             </div>
         </section>
     </main>
+
+    <script>
+        // --- THEME TOGGLE LOGIC ---
+        const themeToggle = document.getElementById('themeToggle');
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('light-mode');
+            const isLight = document.body.classList.contains('light-mode');
+            themeToggle.innerHTML = isLight ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
+        });
+
+        // ======================================================================
+        // --- BACKEND INTEGRATION LOGIC ---
+        // ======================================================================
+
+        // Fake Data: Ganito dapat ibato ng backend (database/session) mo
+        let activeCart = [];
+
+        async function fetchCurrentOrder() {
+            try {
+                // Pag may backend na, papalitan mo 'to ng:
+                // const response = await fetch('/api/current-order');
+                // activeCart = await response.json();
+
+                // Mock data para sa Testing
+                activeCart = [
+                    { id: "ITEM-01", name: "Mango Bliss (L)", details: "Sugar: 100% • Add-ons: Graham, Pearls", price: 115.00, qty: 1 },
+                    { id: "ITEM-02", name: "Avocado Dream (M)", details: "Sugar: 50% • No Add-ons", price: 95.00, qty: 2 }
+                ];
+
+                renderCart();
+            } catch(e) {
+                console.error("Error loading order:", e);
+                document.getElementById('orderItemsList').innerHTML = '<p style="color: var(--danger); text-align: center;">Failed to load order.</p>';
+            }
+        }
+
+        function renderCart() {
+            const container = document.getElementById('orderItemsList');
+            container.innerHTML = '';
+            
+            let subtotal = 0;
+
+            if(activeCart.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">Your cart is empty.</p>';
+            } else {
+                activeCart.forEach((item, index) => {
+                    subtotal += (item.price * item.qty);
+                    
+                    const itemHTML = `
+                        <div class="order-item-detail">
+                            <div class="item-info">
+                                <h4>${item.name}</h4>
+                                <p>${item.details}</p>
+                                <span class="item-price">₱${item.price.toFixed(2)}</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 20px;">
+                                <div class="qty-control">
+                                    <button class="qty-btn" onclick="updateQty(${index}, -1)"><i class="fa-solid fa-minus"></i></button>
+                                    <strong style="font-size: 1.1rem; color: var(--text-main);">${item.qty}</strong>
+                                    <button class="qty-btn" onclick="updateQty(${index}, 1)"><i class="fa-solid fa-plus"></i></button>
+                                </div>
+                                <button onclick="removeItem(${index})" class="btn-trash" title="Remove Item">
+                                    <i class="fa-solid fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', itemHTML);
+                });
+            }
+
+            updateSummary(subtotal);
+        }
+
+        function updateSummary(subtotal) {
+            // Assuming tax is excluded in base price. Adjust if inclusive.
+            const taxRate = 0.12; 
+            const tax = subtotal * taxRate;
+            const total = subtotal + tax;
+
+            document.getElementById('summarySubtotal').innerText = `₱${subtotal.toFixed(2)}`;
+            document.getElementById('summaryTax').innerText = `₱${tax.toFixed(2)}`;
+            document.getElementById('summaryTotal').innerText = `₱${total.toFixed(2)}`;
+        }
+
+        // --- INTERACTIVE ACTIONS ---
+
+        function updateQty(index, change) {
+            if(activeCart[index].qty + change > 0) {
+                activeCart[index].qty += change;
+            } else {
+                // Confirm if user wants to delete when dropping below 1
+                if(confirm("Remove this item from the order?")) {
+                    activeCart.splice(index, 1);
+                }
+            }
+            renderCart();
+            // Eto pwede mong lagyan ng fetch() papuntang backend para isave yung bagong state
+        }
+
+        function removeItem(index) {
+            if(confirm("Remove this item from the order?")) {
+                activeCart.splice(index, 1);
+                renderCart();
+                // Dito rin magsasave sa backend
+            }
+        }
+
+        function addQuickUpsell(name, price) {
+            // Nag-a-add ng generic item papunta sa cart natin
+            activeCart.push({
+                id: "UPS-" + Date.now(),
+                name: name,
+                details: "Quick Add-on",
+                price: price,
+                qty: 1
+            });
+            renderCart();
+            // Dito rin magsasave sa backend
+        }
+
+        function proceedToPayment() {
+            if(activeCart.length === 0) {
+                return alert("Cannot proceed to payment. Cart is empty!");
+            }
+            
+            // Dito mo i-po-post sa backend yung buong `activeCart` array bago ka mag-redirect
+            console.log("Saving pending order to database...", activeCart);
+            
+            // Redirect
+            window.location.href = 'paymentstaff.html';
+        }
+
+        function confirmLogout() {
+            if(confirm("Are you sure you want to log out?")) {
+                window.location.href = "index.html"; 
+            }
+        }
+
+        // Initialize page by fetching the current order
+        document.addEventListener('DOMContentLoaded', fetchCurrentOrder);
+    </script>
 </body>
 </html>
