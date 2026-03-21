@@ -25,7 +25,6 @@
             --modal-card: #14110e;
         }
 
-        /* UPDATED LIGHT THEME STYLING */
         body.light-theme {
             --mango-dark: #f8f9fa; 
             --text-main: #1c1917;  
@@ -82,13 +81,21 @@
         }
 
         .nav-item:hover, .nav-item.active { background: var(--mango-yellow); color: #120f0a !important; font-weight: 700; box-shadow: 0 4px 15px rgba(252, 219, 5, 0.2); }
-
-        .logout-btn {
-            padding: 12px 18px; margin: 15px; border-radius: 12px;
-            color: #ef4444; font-weight: 700; text-decoration: none;
-            display: flex; align-items: center; gap: 10px;
+        .logout-btn{
+            padding: 12px 18px;
+            margin: 15px;
+            border-radius: 12px;
+            color: #ef4444;
+            font-weight: 700;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
             border: 1px solid rgba(239, 68, 68, 0.2);
             font-size: 0.85rem;
+            position: relative;
+            z-index: 10;
+            cursor: pointer;
         }
 
         .main-content { margin-left: var(--sidebar-width); flex: 1; padding: 40px; overflow-y: auto; height: 100vh; }
@@ -108,6 +115,17 @@
         .select-filter { padding: 10px 15px; border-radius: 12px; border: 1px solid var(--glass-border); background: #1a1a1a; color: var(--mango-yellow); outline: none; cursor: pointer; font-size: 0.85rem; font-weight: 700; }
         body.light-theme .select-filter { background: #fff; color: #1c1917; border-color: #e5e7eb; }
 
+        .chart-wrap {
+            position: relative;
+            height: 200px;
+            width: 100%;
+        }
+
+        .chart-wrap canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-overlay); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(20px); opacity: 0; transition: opacity 0.4s ease; }
         .modal.show { display: flex; opacity: 1; }
         .modal-content { width: 90%; max-width: 950px; height: 85vh; padding: 40px; border-radius: 30px; position: relative; background: var(--modal-card); box-shadow: 0 25px 60px rgba(0,0,0,0.2); transform: scale(0.9); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
@@ -124,6 +142,7 @@
             <a href="dashboard.html" class="nav-item active"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
             <a href="orders.html" class="nav-item"><i class="fa-solid fa-receipt"></i> Orders</a>
             <a href="accounts.html" class="nav-item"><i class="fa-solid fa-user-gear"></i> Accounts</a>
+            <a href="wallet.html" class="nav-item"><i class="fa-solid fa-wallet"></i> Wallets</a>
             <a href="inventory.html" class="nav-item"><i class="fa-solid fa-boxes-stacked"></i> Inventory</a>
             <a href="menuman.html" class="nav-item"><i class="fa-solid fa-utensils"></i> Menu Manager</a>
             <a href="promo.html" class="nav-item"><i class="fa-solid fa-tags"></i> Promos</a>
@@ -132,7 +151,7 @@
             <a href="payments.html" class="nav-item"><i class="fa-solid fa-credit-card"></i> Payments</a>
             <a href="settings.html" class="nav-item"><i class="fa-solid fa-cog"></i> Settings</a>
         </nav>
-        <a href="index.html" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Log Out</a>
+        <a href="#" class="logout-btn" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Log Out</a>
     </aside>
 
     <main class="main-content">
@@ -164,7 +183,7 @@
         <div class="flex justify-between items-center mb-8 px-2">
             <h2 class="text-sm font-black uppercase tracking-widest opacity-60">System Insights</h2>
             <div class="flex gap-4">
-                <select class="select-filter" id="timeframeFilter" onchange="updateDashboard()">
+                <select class="select-filter" id="timeframeFilter" onchange="fetchDashboardData()">
                     <option value="daily">Daily Pulse</option>
                     <option value="weekly">Weekly Overview</option>
                 </select>
@@ -175,27 +194,27 @@
         <section class="dashboard-grid">
             <div class="chart-card glass" onclick="openModal('salesChart', 'Sales Volume (Orders)')">
                 <h3>Sales Count</h3>
-                <div class="h-[200px]"><canvas id="salesChart"></canvas></div>
+                <div class="chart-wrap"><canvas id="salesChart"></canvas></div>
             </div>
             <div class="chart-card glass" onclick="openModal('revenueChart', 'Gross Revenue (₱)')">
                 <h3>Total Revenue</h3>
-                <div class="h-[200px]"><canvas id="revenueChart"></canvas></div>
+                <div class="chart-wrap"><canvas id="revenueChart"></canvas></div>
             </div>
             <div class="chart-card glass" onclick="openModal('inventoryChart', 'Current Stock Levels')">
                 <h3>Inventory Status</h3>
-                <div class="h-[200px]"><canvas id="inventoryChart"></canvas></div>
+                <div class="chart-wrap"><canvas id="inventoryChart"></canvas></div>
             </div>
             <div class="chart-card glass" onclick="openModal('bestSellersChart', 'Item Popularity')">
                 <h3>Best Sellers</h3>
-                <div class="h-[200px]"><canvas id="bestSellersChart"></canvas></div>
+                <div class="chart-wrap"><canvas id="bestSellersChart"></canvas></div>
             </div>
             <div class="chart-card glass" onclick="openModal('paymentChart', 'Payment Method Breakdown')">
                 <h3>Payments</h3>
-                <div class="h-[200px]"><canvas id="paymentChart"></canvas></div>
+                <div class="chart-wrap"><canvas id="paymentChart"></canvas></div>
             </div>
             <div class="chart-card glass" onclick="openModal('rewardsChart', 'TeoPay Loyalty Issued')">
                 <h3>Rewards Issued</h3>
-                <div class="h-[200px]"><canvas id="rewardsChart"></canvas></div>
+                <div class="chart-wrap"><canvas id="rewardsChart"></canvas></div>
             </div>
         </section>
     </main>
@@ -204,157 +223,12 @@
         <div class="modal-content glass">
             <span class="close-modal" onclick="closeModal()">&times;</span>
             <h3 id="modalTitle" class="text-2xl font-black uppercase text-yellow-500 mb-8 tracking-widest"></h3>
-            <div class="w-full h-[85%]"><canvas id="modalCanvas"></canvas></div>
+            <div class="chart-wrap" style="height: 85%;"><canvas id="modalCanvas"></canvas></div>
         </div>
     </div>
 
-    <script>
-        const DB_KEY = 'teoDmango_Store';
-
-        (function() {
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'light') {
-                document.body.classList.add('light-theme');
-            }
-        })();
-
-        function getDB() {
-            const data = localStorage.getItem(DB_KEY);
-            if (!data) {
-                const seed = {
-                    sales: { labels: ['8am', '10am', '12pm', '2pm', '4pm', '6pm', '8pm'], data: [42, 55, 30, 68, 90, 125, 110] },
-                    revenue: { labels: ['8am', '10am', '12pm', '2pm', '4pm', '6pm', '8pm'], data: [4200, 5500, 3000, 6800, 9000, 12500, 11000] },
-                    inventory: { labels: ['Mangoes', 'Graham', 'Cream', 'Pearl', 'Cups'], data: [85, 42, 15, 25, 95] },
-                    bestSellers: { labels: ['Classic', 'Graham', 'Cheese'], data: [450, 620, 210] },
-                    payments: { labels: ['TeoPay', 'Cash', 'GCash'], data: [55, 25, 20] },
-                    rewards: { labels: ['8am', '10am', '12pm', '2pm', '4pm', '6pm', '8pm'], data: [420, 550, 300, 680, 900, 1250, 1100] }
-                };
-                localStorage.setItem(DB_KEY, JSON.stringify(seed));
-                return seed;
-            }
-            return JSON.parse(data);
-        }
-
-        let charts = {};
-        let modalChartInstance = null;
-
-        function toggleTheme() {
-            document.body.classList.toggle('light-theme');
-            const isLight = document.body.classList.contains('light-theme');
-            localStorage.setItem('theme', isLight ? 'light' : 'dark');
-            document.getElementById('themeIcon').className = isLight ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
-            updateDashboard();
-        }
-
-        function updateDashboard() {
-            const sysData = getDB();
-            const isLight = document.body.classList.contains('light-theme');
-            Chart.defaults.color = isLight ? '#1c1917' : '#d1d5db';
-            const accent = isLight ? '#ff8c00' : '#fcdb05';
-
-            const totalRev = sysData.revenue.data.reduce((a, b) => a + b, 0);
-            const totalPts = sysData.rewards.data.reduce((a, b) => a + b, 0);
-            const avgStock = sysData.inventory.data.reduce((a, b) => a + b, 0) / sysData.inventory.data.length;
-
-            document.getElementById('statRevenue').innerText = `₱${totalRev.toLocaleString()}`;
-            document.getElementById('statRewards').innerText = `${totalPts.toLocaleString()} pts`;
-            document.getElementById('statStock').innerText = `${Math.floor(avgStock)}% Optimized`;
-            document.getElementById('currentDate').innerText = new Date().toDateString();
-
-            renderChart('salesChart', 'line', sysData.sales.labels, sysData.sales.data, accent, 'Orders', true);
-            renderChart('revenueChart', 'bar', sysData.revenue.labels, sysData.revenue.data, '#52c41a', 'Revenue', false);
-            renderChart('inventoryChart', 'bar', sysData.inventory.labels, sysData.inventory.data, '#ef4444', 'Stock Level', false);
-            renderChart('bestSellersChart', 'bar', sysData.bestSellers.labels, sysData.bestSellers.data, accent, 'Units', false);
-            renderChart('paymentChart', 'doughnut', sysData.payments.labels, sysData.payments.data, [accent, '#1890ff', '#ef4444'], 'Payments');
-            renderChart('rewardsChart', 'line', sysData.rewards.labels, sysData.rewards.data, '#a855f7', 'Points', true);
-        }
-
-        function renderChart(id, type, labels, data, color, labelName, isGradient) {
-            const canvas = document.getElementById(id);
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            if (charts[id]) charts[id].destroy();
-
-            const isLight = document.body.classList.contains('light-theme');
-            let bg = Array.isArray(color) ? color : color + '33';
-            if (isGradient) {
-                bg = ctx.createLinearGradient(0, 0, 0, 200);
-                bg.addColorStop(0, color + '66'); bg.addColorStop(1, 'transparent');
-            }
-
-            charts[id] = new Chart(ctx, {
-                type: type,
-                data: {
-                    labels: labels,
-                    datasets: [{ label: labelName, data: data, backgroundColor: bg, borderColor: Array.isArray(color) ? 'transparent' : color, borderWidth: 2.5, tension: 0.4, borderRadius: 8, fill: isGradient }]
-                },
-                options: { 
-                    maintainAspectRatio: false, 
-                    animation: { duration: 1500, easing: 'easeOutQuart' },
-                    plugins: { legend: { display: type === 'doughnut' } }, 
-                    scales: { 
-                        y: { 
-                            display: type !== 'doughnut', 
-                            grid: { color: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.03)' }, 
-                            beginAtZero: true 
-                        }, 
-                        x: { 
-                            display: type !== 'doughnut', 
-                            grid: { display: false } 
-                        } 
-                    } 
-                }
-            });
-        }
-
-        function openModal(chartId, title) {
-            const modal = document.getElementById('chartModal');
-            document.getElementById('modalTitle').innerText = title;
-            modal.classList.add('show');
-            const source = charts[chartId];
-            const ctx = document.getElementById('modalCanvas').getContext('2d');
-            if (modalChartInstance) modalChartInstance.destroy();
-
-            modalChartInstance = new Chart(ctx, {
-                type: source.config.type,
-                data: {
-                    labels: source.config.data.labels,
-                    datasets: source.config.data.datasets.map(ds => ({ ...ds, data: ds.data.map(() => 0) }))
-                },
-                options: {
-                    ...source.config.options,
-                    animation: { duration: 1500, easing: 'easeOutBack' },
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: true } }
-                }
-            });
-
-            setTimeout(() => {
-                modalChartInstance.data.datasets.forEach((dataset, i) => { dataset.data = source.config.data.datasets[i].data; });
-                modalChartInstance.update();
-            }, 100);
-        }
-
-        function closeModal() { document.getElementById('chartModal').classList.remove('show'); }
-
-        window.onload = () => {
-            if (localStorage.getItem('theme') === 'light') {
-                document.getElementById('themeIcon').className = 'fa-solid fa-moon';
-            }
-            updateDashboard();
-        };
-
-        function exportData() {
-            const sysData = getDB();
-            let csv = "Category,Label,Value\n";
-            Object.keys(sysData).forEach(key => { sysData[key].labels.forEach((l, i) => { csv += `${key},${l},${sysData[key].data[i]}\n`; }); });
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.setAttribute('href', url);
-            a.setAttribute('download', 'Teo_Reports.csv');
-            a.click();
-        }
-    </script>
+    <script src="../js/authGuard.js"></script>
+    <script src="../js/logout.js"></script>
+    <script src="../js/dashboard.js"></script>
 </body>
 </html>

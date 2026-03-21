@@ -6,9 +6,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func as sa_func
 
 from backend.database import SessionLocal
-from backend.models import Product, ProductRecipe, InventoryMaster, User
-
-# ✅ JWT role guards
+from backend.models import Product, ProductRecipe, InventoryMaster, User, Category
 from backend.security import require_roles
 
 router = APIRouter(prefix="/products", tags=["Products"])
@@ -55,27 +53,83 @@ class RecipeReplace(BaseModel):
     items: List[RecipeItem]
 
 
+# -----------------------
+# HELPERS
+# -----------------------
+def _serialize_product(p: Product, category_name: Optional[str] = None):
+    return {
+        "product_id": p.id,
+        "name": p.name,
+        "price": float(p.price),
+        "points_per_unit": int(getattr(p, "points_per_unit", 0) or 0),
+        "is_active": bool(getattr(p, "is_active", True)),
+        "is_available": bool(getattr(p, "is_available", True)),
+        "category_id": getattr(p, "category_id", None),
+        "category_name": category_name,
+    }
+
+
+def _get_valid_category(db: Session, category_id: Optional[int]) -> Optional[Category]:
+    if category_id is None:
+        return None
+
+    category = (
+        db.query(Category)
+        .filter(Category.id == category_id, Category.is_active == True)
+        .first()
+    )
+    if not category:
+        raise HTTPException(status_code=400, detail="Invalid or inactive category")
+    return category
+
+
+# ============================================================
+# LIST ACTIVE CATEGORIES (staff/cashier/admin)
+# ============================================================
+@router.get("/categories")
+def list_categories(
+    active_only: bool = Query(default=True),
+    db: Session = Depends(get_db),
+    _: User = Depends(require_roles("staff", "cashier", "admin")),
+):
+    query = db.query(Category)
+
+    if active_only:
+        query = query.filter(Category.is_active == True)
+
+    rows = query.order_by(Category.id.asc()).all()
+
+    return {
+        "count": len(rows),
+        "data": [
+            {
+                "category_id": c.id,
+                "name": c.name,
+                "is_active": bool(getattr(c, "is_active", True)),
+            }
+            for c in rows
+        ],
+    }
+
+
 # ============================================================
 # CUSTOMER MENU: active + available only (PUBLIC)
 # ============================================================
 @router.get("/menu")
 def get_menu(db: Session = Depends(get_db)):
-    q = db.query(Product)
-    q = q.filter(Product.is_active == True, Product.is_available == True)
-    rows = q.order_by(Product.id.asc()).all()
+    rows = (
+        db.query(Product, Category)
+        .outerjoin(Category, Category.id == Product.category_id)
+        .filter(Product.is_active == True, Product.is_available == True)
+        .order_by(Product.id.asc())
+        .all()
+    )
+
     return {
         "count": len(rows),
         "data": [
-            {
-                "product_id": p.id,
-                "name": p.name,
-                "price": float(p.price),
-                "points_per_unit": int(getattr(p, "points_per_unit", 0) or 0),
-                "is_active": bool(getattr(p, "is_active", True)),
-                "is_available": bool(getattr(p, "is_available", True)),
-                "category_id": getattr(p, "category_id", None),
-            }
-            for p in rows
+            _serialize_product(product, category.name if category else None)
+            for product, category in rows
         ],
     }
 
@@ -91,26 +145,22 @@ def list_products(
     db: Session = Depends(get_db),
     _: User = Depends(require_roles("staff", "cashier", "admin")),
 ):
-    query = db.query(Product)
+    query = db.query(Product, Category).outerjoin(Category, Category.id == Product.category_id)
+
     if active_only:
         query = query.filter(Product.is_active == True)
+
     if q:
-        query = query.filter(Product.name.ilike(f"%{q.strip()}%"))
+        q_clean = q.strip()
+        query = query.filter(Product.name.ilike(f"%{q_clean}%"))
 
     rows = query.order_by(Product.id.asc()).limit(limit).all()
+
     return {
         "count": len(rows),
         "data": [
-            {
-                "product_id": p.id,
-                "name": p.name,
-                "price": float(p.price),
-                "points_per_unit": int(getattr(p, "points_per_unit", 0) or 0),
-                "is_active": bool(getattr(p, "is_active", True)),
-                "is_available": bool(getattr(p, "is_available", True)),
-                "category_id": getattr(p, "category_id", None),
-            }
-            for p in rows
+            _serialize_product(product, category.name if category else None)
+            for product, category in rows
         ],
     }
 
@@ -120,18 +170,18 @@ def list_products(
 # ============================================================
 @router.get("/{product_id}")
 def get_product(product_id: int, db: Session = Depends(get_db)):
-    p = db.query(Product).filter(Product.id == product_id).first()
-    if not p:
+    row = (
+        db.query(Product, Category)
+        .outerjoin(Category, Category.id == Product.category_id)
+        .filter(Product.id == product_id)
+        .first()
+    )
+
+    if not row:
         raise HTTPException(status_code=404, detail="Product not found")
-    return {
-        "product_id": p.id,
-        "name": p.name,
-        "price": float(p.price),
-        "points_per_unit": int(getattr(p, "points_per_unit", 0) or 0),
-        "is_active": bool(getattr(p, "is_active", True)),
-        "is_available": bool(getattr(p, "is_available", True)),
-        "category_id": getattr(p, "category_id", None),
-    }
+
+    product, category = row
+    return _serialize_product(product, category.name if category else None)
 
 
 # ============================================================
@@ -144,29 +194,42 @@ def create_product(
     _: User = Depends(require_roles("staff", "cashier", "admin")),
 ):
     name = (payload.name or "").strip()
+
     if not name:
         raise HTTPException(status_code=400, detail="name is required")
+
     if payload.price < 0:
         raise HTTPException(status_code=400, detail="price must be >= 0")
+
     if payload.points_per_unit < 0:
         raise HTTPException(status_code=400, detail="points_per_unit must be >= 0")
+
+    if payload.category_id is None:
+        raise HTTPException(status_code=400, detail="category_id is required")
 
     existing = db.query(Product).filter(sa_func.lower(Product.name) == name.lower()).first()
     if existing:
         raise HTTPException(status_code=400, detail="Product name already exists")
 
+    category = _get_valid_category(db, payload.category_id)
+
     p = Product(
         name=name,
         price=payload.price,
-        category_id=payload.category_id,
+        category_id=category.id if category else None,
         points_per_unit=payload.points_per_unit,
         is_active=payload.is_active,
         is_available=payload.is_available,
     )
+
     db.add(p)
     db.commit()
     db.refresh(p)
-    return {"message": "created", "product_id": p.id}
+
+    return {
+        "message": "created",
+        **_serialize_product(p, category.name if category else None),
+    }
 
 
 # ============================================================
@@ -183,10 +246,20 @@ def patch_product(
     if not p:
         raise HTTPException(status_code=404, detail="Product not found")
 
+    category_name = None
+
     if payload.name is not None:
         name = payload.name.strip()
         if not name:
             raise HTTPException(status_code=400, detail="name cannot be empty")
+
+        dup = db.query(Product).filter(
+            sa_func.lower(Product.name) == name.lower(),
+            Product.id != product_id
+        ).first()
+        if dup:
+            raise HTTPException(status_code=400, detail="Product name already exists")
+
         p.name = name
 
     if payload.price is not None:
@@ -200,7 +273,9 @@ def patch_product(
         p.points_per_unit = payload.points_per_unit
 
     if payload.category_id is not None:
-        p.category_id = payload.category_id
+        category = _get_valid_category(db, payload.category_id)
+        p.category_id = category.id
+        category_name = category.name
 
     if payload.is_active is not None:
         p.is_active = bool(payload.is_active)
@@ -211,15 +286,11 @@ def patch_product(
     db.commit()
     db.refresh(p)
 
-    return {
-        "product_id": p.id,
-        "name": p.name,
-        "price": float(p.price),
-        "points_per_unit": int(getattr(p, "points_per_unit", 0) or 0),
-        "is_active": bool(getattr(p, "is_active", True)),
-        "is_available": bool(getattr(p, "is_available", True)),
-        "category_id": getattr(p, "category_id", None),
-    }
+    if category_name is None and p.category_id is not None:
+        category_row = db.query(Category).filter(Category.id == p.category_id).first()
+        category_name = category_row.name if category_row else None
+
+    return _serialize_product(p, category_name)
 
 
 # ============================================================

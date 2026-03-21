@@ -1,5 +1,6 @@
 from typing import Optional
 from decimal import Decimal
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
@@ -8,9 +9,8 @@ from sqlalchemy import func as sa_func
 from backend.database import SessionLocal
 from backend.models import InventoryMaster, InventoryMasterMovement
 
-# ✅ JWT + role guards
-from backend.security import require_roles, get_current_user  # get_current_user optional if you want to return who did what
-from backend.models import User  # for type hints only
+from backend.security import require_roles
+from backend.models import User
 
 router = APIRouter(prefix="/inventory", tags=["Inventory"])
 
@@ -31,14 +31,20 @@ def get_db():
 # -----------------------
 class InventoryCreate(BaseModel):
     name: str = Field(..., min_length=1)
+    category: str = Field(default="General", min_length=1)
     unit: str = Field(..., min_length=1)
     quantity: Decimal = Field(default=Decimal("0"))
+    alert_threshold: Decimal = Field(default=Decimal("10"), ge=0)
+    expiration_date: Optional[datetime] = None
     is_active: bool = True
 
 
 class InventoryUpdate(BaseModel):
     name: Optional[str] = None
+    category: Optional[str] = None
     unit: Optional[str] = None
+    alert_threshold: Optional[Decimal] = Field(default=None, ge=0)
+    expiration_date: Optional[datetime] = None
     is_active: Optional[bool] = None
 
 
@@ -50,6 +56,8 @@ class RestockPayload(BaseModel):
 class AdjustPayload(BaseModel):
     change_qty: Decimal
     reason: str = Field(default="adjustment")
+    expiration_date: Optional[datetime] = None
+    category: Optional[str] = None
 
 
 # -----------------------
@@ -59,11 +67,52 @@ def _normalize_name(s: str) -> str:
     return (s or "").strip().lower()
 
 
+def _normalize_text(s: str, fallback: str = "") -> str:
+    s = (s or "").strip()
+    return s if s else fallback
+
+
 def _get_item(db: Session, inventory_master_id: int) -> InventoryMaster:
     row = db.query(InventoryMaster).filter(InventoryMaster.id == inventory_master_id).first()
     if not row:
         raise HTTPException(status_code=404, detail="Inventory item not found")
     return row
+
+
+def _to_utc(dt: Optional[datetime]) -> Optional[datetime]:
+    if dt is None:
+        return None
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
+
+
+def _validate_future_expiration(expiration_date: Optional[datetime]):
+    if expiration_date is None:
+        return
+
+    exp_utc = _to_utc(expiration_date)
+    now_utc = datetime.now(timezone.utc)
+
+    if exp_utc.date() < now_utc.date():
+        raise HTTPException(
+            status_code=400,
+            detail="expiration_date cannot be in the past"
+        )
+
+
+def _serialize_item(row: InventoryMaster):
+    return {
+        "inventory_master_id": row.id,
+        "name": row.name,
+        "category": getattr(row, "category", "General") or "General",
+        "unit": row.unit,
+        "quantity": float(Decimal(str(row.quantity))),
+        "alert_threshold": float(Decimal(str(getattr(row, "alert_threshold", 10) or 10))),
+        "expiration_date": str(getattr(row, "expiration_date", None)) if getattr(row, "expiration_date", None) else None,
+        "is_active": bool(row.is_active),
+        "updated_at": str(getattr(row, "updated_at", "")) if hasattr(row, "updated_at") else None,
+    }
 
 
 # =========================================================
@@ -84,22 +133,17 @@ def list_inventory_master(
         query = query.filter(InventoryMaster.is_active == True)
 
     if q:
-        query = query.filter(sa_func.lower(InventoryMaster.name).like(f"%{_normalize_name(q)}%"))
+        q_norm = _normalize_name(q)
+        query = query.filter(
+            sa_func.lower(InventoryMaster.name).like(f"%{q_norm}%")
+            | sa_func.lower(InventoryMaster.category).like(f"%{q_norm}%")
+        )
 
     rows = query.order_by(InventoryMaster.id.asc()).limit(limit).all()
 
     return {
         "count": len(rows),
-        "data": [
-            {
-                "inventory_master_id": r.id,
-                "name": r.name,
-                "unit": r.unit,
-                "quantity": float(Decimal(str(r.quantity))),
-                "is_active": bool(r.is_active),
-            }
-            for r in rows
-        ],
+        "data": [_serialize_item(r) for r in rows],
     }
 
 
@@ -114,13 +158,7 @@ def get_inventory_master_item(
     _: User = Depends(require_roles("staff", "cashier", "admin")),
 ):
     r = _get_item(db, inventory_master_id)
-    return {
-        "inventory_master_id": r.id,
-        "name": r.name,
-        "unit": r.unit,
-        "quantity": float(Decimal(str(r.quantity))),
-        "is_active": bool(r.is_active),
-    }
+    return _serialize_item(r)
 
 
 # =========================================================
@@ -137,6 +175,11 @@ def create_inventory_master_item(
     if not name_norm:
         raise HTTPException(status_code=400, detail="name is required")
 
+    _validate_future_expiration(payload.expiration_date)
+
+    if Decimal(str(payload.quantity)) < 0:
+        raise HTTPException(status_code=400, detail="quantity cannot be negative")
+
     exists = db.query(InventoryMaster).filter(sa_func.lower(InventoryMaster.name) == name_norm).first()
     if exists:
         raise HTTPException(
@@ -146,8 +189,11 @@ def create_inventory_master_item(
 
     row = InventoryMaster(
         name=payload.name.strip(),
+        category=_normalize_text(payload.category, "General"),
         unit=payload.unit.strip(),
         quantity=Decimal(str(payload.quantity)),
+        alert_threshold=Decimal(str(payload.alert_threshold)),
+        expiration_date=payload.expiration_date,
         is_active=bool(payload.is_active),
     )
     db.add(row)
@@ -168,11 +214,7 @@ def create_inventory_master_item(
 
     return {
         "message": "created",
-        "inventory_master_id": row.id,
-        "name": row.name,
-        "unit": row.unit,
-        "quantity": float(Decimal(str(row.quantity))),
-        "is_active": bool(row.is_active),
+        **_serialize_item(row),
     }
 
 
@@ -205,10 +247,20 @@ def update_inventory_master_item(
             )
         row.name = payload.name.strip()
 
+    if payload.category is not None:
+        row.category = _normalize_text(payload.category, "General")
+
     if payload.unit is not None:
         if not payload.unit.strip():
             raise HTTPException(status_code=400, detail="unit cannot be empty")
         row.unit = payload.unit.strip()
+
+    if payload.alert_threshold is not None:
+        row.alert_threshold = Decimal(str(payload.alert_threshold))
+
+    if payload.expiration_date is not None:
+        _validate_future_expiration(payload.expiration_date)
+        row.expiration_date = payload.expiration_date
 
     if payload.is_active is not None:
         row.is_active = bool(payload.is_active)
@@ -218,17 +270,13 @@ def update_inventory_master_item(
 
     return {
         "message": "updated",
-        "inventory_master_id": row.id,
-        "name": row.name,
-        "unit": row.unit,
-        "quantity": float(Decimal(str(row.quantity))),
-        "is_active": bool(row.is_active),
+        **_serialize_item(row),
     }
 
 
 # =========================================================
 # 5) RESTOCK
-# staff/cashier/admin (✅ up to you; if gusto mo admin only, sabihin mo)
+# staff/cashier/admin
 # =========================================================
 @router.post("/master/{inventory_master_id}/restock", operation_id="inventory_restock_master_v1")
 def restock_inventory_master_item(
@@ -262,10 +310,7 @@ def restock_inventory_master_item(
 
     return {
         "message": "restocked",
-        "inventory_master_id": row.id,
-        "name": row.name,
-        "unit": row.unit,
-        "quantity": float(Decimal(str(row.quantity))),
+        **_serialize_item(row),
     }
 
 
@@ -292,6 +337,13 @@ def adjust_inventory_master_item(
 
     row.quantity = new_qty
 
+    if payload.expiration_date is not None:
+        _validate_future_expiration(payload.expiration_date)
+        row.expiration_date = payload.expiration_date
+
+    if payload.category is not None:
+        row.category = _normalize_text(payload.category, "General")
+
     db.add(
         InventoryMasterMovement(
             inventory_master_id=row.id,
@@ -306,15 +358,38 @@ def adjust_inventory_master_item(
 
     return {
         "message": "adjusted",
-        "inventory_master_id": row.id,
-        "name": row.name,
-        "unit": row.unit,
-        "quantity": float(Decimal(str(row.quantity))),
+        **_serialize_item(row),
     }
 
 
 # =========================================================
-# 7) MOVEMENT LOGS
+# 7) DEACTIVATE / ACTIVATE
+# admin only
+# =========================================================
+class ToggleInventoryActivePayload(BaseModel):
+    is_active: bool
+
+
+@router.patch("/master/{inventory_master_id}/active", operation_id="inventory_toggle_master_active_v1")
+def set_inventory_item_active(
+    inventory_master_id: int,
+    payload: ToggleInventoryActivePayload,
+    db: Session = Depends(get_db),
+    _: User = Depends(require_roles("admin")),
+):
+    row = _get_item(db, inventory_master_id)
+    row.is_active = bool(payload.is_active)
+    db.commit()
+    db.refresh(row)
+
+    return {
+        "message": "updated",
+        **_serialize_item(row),
+    }
+
+
+# =========================================================
+# 8) MOVEMENT LOGS PER ITEM
 # staff/cashier/admin
 # =========================================================
 @router.get("/master/{inventory_master_id}/movements", operation_id="inventory_master_movements_v1")
@@ -324,7 +399,7 @@ def get_inventory_master_movements(
     db: Session = Depends(get_db),
     _: User = Depends(require_roles("staff", "cashier", "admin")),
 ):
-    _ = _get_item(db, inventory_master_id)
+    item = _get_item(db, inventory_master_id)
 
     rows = (
         db.query(InventoryMasterMovement)
@@ -336,6 +411,7 @@ def get_inventory_master_movements(
 
     return {
         "inventory_master_id": inventory_master_id,
+        "item_name": item.name,
         "count": len(rows),
         "data": [
             {

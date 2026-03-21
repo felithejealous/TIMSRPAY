@@ -18,7 +18,7 @@ class User(Base):
     password_hash = Column(Text, nullable=True)
 
     role_id = Column(Integer, ForeignKey("roles.id"), nullable=True)
-    role = relationship ("Role")
+    role = relationship("Role")
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=False), server_default=func.now())
 
@@ -26,7 +26,6 @@ class User(Base):
     oauth_provider = Column(String(50), nullable=True)
     profile_picture = Column(Text, nullable=True)
 
-    
 
 class Wallet(Base):
     __tablename__ = "wallets"
@@ -34,8 +33,9 @@ class Wallet(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
     balance = Column(Numeric(12, 2), default=0)
+    wallet_code = Column(String(6), unique=True, index=True, nullable=True)
 
-    pin_hash = Column(Text, nullable=True)  
+    pin_hash = Column(Text, nullable=True)
 
 
 class RewardWallet(Base):
@@ -44,6 +44,7 @@ class RewardWallet(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
     total_points = Column(Integer, default=0)
+
 
 class Product(Base):
     __tablename__ = "products"
@@ -54,8 +55,7 @@ class Product(Base):
     price = Column(Numeric(12, 2), nullable=False)
 
     is_active = Column(Boolean, default=True)
-    is_available = Column(Boolean, default=True, nullable=False)  
-    # already exists in DB
+    is_available = Column(Boolean, default=True, nullable=False)
     points_per_unit = Column(Integer, default=0, nullable=False)
 
 
@@ -65,6 +65,7 @@ class InventoryItem(Base):
     product_id = Column(Integer, ForeignKey("products.id"), unique=True, nullable=False)
     quantity = Column(Integer, default=0)
     updated_at = Column(DateTime(timezone=False), server_default=func.now(), onupdate=func.now())
+
 
 class StockMovement(Base):
     __tablename__ = "stock_movements"
@@ -80,28 +81,30 @@ class Order(Base):
     __tablename__ = "orders"
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
-    order_type = Column(String(20), nullable=False)  # kiosk/online
+
+    order_type = Column(String(20), nullable=False)   # kiosk / online / cashier
+    payment_method = Column(String(20), nullable=True)  # cash / wallet / gcash if ever later
+    customer_name = Column(String(150), nullable=True)
+
     status = Column(String(20), default="pending")
     total_amount = Column(Numeric(12, 2), default=0)
     created_at = Column(DateTime(timezone=False), server_default=func.now())
     subtotal = Column(Numeric(12, 2), default=0)
     vat_amount = Column(Numeric(12, 2), default=0)
     vat_rate = Column(Numeric(5, 2), default=12.00)
-    # how many points this order earned (receipt display kahit guest)
+
     earned_points = Column(Integer, nullable=False, default=0)
-    # if points were already credited to a user account
     points_synced = Column(Boolean, nullable=False, default=False)
-    # claim window for guest/cash orders (e.g., created_at + 24h)
     points_claim_expires_at = Column(DateTime(timezone=False), nullable=True)
-    # claim audit (once claimed, lock it)
     points_claimed_at = Column(DateTime(timezone=False), nullable=True)
-    # who received the points (customer account)
     points_claimed_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
-    # staff/cashier who processed the claim (optional audit)
     points_claimed_by_staff_id = Column(Integer, nullable=True)
-    # optional: how it was claimed
-    # "wallet_auto" | "manual_otp" | "admin_adjust"
     points_claim_method = Column(String(20), nullable=True)
+
+    paid_at = Column(DateTime(timezone=False), nullable=True)
+    completed_at = Column(DateTime(timezone=False), nullable=True)
+    cancelled_at = Column(DateTime(timezone=False), nullable=True)
+    cancel_reason = Column(Text, nullable=True)
 
 
 class OrderItem(Base):
@@ -112,6 +115,7 @@ class OrderItem(Base):
     quantity = Column(Integer, nullable=False)
     price = Column(Numeric(12, 2), nullable=False)
 
+
 class AddOn(Base):
     __tablename__ = "add_ons"
     id = Column(Integer, primary_key=True, index=True)
@@ -121,6 +125,7 @@ class AddOn(Base):
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=False), server_default=func.now())
 
+
 class OrderItemAddOn(Base):
     __tablename__ = "order_item_add_ons"
     id = Column(Integer, primary_key=True, index=True)
@@ -129,12 +134,14 @@ class OrderItemAddOn(Base):
     qty = Column(Integer, nullable=False, default=1)
     price_at_time = Column(Numeric(10, 2), nullable=False, default=0)
 
+
 class AddOnRecipe(Base):
     __tablename__ = "add_on_recipes"
     id = Column(Integer, primary_key=True, index=True)
     add_on_id = Column(Integer, ForeignKey("add_ons.id", ondelete="CASCADE"), nullable=False)
     inventory_master_id = Column(Integer, ForeignKey("inventory_master.id"), nullable=False)
     qty_used = Column(Numeric(12, 4), nullable=False, default=1)
+
 
 class Reward(Base):
     __tablename__ = "rewards"
@@ -144,15 +151,17 @@ class Reward(Base):
     points_required = Column(Integer, nullable=False)
     is_active = Column(Boolean, default=True)
 
+
 class RewardTransaction(Base):
     __tablename__ = "reward_transactions"
     id = Column(Integer, primary_key=True, index=True)
     reward_wallet_id = Column(Integer, ForeignKey("reward_wallets.id"), nullable=False)
-    reward_id = Column(Integer, ForeignKey("rewards.id"), nullable=True)  # nullable for EARN
+    reward_id = Column(Integer, ForeignKey("rewards.id"), nullable=True)
     order_id = Column(Integer, ForeignKey("orders.id"), nullable=True)
     points_change = Column(Integer, nullable=False)
-    transaction_type = Column(String(10), nullable=False)  # "EARN" / "REDEEM"
+    transaction_type = Column(String(10), nullable=False)  # EARN / REDEEM
     created_at = Column(DateTime(timezone=False), server_default=func.now())
+
 
 class WalletTransaction(Base):
     __tablename__ = "wallet_transactions"
@@ -162,18 +171,23 @@ class WalletTransaction(Base):
     order_id = Column(Integer, ForeignKey("orders.id"), nullable=True)
 
     amount = Column(Numeric(12, 2), nullable=False)
-    transaction_type = Column(String(20), nullable=False)  # TOPUP / PAYMENT
+    transaction_type = Column(String(20), nullable=False)  # TOPUP / PAYMENT / REFUND
     created_at = Column(DateTime(timezone=False), server_default=func.now())
+
 
 class InventoryMaster(Base):
     __tablename__ = "inventory_master"
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(150), unique=True, nullable=False)
+    category = Column(String(20), nullable=False, default="General")
     unit = Column(String(20), nullable=False, default="pcs")
     quantity = Column(Numeric(12, 2), nullable=False, default=0)
+    alert_threshold = Column(Numeric(12, 2), nullable=False, default=10)
+    expiration_date = Column(DateTime(timezone=True), nullable=True)
     is_active = Column(Boolean, nullable=False, default=True)
     updated_at = Column(DateTime(timezone=False), server_default=func.now(), onupdate=func.now())
+
 
 class InventoryMasterMovement(Base):
     __tablename__ = "inventory_master_movements"
@@ -194,6 +208,7 @@ class ProductRecipe(Base):
     inventory_master_id = Column(Integer, ForeignKey("inventory_master.id"), nullable=False)
     qty_used = Column(Numeric(12, 2), nullable=False)
 
+
 class RewardRedemptionToken(Base):
     __tablename__ = "reward_redemption_tokens"
 
@@ -201,18 +216,14 @@ class RewardRedemptionToken(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
 
     token = Column(String(80), unique=True, index=True, nullable=False)
-
-    # rule snapshot at time of generation (helpful for auditing)
     required_points = Column(Integer, nullable=False, default=2800)
 
     expires_at = Column(DateTime(timezone=True), nullable=False)
     used_at = Column(DateTime(timezone=True), nullable=True)
 
     is_used = Column(Boolean, nullable=False, default=False)
-
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
-    # optional relationship
     user = relationship("User", backref="reward_redemption_tokens")
 
 
@@ -223,20 +234,23 @@ class Category(Base):
     name = Column(String(150), nullable=False, unique=True)
     is_active = Column(Boolean, default=True)
 
+
 class AttendanceLog(Base):
     __tablename__ = "attendance_logs"
 
     id = Column(Integer, primary_key=True, index=True)
-    staff_id = Column(Integer, index=True, nullable=False)  # keep simple (no FK para iwas metadata issues)
+    staff_id = Column(Integer, index=True, nullable=False)
     time_in = Column(DateTime, nullable=False, server_default=func.now())
     time_out = Column(DateTime, nullable=True)
+
 
 class StaffProfile(Base):
     __tablename__ = "staff_profiles"
 
-    user_id = Column(Integer, primary_key=True, index=True)  # same as users.id
+    user_id = Column(Integer, primary_key=True, index=True)
     full_name = Column(String(150), nullable=False)
     position = Column(String(100), nullable=True)
+
 
 class PasswordResetToken(Base):
     __tablename__ = "password_reset_tokens"
@@ -244,18 +258,16 @@ class PasswordResetToken(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
-    # store HASH only
     token_hash = Column(Text, nullable=False)
-
     expires_at = Column(DateTime(timezone=False), nullable=False)
 
-    # security hardening
     attempts = Column(Integer, nullable=False, default=0)
 
     is_used = Column(Boolean, nullable=False, default=False)
     used_at = Column(DateTime(timezone=False), nullable=True)
 
     created_at = Column(DateTime(timezone=False), server_default=func.now(), nullable=False)
+
 
 class RewardManualOTP(Base):
     __tablename__ = "reward_manual_otp"
@@ -273,7 +285,8 @@ class RewardManualOTP(Base):
     used_at = Column(DateTime(timezone=False), nullable=True)
 
     created_at = Column(DateTime(timezone=False), server_default=func.now(), nullable=False)
-    
+
+
 class RewardOrderClaim(Base):
     __tablename__ = "reward_order_claims"
 
@@ -286,6 +299,7 @@ class RewardOrderClaim(Base):
     claim_method = Column(String(20), nullable=False, default="manual_otp")
     claimed_at = Column(DateTime(timezone=False), server_default=func.now())
 
+
 class Announcement(Base):
     __tablename__ = "announcements"
 
@@ -294,7 +308,7 @@ class Announcement(Base):
     body = Column(Text, nullable=False)
 
     image_url = Column(Text, nullable=True)
-    status = Column(String(20), nullable=False, default="draft")   # draft|published|archived
+    status = Column(String(20), nullable=False, default="draft")
     is_pinned = Column(Boolean, nullable=False, default=False)
 
     publish_at = Column(DateTime, nullable=True)
@@ -305,3 +319,11 @@ class Announcement(Base):
 
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
     updated_at = Column(DateTime, onupdate=func.now(), nullable=True)
+
+
+class CustomerProfile(Base):
+    __tablename__ = "customer_profiles"
+
+    user_id = Column(Integer, ForeignKey("users.id"), primary_key=True, index=True)
+    full_name = Column(String(150), nullable=False)
+    phone = Column(String(50), nullable=True)

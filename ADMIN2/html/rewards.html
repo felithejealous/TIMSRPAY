@@ -66,7 +66,7 @@
         .logo-section { padding: 40px 20px; text-align: center; }
         .logo-section img { width: 120px; filter: var(--logo-filter); }
 
-        .nav-menu { flex: 1; padding: 10px 15px; }
+        .nav-menu { flex: 1; padding: 10px 15px;overflow-y: auto; }
         .nav-item {
             display: flex; align-items: center; gap: 12px;
             padding: 12px 18px; margin-bottom: 6px;
@@ -130,6 +130,7 @@
             <a href="dashboard.html" class="nav-item"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
             <a href="orders.html" class="nav-item"><i class="fa-solid fa-receipt"></i> Orders</a>
             <a href="accounts.html" class="nav-item"><i class="fa-solid fa-user-gear"></i> Accounts</a>
+            <a href="wallet.html" class="nav-item"><i class="fa-solid fa-wallet"></i> Wallets</a>
             <a href="inventory.html" class="nav-item"><i class="fa-solid fa-boxes-stacked"></i> Inventory</a>
             <a href="menuman.html" class="nav-item"><i class="fa-solid fa-utensils"></i> Menu Manager</a>
             <a href="promo.html" class="nav-item"><i class="fa-solid fa-tags"></i> Promos</a>
@@ -138,7 +139,7 @@
             <a href="payments.html" class="nav-item"><i class="fa-solid fa-credit-card"></i> Payments</a>
             <a href="settings.html" class="nav-item"><i class="fa-solid fa-cog"></i> Settings</a>
         </nav>
-        <a href="index.html" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Log Out</a>
+         <a href="#" class="logout-btn" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Log Out</a>
     </aside>
 
     <main class="main-content">
@@ -332,5 +333,7 @@
 
         window.onclick = (e) => { if (e.target == modal) closeModal(); }
     </script>
+    <script src="../js/authGuard.js"></script>
+    <script src="../js/logout.js"></script>
 </body>
 </html>

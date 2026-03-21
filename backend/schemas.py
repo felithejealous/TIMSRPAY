@@ -27,7 +27,6 @@ class RegisterResponse(BaseModel):
 
 
 # ---------- ORDERS ----------
-# Optional: restrict order_type values
 OrderType = Literal["kiosk", "online", "cashier"]
 
 class OrderItemCreate(BaseModel):
@@ -40,17 +39,20 @@ class OrderItemCreate(BaseModel):
 
 
 class OrderCreate(BaseModel):
-    user_id: int
+    user_id: Optional[int] = None
     order_type: OrderType
     items: List[OrderItemCreate]
 
     payment_method: Optional[str] = None
     wallet_email: Optional[EmailStr] = None
+    wallet_code: Optional[str] = Field(default=None, min_length=6, max_length=6)
     wallet_pin: Optional[str] = Field(default=None, min_length=4, max_length=6)
+
+    customer_name: Optional[str] = Field(default=None, max_length=150)
 
 
 # =========================
-# INVENTORY MASTER (RAW MATERIALS + SUPPLIES)
+# INVENTORY MASTER
 # =========================
 class InventoryMasterCreate(BaseModel):
     name: str = Field(min_length=1)
@@ -102,7 +104,7 @@ class ForgotPasswordRequest(BaseModel):
 
 class ForgotPasswordResponse(BaseModel):
     message: str
-    reset_token: Optional[str] = None  # dev/testing only
+    reset_token: Optional[str] = None
 
 class ResetPasswordRequest(BaseModel):
     reset_token: str

@@ -1,5 +1,4 @@
-# auth.py
-from fastapi import APIRouter, Depends, HTTPException, Request, Header
+from fastapi import APIRouter, Depends, Response, HTTPException, Request, Header, Form
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta, timezone
 import hashlib
@@ -8,7 +7,8 @@ import os
 import secrets
 import smtplib
 import bcrypt
-import re  # ✅ ADD: password rules regex
+import re
+import string
 from email.message import EmailMessage
 from pydantic import BaseModel, EmailStr, Field
 import requests
@@ -21,6 +21,7 @@ from backend.security import create_access_token, get_current_user
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
+
 # -----------------------
 # DB DEP
 # -----------------------
@@ -31,8 +32,9 @@ def get_db():
     finally:
         db.close()
 
+
 # ----------------------
-# PASSWORD STRENGTH RULES (ADD-ONLY)
+# PASSWORD STRENGTH RULES
 # ----------------------
 def validate_password_strength(pw: str):
     pw = (pw or "").strip()
@@ -52,9 +54,9 @@ def validate_password_strength(pw: str):
     if not re.search(r"\d", pw):
         raise HTTPException(status_code=400, detail="Password must contain at least 1 number")
 
-    # special character (anything not alphanumeric underscore)
     if not re.search(r"[^\w]", pw):
         raise HTTPException(status_code=400, detail="Password must contain at least 1 special character")
+
 
 # ----------------------
 # PASSWORD HASH
@@ -62,12 +64,12 @@ def validate_password_strength(pw: str):
 def hash_password(pw: str) -> str:
     pw = (pw or "").strip()
 
-    # ✅ keep your existing length check
     if len(pw) < 8:
         raise HTTPException(status_code=400, detail="Password must be at least 8 characters")
 
     hashed = bcrypt.hashpw(pw.encode("utf-8"), bcrypt.gensalt())
     return hashed.decode("utf-8")
+
 
 def verify_password(pw: str, stored_hash: str) -> bool:
     if not pw or not stored_hash:
@@ -81,6 +83,7 @@ def verify_password(pw: str, stored_hash: str) -> bool:
     except Exception:
         return False
 
+
 # -----------------------
 # ROLE HELPERS
 # -----------------------
@@ -91,11 +94,25 @@ def _get_role_id(db: Session, role_name: str) -> int:
     return r.id
 
 
+def _generate_wallet_code(length: int = 6) -> str:
+    alphabet = string.ascii_uppercase + string.digits
+    return "".join(secrets.choice(alphabet) for _ in range(length))
+
+
+def _generate_unique_wallet_code(db: Session) -> str:
+    while True:
+        code = _generate_wallet_code(6)
+        existing = db.query(Wallet).filter(Wallet.wallet_code == code).first()
+        if not existing:
+            return code
+
+
 # -----------------------
 # TIME HELPERS
 # -----------------------
 def _utcnow():
     return datetime.now(timezone.utc)
+
 
 def _as_utc(dt: datetime):
     if dt is None:
@@ -139,13 +156,14 @@ def _send_email(to_email: str, subject: str, body: str):
 
 
 # -----------------------
-# TOKEN HASH (PBKDF2) for reset code
+# TOKEN HASH
 # -----------------------
 TOKEN_ITERS = 120_000
 
 def _hash_token(token_str: str, salt: bytes) -> str:
     dk = hashlib.pbkdf2_hmac("sha256", token_str.encode(), salt, TOKEN_ITERS, dklen=32)
     return f"pbkdf2_sha256${TOKEN_ITERS}${salt.hex()}${dk.hex()}"
+
 
 def _verify_token(token_str: str, stored: str) -> bool:
     try:
@@ -182,7 +200,6 @@ class ForgotPasswordConfirmPayload(BaseModel):
 def register_user(email: str, password: str, db: Session = Depends(get_db)):
     email = email.strip().lower()
 
-    # ✅ ADD: enforce strong password rules on register
     validate_password_strength(password)
 
     if db.query(User).filter(User.email == email).first():
@@ -200,7 +217,11 @@ def register_user(email: str, password: str, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(user)
 
-    db.add(Wallet(user_id=user.id, balance=0))
+    db.add(Wallet(
+        user_id=user.id,
+        balance=0,
+        wallet_code=_generate_unique_wallet_code(db),
+    ))
     db.add(RewardWallet(user_id=user.id, total_points=0))
     db.commit()
 
@@ -208,10 +229,15 @@ def register_user(email: str, password: str, db: Session = Depends(get_db)):
 
 
 # ============================================================
-# LOGIN (JWT)
+# LOGIN
 # ============================================================
 @router.post("/login")
-def login(email: str, password: str, db: Session = Depends(get_db)):
+def login(
+    email: str = Form(...),
+    password: str = Form(...),
+    response: Response = None,
+    db: Session = Depends(get_db)
+):
     email = email.strip().lower()
     user = db.query(User).filter(User.email == email).first()
 
@@ -230,17 +256,37 @@ def login(email: str, password: str, db: Session = Depends(get_db)):
         "email": user.email
     })
 
+    response.set_cookie(
+        key="access_token",
+        value=access_token_jwt,
+        httponly=True,
+        secure=True,
+        samesite="lax",
+        max_age=60*60*24*7
+    )
+
     return {
-        "access_token": access_token_jwt,
-        "token_type": "bearer",
         "user_id": user.id,
         "email": user.email,
-        "role": role_name,
+        "role": role_name
     }
 
 
+#===========================
+# LOGOUT
+#===========================
+@router.post("/logout")
+def logout(response: Response):
+    response.delete_cookie(
+        key="access_token",
+        httponly=True,
+        samesite="lax"
+    )
+    return {"message": "Logged out successfully"}
+
+
 # ============================================================
-# FORGOT PASSWORD - REQUEST (6 DIGIT CODE)
+# FORGOT PASSWORD - REQUEST
 # ============================================================
 RESET_TTL_SECONDS = 15 * 60
 RESET_MAX_ATTEMPTS = 3
@@ -292,7 +338,6 @@ def forgot_password_confirm(payload: ForgotPasswordConfirmPayload, db: Session =
     email = payload.email.strip().lower()
     code = payload.code.strip()
 
-    # ✅ ADD: enforce strong password rules on reset too
     validate_password_strength(payload.new_password)
 
     user = db.query(User).filter(User.email == email).first()
@@ -332,7 +377,7 @@ def forgot_password_confirm(payload: ForgotPasswordConfirmPayload, db: Session =
 
 
 # ============================================================
-# GOOGLE OAUTH (CONTINUE WITH GOOGLE) - WITH STATE VALIDATION
+# GOOGLE OAUTH
 # ============================================================
 GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
@@ -343,6 +388,7 @@ def _google_env(name: str) -> str:
     if not v:
         raise HTTPException(status_code=500, detail=f"Missing env var: {name}")
     return v
+
 
 @router.get("/google/login")
 def google_login():
@@ -362,17 +408,17 @@ def google_login():
 
     resp = RedirectResponse(url=f"{GOOGLE_AUTH_URL}?{urlencode(params)}")
 
-    # ✅ store state in cookie (anti-CSRF)
     resp.set_cookie(
         key="oauth_state",
         value=state,
         httponly=True,
         samesite="lax",
-        secure=False,   # set True in prod HTTPS
+        secure=False,
         max_age=600,
-        domain="127.0.0.1", # Force it to the IP you are using
+        domain="127.0.0.1",
     )
     return resp
+
 
 @router.get("/google/callback")
 def google_callback(
@@ -384,7 +430,6 @@ def google_callback(
     if not code:
         raise HTTPException(status_code=400, detail="Missing code from Google")
 
-    # ✅ validate state
     saved_state = request.cookies.get("oauth_state")
     if not saved_state or saved_state != state:
         raise HTTPException(status_code=400, detail="Invalid OAuth state")
@@ -395,7 +440,6 @@ def google_callback(
 
     frontend_redirect = os.getenv(
         "FRONTEND_OAUTH_REDIRECT",
-        # "http://127.0.0.1:8000/PUBLICWEB/oauth-callback.html"
     )
 
     token_res = requests.post(
@@ -453,7 +497,11 @@ def google_callback(
         )
         db.add(user)
         db.flush()
-        db.add(Wallet(user_id=user.id, balance=0))
+        db.add(Wallet(
+            user_id=user.id,
+            balance=0,
+            wallet_code=_generate_unique_wallet_code(db),
+        ))
         db.add(RewardWallet(user_id=user.id, total_points=0))
 
     db.commit()
@@ -471,32 +519,40 @@ def google_callback(
     q = urlencode({"token": access_token_jwt})
     resp = RedirectResponse(url=f"{frontend_redirect}?{q}")
 
-    # ✅ clear state cookie
     resp.delete_cookie("oauth_state")
     return resp
 
 
 # ============================================================
-# ME (JWT-protected)
+# ME
 # ============================================================
 @router.get("/me")
-def me(current_user: User = Depends(get_current_user)):
+def me(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    wallet = db.query(Wallet).filter(Wallet.user_id == current_user.id).first()
+
+    if wallet and not (getattr(wallet, "wallet_code", None) or "").strip():
+        wallet.wallet_code = _generate_unique_wallet_code(db)
+        db.commit()
+        db.refresh(wallet)
+
     return {
         "user_id": current_user.id,
         "email": current_user.email,
         "role": getattr(current_user, "role_name", "customer"),
         "provider": getattr(current_user, "oauth_provider", None),
         "profile_picture": getattr(current_user, "profile_picture", None),
+        "wallet_code": getattr(wallet, "wallet_code", None) if wallet else None,
     }
 
 
 # ============================================================
-# BOOTSTRAP ADMIN (ADD-ONLY, does NOT remove anything)
+# BOOTSTRAP ADMIN
 # ============================================================
 class BootstrapAdminPayload(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8)
     full_name: str = Field(min_length=1)
+
 
 def _get_or_create_role(db: Session, name: str) -> Role:
     name = (name or "").strip().lower()
@@ -508,12 +564,14 @@ def _get_or_create_role(db: Session, name: str) -> Role:
     db.flush()
     return r
 
+
 def _has_any_admin(db: Session) -> bool:
     admin_role = db.query(Role).filter(Role.name.ilike("admin")).first()
     if not admin_role:
         return False
     exists = db.query(User).filter(User.role_id == admin_role.id).first()
     return bool(exists)
+
 
 @router.post("/bootstrap-admin")
 def bootstrap_admin(
@@ -527,13 +585,11 @@ def bootstrap_admin(
     if (x_bootstrap_secret or "").strip() != expected:
         raise HTTPException(status_code=403, detail="Invalid bootstrap secret")
 
-    # disable if admin already exists
     if _has_any_admin(db):
         raise HTTPException(status_code=403, detail="Admin already exists; bootstrap is disabled")
 
     email = payload.email.strip().lower()
 
-    # ✅ ADD: enforce strong password rules for bootstrap too
     validate_password_strength(payload.password)
 
     if db.query(User).filter(User.email == email).first():
@@ -543,7 +599,7 @@ def bootstrap_admin(
 
     u = User(
         email=email,
-        password_hash=hash_password(payload.password),  # uses your current hash_password()
+        password_hash=hash_password(payload.password),
         role_id=admin_role.id,
         is_active=True,
     )

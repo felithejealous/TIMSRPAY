@@ -3,20 +3,14 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
 import hashlib, hmac, secrets
+import string
 
 from backend.database import SessionLocal
 from backend.models import User, Role, StaffProfile
-
-# ✅ JWT security
 from backend.security import get_current_user, require_roles
-
-
+from backend.routers.auth import hash_password as auth_hash_password
 router = APIRouter(prefix="/staff", tags=["Staff"])
 
-
-# -----------------------
-# DB
-# -----------------------
 def get_db():
     db = SessionLocal()
     try:
@@ -24,12 +18,7 @@ def get_db():
     finally:
         db.close()
 
-
-# -----------------------
-# PASSWORD HASH (same style as wallet PIN)
-# -----------------------
 PBKDF2_ITERS = 200_000
-
 
 def hash_password(password: str) -> str:
     password = (password or "").strip()
@@ -41,7 +30,6 @@ def hash_password(password: str) -> str:
     dk = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, PBKDF2_ITERS)
 
     return f"pbkdf2_sha256${PBKDF2_ITERS}${salt.hex()}${dk.hex()}"
-
 
 def verify_password(password: str, stored: str) -> bool:
     try:
@@ -67,29 +55,33 @@ def verify_password(password: str, stored: str) -> bool:
     except Exception:
         return False
 
+def generate_temp_password(length: int = 10) -> str:
+    alphabet = string.ascii_letters + string.digits + "@#$%!"
+    while True:
+        pw = "".join(secrets.choice(alphabet) for _ in range(length))
 
-# -----------------------
-# SCHEMAS
-# -----------------------
+        has_lower = any(c.islower() for c in pw)
+        has_upper = any(c.isupper() for c in pw)
+        has_digit = any(c.isdigit() for c in pw)
+        has_special = any(c in "@#$%!" for c in pw)
+
+        if has_lower and has_upper and has_digit and has_special:
+            return pw
 class StaffRegister(BaseModel):
     email: EmailStr
-    password: str
+    password: Optional[str] = None
     full_name: str
     role: str  # admin | cashier | staff
     position: Optional[str] = None
     is_active: bool = True
-
 
 class StaffPatch(BaseModel):
     full_name: Optional[str] = None
     position: Optional[str] = None
     role: Optional[str] = None
     is_active: Optional[bool] = None
+    profile_picture: Optional[str] = None
 
-
-# -----------------------
-# HELPERS
-# -----------------------
 def _get_role(db: Session, role_name: str) -> Role:
     role_name = (role_name or "").strip().lower()
 
@@ -106,11 +98,6 @@ def _get_role(db: Session, role_name: str) -> Role:
 
     return r
 
-
-# -----------------------
-# ENDPOINTS (ADMIN ONLY)
-# -----------------------
-
 @router.post("/register")
 def register_staff(
     payload: StaffRegister,
@@ -124,23 +111,22 @@ def register_staff(
         raise HTTPException(status_code=400, detail="Email already exists")
 
     role = _get_role(db, payload.role)
+    temp_password = (payload.password or "").strip() or generate_temp_password()
 
     u = User(
         email=email,
-        password_hash=hash_password(payload.password),
+        password_hash=hash_password(temp_password),
         role_id=role.id,
         is_active=bool(payload.is_active),
     )
 
     db.add(u)
-    db.flush()  # get u.id
+    db.flush()
 
     sp = StaffProfile(
         user_id=u.id,
         full_name=payload.full_name.strip(),
-        position=(payload.position or payload.role).strip()
-        if (payload.position or payload.role)
-        else None,
+        position=(payload.position or payload.role).strip() if (payload.position or payload.role) else None,
     )
 
     db.add(sp)
@@ -157,8 +143,8 @@ def register_staff(
         "is_active": u.is_active,
         "full_name": sp.full_name,
         "position": sp.position,
+        "temporary_password": temp_password,
     }
-
 
 @router.get("/")
 def list_staff(
@@ -166,26 +152,41 @@ def list_staff(
     db: Session = Depends(get_db),
     _: User = Depends(require_roles("admin")),
 ):
-    users = db.query(User).all()
+    allowed_roles = {"admin", "cashier", "staff"}
 
-    role_map = {r.id: r.name for r in db.query(Role).all()}
+    users = db.query(User).all()
+    role_map = {r.id: (r.name or "").lower() for r in db.query(Role).all()}
     sp_map = {s.user_id: s for s in db.query(StaffProfile).all()}
 
     data = []
 
     for u in users:
-        sp = sp_map.get(u.id)
+        role_name = role_map.get(u.role_id, "").lower()
 
+        if role_name not in allowed_roles:
+            continue
+
+        sp = sp_map.get(u.id)
         if not sp:
             continue
 
-        if q and q.strip().lower() not in (sp.full_name or "").lower():
-            continue
+        if q:
+            search = q.strip().lower()
+            searchable = " ".join([
+                str(u.id),
+                u.email or "",
+                sp.full_name or "",
+                sp.position or "",
+                role_name,
+            ]).lower()
+
+            if search not in searchable:
+                continue
 
         data.append({
             "user_id": u.id,
             "email": u.email,
-            "role": role_map.get(u.role_id),
+            "role": role_name,
             "is_active": bool(u.is_active),
             "full_name": sp.full_name,
             "position": sp.position,
@@ -193,6 +194,34 @@ def list_staff(
 
     return {"count": len(data), "data": data}
 
+@router.post("/{user_id}/reset-password")
+def reset_staff_password(
+    user_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(require_roles("admin")),
+):
+    u = db.query(User).filter(User.id == user_id).first()
+    if not u:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    role_map = {r.id: (r.name or "").lower() for r in db.query(Role).all()}
+    role_name = role_map.get(u.role_id, "")
+
+    if role_name not in {"admin", "cashier", "staff"}:
+        raise HTTPException(status_code=400, detail="Password reset here is for staff/admin/cashier only")
+
+    temp_password = generate_temp_password()
+    u.password_hash = auth_hash_password(temp_password)
+
+    db.commit()
+    db.refresh(u)
+
+    return {
+        "message": "temporary password generated",
+        "user_id": u.id,
+        "email": u.email,
+        "temporary_password": temp_password,
+    }
 
 @router.patch("/{user_id}")
 def patch_staff(
@@ -223,6 +252,9 @@ def patch_staff(
 
     if payload.position is not None:
         sp.position = payload.position.strip() or None
+
+    if payload.profile_picture is not None:
+        u.profile_picture = payload.profile_picture.strip() or None
 
     db.commit()
     db.refresh(u)

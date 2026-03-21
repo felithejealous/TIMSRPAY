@@ -24,7 +24,6 @@
             --modal-card: #14110e;
         }
 
-        /* Improved Light Theme Contrast (Matched to Accounts) */
         body.light-theme {
             --mango-dark: #f8f9fa; 
             --text-main: #1a1a1a;  
@@ -54,20 +53,22 @@
 
         .glass { background: var(--glass-bg); backdrop-filter: blur(12px); border: 1px solid var(--glass-border); }
 
-        /* --- SIDEBAR --- */
-        .sidebar {
+       .sidebar {
             width: var(--sidebar-width);
             background: var(--glass-bg);
             backdrop-filter: blur(25px);
-            height: 100vh; position: fixed; left: 0; top: 0;
+            height: 100vh;
+            position: fixed;
+            left: 0; top: 0;
             border-right: 1px solid var(--glass-border);
-            display: flex; flex-direction: column; z-index: 100;
+            display: flex; flex-direction: column;
+            z-index: 100;
         }
 
         .logo-section { padding: 40px 20px; text-align: center; }
         .logo-section img { width: 120px; filter: var(--logo-filter); }
 
-        .nav-menu { flex: 1; padding: 10px 15px; }
+        .nav-menu { flex: 1; padding: 10px 15px;overflow-y: auto; }
         .nav-item {
             display: flex; align-items: center; gap: 12px;
             padding: 12px 18px; margin-bottom: 6px;
@@ -83,7 +84,6 @@
             border: 1px solid rgba(239, 68, 68, 0.2); font-size: 0.85rem;
         }
 
-        /* --- CONTENT --- */
         .main-content { margin-left: var(--sidebar-width); flex: 1; padding: 40px; overflow-y: auto; height: 100vh; }
         .header-card { padding: 25px 40px; border-radius: 24px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         .theme-toggle-circle { width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; background: var(--mango-yellow); color: #120f0a; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
@@ -92,22 +92,31 @@
         .report-card { padding: 20px; border-radius: 24px; display: flex; align-items: center; gap: 15px; }
         .report-icon { width: 50px; height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: var(--mango-yellow); color: #120f0a; }
 
-        /* --- SEARCH & FILTERS --- */
         .filter-bar { display: flex; flex-wrap: wrap; justify-content: space-between; margin-bottom: 30px; gap: 20px; }
         .search-container { position: relative; flex: 1; max-width: 400px; }
         .search-container input { width: 100%; padding: 14px 20px 14px 45px; border-radius: 16px; background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-main); outline: none; }
         .search-container i { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); opacity: 0.5; }
 
+        .filter-select {
+            min-width: 190px;
+            padding: 14px;
+            border-radius: 16px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            outline: none;
+        }
+
         .view-toggle { display: flex; background: var(--glass-bg); border: 1px solid var(--glass-border); padding: 4px; border-radius: 12px; }
         .view-toggle button { padding: 8px 16px; border-radius: 8px; color: var(--text-sub); }
         .view-toggle button.active { background: var(--mango-yellow); color: #000; font-weight: 700; }
 
-        /* --- INVENTORY GRID/TABLE --- */
         .inventory-grid { display: none; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
         .inventory-grid.active { display: grid; }
         
         .inv-card { border-radius: 24px; padding: 25px; border: 1px solid var(--glass-border); background: var(--glass-bg); position: relative; overflow: hidden; }
         .inv-card:hover { transform: translateY(-8px); border-color: var(--mango-yellow); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .inv-card.inactive { opacity: 0.5; filter: grayscale(0.8); }
         
         .alert-ribbon { position: absolute; top: 12px; right: -30px; background: #ef4444; color: white; padding: 4px 35px; font-size: 0.65rem; font-weight: 900; transform: rotate(45deg); }
 
@@ -115,13 +124,23 @@
         body.light-theme .progress-bg { background: rgba(0,0,0,0.05); }
         .progress-fill { height: 100%; border-radius: 10px; }
 
-        .inv-table-container { display: none; background: var(--glass-bg); border-radius: 24px; border: 1px solid var(--glass-border); padding: 20px; overflow-x: auto; }
-        .inv-table-container.active { display: block; }
+        .inv-table-container,
+        .history-container {
+            display: none;
+            background: var(--glass-bg);
+            border-radius: 24px;
+            border: 1px solid var(--glass-border);
+            padding: 20px;
+            overflow-x: auto;
+        }
+
+        .inv-table-container.active,
+        .history-container.active { display: block; }
+
         table { width: 100%; border-collapse: collapse; }
         th { text-align: left; padding: 15px; font-size: 0.7rem; text-transform: uppercase; color: var(--mango-yellow); border-bottom: 1px solid var(--glass-border); }
         td { padding: 15px; border-bottom: 1px solid var(--glass-border); font-size: 0.9rem; }
 
-        /* --- MODALS --- */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-overlay); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(15px); padding: 20px; }
         .modal-overlay.open { display: flex; }
         .modal-content { background: var(--modal-card); width: 100%; max-width: 500px; padding: 35px; border-radius: 32px; position: relative; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
@@ -134,7 +153,7 @@
         .btn-gray { background: rgba(255,255,255,0.05); color: var(--text-main); padding: 12px 25px; border-radius: 14px; font-weight: 700; font-size: 0.75rem; }
     </style>
 </head>
-<body>
+<body class="dark-theme">
 
     <aside class="sidebar glass">
         <div class="logo-section"><img src="../images/logo.png" alt="Logo"></div>
@@ -142,6 +161,7 @@
             <a href="dashboard.html" class="nav-item"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
             <a href="orders.html" class="nav-item"><i class="fa-solid fa-receipt"></i> Orders</a>
             <a href="accounts.html" class="nav-item"><i class="fa-solid fa-user-gear"></i> Accounts</a>
+            <a href="wallet.html" class="nav-item"><i class="fa-solid fa-wallet"></i> Wallets</a>
             <a href="inventory.html" class="nav-item active"><i class="fa-solid fa-boxes-stacked"></i> Inventory</a>
             <a href="menuman.html" class="nav-item"><i class="fa-solid fa-utensils"></i> Menu Manager</a>
             <a href="promo.html" class="nav-item"><i class="fa-solid fa-tags"></i> Promos</a>
@@ -150,7 +170,7 @@
             <a href="payments.html" class="nav-item"><i class="fa-solid fa-credit-card"></i> Payments</a>
             <a href="settings.html" class="nav-item"><i class="fa-solid fa-cog"></i> Settings</a>
         </nav>
-        <a href="index.html" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Log Out</a>
+        <a href="#" class="logout-btn" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Log Out</a>
     </aside>
 
     <main class="main-content">
@@ -180,10 +200,22 @@
                 <i class="fas fa-search"></i>
                 <input type="text" id="searchInput" placeholder="Search supplies or categories..." onkeyup="renderItems()">
             </div>
+
+            <select id="categoryFilter" class="filter-select" onchange="renderItems()">
+                <option value="all">All Categories</option>
+            </select>
+
+            <select id="statusFilter" class="filter-select" onchange="renderItems()">
+                <option value="all">All Status</option>
+                <option value="active">Active Only</option>
+                <option value="inactive">Inactive Only</option>
+            </select>
+
             <div class="flex gap-4">
                 <div class="view-toggle">
                     <button id="btnGrid" class="active" onclick="setView('grid')"><i class="fas fa-th-large"></i></button>
                     <button id="btnTable" onclick="setView('table')"><i class="fas fa-list"></i></button>
+                    <button id="btnHistory" onclick="setView('history')"><i class="fas fa-clock-rotate-left"></i></button>
                 </div>
                 <button class="btn-orange shadow-lg hover:scale-105" onclick="openModal('addItemModal')">
                     <i class="fas fa-plus mr-2"></i> Register Supply
@@ -201,10 +233,25 @@
                         <th>Category</th>
                         <th>Level</th>
                         <th>Expiration</th>
+                        <th>Status</th>
                         <th style="text-align: right;">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+
+        <div id="historyContent" class="history-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Item</th>
+                        <th>Change</th>
+                        <th>Reason</th>
+                    </tr>
+                </thead>
+                <tbody id="historyBody"></tbody>
             </table>
         </div>
     </main>
@@ -215,9 +262,21 @@
             <h2 class="text-xl font-black uppercase text-yellow-400 mb-8">Register Supply</h2>
             <div class="input-group">
                 <label>Item Name</label><input type="text" id="newItemName">
+                <label>Category</label>
+                <select id="newItemCategory">
+                    <option value="Ingredients">Ingredients</option>
+                    <option value="Packaging">Packaging</option>
+                    <option value="Supplies">Supplies</option>
+                    <option value="Add-ons">Add-ons</option>
+                    <option value="Other">Other</option>
+                </select>
                 <div class="grid grid-cols-2 gap-4">
-                    <div><label>Initial Qty</label><input type="number" id="newItemQty"></div>
-                    <div><label>Unit</label>
+                    <div>
+                        <label>Initial Qty</label>
+                        <input type="number" id="newItemQty" step="0.01" min="0">
+                    </div>
+                    <div>
+                        <label>Unit</label>
                         <select id="newItemUnit">
                             <option value="kg">kg</option>
                             <option value="packs">packs</option>
@@ -227,7 +286,7 @@
                     </div>
                 </div>
                 <label>Expiration Date</label><input type="date" id="newItemExp">
-                <label>Alert Threshold</label><input type="number" id="alertThreshold" value="10">
+                <label>Alert Threshold</label><input type="number" id="alertThreshold" step="0.01" min="0" value="10">
             </div>
             <div class="flex justify-between mt-8">
                 <button class="btn-gray" onclick="closeModal('addItemModal')">Cancel</button>
@@ -242,7 +301,15 @@
             <h2 class="text-xl font-black uppercase text-yellow-400 mb-2">Adjust Stock</h2>
             <p id="adjustItemName" class="font-mono text-sm opacity-60 mb-8"></p>
             <div class="input-group">
-                <label>New Quantity</label><input type="number" id="adjustQtyInput">
+                <label>Category</label>
+                <select id="adjustCategoryInput">
+                    <option value="Ingredients">Ingredients</option>
+                    <option value="Packaging">Packaging</option>
+                    <option value="Supplies">Supplies</option>
+                    <option value="Add-ons">Add-ons</option>
+                    <option value="Other">Other</option>
+                </select>
+                <label>New Quantity</label><input type="number" id="adjustQtyInput" step="0.01" min="0">
                 <label>Update Expiration</label><input type="date" id="adjustExpInput">
                 <label>Adjustment Note</label><input type="text" id="adjustReasonInput" placeholder="Reason for change...">
             </div>
@@ -253,129 +320,8 @@
         </div>
     </div>
 
-    <script>
-        let items = JSON.parse(localStorage.getItem('teoInventory')) || [
-            { id: 1, name: "Fresh Mangoes", category: "Ingredients", qty: 15, unit: "kg", exp: "2026-03-10", threshold: 10, logs: [] },
-            { id: 2, name: "Paper Cups", category: "Packaging", qty: 300, unit: "pcs", exp: "2027-12-31", threshold: 50, logs: [] }
-        ];
-
-        function toggleTheme() {
-            document.body.classList.toggle('light-theme');
-            const isLight = document.body.classList.contains('light-theme');
-            localStorage.setItem('theme', isLight ? 'light' : 'dark');
-            document.getElementById('themeIcon').className = isLight ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
-        }
-
-        // Initialize theme
-        if (localStorage.getItem('theme') === 'light') toggleTheme();
-
-        function setView(view) {
-            document.getElementById('gridContent').classList.toggle('active', view === 'grid');
-            document.getElementById('tableContent').classList.toggle('active', view === 'table');
-            document.getElementById('btnGrid').classList.toggle('active', view === 'grid');
-            document.getElementById('btnTable').classList.toggle('active', view === 'table');
-        }
-
-        function openModal(id) { document.getElementById(id).classList.add('open'); }
-        function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-
-        function renderItems() {
-            const grid = document.getElementById('gridContent');
-            const tableBody = document.getElementById('tableBody');
-            const term = document.getElementById('searchInput').value.toLowerCase();
-            let lowCount = 0;
-            
-            grid.innerHTML = ''; tableBody.innerHTML = '';
-
-            items.filter(i => i.name.toLowerCase().includes(term)).forEach(item => {
-                const isLow = item.qty <= item.threshold;
-                if(isLow) lowCount++;
-                const barWidth = Math.min(100, (item.qty / (item.threshold * 2)) * 100);
-
-                grid.innerHTML += `
-                    <div class="inv-card glass">
-                        ${isLow ? '<div class="alert-ribbon">Low</div>' : ''}
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h4 class="font-black text-lg">${item.name}</h4>
-                                <span class="text-[10px] uppercase font-bold opacity-40">${item.category}</span>
-                            </div>
-                            <i class="fas fa-box text-yellow-400"></i>
-                        </div>
-                        <div class="progress-bg"><div class="progress-fill ${isLow ? 'bg-red-500' : 'bg-green-500'}" style="width:${barWidth}%"></div></div>
-                        <div class="flex justify-between items-end">
-                            <span class="text-2xl font-black">${item.qty}<span class="text-xs opacity-40 ml-1">${item.unit}</span></span>
-                            <div class="flex gap-2">
-                                <button onclick="prepareAdjust(${item.id})" class="text-[10px] font-black uppercase bg-yellow-400 text-black px-3 py-1 rounded-lg">Adjust</button>
-                                <button onclick="deleteItem(${item.id})" class="text-red-500 opacity-40 hover:opacity-100"><i class="fas fa-trash"></i></button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-                tableBody.innerHTML += `
-                    <tr>
-                        <td class="font-bold">${item.name}</td>
-                        <td class="opacity-50">${item.category}</td>
-                        <td class="${isLow ? 'text-red-500 font-black' : ''}">${item.qty} ${item.unit}</td>
-                        <td>${item.exp}</td>
-                        <td style="text-align:right">
-                            <button onclick="prepareAdjust(${item.id})" class="mr-4 text-yellow-400 font-bold text-xs uppercase">Adjust</button>
-                            <button onclick="deleteItem(${item.id})" class="text-red-500 opacity-40"><i class="fas fa-trash"></i></button>
-                        </td>
-                    </tr>
-                `;
-            });
-            document.getElementById('lowStockCount').innerText = lowCount;
-            document.getElementById('totalItemsCount').innerText = items.length;
-        }
-
-        function addNewItem() {
-            const name = document.getElementById('newItemName').value;
-            const qty = parseInt(document.getElementById('newItemQty').value);
-            if(!name || isNaN(qty)) return alert("Required fields missing");
-
-            items.push({
-                id: Date.now(),
-                name,
-                category: "General",
-                qty,
-                unit: document.getElementById('newItemUnit').value,
-                exp: document.getElementById('newItemExp').value || 'N/A',
-                threshold: parseInt(document.getElementById('alertThreshold').value) || 10,
-                logs: []
-            });
-            localStorage.setItem('teoInventory', JSON.stringify(items));
-            renderItems(); closeModal('addItemModal');
-        }
-
-        let currentId = null;
-        function prepareAdjust(id) {
-            currentId = id;
-            const item = items.find(i => i.id === id);
-            document.getElementById('adjustItemName').innerText = item.name;
-            document.getElementById('adjustQtyInput').value = item.qty;
-            document.getElementById('adjustExpInput').value = item.exp;
-            openModal('adjustModal');
-        }
-
-        document.getElementById('confirmAdjust').onclick = () => {
-            const item = items.find(i => i.id === currentId);
-            item.qty = parseInt(document.getElementById('adjustQtyInput').value);
-            item.exp = document.getElementById('adjustExpInput').value;
-            localStorage.setItem('teoInventory', JSON.stringify(items));
-            renderItems(); closeModal('adjustModal');
-        };
-
-        function deleteItem(id) {
-            if(confirm("Permanently remove this item?")) {
-                items = items.filter(i => i.id !== id);
-                localStorage.setItem('teoInventory', JSON.stringify(items));
-                renderItems();
-            }
-        }
-
-        window.onload = renderItems;
-    </script>
+    <script src="../js/authGuard.js"></script>
+    <script src="../js/logout.js"></script>
+    <script src="../js/inventory.js"></script>
 </body>
 </html>

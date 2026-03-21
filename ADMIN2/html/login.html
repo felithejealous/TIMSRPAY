@@ -151,7 +151,7 @@
         
         <div class="input-group">
             <i class="fas fa-user input-icon"></i>
-            <input type="text" id="username" placeholder="Username" required>
+            <input type="email" id="email" placeholder="Email" required>
         </div>
 
         <div class="input-group">
@@ -193,15 +193,7 @@
             }, 100);
         });
 
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault(); 
-            const overlay = document.getElementById('transitionOverlay');
-            overlay.classList.remove('fade-out');
-            
-            setTimeout(() => {
-                window.location.href = "../html/dashboard.html";
-            }, 500);
-        });
     </script>
+    <script src="../js/login.js"></script>
 </body>
 </html>
