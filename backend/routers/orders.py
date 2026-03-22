@@ -1,14 +1,13 @@
 from typing import Optional, Set, List, Dict
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 from datetime import datetime, timezone, timedelta
+import hashlib
+import hmac
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from sqlalchemy import func as sa_func
-
-import hashlib
-import hmac
 
 from backend.database import SessionLocal
 from backend.models import (
@@ -27,8 +26,9 @@ from backend.models import (
     WalletTransaction,
     User,
     CustomerProfile,
+    PromoCode,
+    PromoCodeRedemption,
 )
-
 from backend.schemas import OrderCreate
 from backend.security import get_current_user, require_roles
 
@@ -37,6 +37,7 @@ router = APIRouter(prefix="/orders", tags=["Orders"])
 VAT_RATE = Decimal("0.12")
 REQUIRED_POINTS = 2800
 ORDER_POINTS_CLAIM_WINDOW_HOURS = 24
+ORDER_DISPLAY_OFFSET = 900
 
 
 def compute_initial_status(order_type: str, payment_method: str) -> str:
@@ -68,6 +69,14 @@ def _as_utc(dt: datetime) -> Optional[datetime]:
     return dt.astimezone(timezone.utc)
 
 
+def _money(value) -> Decimal:
+    return Decimal(str(value or 0)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+
+def _display_order_id(order_id: int) -> str:
+    return f"#TM-{ORDER_DISPLAY_OFFSET + int(order_id)}"
+
+
 class OrderItemPayload(BaseModel):
     product_id: int
     quantity: int = Field(gt=0)
@@ -82,6 +91,7 @@ class BaseOrderPayload(BaseModel):
     wallet_email: Optional[str] = None
     wallet_code: Optional[str] = None
     wallet_pin: Optional[str] = None
+    promo_code: Optional[str] = None
     user_id: Optional[int] = None
 
 
@@ -95,10 +105,19 @@ class OnlineOrderCreate(BaseModel):
     wallet_email: Optional[str] = None
     wallet_code: Optional[str] = None
     wallet_pin: Optional[str] = None
+    promo_code: Optional[str] = None
 
 
 class CashierOrderCreate(BaseOrderPayload):
     customer_name: str = Field(min_length=1, max_length=150)
+
+
+class OrderStatusUpdate(BaseModel):
+    status: str
+
+
+class CancelPayload(BaseModel):
+    reason: str
 
 
 @router.get("/")
@@ -128,12 +147,9 @@ def list_orders(
             .all()
         )
 
-        item_names = []
-        for oi, p in item_rows:
-            item_names.append(f"{int(oi.quantity)}x {p.name}")
+        item_names = [f"{int(oi.quantity)}x {p.name}" for oi, p in item_rows]
 
         payment_method = getattr(order, "payment_method", None)
-
         if not payment_method:
             wallet_payment = (
                 db.query(WalletTransaction)
@@ -158,7 +174,7 @@ def list_orders(
 
         result.append({
             "order_id": order.id,
-            "display_id": f"#TM-{900 + int(order.id)}",
+            "display_id": _display_order_id(order.id),
             "user_id": order.user_id,
             "customer_name": customer_name,
             "customer_email": getattr(user, "email", None) if user else None,
@@ -166,7 +182,11 @@ def list_orders(
             "status": order.status,
             "payment_method": payment_method,
             "created_at": str(order.created_at),
-            "total_amount": float(order.total_amount),
+            "subtotal": float(order.subtotal or 0),
+            "vat_amount": float(order.vat_amount or 0),
+            "discount_amount": float(getattr(order, "discount_amount", 0) or 0),
+            "promo_code_text": getattr(order, "promo_code_text", None),
+            "total_amount": float(order.total_amount or 0),
             "earned_points": int(getattr(order, "earned_points", 0) or 0),
             "points_synced": bool(getattr(order, "points_synced", False)),
             "items_summary": ", ".join(item_names) if item_names else "No items",
@@ -176,14 +196,7 @@ def list_orders(
             "last_refund_at": refund_info["last_refund_at"],
         })
 
-    return {
-        "count": len(result),
-        "data": result,
-    }
-
-
-class OrderStatusUpdate(BaseModel):
-    status: str
+    return {"count": len(result), "data": result}
 
 
 @router.get("/refunds")
@@ -201,11 +214,10 @@ def list_refunded_orders(
     )
 
     rows = q.all()
-
     result = []
+
     for order, user, profile in rows:
         refund_info = get_order_refund_summary(db, order.id)
-
         if not refund_info["is_refunded"]:
             continue
 
@@ -232,7 +244,7 @@ def list_refunded_orders(
 
         result.append({
             "order_id": order.id,
-            "display_id": f"#TM-{900 + int(order.id)}",
+            "display_id": _display_order_id(order.id),
             "customer_name": customer_name,
             "customer_email": getattr(user, "email", None) if user else None,
             "order_type": order.order_type,
@@ -244,10 +256,7 @@ def list_refunded_orders(
             "last_refund_at": refund_info["last_refund_at"],
         })
 
-    return {
-        "count": len(result),
-        "data": result,
-    }
+    return {"count": len(result), "data": result}
 
 
 @router.patch("/{order_id}/status")
@@ -522,6 +531,10 @@ def sync_order_rewards_if_eligible(db: Session, order: Order):
     if not order.user_id:
         return
 
+    payment_method = (getattr(order, "payment_method", "") or "").strip().lower()
+    if payment_method != "wallet":
+        return
+
     if order.status not in {"paid", "completed"}:
         return
 
@@ -538,8 +551,17 @@ def sync_order_rewards_if_eligible(db: Session, order: Order):
         .scalar()
         or 0
     )
+
     if int(existing_earned) > 0:
         order.points_synced = True
+        order.points_claim_expires_at = None
+
+        if hasattr(order, "points_claimed_user_id") and not getattr(order, "points_claimed_user_id", None):
+            order.points_claimed_user_id = int(order.user_id)
+        if hasattr(order, "points_claimed_at") and not getattr(order, "points_claimed_at", None):
+            order.points_claimed_at = sa_func.now()
+        if hasattr(order, "points_claim_method") and not getattr(order, "points_claim_method", None):
+            order.points_claim_method = "wallet_auto"
         return
 
     rows = (
@@ -582,17 +604,16 @@ def sync_order_rewards_if_eligible(db: Session, order: Order):
             )
         )
 
-    order.earned_points = int(actual_added)
+    order.earned_points = int(earned_points)
     order.points_synced = True
     order.points_claim_expires_at = None
+
     if hasattr(order, "points_claimed_user_id"):
         order.points_claimed_user_id = int(order.user_id)
     if hasattr(order, "points_claimed_at"):
         order.points_claimed_at = sa_func.now()
     if hasattr(order, "points_claim_method"):
-        order.points_claim_method = (
-            "wallet_auto" if order.status == "paid" else "paid_sync"
-        )
+        order.points_claim_method = "wallet_auto"
 
 
 def resolve_customer_name(
@@ -643,6 +664,103 @@ def get_order_refund_summary(db: Session, order_id: int) -> Dict[str, object]:
     }
 
 
+def validate_and_compute_promo(
+    db: Session,
+    promo_code_text: Optional[str],
+    base_total: Decimal,
+    user_id: Optional[int] = None,
+    payment_method: Optional[str] = None,
+) -> Dict[str, object]:
+    promo_code_text = (promo_code_text or "").strip().upper()
+
+    if not promo_code_text:
+        return {
+            "promo": None,
+            "discount_amount": Decimal("0.00"),
+            "discount_type": None,
+            "discount_value": None,
+            "promo_code_text": None,
+        }
+
+    promo = db.query(PromoCode).filter(PromoCode.code == promo_code_text).first()
+    if not promo:
+        raise HTTPException(status_code=404, detail="Promo code not found")
+
+    if not bool(getattr(promo, "is_active", False)):
+        raise HTTPException(status_code=400, detail="Promo code is inactive")
+
+    now = _utcnow()
+
+    if promo.valid_from:
+        valid_from = _as_utc(promo.valid_from)
+        if valid_from and now < valid_from:
+            raise HTTPException(status_code=400, detail="Promo code is not active yet")
+
+    if promo.valid_until:
+        valid_until = _as_utc(promo.valid_until)
+        if valid_until and now > valid_until:
+            raise HTTPException(status_code=400, detail="Promo code has expired")
+
+    usage_limit = getattr(promo, "usage_limit", None)
+    usage_count = int(getattr(promo, "usage_count", 0) or 0)
+    if usage_limit is not None and usage_count >= int(usage_limit):
+        raise HTTPException(status_code=400, detail="Promo code usage limit reached")
+
+    if not user_id:
+        raise HTTPException(status_code=400, detail="Promo code requires a customer account")
+
+    if (payment_method or "").strip().lower() != "wallet":
+        raise HTTPException(status_code=400, detail="Promo code requires TeoPay wallet payment")
+
+    per_user_limit = getattr(promo, "per_user_limit", None)
+    if per_user_limit is not None:
+        used_count = (
+            db.query(PromoCodeRedemption)
+            .filter(
+                PromoCodeRedemption.promo_code_id == promo.id,
+                PromoCodeRedemption.user_id == user_id,
+            )
+            .count()
+        )
+        if used_count >= int(per_user_limit):
+            raise HTTPException(status_code=400, detail="You have already reached the limit for this promo")
+
+    min_order_amount = _money(getattr(promo, "min_order_amount", 0) or 0)
+    if base_total < min_order_amount:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Minimum order amount for this promo is ₱{min_order_amount:.2f}",
+        )
+
+    discount_type = (promo.discount_type or "").strip().lower()
+    discount_value = _money(getattr(promo, "discount_value", 0) or 0)
+
+    if discount_type == "percent":
+        if discount_value > Decimal("100.00"):
+            raise HTTPException(status_code=400, detail="Invalid promo percent value")
+        discount_amount = (base_total * (discount_value / Decimal("100"))).quantize(
+            Decimal("0.01"),
+            rounding=ROUND_HALF_UP,
+        )
+    elif discount_type == "fixed":
+        discount_amount = discount_value
+    else:
+        raise HTTPException(status_code=400, detail="Invalid promo discount type")
+
+    if discount_amount > base_total:
+        discount_amount = base_total
+
+    discount_amount = _money(discount_amount)
+
+    return {
+        "promo": promo,
+        "discount_amount": discount_amount,
+        "discount_type": discount_type,
+        "discount_value": discount_value,
+        "promo_code_text": promo.code,
+    }
+
+
 def _create_order_core(
     db: Session,
     order_type: str,
@@ -652,9 +770,10 @@ def _create_order_core(
     wallet_email: Optional[str],
     wallet_code: Optional[str],
     wallet_pin: Optional[str],
+    promo_code: Optional[str] = None,
     customer_name: Optional[str] = None,
 ):
-    total = Decimal("0")
+    total_before_discount = Decimal("0")
     earned_points = 0
     potential_points = 0
 
@@ -662,16 +781,10 @@ def _create_order_core(
     payment_method = (payment_method or "cash").strip().lower()
 
     if order_type not in {"kiosk", "online", "cashier"}:
-        raise HTTPException(
-            status_code=400,
-            detail="order_type must be kiosk|online|cashier",
-        )
+        raise HTTPException(status_code=400, detail="order_type must be kiosk|online|cashier")
 
     if payment_method not in {"cash", "wallet"}:
-        raise HTTPException(
-            status_code=400,
-            detail="payment_method must be 'cash' or 'wallet'",
-        )
+        raise HTTPException(status_code=400, detail="payment_method must be 'cash' or 'wallet'")
 
     if payment_method == "wallet":
         if not wallet_pin or not (wallet_email or wallet_code):
@@ -708,16 +821,10 @@ def _create_order_core(
 
         product = db.query(Product).filter(Product.id == int(it.product_id)).first()
         if not product:
-            raise HTTPException(
-                status_code=404,
-                detail=f"Product {it.product_id} not found",
-            )
+            raise HTTPException(status_code=404, detail=f"Product {it.product_id} not found")
 
         if hasattr(product, "is_active") and product.is_active is False:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Product '{product.name}' is inactive",
-            )
+            raise HTTPException(status_code=400, detail=f"Product '{product.name}' is inactive")
 
         base_price = Decimal(str(product.price))
         size_name = (it.size or "small").strip().lower()
@@ -728,36 +835,48 @@ def _create_order_core(
             for addon_id in it.add_ons:
                 addon_id = int(addon_id)
                 addon = addons_by_id.get(addon_id)
+
                 if not addon:
-                    raise HTTPException(
-                        status_code=404,
-                        detail=f"Add-on {addon_id} not found",
-                    )
+                    raise HTTPException(status_code=404, detail=f"Add-on {addon_id} not found")
                 if addon.is_active is False:
-                    raise HTTPException(
-                        status_code=400,
-                        detail=f"Add-on '{addon.name}' is inactive",
-                    )
+                    raise HTTPException(status_code=400, detail=f"Add-on '{addon.name}' is inactive")
                 if addon.addon_type != "ADDON":
                     raise HTTPException(
                         status_code=400,
                         detail=f"Add-on '{addon.name}' is not type ADDON (SIZE should be sent via 'size')",
                     )
+
                 addon_total += Decimal(str(addon.price))
 
         unit_price = base_price + size_upcharge + addon_total
-        total += unit_price * Decimal(int(it.quantity))
+        total_before_discount += unit_price * Decimal(int(it.quantity))
 
         ppu = int(getattr(product, "points_per_unit", 0) or 0)
         potential_points += ppu * int(it.quantity)
         if user_id:
             earned_points += ppu * int(it.quantity)
 
-    subtotal = total / (Decimal("1") + VAT_RATE)
-    vat_amount = total - subtotal
+    total_before_discount = _money(total_before_discount)
+
+    promo_result = validate_and_compute_promo(
+        db=db,
+        promo_code_text=promo_code,
+        base_total=total_before_discount,
+        user_id=user_id,
+        payment_method=payment_method,
+    )
+    promo_row = promo_result["promo"]
+
+    discount_amount = _money(promo_result["discount_amount"])
+    final_total = _money(total_before_discount - discount_amount)
+
+    subtotal = (final_total / (Decimal("1") + VAT_RATE)).quantize(
+        Decimal("0.01"),
+        rounding=ROUND_HALF_UP,
+    )
+    vat_amount = _money(final_total - subtotal)
 
     initial_status = compute_initial_status(order_type, payment_method)
-
     order_points_snapshot = int(earned_points if user_id else potential_points)
 
     resolved_customer_name = resolve_customer_name(
@@ -775,24 +894,31 @@ def _create_order_core(
         subtotal=subtotal,
         vat_amount=vat_amount,
         vat_rate=Decimal("12.00"),
-        total_amount=total,
+        total_amount=final_total,
+        promo_code_id=(promo_row.id if promo_row else None),
+        promo_code_text=promo_result["promo_code_text"],
+        discount_amount=discount_amount,
+        discount_type=promo_result["discount_type"],
+        discount_value=promo_result["discount_value"],
         earned_points=order_points_snapshot,
         points_synced=False,
         points_claim_expires_at=(
-            _utcnow() + timedelta(hours=ORDER_POINTS_CLAIM_WINDOW_HOURS)
-        ) if not user_id else None,
+            None if payment_method == "wallet"
+            else _utcnow() + timedelta(hours=ORDER_POINTS_CLAIM_WINDOW_HOURS)
+        ),
     )
     db.add(order)
     db.flush()
 
     if payment_method == "wallet":
         wallet = verify_wallet_by_identifier_pin(db, wallet_code, wallet_email, wallet_pin)
-        pay_with_wallet(db, wallet.user_id, order.id, total)
+        pay_with_wallet(db, wallet.user_id, order.id, final_total)
         order.status = "paid"
 
         if not user_id:
             order.user_id = int(wallet.user_id)
             user_id = int(wallet.user_id)
+
             if not order.customer_name:
                 order.customer_name = resolve_customer_name(db, user_id=user_id)
 
@@ -806,13 +932,16 @@ def _create_order_core(
             order.earned_points = int(earned_points)
             order.points_claim_expires_at = None
 
+    if promo_row and not order.user_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Promo code can only be used by customers with an account",
+        )
+
     for it in items:
         product = db.query(Product).filter(Product.id == int(it.product_id)).first()
         if not product:
-            raise HTTPException(
-                status_code=404,
-                detail=f"Product {it.product_id} not found",
-            )
+            raise HTTPException(status_code=404, detail=f"Product {it.product_id} not found")
 
         base_price = Decimal(str(product.price))
         size_name = (it.size or "small").strip().lower()
@@ -825,10 +954,7 @@ def _create_order_core(
             for addon_id in selected_addon_ids:
                 addon = addons_by_id.get(int(addon_id))
                 if not addon:
-                    raise HTTPException(
-                        status_code=404,
-                        detail=f"Add-on {addon_id} not found",
-                    )
+                    raise HTTPException(status_code=404, detail=f"Add-on {addon_id} not found")
                 if addon.addon_type != "ADDON":
                     raise HTTPException(
                         status_code=400,
@@ -849,7 +975,7 @@ def _create_order_core(
 
         if selected_addon_ids:
             for addon_id in selected_addon_ids:
-                addon = addons_by_id[int(addon.id)] if False else addons_by_id[int(addon_id)]
+                addon = addons_by_id[int(addon_id)]
                 db.add(
                     OrderItemAddOn(
                         order_item_id=order_item.id,
@@ -874,6 +1000,17 @@ def _create_order_core(
             selected_addon_ids=selected_addon_ids,
         )
 
+    if promo_row:
+        promo_row.usage_count = int(getattr(promo_row, "usage_count", 0) or 0) + 1
+        if order.user_id:
+            db.add(
+                PromoCodeRedemption(
+                    promo_code_id=promo_row.id,
+                    user_id=int(order.user_id),
+                    order_id=order.id,
+                )
+            )
+
     if order.user_id and order.status in {"paid", "completed"}:
         sync_order_rewards_if_eligible(db, order)
 
@@ -890,6 +1027,14 @@ def _create_order_core(
         "subtotal": float(order.subtotal),
         "vat_rate": float(order.vat_rate),
         "vat_amount": float(order.vat_amount),
+        "discount_amount": float(getattr(order, "discount_amount", 0) or 0),
+        "promo_code_text": getattr(order, "promo_code_text", None),
+        "discount_type": getattr(order, "discount_type", None),
+        "discount_value": (
+            float(getattr(order, "discount_value", 0) or 0)
+            if getattr(order, "discount_value", None) is not None
+            else None
+        ),
         "total_amount": float(order.total_amount),
         "earned_points": int(getattr(order, "earned_points", 0) or 0),
         "points_synced": bool(getattr(order, "points_synced", False)),
@@ -924,6 +1069,7 @@ def create_order(payload: OrderCreate, db: Session = Depends(get_db)):
             wallet_email=getattr(payload, "wallet_email", None),
             wallet_code=getattr(payload, "wallet_code", None),
             wallet_pin=getattr(payload, "wallet_pin", None),
+            promo_code=getattr(payload, "promo_code", None),
             customer_name=getattr(payload, "customer_name", None),
         )
 
@@ -947,6 +1093,7 @@ def create_kiosk_order(payload: KioskOrderCreate, db: Session = Depends(get_db))
             wallet_email=payload.wallet_email,
             wallet_code=payload.wallet_code,
             wallet_pin=payload.wallet_pin,
+            promo_code=payload.promo_code,
             customer_name=payload.customer_name,
         )
     except HTTPException:
@@ -973,6 +1120,7 @@ def create_online_order(
             wallet_email=payload.wallet_email,
             wallet_code=payload.wallet_code,
             wallet_pin=payload.wallet_pin,
+            promo_code=payload.promo_code,
             customer_name=None,
         )
     except HTTPException:
@@ -999,6 +1147,7 @@ def create_cashier_order(
             wallet_email=payload.wallet_email,
             wallet_code=payload.wallet_code,
             wallet_pin=payload.wallet_pin,
+            promo_code=payload.promo_code,
             customer_name=payload.customer_name,
         )
     except HTTPException:
@@ -1007,10 +1156,6 @@ def create_cashier_order(
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")
-
-
-class CancelPayload(BaseModel):
-    reason: str
 
 
 @router.post("/{order_id}/cancel-my-order")
@@ -1046,6 +1191,15 @@ def cancel_my_order(
 
         if order.status not in {"pending", "unpaid"}:
             raise HTTPException(status_code=400, detail="Only pending/unpaid orders can be cancelled by customer")
+
+        redemption = db.query(PromoCodeRedemption).filter(
+            PromoCodeRedemption.order_id == order_id
+        ).first()
+        if redemption:
+            promo = db.query(PromoCode).filter(PromoCode.id == redemption.promo_code_id).first()
+            if promo and int(getattr(promo, "usage_count", 0) or 0) > 0:
+                promo.usage_count = int(promo.usage_count) - 1
+            db.delete(redemption)
 
         movs = db.query(InventoryMasterMovement).filter(
             InventoryMasterMovement.ref_order_id == order_id
@@ -1116,6 +1270,15 @@ def cancel_order(
 
         if order.status == "completed":
             raise HTTPException(status_code=400, detail="Cannot cancel a completed order")
+
+        redemption = db.query(PromoCodeRedemption).filter(
+            PromoCodeRedemption.order_id == order_id
+        ).first()
+        if redemption:
+            promo = db.query(PromoCode).filter(PromoCode.id == redemption.promo_code_id).first()
+            if promo and int(getattr(promo, "usage_count", 0) or 0) > 0:
+                promo.usage_count = int(promo.usage_count) - 1
+            db.delete(redemption)
 
         movs = db.query(InventoryMasterMovement).filter(
             InventoryMasterMovement.ref_order_id == order_id
@@ -1237,13 +1400,9 @@ def complete_order(
             raise HTTPException(status_code=404, detail="Order not found")
 
         if order.status == "cancelled":
-            raise HTTPException(
-                status_code=400,
-                detail="Cannot complete a cancelled order",
-            )
+            raise HTTPException(status_code=400, detail="Cannot complete a cancelled order")
         if order.status == "completed":
             raise HTTPException(status_code=400, detail="Order already completed")
-
         if order.status != "paid":
             raise HTTPException(status_code=400, detail="Only paid orders can be marked as completed")
 
@@ -1252,10 +1411,18 @@ def complete_order(
         if hasattr(order, "completed_at"):
             order.completed_at = sa_func.now()
 
-        sync_order_rewards_if_eligible(db, order)
+        payment_method = (getattr(order, "payment_method", "") or "").strip().lower()
+
+        if payment_method == "wallet":
+            sync_order_rewards_if_eligible(db, order)
+        else:
+            if not bool(getattr(order, "points_synced", False)) and int(getattr(order, "earned_points", 0) or 0) > 0:
+                if not getattr(order, "points_claim_expires_at", None):
+                    order.points_claim_expires_at = _utcnow() + timedelta(hours=ORDER_POINTS_CLAIM_WINDOW_HOURS)
 
         db.commit()
         db.refresh(order)
+
         return {"order_id": order.id, "status": order.status}
 
     except HTTPException:
@@ -1284,18 +1451,19 @@ def pay_cash_order(
             )
         if order.status == "paid":
             raise HTTPException(status_code=400, detail="Order already paid")
-
         if order.status not in {"pending", "unpaid"}:
-            raise HTTPException(
-                status_code=400,
-                detail="Only pending/unpaid orders can be marked as paid",
-            )
+            raise HTTPException(status_code=400, detail="Only pending/unpaid orders can be marked as paid")
 
         order.status = "paid"
+
         if hasattr(order, "paid_at"):
             order.paid_at = sa_func.now()
 
-        sync_order_rewards_if_eligible(db, order)
+        order.points_synced = bool(getattr(order, "points_synced", False))
+
+        if not order.points_synced and int(getattr(order, "earned_points", 0) or 0) > 0:
+            if not getattr(order, "points_claim_expires_at", None):
+                order.points_claim_expires_at = _utcnow() + timedelta(hours=ORDER_POINTS_CLAIM_WINDOW_HOURS)
 
         db.commit()
         db.refresh(order)
@@ -1339,31 +1507,28 @@ def get_receipt(order_id: int, db: Session = Depends(get_db)):
 
         addons = []
         addons_total = Decimal("0")
+
         for oia, ao in add_on_rows:
             line = Decimal(str(oia.price_at_time)) * Decimal(int(oia.qty))
             addons_total += line
-            addons.append(
-                {
-                    "add_on_id": ao.id,
-                    "name": ao.name,
-                    "qty": int(oia.qty),
-                    "price": float(oia.price_at_time),
-                    "line_total": float(line),
-                }
-            )
+            addons.append({
+                "add_on_id": ao.id,
+                "name": ao.name,
+                "qty": int(oia.qty),
+                "price": float(oia.price_at_time),
+                "line_total": float(line),
+            })
 
-        receipt_items.append(
-            {
-                "order_item_id": oi.id,
-                "product_id": p.id,
-                "name": p.name,
-                "qty": int(oi.quantity),
-                "unit_price": float(oi.price),
-                "line_total": float(Decimal(str(oi.price)) * Decimal(int(oi.quantity))),
-                "add_ons": addons,
-                "add_ons_total": float(addons_total),
-            }
-        )
+        receipt_items.append({
+            "order_item_id": oi.id,
+            "product_id": p.id,
+            "name": p.name,
+            "qty": int(oi.quantity),
+            "unit_price": float(oi.price),
+            "line_total": float(Decimal(str(oi.price)) * Decimal(int(oi.quantity))),
+            "add_ons": addons,
+            "add_ons_total": float(addons_total),
+        })
 
     potential_points = 0
     for oi, p in rows:
@@ -1372,13 +1537,13 @@ def get_receipt(order_id: int, db: Session = Depends(get_db)):
 
     earned_points = int(getattr(order, "earned_points", 0) or 0)
     points_synced = bool(getattr(order, "points_synced", False))
-
     points_status = "synced" if points_synced else ("claimable" if int(potential_points) > 0 else "none")
 
     refund_info = get_order_refund_summary(db, order.id)
 
     return {
         "order_id": order.id,
+        "display_id": _display_order_id(order.id),
         "user_id": order.user_id,
         "customer_name": getattr(order, "customer_name", None),
         "order_type": order.order_type,
@@ -1388,10 +1553,27 @@ def get_receipt(order_id: int, db: Session = Depends(get_db)):
         "subtotal": float(order.subtotal),
         "vat_rate": float(order.vat_rate),
         "vat_amount": float(order.vat_amount),
+        "discount_amount": float(getattr(order, "discount_amount", 0) or 0),
+        "promo_code_text": getattr(order, "promo_code_text", None),
+        "discount_type": getattr(order, "discount_type", None),
+        "discount_value": (
+            float(getattr(order, "discount_value", 0) or 0)
+            if getattr(order, "discount_value", None) is not None
+            else None
+        ),
         "total_amount": float(order.total_amount),
         "earned_points": int(earned_points),
         "potential_points": int(potential_points),
         "points_status": points_status,
+        "points_synced": bool(getattr(order, "points_synced", False)),
+        "points_claimed_user_id": getattr(order, "points_claimed_user_id", None),
+        "points_claimed_by_staff_id": getattr(order, "points_claimed_by_staff_id", None),
+        "points_claim_method": getattr(order, "points_claim_method", None),
+        "points_claimed_at": (
+            str(getattr(order, "points_claimed_at", None))
+            if getattr(order, "points_claimed_at", None)
+            else None
+        ),
         "claim_expires_at": (
             str(getattr(order, "points_claim_expires_at", None))
             if getattr(order, "points_claim_expires_at", None)

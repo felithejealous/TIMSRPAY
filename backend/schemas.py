@@ -20,11 +20,9 @@ class RegisterRequest(BaseModel):
     email: EmailStr
     password: str
 
-
 class RegisterResponse(BaseModel):
     user_id: int
     email: str
-
 
 # ---------- ORDERS ----------
 OrderType = Literal["kiosk", "online", "cashier"]
@@ -37,7 +35,6 @@ class OrderItemCreate(BaseModel):
     sugar_level: Optional[Literal["0", "25", "50", "100"]] = None
     add_ons: List[int] = Field(default_factory=list)
 
-
 class OrderCreate(BaseModel):
     user_id: Optional[int] = None
     order_type: OrderType
@@ -47,9 +44,9 @@ class OrderCreate(BaseModel):
     wallet_email: Optional[EmailStr] = None
     wallet_code: Optional[str] = Field(default=None, min_length=6, max_length=6)
     wallet_pin: Optional[str] = Field(default=None, min_length=4, max_length=6)
+    promo_code: Optional[str] = Field(default=None, min_length=3, max_length=50)
 
     customer_name: Optional[str] = Field(default=None, max_length=150)
-
 
 # =========================
 # INVENTORY MASTER
@@ -89,7 +86,6 @@ class AddOnRecipeCreate(BaseModel):
 class AddOnRecipeUpdate(BaseModel):
     qty_used: Decimal = Field(gt=0)
 
-
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
@@ -112,3 +108,29 @@ class ResetPasswordRequest(BaseModel):
 
 class ResetPasswordResponse(BaseModel):
     message: str
+class PromoCodeToggle(BaseModel):
+    is_active: bool
+class PromoBannerToggle(BaseModel):
+    is_active: bool
+class PromoCodeCreate(BaseModel):
+    title: Optional[str] = Field(default=None, max_length=150)
+    description: Optional[str] = None
+    code: str = Field(min_length=3, max_length=50)
+    discount_type: Literal["percent", "fixed"]
+    discount_value: Decimal = Field(gt=0)
+    min_order_amount: Decimal = Field(default=0, ge=0)
+    usage_limit: Optional[int] = Field(default=None, ge=1)
+    per_user_limit: Optional[int] = Field(default=None, ge=1)
+    valid_from: Optional[str] = None
+    valid_until: Optional[str] = None
+class PromoCodeUpdate(BaseModel):
+    title: Optional[str] = Field(default=None, max_length=150)
+    description: Optional[str] = None
+    code: str = Field(min_length=3, max_length=50)
+    discount_type: Literal["percent", "fixed"]
+    discount_value: Decimal = Field(gt=0)
+    min_order_amount: Decimal = Field(default=0, ge=0)
+    usage_limit: Optional[int] = Field(default=None, ge=1)
+    per_user_limit: Optional[int] = Field(default=None, ge=1)
+    valid_from: Optional[str] = None
+    valid_until: Optional[str] = None

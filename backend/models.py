@@ -82,8 +82,8 @@ class Order(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
 
-    order_type = Column(String(20), nullable=False)   # kiosk / online / cashier
-    payment_method = Column(String(20), nullable=True)  # cash / wallet / gcash if ever later
+    order_type = Column(String(20), nullable=False)
+    payment_method = Column(String(20), nullable=True)
     customer_name = Column(String(150), nullable=True)
 
     status = Column(String(20), default="pending")
@@ -92,6 +92,12 @@ class Order(Base):
     subtotal = Column(Numeric(12, 2), default=0)
     vat_amount = Column(Numeric(12, 2), default=0)
     vat_rate = Column(Numeric(5, 2), default=12.00)
+
+    promo_code_id = Column(Integer, ForeignKey("promo_codes.id"), nullable=True)
+    promo_code_text = Column(String(50), nullable=True)
+    discount_amount = Column(Numeric(12, 2), nullable=False, default=0)
+    discount_type = Column(String(20), nullable=True)
+    discount_value = Column(Numeric(12, 2), nullable=True)
 
     earned_points = Column(Integer, nullable=False, default=0)
     points_synced = Column(Boolean, nullable=False, default=False)
@@ -120,7 +126,7 @@ class AddOn(Base):
     __tablename__ = "add_ons"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(100), nullable=False, unique=True)
-    addon_type = Column(String(20), nullable=False, default="ADDON")  # SIZE/ADDON
+    addon_type = Column(String(20), nullable=False, default="ADDON")
     price = Column(Numeric(10, 2), nullable=False, default=0)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=False), server_default=func.now())
@@ -159,7 +165,7 @@ class RewardTransaction(Base):
     reward_id = Column(Integer, ForeignKey("rewards.id"), nullable=True)
     order_id = Column(Integer, ForeignKey("orders.id"), nullable=True)
     points_change = Column(Integer, nullable=False)
-    transaction_type = Column(String(10), nullable=False)  # EARN / REDEEM
+    transaction_type = Column(String(10), nullable=False)
     created_at = Column(DateTime(timezone=False), server_default=func.now())
 
 
@@ -171,7 +177,7 @@ class WalletTransaction(Base):
     order_id = Column(Integer, ForeignKey("orders.id"), nullable=True)
 
     amount = Column(Numeric(12, 2), nullable=False)
-    transaction_type = Column(String(20), nullable=False)  # TOPUP / PAYMENT / REFUND
+    transaction_type = Column(String(20), nullable=False)
     created_at = Column(DateTime(timezone=False), server_default=func.now())
 
 
@@ -327,3 +333,42 @@ class CustomerProfile(Base):
     user_id = Column(Integer, ForeignKey("users.id"), primary_key=True, index=True)
     full_name = Column(String(150), nullable=False)
     phone = Column(String(50), nullable=True)
+
+
+class PromoCode(Base):
+    __tablename__ = "promo_codes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String(150), nullable=True)
+    description = Column(Text, nullable=True)
+    code = Column(String(50), unique=True, nullable=False, index=True)
+    discount_type = Column(String(20), nullable=False, default="percent")
+    discount_value = Column(Numeric(12, 2), nullable=False, default=0)
+    min_order_amount = Column(Numeric(12, 2), nullable=False, default=0)
+    usage_limit = Column(Integer, nullable=True)
+    usage_count = Column(Integer, nullable=False, default=0)
+    per_user_limit = Column(Integer, nullable=True, default=1)
+    is_active = Column(Boolean, nullable=False, default=True)
+    valid_from = Column(DateTime, nullable=True)
+    valid_until = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, server_default=func.now(), nullable=False)
+
+
+class PromoBanner(Base):
+    __tablename__ = "promo_banners"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String(150), nullable=True)
+    image_url = Column(Text, nullable=False)
+    link_url = Column(Text, nullable=True)
+    is_active = Column(Boolean, nullable=False, default=True)
+    created_at = Column(DateTime, server_default=func.now(), nullable=False)
+
+class PromoCodeRedemption(Base):
+    __tablename__ = "promo_code_redemptions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    promo_code_id = Column(Integer, ForeignKey("promo_codes.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    order_id = Column(Integer, ForeignKey("orders.id", ondelete="CASCADE"), nullable=False, unique=True)
+    redeemed_at = Column(DateTime(timezone=False), server_default=func.now(), nullable=False)

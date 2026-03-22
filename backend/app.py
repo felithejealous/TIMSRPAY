@@ -8,6 +8,7 @@ from backend.routers import reports
 from backend.routers import rewards
 from backend.routers.recipes import router as recipes_router
 from backend.routers.products import router as products_router
+from backend.routers.promo import router as promo_router
 from backend import models
 from backend.routers.attendance import router as attendance_router
 from backend.routers.staff import router as staff_router
@@ -17,15 +18,13 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 from backend.routers.announcement import router as announcements_router
 from fastapi.staticfiles import StaticFiles
-
 from backend.routers.admin import router as admin_router
+
 load_dotenv()
 
 app = FastAPI(title="TIMS-RPAY API")
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
-# -----------------------
-# CORS
-# -----------------------
+
 cors_origins_env = (os.getenv("CORS_ORIGINS") or "").strip()
 default_origins = [
     "http://127.0.0.1:5500",
@@ -45,9 +44,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# -----------------------
-# ROUTERS
-# -----------------------
 app.include_router(auth_router)
 app.include_router(orders_router)
 app.include_router(wallet_router)
@@ -57,11 +53,13 @@ app.include_router(rewards.router)
 app.include_router(recipes_router)
 app.include_router(inventory_router)
 app.include_router(products_router)
+app.include_router(promo_router)
 app.include_router(attendance_router)
 app.include_router(staff_router)
 app.include_router(users_router)
 app.include_router(announcements_router)
 app.include_router(admin_router)
+
 @app.get("/")
 def root():
     return {"message": "Backend is running"}

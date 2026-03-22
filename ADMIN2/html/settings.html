@@ -131,7 +131,7 @@
             <a href="promo.html" class="nav-item" data-lang="nav_promo"><i class="fa-solid fa-tags"></i> Promos</a>
             <a href="rewards.html" class="nav-item" data-lang="nav_rewards"><i class="fa-solid fa-gift"></i> Rewards</a>
             <a href="announce.html" class="nav-item" data-lang="nav_ann"><i class="fa-solid fa-bell"></i> Announce</a>
-            <a href="payments.html" class="nav-item" data-lang="nav_pay"><i class="fa-solid fa-credit-card"></i> Payments</a>
+            <a href="payments.html" class="nav-item" data-lang="nav_pay"><i class="fa-solid fa-file-arrow-down"></i> Reports</a>
             <a href="settings.html" class="nav-item active" data-lang="nav_set"><i class="fa-solid fa-cog"></i> Settings</a>
         </nav>
         <a href="#" class="logout-btn" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Log Out</a>
@@ -218,99 +218,8 @@
         </div>
 
     </div>
-
-    <script>
-        const translations = {
-            en: {
-                nav_dash: "Dashboard", nav_accounts: "Accounts", nav_inv: "Inventory",
-                nav_menu: "Menu Manager", nav_promo: "Promos", nav_rewards: "Rewards",
-                nav_ann: "Announce", nav_pay: "Payments", nav_set: "Settings",
-                logout: "Log Out", set_sub: "System Preferences & Localization",
-                set_shop: "Shop Profile", set_shop_sub: "Update shop name, address, and contact",
-                set_lang: "Language", set_lang_sub: "Switch between English and Tagalog",
-                set_sec: "Security", set_sec_sub: "Change admin password and privacy",
-                set_notif: "Notifications", set_notif_sub: "System alerts and inventory warnings",
-                set_log: "Activity Log", set_log_sub: "Recent system actions and logs"
-            },
-            tl: {
-                nav_dash: "Dashbord", nav_accounts: "Mga Account", nav_inv: "Imbentaryo",
-                nav_menu: "Tagapamahala ng Menu", nav_promo: "Mga Promo", nav_rewards: "Mga Gantimpala",
-                nav_ann: "Anunsyo", nav_pay: "Mga Pagbabayad", nav_set: "Settings",
-                logout: "Mag-Log Out", set_sub: "Preperensya ng Sistema at Wika",
-                set_shop: "Profile ng Tindahan", set_shop_sub: "I-update ang pangalan at address",
-                set_lang: "Wika", set_lang_sub: "Magpalit sa English o Tagalog",
-                set_sec: "Seguridad", set_sec_sub: "Palitan ang password at privacy",
-                set_notif: "Abiso", set_notif_sub: "Mga alerto sa sistema at imbentaryo",
-                set_log: "Listahan ng Aktibidad", set_log_sub: "Mga huling ginawa sa system"
-            }
-        };
-
-        function changeLanguage(lang) {
-            localStorage.setItem('teoLang', lang);
-            applyLanguage(lang);
-            showToast(`Language set to ${lang === 'en' ? 'English' : 'Tagalog'}`);
-        }
-
-        function applyLanguage(lang) {
-            document.querySelectorAll('[data-lang]').forEach(el => {
-                const key = el.getAttribute('data-lang');
-                if (translations[lang][key]) {
-                    // Preserve icons if they exist
-                    const icon = el.querySelector('i');
-                    if (icon) {
-                        el.innerHTML = '';
-                        el.appendChild(icon);
-                        el.innerHTML += ' ' + translations[lang][key];
-                    } else {
-                        el.textContent = translations[lang][key];
-                    }
-                }
-            });
-            document.getElementById('langSelect').value = lang;
-        }
-
-        function showToast(message) {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${message}`;
-            container.appendChild(toast);
-            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
-        }
-
-        function toggleTheme() {
-            document.body.classList.toggle('light-theme');
-            const isLight = document.body.classList.contains('light-theme');
-            localStorage.setItem('theme', isLight ? 'light' : 'dark');
-            document.getElementById('themeIcon').className = isLight ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
-        }
-
-        function openModal(modalId) {
-            document.getElementById('modalOverlay').classList.add('open');
-            document.querySelectorAll('.modal-card').forEach(card => card.style.display = 'none');
-            document.getElementById(modalId).style.display = 'block';
-        }
-
-        function closeAllModals() { document.getElementById('modalOverlay').classList.remove('open'); }
-
-        function handleSettingsSubmit(e, msg) {
-            e.preventDefault();
-            showToast(msg);
-            closeAllModals();
-        }
-
-        window.onload = () => {
-            const lang = localStorage.getItem('teoLang') || 'en';
-            applyLanguage(lang);
-            
-            const theme = localStorage.getItem('theme');
-            if (theme === 'light') {
-                document.body.classList.add('light-theme');
-                document.getElementById('themeIcon').className = 'fa-solid fa-moon';
-            }
-        };
-    </script>
-    <script src="../js/authGuard.js"></script>
-   <script src="../js/logout.js"></script>
+  <script src="../js/settings.js"></script>
+  <script src="../js/authGuard.js"></script>
+  <script src="../js/logout.js"></script>
 </body>
 </html>

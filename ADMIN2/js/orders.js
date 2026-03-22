@@ -1,20 +1,73 @@
 let ordersCache = [];
 let refundsCache = [];
 let autoRefreshInterval = null;
+
 const AUTO_REFRESH_MS = 5000;
+const ORDER_DISPLAY_OFFSET = 900;
+
+function $(id) {
+    return document.getElementById(id);
+}
+
+function escapeHtml(value) {
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+function formatPeso(value) {
+    return `₱${Number(value || 0).toFixed(2)}`;
+}
+
+function formatPoints(value) {
+    return `${Number(value || 0).toLocaleString()} pts`;
+}
+
+function formatDateTime(value) {
+    if (!value) return "-";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "-";
+    return date.toLocaleString();
+}
+
+function formatOrderDisplayId(orderId, displayId = null) {
+    if (displayId) return displayId;
+    return `#TM-${ORDER_DISPLAY_OFFSET + Number(orderId || 0)}`;
+}
+
+function getOrderDisplayId(order) {
+    return formatOrderDisplayId(order?.order_id, order?.display_id);
+}
+
+async function apiFetch(url, options = {}) {
+    const response = await fetch(url, {
+        credentials: "include",
+        ...options
+    });
+
+    let result = {};
+    try {
+        result = await response.json();
+    } catch {
+        result = {};
+    }
+
+    if (!response.ok) {
+        throw new Error(result.detail || `Request failed: ${response.status}`);
+    }
+
+    return result;
+}
 
 async function fetchOrders() {
     try {
-        const response = await fetch(`${API_URL}/orders`, {
-            method: "GET",
-            credentials: "include"
+        const result = await apiFetch(`${API_URL}/orders`, {
+            method: "GET"
         });
 
-        if (!response.ok) {
-            throw new Error(`Orders fetch failed: ${response.status}`);
-        }
-
-        const result = await response.json();
         ordersCache = result.data || [];
     } catch (error) {
         console.error("Orders fetch error:", error);
@@ -24,25 +77,15 @@ async function fetchOrders() {
 
 async function fetchRefunds() {
     try {
-        const response = await fetch(`${API_URL}/orders/refunds`, {
-            method: "GET",
-            credentials: "include"
+        const result = await apiFetch(`${API_URL}/orders/refunds`, {
+            method: "GET"
         });
 
-        if (!response.ok) {
-            throw new Error(`Refund fetch failed: ${response.status}`);
-        }
-
-        const result = await response.json();
         refundsCache = result.data || [];
     } catch (error) {
         console.error("Refund fetch error:", error);
         refundsCache = [];
     }
-}
-
-function formatPeso(value) {
-    return `₱${Number(value || 0).toFixed(2)}`;
 }
 
 function getPeriodRange(period) {
@@ -89,135 +132,172 @@ function isSuccessfulOrder(status) {
     return s === "paid" || s === "completed";
 }
 
+function getPointsSyncLabel(order) {
+    const synced = Boolean(order?.points_synced);
+    const earned = Number(order?.earned_points || 0);
+
+    if (earned <= 0) return "No points";
+    if (synced) return "Claimed";
+    return "Pending";
+}
+
+function getPointsSyncColor(order) {
+    const synced = Boolean(order?.points_synced);
+    const earned = Number(order?.earned_points || 0);
+
+    if (earned <= 0) return "text-white/50";
+    if (synced) return "text-green-400";
+    return "text-yellow-400";
+}
+
+function getSelectedFilters() {
+    return {
+        paymentFilter: $("paymentFilter")?.value || "all",
+        serviceFilter: $("serviceFilter")?.value || "all",
+        periodFilter: $("periodFilter")?.value || "today",
+        recordViewFilter: $("recordViewFilter")?.value || "all"
+    };
+}
+
+function matchesOrderFilters(order, filters) {
+    const payment = mapPaymentForUI(order.payment_method);
+    const service = mapServiceForUI(order.order_type);
+    const createdAt = new Date(order.created_at);
+    const periodStart = getPeriodRange(filters.periodFilter);
+
+    const periodMatch = createdAt >= periodStart;
+    const paymentMatch = filters.paymentFilter === "all" || payment === filters.paymentFilter;
+    const serviceMatch = filters.serviceFilter === "all" || service === filters.serviceFilter;
+
+    let recordMatch = true;
+    if (filters.recordViewFilter === "successful") {
+        recordMatch = isSuccessfulOrder(order.status);
+    }
+
+    return periodMatch && paymentMatch && serviceMatch && recordMatch;
+}
+
+function matchesRefundFilters(refund, filters) {
+    const payment = mapPaymentForUI(refund.payment_method);
+    const service = mapServiceForUI(refund.order_type);
+    const refundDate = refund.last_refund_at
+        ? new Date(refund.last_refund_at)
+        : new Date(refund.created_at);
+
+    const periodStart = getPeriodRange(filters.periodFilter);
+
+    const periodMatch = refundDate >= periodStart;
+    const paymentMatch = filters.paymentFilter === "all" || payment === filters.paymentFilter;
+    const serviceMatch = filters.serviceFilter === "all" || service === filters.serviceFilter;
+
+    return periodMatch && paymentMatch && serviceMatch;
+}
+
+function renderEmptyRow(colspan, text) {
+    return `
+        <tr>
+            <td colspan="${colspan}" class="text-center opacity-60">${escapeHtml(text)}</td>
+        </tr>
+    `;
+}
+
 function loadOrders() {
-    const body = document.getElementById("orderTableBody");
-    const paymentFilter = document.getElementById("paymentFilter").value;
-    const serviceFilter = document.getElementById("serviceFilter").value;
-    const periodFilter = document.getElementById("periodFilter").value;
-    const recordViewFilter = document.getElementById("recordViewFilter").value;
+    const body = $("orderTableBody");
+    if (!body) return;
 
-    const periodStart = getPeriodRange(periodFilter);
+    const filters = getSelectedFilters();
+    const filtered = ordersCache.filter(order => matchesOrderFilters(order, filters));
 
-    body.innerHTML = "";
+    let totalRevenue = 0;
+    let teoPayVolume = 0;
+    let totalCount = 0;
 
-    let totalRev = 0;
-    let teoVol = 0;
-    let count = 0;
+    if (!filtered.length) {
+        body.innerHTML = renderEmptyRow(6, "No orders found.");
+        $("countToday").innerText = "0";
+        $("revenueToday").innerText = formatPeso(0);
+        $("teopayToday").innerText = formatPeso(0);
+        return;
+    }
 
-    const filtered = ordersCache.filter(order => {
-        const payment = mapPaymentForUI(order.payment_method);
-        const service = mapServiceForUI(order.order_type);
-        const createdAt = new Date(order.created_at);
-
-        const periodMatch = createdAt >= periodStart;
-        const paymentMatch = paymentFilter === "all" || payment === paymentFilter;
-        const serviceMatch = serviceFilter === "all" || service === serviceFilter;
-
-        let recordMatch = true;
-        if (recordViewFilter === "successful") {
-            recordMatch = isSuccessfulOrder(order.status);
-        }
-
-        return periodMatch && paymentMatch && serviceMatch && recordMatch;
-    });
-
-    filtered.forEach(order => {
-        count++;
+    body.innerHTML = filtered.map(order => {
+        totalCount++;
 
         const payment = mapPaymentForUI(order.payment_method);
         const service = mapServiceForUI(order.order_type);
         const status = (order.status || "").toLowerCase();
-        const revenueAllowed = isRevenueCountable(status);
 
-        if (revenueAllowed) {
-            totalRev += Number(order.total_amount || 0);
+        if (isRevenueCountable(status)) {
+            totalRevenue += Number(order.total_amount || 0);
 
             if (payment === "TeoPay") {
-                teoVol += Number(order.total_amount || 0);
+                teoPayVolume += Number(order.total_amount || 0);
             }
         }
 
-        body.innerHTML += `
+        return `
             <tr>
-                <td class="font-mono text-yellow-400 font-bold">${order.display_id || "#" + order.order_id}</td>
+                <td class="font-mono text-yellow-400 font-bold">${escapeHtml(getOrderDisplayId(order))}</td>
                 <td>
-                    <div class="font-bold">${order.customer_name || "Unknown Customer"}</div>
-                    <div class="text-[10px] opacity-50">${service}</div>
+                    <div class="font-bold">${escapeHtml(order.customer_name || "Unknown Customer")}</div>
+                    <div class="text-[10px] opacity-50 flex gap-2 flex-wrap">
+                        <span>${escapeHtml(service)}</span>
+                        <span class="${getPointsSyncColor(order)}">${escapeHtml(getPointsSyncLabel(order))}</span>
+                    </div>
                 </td>
-                <td class="text-xs opacity-70">${new Date(order.created_at).toLocaleString()}</td>
+                <td class="text-xs opacity-70">${escapeHtml(formatDateTime(order.created_at))}</td>
                 <td class="text-xs opacity-70">-</td>
-                <td class="font-black">${formatPeso(order.total_amount)}</td>
+                <td class="font-black">${escapeHtml(formatPeso(order.total_amount))}</td>
                 <td>
-                    <button onclick="viewDetails(${order.order_id})"
-                        class="bg-white/5 hover:bg-yellow-400 hover:text-black p-2 px-4 rounded-lg text-[10px] font-black uppercase transition">
+                    <button
+                        onclick="viewDetails(${Number(order.order_id)})"
+                        class="bg-white/5 hover:bg-yellow-400 hover:text-black p-2 px-4 rounded-lg text-[10px] font-black uppercase transition"
+                    >
                         View
                     </button>
                 </td>
             </tr>
         `;
-    });
+    }).join("");
 
-    document.getElementById("countToday").innerText = count;
-    document.getElementById("revenueToday").innerText = formatPeso(totalRev);
-    document.getElementById("teopayToday").innerText = formatPeso(teoVol);
+    $("countToday").innerText = String(totalCount);
+    $("revenueToday").innerText = formatPeso(totalRevenue);
+    $("teopayToday").innerText = formatPeso(teoPayVolume);
 }
 
 function loadRefunds() {
-    const body = document.getElementById("refundTableBody");
+    const body = $("refundTableBody");
     if (!body) return;
 
-    const paymentFilter = document.getElementById("paymentFilter").value;
-    const serviceFilter = document.getElementById("serviceFilter").value;
-    const periodFilter = document.getElementById("periodFilter").value;
-
-    const periodStart = getPeriodRange(periodFilter);
-
-    body.innerHTML = "";
-
-    const filtered = refundsCache.filter(refund => {
-        const payment = mapPaymentForUI(refund.payment_method);
-        const service = mapServiceForUI(refund.order_type);
-        const refundDate = refund.last_refund_at ? new Date(refund.last_refund_at) : new Date(refund.created_at);
-
-        const periodMatch = refundDate >= periodStart;
-        const paymentMatch = paymentFilter === "all" || payment === paymentFilter;
-        const serviceMatch = serviceFilter === "all" || service === serviceFilter;
-
-        return periodMatch && paymentMatch && serviceMatch;
-    });
+    const filters = getSelectedFilters();
+    const filtered = refundsCache.filter(refund => matchesRefundFilters(refund, filters));
 
     if (!filtered.length) {
-        body.innerHTML = `
-            <tr>
-                <td colspan="6" class="text-center opacity-60">No refund history found.</td>
-            </tr>
-        `;
+        body.innerHTML = renderEmptyRow(6, "No refund history found.");
         return;
     }
 
-    filtered.forEach(refund => {
-        body.innerHTML += `
-            <tr>
-                <td class="font-mono text-yellow-400 font-bold">${refund.display_id || "#" + refund.order_id}</td>
-                <td>
-                    <div class="font-bold">${refund.customer_name || "Unknown Customer"}</div>
-                    <div class="text-[10px] opacity-50">${mapServiceForUI(refund.order_type)}</div>
-                </td>
-                <td class="text-xs opacity-70">
-                    ${refund.last_refund_at ? new Date(refund.last_refund_at).toLocaleString() : "-"}
-                </td>
-                <td class="text-xs">${mapPaymentForUI(refund.payment_method)}</td>
-                <td><span class="text-red-400 font-black text-xs uppercase">Refunded</span></td>
-                <td class="font-black text-red-400">${formatPeso(refund.refund_amount)}</td>
-            </tr>
-        `;
-    });
+    body.innerHTML = filtered.map(refund => `
+        <tr>
+            <td class="font-mono text-yellow-400 font-bold">
+                ${escapeHtml(formatOrderDisplayId(refund.order_id, refund.display_id))}
+            </td>
+            <td>
+                <div class="font-bold">${escapeHtml(refund.customer_name || "Unknown Customer")}</div>
+                <div class="text-[10px] opacity-50">${escapeHtml(mapServiceForUI(refund.order_type))}</div>
+            </td>
+            <td class="text-xs opacity-70">${escapeHtml(formatDateTime(refund.last_refund_at || refund.created_at))}</td>
+            <td class="text-xs">${escapeHtml(mapPaymentForUI(refund.payment_method))}</td>
+            <td><span class="text-red-400 font-black text-xs uppercase">Refunded</span></td>
+            <td class="font-black text-red-400">${escapeHtml(formatPeso(refund.refund_amount))}</td>
+        </tr>
+    `).join("");
 }
 
 function loadOrdersView() {
-    const recordViewFilter = document.getElementById("recordViewFilter").value;
-    const ordersSection = document.getElementById("ordersSection");
-    const refundSection = document.getElementById("refundSection");
+    const recordViewFilter = $("recordViewFilter")?.value || "all";
+    const ordersSection = $("ordersSection");
+    const refundSection = $("refundSection");
 
     if (recordViewFilter === "all") {
         if (ordersSection) ordersSection.style.display = "";
@@ -241,96 +321,185 @@ function loadOrdersView() {
     }
 }
 
+function buildRefundBlock(receipt) {
+    if (!receipt.is_refunded) return "";
+
+    return `
+        <div class="flex justify-between border-b border-white/5 pb-2">
+            <span class="text-[10px] font-black uppercase opacity-40">Refund Status</span>
+            <span class="text-red-400 font-black text-xs">Refunded</span>
+        </div>
+        <div class="flex justify-between border-b border-white/5 pb-2">
+            <span class="text-[10px] font-black uppercase opacity-40">Refund Amount</span>
+            <span class="font-bold text-xs text-red-400">${formatPeso(receipt.refund_amount || 0)}</span>
+        </div>
+        <div class="flex justify-between border-b border-white/5 pb-2">
+            <span class="text-[10px] font-black uppercase opacity-40">Refund Date</span>
+            <span class="font-bold text-xs">${escapeHtml(formatDateTime(receipt.last_refund_at))}</span>
+        </div>
+    `;
+}
+
+function buildPromoBlock(receipt) {
+    if (!receipt.promo_code_text) return "";
+
+    return `
+        <div class="flex justify-between border-b border-white/5 pb-2">
+            <span class="text-[10px] font-black uppercase opacity-40">Promo Code</span>
+            <span class="font-bold text-xs">${escapeHtml(receipt.promo_code_text)}</span>
+        </div>
+        <div class="flex justify-between border-b border-white/5 pb-2">
+            <span class="text-[10px] font-black uppercase opacity-40">Discount</span>
+            <span class="font-bold text-xs text-green-400">${formatPeso(receipt.discount_amount || 0)}</span>
+        </div>
+    `;
+}
+
+function buildReceiptItemsText(items) {
+    if (!Array.isArray(items) || !items.length) return "No items";
+
+    return items
+        .map(item => `${item.qty}x ${item.name}`)
+        .join(", ");
+}
+
+function buildOrderDetailsHtml(receipt, sourceOrder) {
+    const paymentMode = mapPaymentForUI(sourceOrder?.payment_method || receipt.payment_method);
+    const customerName = sourceOrder?.customer_name || receipt.customer_name || "Unknown Customer";
+    const displayId = sourceOrder?.display_id || receipt.display_id || formatOrderDisplayId(receipt.order_id);
+
+    const refundedBadge = receipt.is_refunded
+        ? `<span class="text-red-400 font-black">REFUNDED</span>`
+        : `<span class="font-bold text-xs uppercase">${escapeHtml(receipt.status || "-")}</span>`;
+
+    return `
+        <div class="flex justify-between border-b border-white/5 pb-2">
+            <span class="text-[10px] font-black uppercase opacity-40">Order Ref</span>
+            <span class="font-bold text-xs text-right">${escapeHtml(displayId)}</span>
+        </div>
+        <div class="flex justify-between border-b border-white/5 pb-2">
+            <span class="text-[10px] font-black uppercase opacity-40">Raw Order ID</span>
+            <span class="font-bold text-xs text-right">${escapeHtml(receipt.order_id || "-")}</span>
+        </div>
+        <div class="flex justify-between border-b border-white/5 pb-2">
+            <span class="text-[10px] font-black uppercase opacity-40">Customer</span>
+            <span class="font-bold text-xs text-right">${escapeHtml(customerName)}</span>
+        </div>
+        <div class="flex justify-between border-b border-white/5 pb-2">
+            <span class="text-[10px] font-black uppercase opacity-40">Items</span>
+            <span class="font-bold text-xs text-right">${escapeHtml(buildReceiptItemsText(receipt.items))}</span>
+        </div>
+        <div class="flex justify-between border-b border-white/5 pb-2">
+            <span class="text-[10px] font-black uppercase opacity-40">Payment Mode</span>
+            <span class="font-bold text-xs">${escapeHtml(paymentMode)}</span>
+        </div>
+        <div class="flex justify-between border-b border-white/5 pb-2">
+            <span class="text-[10px] font-black uppercase opacity-40">Order Type</span>
+            <span class="font-bold text-xs">${escapeHtml(mapServiceForUI(receipt.order_type))}</span>
+        </div>
+        <div class="flex justify-between border-b border-white/5 pb-2">
+            <span class="text-[10px] font-black uppercase opacity-40">Status</span>
+            ${refundedBadge}
+        </div>
+        <div class="flex justify-between border-b border-white/5 pb-2">
+            <span class="text-[10px] font-black uppercase opacity-40">Subtotal</span>
+            <span class="font-bold text-xs">${formatPeso(receipt.subtotal || 0)}</span>
+        </div>
+        <div class="flex justify-between border-b border-white/5 pb-2">
+            <span class="text-[10px] font-black uppercase opacity-40">VAT</span>
+            <span class="font-bold text-xs">${formatPeso(receipt.vat_amount || 0)}</span>
+        </div>
+        ${buildPromoBlock(receipt)}
+        <div class="flex justify-between border-b border-white/5 pb-2">
+            <span class="text-[10px] font-black uppercase opacity-40">Total</span>
+            <span class="font-bold text-xs">${formatPeso(receipt.total_amount || 0)}</span>
+        </div>
+        ${buildRefundBlock(receipt)}
+    `;
+}
+
+function buildRewardsInfoHtml(receipt) {
+    const claimedUserId = receipt.points_claimed_user_id ?? "-";
+    const claimedByStaffId = receipt.points_claimed_by_staff_id ?? "-";
+    const claimMethod = receipt.points_claim_method || "-";
+    const claimedAt = formatDateTime(receipt.points_claimed_at);
+    const claimExpires = formatDateTime(receipt.claim_expires_at);
+
+    return `
+        <div class="reward-highlight">
+            <div class="text-yellow-400 text-[10px] font-black uppercase tracking-widest mb-3">
+                <i class="fa-solid fa-gift mr-2"></i> Rewards Info
+            </div>
+
+            <div class="flex justify-between text-xs mb-1">
+                <span>Earned Points:</span>
+                <b class="text-green-400">${formatPoints(receipt.earned_points || 0)}</b>
+            </div>
+
+            <div class="flex justify-between text-xs mb-1">
+                <span>Potential Points:</span>
+                <b>${formatPoints(receipt.potential_points || 0)}</b>
+            </div>
+
+            <div class="flex justify-between text-xs mb-1">
+                <span>Points Status:</span>
+                <b>${escapeHtml(receipt.points_status || "none")}</b>
+            </div>
+
+            <div class="flex justify-between text-xs mb-1">
+                <span>Points Synced:</span>
+                <b class="${receipt.points_synced ? "text-green-400" : "text-yellow-400"}">
+                    ${receipt.points_synced ? "Yes" : "No"}
+                </b>
+            </div>
+
+            <div class="flex justify-between text-xs mb-1">
+                <span>Claim Method:</span>
+                <b>${escapeHtml(claimMethod)}</b>
+            </div>
+
+            <div class="flex justify-between text-xs mb-1">
+                <span>Claimed User ID:</span>
+                <b>${escapeHtml(claimedUserId)}</b>
+            </div>
+
+            <div class="flex justify-between text-xs mb-1">
+                <span>Processed By Staff ID:</span>
+                <b>${escapeHtml(claimedByStaffId)}</b>
+            </div>
+
+            <div class="flex justify-between text-xs mb-1">
+                <span>Claimed At:</span>
+                <b>${escapeHtml(claimedAt)}</b>
+            </div>
+
+            <div class="flex justify-between text-xs">
+                <span>Claim Expires At:</span>
+                <b>${escapeHtml(claimExpires)}</b>
+            </div>
+        </div>
+    `;
+}
+
 async function viewDetails(orderId) {
     try {
-        const response = await fetch(`${API_URL}/orders/${orderId}/receipt`, {
-            method: "GET",
-            credentials: "include"
+        const receipt = await apiFetch(`${API_URL}/orders/${orderId}/receipt`, {
+            method: "GET"
         });
 
-        if (!response.ok) {
-            throw new Error(`Receipt fetch failed: ${response.status}`);
+        const sourceOrder = ordersCache.find(order => Number(order.order_id) === Number(orderId));
+        const content = $("modalContent");
+        const rewardSection = $("rewardSection");
+
+        if (content) {
+            content.innerHTML = buildOrderDetailsHtml(receipt, sourceOrder);
         }
 
-        const o = await response.json();
-        const sourceOrder = ordersCache.find(x => x.order_id === orderId);
+        if (rewardSection) {
+            rewardSection.innerHTML = buildRewardsInfoHtml(receipt);
+        }
 
-        const content = document.getElementById("modalContent");
-        const rewardSection = document.getElementById("rewardSection");
-
-        const itemLines = (o.items || [])
-            .map(item => `${item.qty}x ${item.name}`)
-            .join(", ");
-
-        const paymentMode = mapPaymentForUI(sourceOrder?.payment_method);
-        const customerName = sourceOrder?.customer_name || o.customer_name || "Unknown Customer";
-
-        const refundedBadge = o.is_refunded
-            ? `<span class="text-red-400 font-black">REFUNDED</span>`
-            : `<span class="font-bold text-xs">${o.status}</span>`;
-
-        const refundBlock = o.is_refunded
-            ? `
-                <div class="flex justify-between border-b border-white/5 pb-2">
-                    <span class="text-[10px] font-black uppercase opacity-40">Refund Status</span>
-                    <span class="text-red-400 font-black text-xs">Refunded</span>
-                </div>
-                <div class="flex justify-between border-b border-white/5 pb-2">
-                    <span class="text-[10px] font-black uppercase opacity-40">Refund Amount</span>
-                    <span class="font-bold text-xs text-red-400">${formatPeso(o.refund_amount || 0)}</span>
-                </div>
-                <div class="flex justify-between border-b border-white/5 pb-2">
-                    <span class="text-[10px] font-black uppercase opacity-40">Refund Date</span>
-                    <span class="font-bold text-xs">${o.last_refund_at ? new Date(o.last_refund_at).toLocaleString() : "-"}</span>
-                </div>
-            `
-            : "";
-
-        content.innerHTML = `
-            <div class="flex justify-between border-b border-white/5 pb-2">
-                <span class="text-[10px] font-black uppercase opacity-40">Customer</span>
-                <span class="font-bold text-xs text-right">${customerName}</span>
-            </div>
-            <div class="flex justify-between border-b border-white/5 pb-2">
-                <span class="text-[10px] font-black uppercase opacity-40">Items</span>
-                <span class="font-bold text-xs text-right">${itemLines || "No items"}</span>
-            </div>
-            <div class="flex justify-between border-b border-white/5 pb-2">
-                <span class="text-[10px] font-black uppercase opacity-40">Payment Mode</span>
-                <span class="font-bold text-xs">${paymentMode}</span>
-            </div>
-            <div class="flex justify-between border-b border-white/5 pb-2">
-                <span class="text-[10px] font-black uppercase opacity-40">Order Type</span>
-                <span class="font-bold text-xs">${mapServiceForUI(o.order_type)}</span>
-            </div>
-            <div class="flex justify-between border-b border-white/5 pb-2">
-                <span class="text-[10px] font-black uppercase opacity-40">Status</span>
-                ${refundedBadge}
-            </div>
-            <div class="flex justify-between border-b border-white/5 pb-2">
-                <span class="text-[10px] font-black uppercase opacity-40">Total</span>
-                <span class="font-bold text-xs">${formatPeso(o.total_amount)}</span>
-            </div>
-            ${refundBlock}
-        `;
-
-        rewardSection.innerHTML = `
-            <div class="reward-highlight">
-                <div class="text-yellow-400 text-[10px] font-black uppercase tracking-widest mb-2">
-                    <i class="fa-solid fa-gift mr-2"></i> Rewards Info
-                </div>
-                <div class="flex justify-between text-xs">
-                    <span>Earned Points:</span>
-                    <b class="text-green-400">${o.earned_points || 0} Points</b>
-                </div>
-                <div class="flex justify-between text-xs mt-1">
-                    <span>Points Status:</span>
-                    <b>${o.points_status || "none"}</b>
-                </div>
-            </div>
-        `;
-
-        document.getElementById("detailsModal").classList.add("show");
+        $("detailsModal")?.classList.add("show");
     } catch (error) {
         console.error("View details error:", error);
         alert("Failed to load order details.");
@@ -338,34 +507,47 @@ async function viewDetails(orderId) {
 }
 
 function closeModal() {
-    document.getElementById("detailsModal").classList.remove("show");
+    $("detailsModal")?.classList.remove("show");
 }
 
 function exportToExcel() {
-    const exportRows = ordersCache.map(o => ({
-        ID: o.display_id || `#${o.order_id}`,
-        Customer: o.customer_name || "Unknown Customer",
-        Email: o.customer_email || "",
-        DateTime: new Date(o.created_at).toLocaleString(),
-        Payment: mapPaymentForUI(o.payment_method),
-        Service: mapServiceForUI(o.order_type),
-        Status: o.status,
-        Total: Number(o.total_amount || 0),
-        Items: o.items_summary || "",
-        EarnedPoints: o.earned_points || 0
+    const exportRows = ordersCache.map(order => ({
+        ID: getOrderDisplayId(order),
+        RawOrderID: order.order_id,
+        Customer: order.customer_name || "Unknown Customer",
+        Email: order.customer_email || "",
+        DateTime: formatDateTime(order.created_at),
+        Payment: mapPaymentForUI(order.payment_method),
+        Service: mapServiceForUI(order.order_type),
+        Status: order.status || "",
+        Total: Number(order.total_amount || 0),
+        Discount: Number(order.discount_amount || 0),
+        PromoCode: order.promo_code_text || "",
+        Items: order.items_summary || "",
+        EarnedPoints: order.earned_points || 0,
+        PointsSynced: order.points_synced ? "Yes" : "No"
     }));
 
-    const ws = XLSX.utils.json_to_sheet(exportRows);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Orders");
-    XLSX.writeFile(wb, `TeoDMango_Ledger_${new Date().toISOString().split("T")[0]}.xlsx`);
+    const worksheet = XLSX.utils.json_to_sheet(exportRows);
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Orders");
+    XLSX.writeFile(
+        workbook,
+        `TeoDMango_Ledger_${new Date().toISOString().split("T")[0]}.xlsx`
+    );
 }
 
 function toggleTheme() {
     document.body.classList.toggle("light-theme");
+
     const isLight = document.body.classList.contains("light-theme");
     localStorage.setItem("theme", isLight ? "light" : "dark");
-    document.getElementById("themeIcon").className = isLight ? "fa-solid fa-moon" : "fa-solid fa-sun";
+
+    const themeIcon = $("themeIcon");
+    if (themeIcon) {
+        themeIcon.className = isLight ? "fa-solid fa-moon" : "fa-solid fa-sun";
+    }
 }
 
 async function refreshOrdersData() {
@@ -384,6 +566,7 @@ function startAutoRefresh() {
 
 function stopAutoRefresh() {
     if (!autoRefreshInterval) return;
+
     clearInterval(autoRefreshInterval);
     autoRefreshInterval = null;
 }
@@ -405,12 +588,17 @@ window.loadOrders = loadOrders;
 window.loadOrdersView = loadOrdersView;
 
 window.onload = async () => {
-    applySync();
+    if (typeof applySync === "function") {
+        applySync();
+    }
 
     const theme = localStorage.getItem("theme");
     if (theme === "light") {
         document.body.classList.add("light-theme");
-        document.getElementById("themeIcon").className = "fa-solid fa-moon";
+        const themeIcon = $("themeIcon");
+        if (themeIcon) {
+            themeIcon.className = "fa-solid fa-moon";
+        }
     }
 
     await refreshOrdersData();
