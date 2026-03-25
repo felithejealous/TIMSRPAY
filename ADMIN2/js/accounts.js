@@ -123,6 +123,16 @@ function getProfileImage(user) {
     return buildInitialAvatar(getDisplayName(user));
 }
 
+function canOpenAttendance(user) {
+    const role = String(user?.role_name || "").toLowerCase();
+    return role === "staff" || role === "cashier";
+}
+
+function goToAttendanceProfile() {
+    if (!currentViewingUserId) return;
+    window.location.href = `attendance.html?staff_id=${encodeURIComponent(currentViewingUserId)}`;
+}
+
 function getFilteredUsers() {
     const statusFilter = document.getElementById("statusFilter")?.value || "all";
     const searchValue = (document.getElementById("searchInput")?.value || "").toLowerCase().trim();
@@ -304,9 +314,17 @@ function viewProfile(userId) {
 `;
 
     const toggleInBtn = document.getElementById("toggleInBtn");
-    toggleInBtn.innerText = "Attendance Soon";
-    toggleInBtn.className = "btn-toggle bg-white/10 text-white/60 py-3 rounded-xl font-black text-[10px] uppercase cursor-not-allowed";
-    toggleInBtn.disabled = true;
+    if (canOpenAttendance(user)) {
+        toggleInBtn.innerHTML = `<i class="fas fa-user-clock mr-2"></i>Attendance Logs`;
+        toggleInBtn.className = "btn-toggle bg-yellow-400 text-black py-3 rounded-xl font-black text-[10px] uppercase hover:scale-[1.02]";
+        toggleInBtn.disabled = false;
+        toggleInBtn.onclick = goToAttendanceProfile;
+        toggleInBtn.style.display = "block";
+    } else {
+        toggleInBtn.style.display = "none";
+        toggleInBtn.disabled = true;
+        toggleInBtn.onclick = null;
+    }
 
     const toggleActiveBtn = document.getElementById("toggleActiveBtn");
     toggleActiveBtn.innerText = user.is_active ? "Deactivate Profile" : "Reactivate Profile";
@@ -375,7 +393,6 @@ function updatePreviewFromName() {
     const fullName = document.getElementById("fullName")?.value || "U";
     document.getElementById("profilePreview").src = buildInitialAvatar(fullName);
 }
-
 function showToast(message) {
     const toast = document.getElementById("toast");
     toast.innerText = message;
@@ -606,6 +623,7 @@ window.confirmReset = confirmReset;
 window.processReset = processReset;
 window.editAccountFromProfile = editAccountFromProfile;
 window.setRoleFilter = setRoleFilter;
+window.goToAttendanceProfile = goToAttendanceProfile;
 
 window.onload = () => {
     initializeAccountsPage();

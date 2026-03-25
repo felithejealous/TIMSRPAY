@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, Text, ForeignKey, Numeric, DateTime, Text
+from sqlalchemy import Column, Integer, String, Boolean, Text, ForeignKey, Numeric, DateTime
 from sqlalchemy.sql import func
 from backend.database import Base
 from sqlalchemy.orm import relationship
@@ -245,9 +245,29 @@ class AttendanceLog(Base):
     __tablename__ = "attendance_logs"
 
     id = Column(Integer, primary_key=True, index=True)
-    staff_id = Column(Integer, index=True, nullable=False)
-    time_in = Column(DateTime, nullable=False, server_default=func.now())
-    time_out = Column(DateTime, nullable=True)
+    staff_id = Column(Integer, ForeignKey("users.id"), index=True, nullable=False)
+
+    shift_date = Column(DateTime(timezone=False), nullable=True)
+
+    scheduled_start = Column(DateTime(timezone=False), nullable=True)
+    scheduled_end = Column(DateTime(timezone=False), nullable=True)
+
+    time_in = Column(DateTime(timezone=False), nullable=False, server_default=func.now())
+    time_out = Column(DateTime(timezone=False), nullable=True)
+
+    attendance_status = Column(String(30), nullable=True)   # present | absent | late | overtime | undertime
+    total_hours = Column(Numeric(10, 2), nullable=True, default=0)
+    overtime_hours = Column(Numeric(10, 2), nullable=True, default=0)
+    undertime_hours = Column(Numeric(10, 2), nullable=True, default=0)
+    late_minutes = Column(Integer, nullable=True, default=0)
+
+    absence_reason = Column(Text, nullable=True)
+    terminal_name = Column(String(100), nullable=True)
+    notes = Column(Text, nullable=True)
+    approval_status = Column(String(20), nullable=True, default="approved")  # pending | approved | rejected
+
+    created_at = Column(DateTime(timezone=False), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=False), server_default=func.now(), onupdate=func.now(), nullable=False)
 
 
 class StaffProfile(Base):
@@ -256,6 +276,11 @@ class StaffProfile(Base):
     user_id = Column(Integer, primary_key=True, index=True)
     full_name = Column(String(150), nullable=False)
     position = Column(String(100), nullable=True)
+
+    staff_code = Column(String(50), unique=True, nullable=True, index=True)
+
+    scheduled_start_time = Column(String(10), nullable=True)   # ex. 08:00
+    scheduled_end_time = Column(String(10), nullable=True)     # ex. 17:00
 
 
 class PasswordResetToken(Base):
