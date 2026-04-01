@@ -15,9 +15,15 @@
             --border: rgba(0,0,0,0.06);
             --ease: cubic-bezier(0.23, 1, 0.32, 1);
             --danger: #ff4d6d;
+            --success: #198754;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        }
 
         body {
             background: var(--bg);
@@ -28,7 +34,6 @@
             overflow: hidden;
         }
 
-        /* --- LEFT SIDE: BRAND WALL --- */
         .brand-wall {
             background: linear-gradient(135deg, #111 0%, #050505 100%);
             color: #ffffff;
@@ -41,8 +46,15 @@
         }
 
         .brand-wall::before {
-            content: ''; position: absolute; top: -20%; left: -20%; width: 600px; height: 600px;
-            background: radial-gradient(circle, var(--mango) 0%, transparent 60%); opacity: 0.15; filter: blur(60px);
+            content: '';
+            position: absolute;
+            top: -20%;
+            left: -20%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, var(--mango) 0%, transparent 60%);
+            opacity: 0.15;
+            filter: blur(60px);
         }
 
         .brand-logo {
@@ -61,7 +73,9 @@
             animation: slideIn 1s var(--ease);
         }
 
-        .brand-wall .accent { color: var(--mango); }
+        .brand-wall .accent {
+            color: var(--mango);
+        }
 
         .brand-wall p {
             font-size: 16px;
@@ -72,7 +86,6 @@
             animation: slideIn 1.2s var(--ease);
         }
 
-        /* --- RIGHT SIDE: LOGIN AREA --- */
         .form-area {
             display: flex;
             align-items: center;
@@ -82,68 +95,201 @@
             background: var(--bg);
         }
 
-        .auth-container { width: 100%; max-width: 420px; animation: fadeIn 0.8s var(--ease); }
-
-        .auth-container h2 { font-size: 32px; font-weight: 900; letter-spacing: -1px; margin-bottom: 8px; color: var(--text); }
-        .auth-container .sub-friendly { color: #666; margin-bottom: 40px; font-size: 14px; font-weight: 600; }
-
-        .field { margin-bottom: 20px; position: relative; }
-        .field label { display: block; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #888; margin-bottom: 8px; margin-left: 5px; }
-        
-        .input-wrapper { position: relative; display: flex; align-items: center; }
-        .input-wrapper i { position: absolute; left: 20px; color: #888; font-size: 16px; }
-        
-        .field input {
-            width: 100%; padding: 18px 20px 18px 50px;
-            background: var(--surface); border: 1px solid var(--border);
-            border-radius: 16px; color: var(--text); font-size: 16px; font-weight: 600;
-            outline: none; transition: 0.3s;
+        .auth-container {
+            width: 100%;
+            max-width: 420px;
+            animation: fadeIn 0.8s var(--ease);
         }
-        .field input:focus { border-color: var(--mango); background: var(--bg); box-shadow: 0 0 0 4px rgba(255, 194, 68, 0.1); }
-        .field input::placeholder { color: #aaa; font-weight: 500; }
+
+        .auth-container h2 {
+            font-size: 32px;
+            font-weight: 900;
+            letter-spacing: -1px;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+
+        .auth-container .sub-friendly {
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .field {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .field label {
+            display: block;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #888;
+            margin-bottom: 8px;
+            margin-left: 5px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 20px;
+            color: #888;
+            font-size: 16px;
+        }
+
+        .field input {
+            width: 100%;
+            padding: 18px 20px 18px 50px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            color: var(--text);
+            font-size: 16px;
+            font-weight: 600;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .field input:focus {
+            border-color: var(--mango);
+            background: var(--bg);
+            box-shadow: 0 0 0 4px rgba(255, 194, 68, 0.1);
+        }
+
+        .field input::placeholder {
+            color: #aaa;
+            font-weight: 500;
+        }
 
         .btn-friendly {
-            width: 100%; padding: 20px;
-            background: #111; color: #fff;
-            border: none; border-radius: 16px;
-            font-weight: 900; font-size: 14px;
-            cursor: pointer; margin-top: 15px; transition: 0.3s;
-            text-transform: uppercase; letter-spacing: 1px;
-            display: flex; justify-content: center; align-items: center; gap: 10px;
+            width: 100%;
+            padding: 20px;
+            background: #111;
+            color: #fff;
+            border: none;
+            border-radius: 16px;
+            font-weight: 900;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
         }
-        .btn-friendly:hover { transform: translateY(-3px); background: var(--mango); color: #111; box-shadow: 0 15px 30px rgba(255, 194, 68, 0.3); }
-        .btn-friendly:active { transform: scale(0.98); }
 
-        .options { margin-top: 30px; text-align: center; }
-        .options a { color: #666; text-decoration: none; font-size: 13px; font-weight: 700; transition: 0.3s; }
-        .options a:hover { color: var(--text); }
-
-        /* Role Selector (For Simulation Purposes) */
-        .role-selector {
-            display: flex; gap: 10px; margin-bottom: 25px;
+        .btn-friendly:hover {
+            transform: translateY(-3px);
+            background: var(--mango);
+            color: #111;
+            box-shadow: 0 15px 30px rgba(255, 194, 68, 0.3);
         }
-        .role-btn {
-            flex: 1; padding: 12px; background: var(--surface); border: 1px solid var(--border);
-            border-radius: 12px; font-size: 12px; font-weight: 800; color: #666; cursor: pointer; transition: 0.3s;
-            text-transform: uppercase; letter-spacing: 1px;
-        }
-        .role-btn.active { background: #111; color: var(--mango); border-color: #111; }
 
-        /* Clock Overlay */
+        .btn-friendly:active {
+            transform: scale(0.98);
+        }
+
+        .btn-friendly:disabled {
+            pointer-events: none;
+            opacity: 0.8;
+        }
+
+        .options {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .options a {
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 700;
+            transition: 0.3s;
+        }
+
+        .options a:hover {
+            color: var(--text);
+        }
+
+        .login-message {
+            min-height: 22px;
+            margin-top: 12px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .login-message.error {
+            color: var(--danger);
+        }
+
+        .login-message.success {
+            color: var(--success);
+        }
+
         .portal-clock {
-            position: absolute; bottom: 30px; right: 40px;
-            text-align: right; color: #888; font-weight: 800; font-size: 12px; letter-spacing: 1px;
+            position: absolute;
+            bottom: 30px;
+            right: 40px;
+            text-align: right;
+            color: #888;
+            font-weight: 800;
+            font-size: 12px;
+            letter-spacing: 1px;
         }
-        .portal-clock #time { font-size: 24px; color: var(--text); letter-spacing: -1px; margin-bottom: 2px;}
 
-        @keyframes slideIn { from { transform: translateX(-30px); opacity: 0; } }
-        @keyframes fadeIn { from { transform: translateY(20px); opacity: 0; } }
+        .portal-clock #time {
+            font-size: 24px;
+            color: var(--text);
+            letter-spacing: -1px;
+            margin-bottom: 2px;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(-30px);
+                opacity: 0;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+        }
 
         @media (max-width: 1000px) {
-            body { grid-template-columns: 1fr; }
-            .brand-wall { display: none; }
+            body {
+                grid-template-columns: 1fr;
+            }
+
+            .brand-wall {
+                display: none;
+            }
         }
     </style>
+    <script>
+(function () {
+    const savedTheme = localStorage.getItem("staff-theme");
+    if (savedTheme === "light") {
+        document.documentElement.classList.add("preload-light");
+    } else {
+        document.documentElement.classList.remove("preload-light");
+    }
+})();
+</script>
 </head>
 <body>
 
@@ -158,20 +304,13 @@
         <div class="auth-container">
             <h2>Authentication</h2>
             <p class="sub-friendly">Enter your assigned credentials to proceed.</p>
-            
-            <form onsubmit="handleLogin(event)">
-                
-                <div style="margin-bottom: 10px; font-size: 10px; font-weight: 800; color: #888; text-transform: uppercase; letter-spacing: 1px;">Simulate Role:</div>
-                <div class="role-selector">
-                    <button type="button" class="role-btn active" onclick="setRole('cashier', this)">Cashier</button>
-                    <button type="button" class="role-btn" onclick="setRole('admin', this)">Manager/Admin</button>
-                </div>
 
+            <form id="staffLoginForm">
                 <div class="field">
-                    <label>Employee ID / Email</label>
+                    <label>Email</label>
                     <div class="input-wrapper">
                         <i class="fa-solid fa-user"></i>
-                        <input type="text" id="empId" placeholder="e.g. EMP-001" required>
+                        <input type="email" id="empId" placeholder="Enter staff email" required>
                     </div>
                 </div>
 
@@ -187,6 +326,8 @@
                     Verify & Enter <i class="fa-solid fa-arrow-right"></i>
                 </button>
 
+                <div id="loginMessage" class="login-message"></div>
+
                 <div class="options">
                     <a href="#">Need help? Contact IT Support.</a>
                 </div>
@@ -194,49 +335,11 @@
         </div>
 
         <div class="portal-clock">
-            <div id="time">00:00:00 PM</div>
+            <div id="time">00:00 PM</div>
             <div id="date">Sun, Mar 01, 2026</div>
         </div>
     </section>
 
-    <script>
-        // --- REAL-TIME CLOCK ---
-        function updateClock() {
-            const now = new Date();
-            document.getElementById('time').textContent = now.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit' });
-            document.getElementById('date').textContent = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: '2-digit', year: 'numeric' });
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
-
-        // --- ROLE SIMULATION LOGIC ---
-        let selectedRole = 'cashier'; // Default
-
-        function setRole(role, btnElement) {
-            selectedRole = role;
-            document.querySelectorAll('.role-btn').forEach(btn => btn.classList.remove('active'));
-            btnElement.classList.add('active');
-        }
-
-        // --- LOGIN LOGIC ---
-        function handleLogin(e) {
-            e.preventDefault();
-            const btn = document.getElementById('loginBtn');
-            const originalText = btn.innerHTML;
-            
-            // Loading state
-            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Authenticating...';
-            btn.style.pointerEvents = 'none';
-            btn.style.opacity = '0.8';
-
-            setTimeout(() => {
-                // Save role to localStorage to be read by the next page
-                localStorage.setItem('staffRole', selectedRole);
-                
-                // Redirect to overview
-                window.location.href = 'overview.html';
-            }, 1200);
-        }
-    </script>
+    <script src="js/loginstaff.js"></script>
 </body>
 </html>

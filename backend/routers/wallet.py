@@ -328,7 +328,7 @@ def lookup_wallet_users(
 def top_up(
     payload: WalletTopUp,
     db: Session = Depends(get_db),
-    _: User = Depends(require_roles("cashier", "admin")),
+    _: User = Depends(require_roles("cashier", "admin","staff")),
     idempotency_key: str = Header(default=None, alias="Idempotency-Key"),
 ):
     try:

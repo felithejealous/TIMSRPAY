@@ -52,14 +52,12 @@
             transition: transform 0.4s ease, filter 0.4s ease;
         }
 
-        /* Blur background when typing */
         body.is-typing .unified-card {
             transform: scale(0.95);
             filter: blur(10px);
             pointer-events: none;
         }
 
-        /* --- HERO SECTION --- */
         .hero-header {
             padding: 30px 40px 10px;
             text-align: center;
@@ -86,7 +84,6 @@
         .hero-header h2 { font-size: 1.8rem; font-weight: 800; color: var(--text-dark); text-transform: uppercase; }
         .hero-header p { font-size: 0.9rem; color: #5d4037; opacity: 0.6; margin-top: 4px; }
 
-        /* --- OPTIONS AREA --- */
         .options-area {
             flex: 1;
             padding: 0 50px 20px;
@@ -120,7 +117,6 @@
         .check-pill.active { border-color: var(--mango-deep); color: var(--mango-deep); background: #fff; }
         .check-pill input { display: none; }
 
-        /* Notes Style */
         .notes-field {
             width: 100%; padding: 16px 20px; border-radius: 15px;
             border: 1.5px solid rgba(255,255,255,0.5); background: rgba(255,255,255,0.7);
@@ -128,7 +124,6 @@
             cursor: pointer;
         }
 
-        /* --- NOTE POP-OUT MODAL --- */
         .note-focus-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.2);
@@ -151,7 +146,6 @@
             background: #fff9f0; outline: none;
         }
 
-        /* QTY & FOOTER */
         .qty-row {
             display: flex; align-items: center; justify-content: space-between;
             margin-top: 20px; padding: 15px 0; border-top: 1px solid rgba(0,0,0,0.06);
@@ -177,7 +171,6 @@
         .btn-back { background: rgba(255,255,255,0.12); color: white; }
         .btn-confirm { background: var(--mango-deep); color: white; }
 
-        /* Keyboard */
         .keyboard-overlay {
             position: fixed; bottom: -100%; left: 0; width: 100%;
             background: #cbd5e0; padding: 10px; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -214,30 +207,18 @@
                 <button class="pill-btn" data-val="Large" data-price="20">Large<span class="price-addon">+₱20</span></button>
             </div>
 
-            <span class="section-label">Sugar Level</span>
-            <div class="pill-group" id="sugarGroup">
-                <button class="pill-btn" data-val="0%">0%</button>
-                <button class="pill-btn" data-val="50%">50%</button>
-                <button class="pill-btn active" data-val="100%">100%</button>
-            </div>
-
             <span class="section-label">Add-ons</span>
-            <div class="addon-grid" id="addonsGroup">
-                <label class="check-pill"><span>Pearls</span><span>+₱10</span><input type="checkbox" data-val="Pearls" data-price="10"></label>
-                <label class="check-pill"><span>Crystals</span><span>+₱20</span><input type="checkbox" data-val="Crystals" data-price="20"></label>
-                <label class="check-pill"><span>Ice Cream</span><span>+₱20</span><input type="checkbox" data-val="Ice Cream" data-price="20"></label>
-                <label class="check-pill"><span>Graham</span><span>+₱20</span><input type="checkbox" data-val="Graham" data-price="20"></label>
-            </div>
+            <div class="addon-grid" id="addonsGroup"></div>
 
             <span class="section-label">Special Notes</span>
-            <input type="text" class="notes-field" id="orderNotes" placeholder="Tap to add a note..." readonly onclick="openNoteFocus()">
+            <input type="text" class="notes-field" id="orderNotes" placeholder="Tap to add a note..." readonly>
 
             <div class="qty-row">
                 <span class="section-label" style="margin:0">Quantity</span>
                 <div class="qty-stepper">
-                    <button class="step-btn" onclick="adjustQty(-1)">-</button>
+                    <button class="step-btn" id="qtyMinusBtn">-</button>
                     <div class="qty-val" id="qtyDisplay">1</div>
-                    <button class="step-btn" onclick="adjustQty(1)">+</button>
+                    <button class="step-btn" id="qtyPlusBtn">+</button>
                 </div>
             </div>
         </div>
@@ -248,7 +229,7 @@
                 <h2 id="totalDisplay">₱ 0.00</h2>
             </div>
             <div class="action-group">
-                <button class="btn btn-back" onclick="window.location.href='menu.html'">Back</button>
+                <button class="btn btn-back" id="backBtn">Back</button>
                 <button class="btn btn-confirm" id="addToCartBtn">Add to Tray</button>
             </div>
         </div>
@@ -264,136 +245,6 @@
 
     <div class="keyboard-overlay" id="kb"></div>
 
-    <script>
-        const products = [
-            { id: 1, name: "Classic Mango", price: 60, desc: "Tropical mango slush with signature layers.", img: "../Images/mangga.png" },
-            { id: 2, name: "Strawberry", price: 60, desc: "Sweet and tangy strawberry fruity blend.", img: "../Images/strawberry.png" },
-            { id: 3, name: "Ube", price: 60, desc: "Rich and creamy purple yam experience.", img: "../Images/ube.png" },
-            { id: 4, name: "Avocado", price: 60, desc: "Smooth tropical avocado goodness.", img: "../Images/avocado.png" },
-            { id: 5, name: "Buko", price: 60, desc: "Refreshing coconut milk base.", img: "../Images/Buko.png" },
-            { id: 6, name: "Lychee", price: 60, desc: "Light and floral lychee blend.", img: "../Images/lychee.png" }
-        ];
-
-        let currentProduct = null;
-        let quantity = 1;
-        let editIndex = null;
-
-        // Keyboard Logic
-        const kb = document.getElementById('kb');
-        const mainNotes = document.getElementById('orderNotes');
-        const floatingNotes = document.getElementById('floatingNotes');
-
-        "QWERTYUIOPASDFGHJKLZXCVBNM".split("").forEach(char => {
-            const k = document.createElement('div'); k.className = 'key'; k.innerText = char;
-            k.onclick = () => floatingNotes.value += char; kb.appendChild(k);
-        });
-
-        const del = document.createElement('div'); del.className = 'key wide'; del.innerText = 'DEL';
-        del.onclick = () => floatingNotes.value = floatingNotes.value.slice(0, -1); kb.appendChild(del);
-
-        const space = document.createElement('div'); space.className = 'key space'; space.innerText = 'SPACE';
-        space.onclick = () => floatingNotes.value += ' '; kb.appendChild(space);
-
-        const done = document.createElement('div'); done.className = 'key close'; done.innerText = 'DONE';
-        done.onclick = () => closeNoteFocus(); kb.appendChild(done);
-
-        function openNoteFocus() {
-            document.body.classList.add('is-typing');
-            document.getElementById('noteOverlay').classList.add('active');
-            floatingNotes.value = mainNotes.value; // Sync text
-            kb.classList.add('show');
-        }
-
-        function closeNoteFocus() {
-            document.body.classList.remove('is-typing');
-            document.getElementById('noteOverlay').classList.remove('active');
-            mainNotes.value = floatingNotes.value; // Sync back
-            kb.classList.remove('show');
-        }
-
-        // Core App Logic
-        window.onload = () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const editIdxParam = urlParams.get('editIndex');
-            let productId = parseInt(urlParams.get('id'));
-            
-            if (editIdxParam !== null) {
-                editIndex = parseInt(editIdxParam);
-                const tray = JSON.parse(localStorage.getItem('teo_tray')) || [];
-                const itemToEdit = tray[editIndex];
-                if (itemToEdit) {
-                    productId = itemToEdit.productId;
-                    document.getElementById('addToCartBtn').innerText = "Update Tray";
-                    quantity = itemToEdit.qty;
-                    document.getElementById('qtyDisplay').innerText = quantity;
-                    mainNotes.value = itemToEdit.notes || "";
-                    document.querySelectorAll('#sizeGroup .pill-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.val === itemToEdit.size));
-                    document.querySelectorAll('#sugarGroup .pill-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.val === itemToEdit.sugarLevel));
-                    document.querySelectorAll('#addonsGroup input').forEach(input => {
-                        input.checked = itemToEdit.toppings.includes(input.dataset.val);
-                        input.parentElement.classList.toggle('active', input.checked);
-                    });
-                }
-            }
-            currentProduct = products.find(p => p.id === (productId || 1)) || products[0];
-            document.getElementById('productTitle').innerText = currentProduct.name;
-            document.getElementById('productDesc').innerText = currentProduct.desc;
-            document.getElementById('productImg').src = currentProduct.img;
-            updatePrice();
-        };
-
-        document.querySelectorAll('.pill-btn').forEach(btn => {
-            btn.onclick = function() {
-                this.parentElement.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active'); updatePrice();
-            };
-        });
-
-        document.querySelectorAll('.check-pill input').forEach(input => {
-            input.onchange = function() {
-                this.parentElement.classList.toggle('active', this.checked); updatePrice();
-            };
-        });
-
-        function adjustQty(delta) {
-            quantity = Math.max(1, quantity + delta);
-            document.getElementById('qtyDisplay').innerText = quantity;
-            updatePrice();
-        }
-
-        function updatePrice() {
-            if (!currentProduct) return;
-            let total = currentProduct.price;
-            total += parseInt(document.querySelector('#sizeGroup .active').dataset.price);
-            document.querySelectorAll('#addonsGroup input:checked').forEach(addon => total += parseInt(addon.dataset.price));
-            document.getElementById('totalDisplay').innerText = `₱${(total * quantity).toFixed(2)}`;
-        }
-
-        document.getElementById('addToCartBtn').onclick = () => {
-            const tray = JSON.parse(localStorage.getItem('teo_tray')) || [];
-            const size = document.querySelector('#sizeGroup .active').dataset.val;
-            const sugar = document.querySelector('#sugarGroup .active').dataset.val;
-            const toppings = Array.from(document.querySelectorAll('#addonsGroup input:checked')).map(input => input.dataset.val);
-            let unitPrice = currentProduct.price + parseInt(document.querySelector('#sizeGroup .active').dataset.price);
-            document.querySelectorAll('#addonsGroup input:checked').forEach(input => unitPrice += parseInt(input.dataset.price));
-
-            const newItem = {
-                id: editIndex !== null ? tray[editIndex].id : Date.now(),
-                productId: currentProduct.id,
-                name: currentProduct.name,
-                img: currentProduct.img,
-                price: unitPrice,
-                qty: quantity,
-                size: size,
-                sugarLevel: sugar,
-                toppings: toppings,
-                notes: mainNotes.value
-            };
-
-            if (editIndex !== null) tray[editIndex] = newItem; else tray.push(newItem);
-            localStorage.setItem('teo_tray', JSON.stringify(tray));
-            window.location.href = "menu.html";
-        };
-    </script>
+    <script src="../js/kiosk-customize.js"></script>
 </body>
 </html>

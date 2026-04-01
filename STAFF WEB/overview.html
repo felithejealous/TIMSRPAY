@@ -6,7 +6,6 @@
     <title>Dashboard Overview | Teo D' Mango Staff</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* --- DYNAMIC THEME VARIABLES (DEFAULT: DARK MODE) --- */
         :root {
             --mango: #ffc244;
             --mango-dark: #d4a017;
@@ -14,8 +13,7 @@
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
-            
-            /* DARK MODE (Default) */
+
             --bg-main: #050505;
             --text-main: #ffffff;
             --text-muted: #888888;
@@ -29,7 +27,6 @@
             --input-bg: rgba(255, 255, 255, 0.05);
         }
 
-        /* --- LIGHT MODE OVERRIDES --- */
         body.light-mode {
             --bg-main: #f4f5f7;
             --text-main: #1a1a1a;
@@ -40,133 +37,741 @@
             --shadow: 0 10px 30px rgba(0,0,0,0.05);
             --hover-bg: rgba(255, 255, 255, 1);
             --icon-bg: rgba(0, 0, 0, 0.03);
-            --glow-opacity: 0.3; 
+            --glow-opacity: 0.3;
             --input-bg: rgba(0, 0, 0, 0.03);
         }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; scroll-behavior: smooth; }
-        
-        body { 
-            background-color: var(--bg-main); color: var(--text-main); 
-            display: flex; min-height: 100vh; transition: 0.4s ease;
-            position: relative; overflow-x: hidden;
+  html.preload-light body {
+    --bg-main: #f4f5f7;
+    --text-main: #1a1a1a;
+    --text-muted: #666666;
+    --card-bg: rgba(255, 255, 255, 0.7);
+    --card-border: rgba(0, 0, 0, 0.05);
+    --sidebar-bg: rgba(255, 255, 255, 0.9);
+    --shadow: 0 10px 30px rgba(0,0,0,0.05);
+    --hover-bg: rgba(255, 255, 255, 1);
+    --icon-bg: rgba(0, 0, 0, 0.03);
+    --glow-opacity: 0.3;
+    --input-bg: rgba(0, 0, 0, 0.03);
+}
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            scroll-behavior: smooth;
         }
 
-        /* Glowing Background Orbs */
-        body::before, body::after { content: ''; position: fixed; border-radius: 50%; z-index: -1; pointer-events: none; transition: 0.5s ease; }
-        body::before { top: -10%; left: -5%; width: 500px; height: 500px; background: var(--mango); filter: blur(120px); opacity: var(--glow-opacity); }
-        body::after { bottom: -10%; right: -5%; width: 400px; height: 400px; background: var(--strawberry); filter: blur(150px); opacity: calc(var(--glow-opacity) - 0.05); }
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+            transition: 0.4s ease;
+            position: relative;
+            overflow-x: hidden;
+        }
 
-        /* --- SLEEK RESPONSIVE SIDEBAR --- */
+        body::before,
+        body::after {
+            content: '';
+            position: fixed;
+            border-radius: 50%;
+            z-index: -1;
+            pointer-events: none;
+            transition: 0.5s ease;
+        }
+
+        body::before {
+            top: -10%;
+            left: -5%;
+            width: 500px;
+            height: 500px;
+            background: var(--mango);
+            filter: blur(120px);
+            opacity: var(--glow-opacity);
+        }
+
+        body::after {
+            bottom: -10%;
+            right: -5%;
+            width: 400px;
+            height: 400px;
+            background: var(--strawberry);
+            filter: blur(150px);
+            opacity: calc(var(--glow-opacity) - 0.05);
+        }
+
         aside {
-            width: 260px; background: var(--sidebar-bg); height: 100vh; position: fixed;
-            border-right: 1px solid var(--card-border); padding: 2rem 1.2rem; display: flex;
-            flex-direction: column; z-index: 1000; backdrop-filter: blur(20px); transition: all 0.4s ease;
+            width: 260px;
+            background: var(--sidebar-bg);
+            height: 100vh;
+            position: fixed;
+            border-right: 1px solid var(--card-border);
+            padding: 2rem 1.2rem;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            backdrop-filter: blur(20px);
+            transition: all 0.4s ease;
         }
-        .sidebar-logo { padding: 10px 5px; margin-bottom: 2rem; text-align: center; }
-        .sidebar-logo img { max-width: 100%; height: auto; max-height: 50px; display: block; margin: 0 auto; filter: drop-shadow(0 0 5px var(--mango)); }
-        
-        nav { flex: 1; display: flex; flex-direction: column; }
-        nav ul { list-style: none; display: flex; flex-direction: column; height: 100%; }
+
+        .sidebar-logo {
+            padding: 10px 5px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .sidebar-logo img {
+            max-width: 100%;
+            height: auto;
+            max-height: 50px;
+            display: block;
+            margin: 0 auto;
+            filter: drop-shadow(0 0 5px var(--mango));
+        }
+
+        nav {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
         nav a {
-            text-decoration: none; color: var(--text-muted); padding: 1rem 1.2rem;
-            display: flex; align-items: center; gap: 15px; font-weight: 700; font-size: 13px;
-            border-radius: 14px; margin-bottom: 0.5rem; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px;
+            text-decoration: none;
+            color: var(--text-muted);
+            padding: 1rem 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-weight: 700;
+            font-size: 13px;
+            border-radius: 14px;
+            margin-bottom: 0.5rem;
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        nav a:hover { color: var(--text-main); background: var(--icon-bg); transform: translateX(5px); }
-        nav li.active a { background: var(--mango); color: #111; box-shadow: 0 8px 20px rgba(245, 158, 11, 0.2); transform: translateX(0); }
-        nav a i { font-size: 16px; width: 20px; text-align: center; }
 
-        /* --- MAIN CONTENT & GRID --- */
-        main { margin-left: 260px; flex: 1; padding: 2.5rem 3.5rem; transition: all 0.4s ease; width: calc(100% - 260px); }
-        
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem; flex-wrap: wrap; gap: 1rem; }
-        .header-title h1 { font-size: clamp(2rem, 4vw, 2.5rem); font-weight: 900; letter-spacing: -1px; line-height: 1; margin-bottom: 5px; color: var(--text-main);}
-        .header-title p { color: var(--text-muted); font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;}
-        
-        .header-actions { display: flex; align-items: center; gap: 20px; }
-        .clock-box { background: var(--card-bg); padding: 10px 20px; border-radius: 15px; box-shadow: var(--shadow); border: 1px solid var(--card-border); text-align: center; backdrop-filter: blur(20px);}
-        .theme-btn { background: var(--icon-bg); border: 1px solid var(--card-border); color: var(--text-main); width: 45px; height: 45px; border-radius: 50%; cursor: pointer; transition: 0.3s; display: grid; place-items: center; font-size: 16px;}
-        .theme-btn:hover { background: var(--mango); color: #111; transform: rotate(15deg); }
-
-        .dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; }
-        .card { background: var(--card-bg); backdrop-filter: blur(20px); border: 1px solid var(--card-border); border-radius: 30px; padding: 2.5rem; box-shadow: var(--shadow); height: fit-content; transition: 0.3s; }
-        .card:hover { box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
-        .card-title { font-size: 18px; font-weight: 900; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; color: var(--text-main);}
-
-        /* --- ORDER QUEUE --- */
-        .order-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
-        .order-card { background: var(--icon-bg); border: 1px solid var(--card-border); border-radius: 20px; padding: 1.5rem; transition: 0.3s; }
-        .order-card:hover { border-color: var(--mango); transform: translateY(-3px); background: var(--hover-bg); }
-        .order-id { font-size: 11px; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: flex; justify-content: space-between;}
-        .order-items { font-size: 1.2rem; font-weight: 900; margin: 10px 0 5px; color: var(--text-main); }
-        
-        .complete-btn { 
-            width: 100%; padding: 1rem; background: var(--text-main); color: var(--bg-main); border: none; 
-            border-radius: 12px; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;
-            cursor: pointer; margin-top: 15px; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px;
+        nav a:hover {
+            color: var(--text-main);
+            background: var(--icon-bg);
+            transform: translateX(5px);
         }
-        .complete-btn:hover { background: var(--success); color: #fff; }
 
-        /* --- ALERTS & LOOKUP --- */
-        .lookup-group { display: flex; gap: 10px; margin-bottom: 15px; }
-        .lookup-group input { flex: 1; padding: 1rem 1.2rem; background: var(--input-bg); border: 1px solid var(--card-border); color: var(--text-main); border-radius: 12px; outline: none; transition: 0.3s; font-weight: 600;}
-        .lookup-group input:focus { border-color: var(--mango); }
-        .lookup-group button { padding: 0 1.2rem; background: var(--mango); color: #111; border: none; border-radius: 12px; cursor: pointer; transition: 0.3s; }
-        .lookup-group button:hover { background: var(--text-main); color: var(--bg-main); }
-
-        .alert-item { 
-            background: rgba(239, 68, 68, 0.1); border-radius: 16px; padding: 18px; 
-            display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;
-            border-left: 5px solid var(--danger); border-top: 1px solid var(--card-border); border-right: 1px solid var(--card-border); border-bottom: 1px solid var(--card-border);
+        nav li.active a {
+            background: var(--mango);
+            color: #111;
+            box-shadow: 0 8px 20px rgba(245, 158, 11, 0.2);
+            transform: translateX(0);
         }
-        .alert-warning { background: rgba(245, 158, 11, 0.1); border-left-color: var(--warning); }
 
-        /* --- MEDIA QUERIES --- */
+        nav a i {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+
+        main {
+            margin-left: 260px;
+            flex: 1;
+            padding: 2.5rem 3.5rem;
+            transition: all 0.4s ease;
+            width: calc(100% - 260px);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .header-title h1 {
+            font-size: clamp(2rem, 4vw, 2.5rem);
+            font-weight: 900;
+            letter-spacing: -1px;
+            line-height: 1;
+            margin-bottom: 5px;
+            color: var(--text-main);
+        }
+
+        .header-title p {
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .clock-box {
+            background: var(--card-bg);
+            padding: 10px 20px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--card-border);
+            text-align: center;
+            backdrop-filter: blur(20px);
+        }
+
+        .theme-btn {
+            background: var(--icon-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.3s;
+            display: grid;
+            place-items: center;
+            font-size: 16px;
+        }
+
+        .theme-btn:hover {
+            background: var(--mango);
+            color: #111;
+            transform: rotate(15deg);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
+
+        .left-col,
+        .right-col {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            border-radius: 30px;
+            padding: 2.5rem;
+            box-shadow: var(--shadow);
+            height: fit-content;
+            transition: 0.3s;
+        }
+
+        .card:hover {
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 900;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-main);
+        }
+
+        .sub-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .mini-card {
+            background: var(--icon-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 1.3rem;
+            transition: 0.3s;
+        }
+
+        .mini-card:hover {
+            background: var(--hover-bg);
+            transform: translateY(-2px);
+        }
+
+        .mini-label {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+
+        .mini-value {
+            font-size: 1.2rem;
+            font-weight: 900;
+            color: var(--text-main);
+        }
+
+        .mini-sub {
+            margin-top: 6px;
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        .live-orders-card {
+            display: flex;
+            flex-direction: column;
+            min-height: 780px;
+            max-height: 780px;
+            position: relative;
+        }
+
+        .order-queue-scroll {
+            position: relative;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .order-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .order-grid.scrollable {
+            height: 100%;
+            max-height: 520px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 8px;
+            scroll-behavior: smooth;
+        }
+
+        .order-grid.scrollable::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .order-grid.scrollable::-webkit-scrollbar-track {
+            background: transparent;
+            border-radius: 999px;
+        }
+
+        .order-grid.scrollable::-webkit-scrollbar-thumb {
+            background: rgba(255, 194, 68, 0.35);
+            border-radius: 999px;
+        }
+
+        .order-grid.scrollable::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 194, 68, 0.6);
+        }
+
+        .order-card {
+            background: var(--icon-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 1.5rem;
+            transition: 0.3s;
+        }
+
+        .order-card:hover {
+            border-color: var(--mango);
+            transform: translateY(-3px);
+            background: var(--hover-bg);
+        }
+
+        .order-id {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .order-items {
+            font-size: 1.2rem;
+            font-weight: 900;
+            margin: 10px 0 5px;
+            color: var(--text-main);
+        }
+
+        .order-meta {
+            color: var(--text-muted);
+            font-weight: 700;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .complete-btn {
+            width: 100%;
+            padding: 1rem;
+            background: var(--text-main);
+            color: var(--bg-main);
+            border: none;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .complete-btn:hover {
+            background: var(--success);
+            color: #fff;
+        }
+
+        .scroll-top-orders-btn {
+            position: absolute;
+            right: 10px;
+            bottom: 10px;
+            width: 44px;
+            height: 44px;
+            border: none;
+            border-radius: 50%;
+            background: var(--mango);
+            color: #111;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+            transition: 0.25s ease;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(10px);
+            z-index: 5;
+        }
+
+        .scroll-top-orders-btn.show {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+
+        .scroll-top-orders-btn:hover {
+            background: var(--text-main);
+            color: var(--bg-main);
+        }
+
+        .lookup-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .lookup-group input {
+            flex: 1;
+            padding: 1rem 1.2rem;
+            background: var(--input-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            border-radius: 12px;
+            outline: none;
+            transition: 0.3s;
+            font-weight: 600;
+        }
+
+        .lookup-group input:focus {
+            border-color: var(--mango);
+        }
+
+        .lookup-group button {
+            padding: 0 1.2rem;
+            background: var(--mango);
+            color: #111;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-weight: 800;
+        }
+
+        .lookup-group button:hover {
+            background: var(--text-main);
+            color: var(--bg-main);
+        }
+
+        .lookup-result {
+            font-size: 12px;
+            padding: 14px;
+            border-radius: 12px;
+            background: var(--icon-bg);
+            border: 1px dashed var(--card-border);
+            color: var(--text-muted);
+            text-align: center;
+            font-weight: 700;
+            line-height: 1.5;
+        }
+
+        .alert-item {
+            background: rgba(239, 68, 68, 0.1);
+            border-radius: 16px;
+            padding: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            border-left: 5px solid var(--danger);
+            border-top: 1px solid var(--card-border);
+            border-right: 1px solid var(--card-border);
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.1);
+            border-left-color: var(--warning);
+        }
+
+        .announcement-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .announcement-item {
+            background: var(--icon-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 18px;
+            padding: 1rem 1.2rem;
+        }
+
+        .announcement-item strong {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 6px;
+            color: var(--text-main);
+        }
+
+        .announcement-item p {
+            font-size: 13px;
+            line-height: 1.5;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .announcement-date {
+            margin-top: 8px;
+            font-size: 11px;
+            color: var(--mango);
+            text-transform: uppercase;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .quick-action {
+            text-decoration: none;
+            background: var(--icon-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 18px;
+            padding: 1.2rem;
+            color: var(--text-main);
+            transition: 0.3s;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .quick-action:hover {
+            transform: translateY(-3px);
+            border-color: var(--mango);
+            background: var(--hover-bg);
+        }
+
+        .quick-action i {
+            width: 42px;
+            height: 42px;
+            display: grid;
+            place-items: center;
+            border-radius: 14px;
+            background: rgba(255, 194, 68, 0.12);
+            color: var(--mango);
+            font-size: 16px;
+        }
+
+        .quick-action strong {
+            font-size: 14px;
+            font-weight: 900;
+        }
+
+        .quick-action span {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        .logout-link {
+            color: var(--danger) !important;
+        }
+
         @media screen and (max-width: 1100px) {
-            aside { width: 90px; padding: 2rem 0.5rem; }
-            aside span, .sidebar-logo img { display: none; }
-            nav a { justify-content: center; padding: 1.2rem; }
-            nav a i { font-size: 20px; }
-            main { margin-left: 90px; width: calc(100% - 90px); padding: 2rem; }
-            .dashboard-grid { grid-template-columns: 1fr; }
+            .live-orders-card {
+                min-height: auto;
+                max-height: none;
+            }
+
+            .order-grid.scrollable {
+                max-height: 480px;
+            }
+
+            aside {
+                width: 90px;
+                padding: 2rem 0.5rem;
+            }
+
+            aside span,
+            .sidebar-logo img {
+                display: none;
+            }
+
+            nav a {
+                justify-content: center;
+                padding: 1.2rem;
+            }
+
+            nav a i {
+                font-size: 20px;
+            }
+
+            main {
+                margin-left: 90px;
+                width: calc(100% - 90px);
+                padding: 2rem;
+            }
+
+            .dashboard-grid,
+            .sub-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         @media screen and (max-width: 768px) {
-            aside {
-                width: 100%; height: 70px; position: fixed; bottom: 0; top: auto;
-                flex-direction: row; border-right: none; border-top: 1px solid var(--card-border); padding: 0; backdrop-filter: blur(30px);
+            .order-grid.scrollable {
+                max-height: 420px;
             }
-            nav { width: 100%; }
-            nav ul { display: flex; flex-direction: row; justify-content: space-around; align-items: center; height: 100%; }
-            nav li { margin-bottom: 0; }
-            nav a { flex-direction: column; gap: 4px; font-size: 0.65rem; padding: 8px; border-radius: 0; }
-            nav li.active a { background: none; color: var(--mango); box-shadow: none; transform: translateY(-3px); }
-            
-            main { margin-left: 0; width: 100%; margin-bottom: 70px; padding: 1.5rem; }
-            header { flex-direction: column; align-items: flex-start; }
-            .header-actions { width: 100%; justify-content: space-between; }
+
+            .scroll-top-orders-btn {
+                width: 40px;
+                height: 40px;
+                right: 8px;
+                bottom: 8px;
+            }
+
+            aside {
+                width: 100%;
+                height: 70px;
+                position: fixed;
+                bottom: 0;
+                top: auto;
+                flex-direction: row;
+                border-right: none;
+                border-top: 1px solid var(--card-border);
+                padding: 0;
+                backdrop-filter: blur(30px);
+            }
+
+            nav {
+                width: 100%;
+            }
+
+            nav ul {
+                display: flex;
+                flex-direction: row;
+                justify-content: space-around;
+                align-items: center;
+                height: 100%;
+            }
+
+            nav li {
+                margin-bottom: 0;
+            }
+
+            nav a {
+                flex-direction: column;
+                gap: 4px;
+                font-size: 0.65rem;
+                padding: 8px;
+                border-radius: 0;
+            }
+
+            nav li.active a {
+                background: none;
+                color: var(--mango);
+                box-shadow: none;
+                transform: translateY(-3px);
+            }
+
+            main {
+                margin-left: 0;
+                width: 100%;
+                margin-bottom: 70px;
+                padding: 1.5rem;
+            }
+
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .header-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
+    <script>
+(function () {
+    const savedTheme = localStorage.getItem("staff-theme");
+    if (savedTheme === "light") {
+        document.documentElement.classList.add("preload-light");
+    } else {
+        document.documentElement.classList.remove("preload-light");
+    }
+})();
+</script>
+
 </head>
 <body>
 
     <aside>
         <div class="sidebar-logo"><img src="logo.png" alt="Teo D' Mango"></div>
-      <nav>
+        <nav>
             <ul>
                 <li class="active"><a href="overview.html"><i class="fa-solid fa-chart-line"></i> <span>Overview</span></a></li>
                 <li><a href="orderstaffs.html"><i class="fa-solid fa-bell-concierge"></i> <span>Orders</span></a></li>
                 <li><a href="menustaff.html"><i class="fa-solid fa-receipt"></i> <span>Menu</span></a></li>
                 <li><a href="inventory.html"><i class="fa-solid fa-boxes-stacked"></i> <span>Inventory</span></a></li>
-                
                 <li><a href="dashboardstaff.html"><i class="fa-solid fa-user-clock"></i> <span>Attendance</span></a></li>
-                
-                <li><a href="topupstaff.html"><i class="fa-solid fa-credit-card"></i> <span>RPAY</span></a></li>
+                <li><a href="walletstaff.html"><i class="fa-solid fa-credit-card"></i> <span>RPAY</span></a></li>
                 <li><a href="rewardsstaff.html"><i class="fa-solid fa-gift"></i> <span>Rewards</span></a></li>
                 <li><a href="dashaccsettstaff.html"><i class="fa-solid fa-gear"></i> <span>Settings</span></a></li>
-                
-                <li style="margin-top: auto;"><a href="index.html" style="color: var(--danger);"><i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></a></li>
+                <li style="margin-top: auto;"><a href="loginstaff.html" class="logout-link"><i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></a></li>
             </ul>
         </nav>
     </aside>
@@ -175,9 +780,9 @@
         <header>
             <div class="header-title">
                 <h1 id="welcomeText">Dashboard Overview</h1>
-                <p>Live operations and active orders</p>
+                <p>Live operations, active orders, and staff tools</p>
             </div>
-            
+
             <div class="header-actions">
                 <div class="clock-box">
                     <div style="font-size: 1.2rem; font-weight: 900; color: var(--text-main);" id="live-clock">00:00:00</div>
@@ -191,62 +796,153 @@
 
         <div class="dashboard-grid">
             <div class="left-col">
-                <div class="card" style="height: 100%;">
-                    <div class="card-title"><i class="fa-solid fa-fire-flame-curved" style="color:var(--danger)"></i> Live Order Queue</div>
-                    <div class="order-grid" id="orderQueue">
-                        <div class="order-card">
-                            <span class="order-id"><span>#88241</span> <span style="color: var(--warning);"><i class="fa-regular fa-clock"></i> 5m ago</span></span>
-                            <div class="order-items">2x Mango Bliss (L)</div>
-                            <small style="color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 15px;">Graham, Extra Pearls • 100% Sugar</small>
-                            <button class="complete-btn" onclick="this.parentElement.remove()"><i class="fa-solid fa-check"></i> Mark Ready</button>
+                <div class="card live-orders-card">
+                    <div class="card-title">
+                        <i class="fa-solid fa-fire-flame-curved" style="color:var(--danger)"></i>
+                        Live Order Queue
+                    </div>
+
+                    <div class="sub-grid" style="margin-bottom: 1.8rem;">
+                        <div class="mini-card">
+                            <div class="mini-label">Pending Orders</div>
+                            <div class="mini-value" id="pendingOrdersCount">03</div>
+                            <div class="mini-sub">Orders currently waiting</div>
                         </div>
-                        
-                        <div class="order-card">
-                            <span class="order-id"><span>#88242</span> <span style="color: var(--success);"><i class="fa-regular fa-clock"></i> 2m ago</span></span>
-                            <div class="order-items">1x Avocado Dream (M)</div>
-                            <small style="color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 15px;">No Add-ons • 0% Sugar</small>
-                            <button class="complete-btn" onclick="this.parentElement.remove()"><i class="fa-solid fa-check"></i> Mark Ready</button>
+                        <div class="mini-card">
+                            <div class="mini-label">Ready to Serve</div>
+                            <div class="mini-value" id="readyOrdersCount">01</div>
+                            <div class="mini-sub">Orders ready for release</div>
+                        </div>
+                    </div>
+
+                    <div class="order-queue-scroll">
+                        <div class="order-grid scrollable" id="orderQueue">
+                            <div class="order-card">
+                                <span class="order-id">
+                                    <span>#88241</span>
+                                    <span style="color: var(--warning);"><i class="fa-regular fa-clock"></i> 5m ago</span>
+                                </span>
+                                <div class="order-items">2x Mango Bliss (L)</div>
+                                <small style="color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 10px;">Graham, Extra Pearls • 100% Sugar</small>
+                                <div class="order-meta">Customer: Walk-in</div>
+                                <div class="order-meta">Payment: Cash</div>
+                                <button class="complete-btn"><i class="fa-solid fa-check"></i> Mark Ready</button>
+                            </div>
                         </div>
 
-                        <div class="order-card">
-                            <span class="order-id"><span>#88243</span> <span style="color: var(--success);"><i class="fa-regular fa-clock"></i> Just now</span></span>
-                            <div class="order-items">1x Buko Slush (L)</div>
-                            <small style="color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 15px;">Extra Milk • 50% Sugar</small>
-                            <button class="complete-btn" onclick="this.parentElement.remove()"><i class="fa-solid fa-check"></i> Mark Ready</button>
+                        <button id="scrollOrdersTopBtn" class="scroll-top-orders-btn" title="Back to top">
+                            <i class="fa-solid fa-arrow-up"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">
+                        <i class="fa-solid fa-bullhorn" style="color:var(--mango)"></i>
+                        Shop Announcements
+                    </div>
+
+                    <div class="announcement-list" id="announcementList">
+                        <div class="announcement-item">
+                            <strong>Loading announcements...</strong>
+                            <p>Please wait while announcements are being fetched.</p>
+                            <div class="announcement-date">Loading</div>
                         </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">
+                        <i class="fa-solid fa-bolt" style="color:var(--success)"></i>
+                        Quick Actions
+                    </div>
+
+                    <div class="quick-actions">
+                        <a href="orderstaffs.html" class="quick-action">
+                            <i class="fa-solid fa-bell-concierge"></i>
+                            <strong>Open Orders</strong>
+                            <span>Manage active and queued orders</span>
+                        </a>
+
+                        <a href="dashboardstaff.html" class="quick-action">
+                            <i class="fa-solid fa-user-clock"></i>
+                            <strong>Attendance</strong>
+                            <span>Check daily time in and time out</span>
+                        </a>
+
+                        <a href="topupstaff.html" class="quick-action">
+                            <i class="fa-solid fa-credit-card"></i>
+                            <strong>RPAY Top-Up</strong>
+                            <span>Process customer wallet top-ups</span>
+                        </a>
+
+                        <a href="rewardsstaff.html" class="quick-action">
+                            <i class="fa-solid fa-gift"></i>
+                            <strong>Rewards</strong>
+                            <span>Verify and assist point claims</span>
+                        </a>
                     </div>
                 </div>
             </div>
 
             <div class="right-col">
-                <div class="card" style="margin-bottom: 2rem;">
-                    <div class="card-title"><i class="fa-solid fa-search" style="color:var(--mango)"></i> Points Inquiry</div>
-                    <div class="lookup-group">
-                        <input type="text" placeholder="Mobile Number...">
-                        <button><i class="fa-solid fa-arrow-right"></i></button>
+                <div class="card">
+                    <div class="card-title">
+                        <i class="fa-solid fa-search" style="color:var(--mango)"></i>
+                        Points Inquiry
                     </div>
-                    <div style="font-size: 11px; padding: 12px; border-radius: 12px; background: var(--icon-bg); border: 1px dashed var(--card-border); color: var(--text-muted); text-align: center; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">
-                        Enter number to verify rewards
+
+                    <div class="lookup-group">
+                        <input type="text" id="pointsLookupInput" placeholder="Enter email, wallet code, or user ID...">
+                        <button id="pointsLookupBtn"><i class="fa-solid fa-arrow-right"></i></button>
+                    </div>
+
+                    <div class="lookup-result" id="pointsLookupResult">
+                        Enter a customer email, wallet code, or user ID to verify reward points and account status.
                     </div>
                 </div>
 
                 <div class="card">
-                    <div class="card-title"><i class="fa-solid fa-triangle-exclamation" style="color:var(--danger)"></i> Low Stock Alerts</div>
-                    
-                    <div class="alert-item">
-                        <div>
-                            <strong style="font-size:14px; color: var(--text-main);">Fresh Mangoes</strong><br>
-                            <small style="font-weight: 700; color: var(--danger);">Remaining: 4.2 kg</small>
-                        </div>
-                        <i class="fa-solid fa-box-open" style="color:var(--danger); font-size: 20px;"></i>
+                    <div class="card-title">
+                        <i class="fa-solid fa-triangle-exclamation" style="color:var(--danger)"></i>
+                        Low Stock Alerts
                     </div>
-                    
-                    <div class="alert-item alert-warning">
-                        <div>
-                            <strong style="font-size:14px; color: var(--text-main);">Pearls (Large)</strong><br>
-                            <small style="font-weight: 700; color: var(--warning);">Remaining: 2 Packs</small>
+
+                    <div id="lowStockList">
+                        <div class="alert-item">
+                            <div>
+                                <strong style="font-size:14px; color: var(--text-main);">Loading stock alerts...</strong><br>
+                                <small style="font-weight: 700; color: var(--warning);">Please wait</small>
+                            </div>
+                            <i class="fa-solid fa-box" style="color:var(--warning); font-size: 20px;"></i>
                         </div>
-                        <i class="fa-solid fa-hourglass-half" style="color:var(--warning); font-size: 20px;"></i>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">
+                        <i class="fa-solid fa-user-check" style="color:var(--success)"></i>
+                        Today's Attendance Status
+                    </div>
+
+                    <div class="sub-grid" style="grid-template-columns: 1fr;">
+                        <div class="mini-card">
+                            <div class="mini-label">Status</div>
+                            <div class="mini-value" id="attendanceStatus">Loading...</div>
+                            <div class="mini-sub">Approved for today’s shift</div>
+                        </div>
+
+                        <div class="mini-card">
+                            <div class="mini-label">Time In</div>
+                            <div class="mini-value" id="attendanceTimeIn">--:--</div>
+                            <div class="mini-sub">Scheduled shift attendance</div>
+                        </div>
+
+                        <div class="mini-card">
+                            <div class="mini-label">Hours Rendered</div>
+                            <div class="mini-value" id="attendanceHours">0.0 hrs</div>
+                            <div class="mini-sub">Live attendance summary for today</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -254,35 +950,28 @@
     </main>
 
     <script>
-        // --- ROLE CHECKING LOGIC ---
-        // Reads the role saved from loginstaff.html
-        const currentRole = localStorage.getItem('staffRole') || 'cashier'; 
-        
-        if(currentRole === 'admin') {
-            document.getElementById('welcomeText').innerText = "Manager Overview";
-            // Show admin links in sidebar
-            document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'flex');
-        } else {
-            document.getElementById('welcomeText').innerText = "Dashboard Overview";
-        }
 
-        // --- THEME TOGGLE LOGIC ---
-        const body = document.body;
-        const themeToggle = document.getElementById('themeToggle');
-        
-        themeToggle.addEventListener('click', () => {
-            body.classList.toggle('light-mode');
-            const isLight = body.classList.contains('light-mode');
-            themeToggle.innerHTML = isLight ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
-        });
-
-        // --- CLOCK SCRIPT ---
         function updateClock() {
             const now = new Date();
-            document.getElementById('live-clock').textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            document.getElementById('live-date').textContent = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+            document.getElementById('live-clock').textContent = now.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            document.getElementById('live-date').textContent = now.toLocaleDateString('en-US', {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+            });
         }
-        setInterval(updateClock, 1000); updateClock();
+
+        setInterval(updateClock, 1000);
+        updateClock();
     </script>
+    <script src="js/authGuard.js"></script>
+   <script src="js/logoutstaff.js"></script>
+   <script src="js/themesync.js"></script>
+    <script src="js/overview.js"></script>
 </body>
 </html>

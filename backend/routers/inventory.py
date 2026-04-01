@@ -26,6 +26,11 @@ def get_db():
         db.close()
 
 
+def _sync_all_product_availability(db: Session):
+    from backend.routers.products import sync_all_product_availability
+    sync_all_product_availability(db, commit=False)
+
+
 # -----------------------
 # SCHEMAS
 # -----------------------
@@ -209,6 +214,8 @@ def create_inventory_master_item(
             )
         )
 
+    _sync_all_product_availability(db)
+
     db.commit()
     db.refresh(row)
 
@@ -265,6 +272,8 @@ def update_inventory_master_item(
     if payload.is_active is not None:
         row.is_active = bool(payload.is_active)
 
+    _sync_all_product_availability(db)
+
     db.commit()
     db.refresh(row)
 
@@ -304,6 +313,8 @@ def restock_inventory_master_item(
             ref_order_id=None,
         )
     )
+
+    _sync_all_product_availability(db)
 
     db.commit()
     db.refresh(row)
@@ -353,6 +364,8 @@ def adjust_inventory_master_item(
         )
     )
 
+    _sync_all_product_availability(db)
+
     db.commit()
     db.refresh(row)
 
@@ -379,6 +392,9 @@ def set_inventory_item_active(
 ):
     row = _get_item(db, inventory_master_id)
     row.is_active = bool(payload.is_active)
+
+    _sync_all_product_availability(db)
+
     db.commit()
     db.refresh(row)
 

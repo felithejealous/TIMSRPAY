@@ -1,6 +1,8 @@
 let staffCache = [];
 let attendanceLogsCache = [];
 let attendanceStatusMap = {};
+let checklistMap = {};
+let complianceSummary = null;
 let attendanceFilter = "all";
 let searchDebounceTimer = null;
 let currentAttendanceStaff = null;
@@ -12,6 +14,22 @@ function escapeHtml(value) {
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
+}
+
+function getLocalDateString() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+}
+
+function parseServerDate(value) {
+    if (!value) return null;
+    const normalized = String(value).replace(" ", "T");
+    const date = new Date(normalized);
+    if (Number.isNaN(date.getTime())) return null;
+    return date;
 }
 
 function toggleTheme() {
@@ -58,8 +76,8 @@ function closeModal(id) {
 
 function formatDateTime(value) {
     if (!value) return "-";
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return value;
+    const date = parseServerDate(value);
+    if (!date) return "-";
 
     return date.toLocaleString("en-US", {
         year: "numeric",
@@ -72,8 +90,8 @@ function formatDateTime(value) {
 
 function formatShortDate(value) {
     if (!value) return "-";
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return value;
+    const date = parseServerDate(value);
+    if (!date) return "-";
 
     return date.toLocaleDateString("en-US", {
         year: "numeric",
@@ -85,10 +103,10 @@ function formatShortDate(value) {
 function formatShiftHours(timeIn, timeOut = null) {
     if (!timeIn) return "-";
 
-    const start = new Date(timeIn);
-    const end = timeOut ? new Date(timeOut) : new Date();
+    const start = parseServerDate(timeIn);
+    const end = timeOut ? parseServerDate(timeOut) : new Date();
 
-    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return "-";
+    if (!start || !end) return "-";
 
     const diffMs = end - start;
     const totalMinutes = Math.max(0, Math.floor(diffMs / 60000));
@@ -130,6 +148,13 @@ function getRoleBadge(role) {
 
     if (raw === "cashier") return `<span class="role-badge role-cashier">Cashier</span>`;
     return `<span class="role-badge role-staff">Staff</span>`;
+}
+
+function getChecklistBadge(checklist) {
+    if (checklist?.has_checklist) {
+        return `<span class="status-badge status-present">● Submitted</span>`;
+    }
+    return `<span class="status-badge status-offline">● Missing</span>`;
 }
 
 function getLogStatusMeta(log) {
@@ -190,8 +215,8 @@ function isLongShift(staffId) {
     const openLog = getOpenLogForStaff(staffId);
     if (!openLog || !openLog.time_in) return false;
 
-    const start = new Date(openLog.time_in);
-    if (Number.isNaN(start.getTime())) return false;
+    const start = parseServerDate(openLog.time_in);
+    if (!start) return false;
 
     const diffHours = (Date.now() - start.getTime()) / 3600000;
     return diffHours >= 8;
@@ -242,12 +267,25 @@ function getAttendanceStatusMeta(staff) {
     };
 }
 
+function getChecklistForStaff(staffId) {
+    if (checklistMap[staffId]) return checklistMap[staffId];
+
+    const latestLog = getLatestLogForStaff(staffId);
+    if (latestLog?.closing_checklist?.has_checklist) {
+        return latestLog.closing_checklist;
+    }
+
+    return null;
+}
+
 function getFilteredStaff() {
     const query = (document.getElementById("attendanceSearchInput")?.value || "").trim().toLowerCase();
 
     return staffCache.filter(staff => {
         const status = attendanceStatusMap[staff.user_id];
         const latestLog = getLatestLogForStaff(staff.user_id);
+        const checklist = getChecklistForStaff(staff.user_id);
+
         const isClockedIn = Boolean(status?.is_clocked_in);
         const isLate = Boolean(
             Number(status?.late_minutes || 0) > 0 ||
@@ -256,10 +294,12 @@ function getFilteredStaff() {
             String(latestLog?.attendance_status || "").toLowerCase() === "overtime" ||
             isLongShift(staff.user_id)
         );
+        const isMissingChecklist = !Boolean(checklist?.has_checklist);
 
         if (attendanceFilter === "clocked-in" && !isClockedIn) return false;
         if (attendanceFilter === "clocked-out" && isClockedIn) return false;
         if (attendanceFilter === "late" && !isLate) return false;
+        if (attendanceFilter === "missing-checklist" && !isMissingChecklist) return false;
 
         if (!query) return true;
 
@@ -297,8 +337,8 @@ function updateAttendanceSummary() {
     const today = new Date().toDateString();
     const completedToday = attendanceLogsCache.filter(log => {
         if (!log.time_out) return false;
-        const outDate = new Date(log.time_out);
-        if (Number.isNaN(outDate.getTime())) return false;
+        const outDate = parseServerDate(log.time_out);
+        if (!outDate) return false;
         return outDate.toDateString() === today;
     }).length;
 
@@ -311,6 +351,20 @@ function updateAttendanceSummary() {
     if (clockedInEl) clockedInEl.innerText = clockedIn;
     if (lateEl) lateEl.innerText = lateCount;
     if (completedEl) completedEl.innerText = completedToday;
+}
+
+function renderComplianceSummary() {
+    const totalEl = document.getElementById("complianceTotalStaff");
+    const submittedEl = document.getElementById("complianceSubmitted");
+    const missingEl = document.getElementById("complianceMissing");
+    const rateEl = document.getElementById("complianceRate");
+
+    if (!complianceSummary) return;
+
+    if (totalEl) totalEl.innerText = complianceSummary.total_staff ?? 0;
+    if (submittedEl) submittedEl.innerText = complianceSummary.submitted_count ?? 0;
+    if (missingEl) missingEl.innerText = complianceSummary.not_submitted_count ?? 0;
+    if (rateEl) rateEl.innerText = `${Number(complianceSummary.compliance_rate || 0).toFixed(0)}%`;
 }
 
 function renderAttendanceCards() {
@@ -329,6 +383,7 @@ function renderAttendanceCards() {
     filteredStaff.forEach(staff => {
         const latestLog = getLatestLogForStaff(staff.user_id);
         const statusMeta = getAttendanceStatusMeta(staff);
+        const checklist = getChecklistForStaff(staff.user_id);
 
         const card = document.createElement("div");
         card.className = "attendance-card glass";
@@ -372,6 +427,11 @@ function renderAttendanceCards() {
                 <div class="flex justify-between gap-4">
                     <span class="text-xs uppercase font-black opacity-50">Shift Hours</span>
                     <span class="text-sm text-right">${escapeHtml(formatDecimalHours(latestLog?.total_hours || 0))}</span>
+                </div>
+
+                <div class="flex justify-between gap-4 items-center">
+                    <span class="text-xs uppercase font-black opacity-50">Checklist</span>
+                    ${getChecklistBadge(checklist)}
                 </div>
 
                 <div class="flex justify-between gap-4 items-center pt-2">
@@ -440,7 +500,6 @@ async function fetchStaff() {
             throw new Error(result.detail || `Staff fetch failed: ${response.status}`);
         }
 
-        // admin excluded
         staffCache = (result.data || []).filter(item =>
             ["staff", "cashier"].includes(String(item.role || "").toLowerCase())
         );
@@ -463,7 +522,6 @@ async function fetchAttendanceLogs() {
             throw new Error(result.detail || `Attendance logs fetch failed: ${response.status}`);
         }
 
-        // extra frontend protection
         attendanceLogsCache = (result.data || []).filter(log =>
             ["staff", "cashier"].includes(String(log.role || "").toLowerCase())
         );
@@ -516,6 +574,54 @@ async function fetchAttendanceStatuses() {
     );
 }
 
+async function fetchClosingChecklists() {
+    checklistMap = {};
+
+    try {
+        const localDate = getLocalDateString();
+        const response = await fetch(`${API_URL}/attendance/closing-checklists?checklist_date=${encodeURIComponent(localDate)}`, {
+            method: "GET",
+            credentials: "include"
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.detail || `Closing checklist fetch failed: ${response.status}`);
+        }
+
+        (result.data || []).forEach(item => {
+            checklistMap[item.staff_id] = item;
+        });
+    } catch (error) {
+        console.error("Closing checklist fetch error:", error);
+        checklistMap = {};
+    }
+}
+
+async function fetchComplianceSummary() {
+    complianceSummary = null;
+
+    try {
+        const localDate = getLocalDateString();
+        const response = await fetch(`${API_URL}/attendance/closing-checklist/compliance-summary?checklist_date=${encodeURIComponent(localDate)}`, {
+            method: "GET",
+            credentials: "include"
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.detail || `Compliance summary fetch failed: ${response.status}`);
+        }
+
+        complianceSummary = result;
+    } catch (error) {
+        console.error("Compliance summary fetch error:", error);
+        complianceSummary = null;
+    }
+}
+
 function setAttendanceFilter(filter) {
     attendanceFilter = filter;
 
@@ -546,6 +652,7 @@ function openAttendanceProfile(staffId) {
     const status = attendanceStatusMap[staff.user_id];
     const logs = getStaffLogs(staffId);
     const latestLog = getLatestLogForStaff(staffId);
+    const checklist = getChecklistForStaff(staffId);
 
     document.getElementById("attendanceDetailName").innerText = staff.full_name || `Staff #${staff.user_id}`;
     document.getElementById("attendanceDetailEmail").innerText = staff.email || "-";
@@ -590,6 +697,28 @@ function openAttendanceProfile(staffId) {
             `;
             history.appendChild(item);
         });
+    }
+
+    const checklistContainer = document.getElementById("attendanceDetailChecklist");
+    if (checklistContainer) {
+        if (!checklist || !checklist.has_checklist) {
+            checklistContainer.innerHTML = `<div class="history-box opacity-60">No checklist submitted today.</div>`;
+        } else {
+            checklistContainer.innerHTML = `
+                <div class="history-box">
+                    <div class="text-sm font-bold mb-2">Submitted At</div>
+                    <div class="text-xs opacity-70 mb-4">${escapeHtml(formatDateTime(checklist.submitted_at))}</div>
+
+                    <div class="space-y-2 text-sm">
+                        <div>${checklist.wipe_counters ? "✅" : "❌"} Wipe all counters & blenders</div>
+                        <div>${checklist.refill_bins ? "✅" : "❌"} Refill fruit bins (Mango/Avocado)</div>
+                        <div>${checklist.final_cash_register ? "✅" : "❌"} Final Cash Register Count</div>
+                        <div>${checklist.pos_devices_charging ? "✅" : "❌"} Ensure all POS devices are charging</div>
+                        <div class="pt-2 text-xs opacity-70">${checklist.checklist_locked ? "Checklist locked after clock out" : "Checklist still editable"}</div>
+                    </div>
+                </div>
+            `;
+        }
     }
 
     openModal("attendanceProfileModal");
@@ -639,6 +768,10 @@ async function refreshAttendancePage(showMessage = true) {
     await fetchStaff();
     await fetchAttendanceLogs();
     await fetchAttendanceStatuses();
+    await fetchClosingChecklists();
+    await fetchComplianceSummary();
+
+    renderComplianceSummary();
     renderAttendanceCards();
     renderAttendanceTable();
 

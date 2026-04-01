@@ -34,6 +34,7 @@ class OrderItemCreate(BaseModel):
     size: Optional[Literal["small", "medium", "large"]] = None
     sugar_level: Optional[Literal["0", "25", "50", "100"]] = None
     add_ons: List[int] = Field(default_factory=list)
+    notes: Optional[str] = Field(default=None, max_length=500)
 
 class OrderCreate(BaseModel):
     user_id: Optional[int] = None

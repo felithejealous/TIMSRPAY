@@ -6,7 +6,6 @@
     <title>RPAY Management | Teo D' Mango Staff</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* --- DYNAMIC THEME VARIABLES (DEFAULT: DARK MODE) --- */
         :root {
             --mango: #ffc244;
             --mango-dark: #d4a017;
@@ -14,8 +13,7 @@
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
-            
-            /* DARK MODE (Default) */
+
             --bg-main: #050505;
             --text-main: #ffffff;
             --text-muted: #888888;
@@ -29,7 +27,6 @@
             --input-bg: rgba(0,0,0,0.3);
         }
 
-        /* --- LIGHT MODE OVERRIDES --- */
         body.light-mode {
             --bg-main: #f4f5f7;
             --text-main: #1a1a1a;
@@ -40,24 +37,35 @@
             --shadow: 0 10px 30px rgba(0,0,0,0.05);
             --hover-bg: rgba(255, 255, 255, 1);
             --icon-bg: rgba(0, 0, 0, 0.03);
-            --glow-opacity: 0.3; 
+            --glow-opacity: 0.3;
             --input-bg: #ffffff;
         }
+          html.preload-light body {
+    --bg-main: #f4f5f7;
+    --text-main: #1a1a1a;
+    --text-muted: #666666;
+    --card-bg: rgba(255, 255, 255, 0.7);
+    --card-border: rgba(0, 0, 0, 0.05);
+    --sidebar-bg: rgba(255, 255, 255, 0.9);
+    --shadow: 0 10px 30px rgba(0,0,0,0.05);
+    --hover-bg: rgba(255, 255, 255, 1);
+    --icon-bg: rgba(0, 0, 0, 0.03);
+    --glow-opacity: 0.3;
+    --input-bg: rgba(0, 0, 0, 0.03);
+}
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; scroll-behavior: smooth; }
-        
-        body { 
-            background-color: var(--bg-main); color: var(--text-main); 
+
+        body {
+            background-color: var(--bg-main); color: var(--text-main);
             display: flex; min-height: 100vh; transition: 0.4s ease;
             position: relative; overflow-x: hidden;
         }
 
-        /* Glowing Background Orbs */
         body::before, body::after { content: ''; position: fixed; border-radius: 50%; z-index: -1; pointer-events: none; transition: 0.5s ease; }
         body::before { top: -10%; left: -5%; width: 500px; height: 500px; background: var(--mango); filter: blur(120px); opacity: var(--glow-opacity); }
         body::after { bottom: -10%; right: -5%; width: 400px; height: 400px; background: var(--strawberry); filter: blur(150px); opacity: calc(var(--glow-opacity) - 0.05); }
 
-        /* --- SIDEBAR --- */
         aside {
             width: 260px; background: var(--sidebar-bg); height: 100vh; position: fixed;
             border-right: 1px solid var(--card-border); padding: 2rem 1.2rem; display: flex;
@@ -65,7 +73,7 @@
         }
         .sidebar-logo { padding: 10px 5px; margin-bottom: 2rem; text-align: center; }
         .sidebar-logo img { max-width: 100%; height: auto; max-height: 50px; display: block; margin: 0 auto; filter: drop-shadow(0 0 5px var(--mango)); }
-        
+
         nav { flex: 1; display: flex; flex-direction: column; }
         nav ul { list-style: none; display: flex; flex-direction: column; height: 100%; }
         nav a {
@@ -77,16 +85,14 @@
         nav li.active a { background: var(--mango); color: #111; box-shadow: 0 8px 20px rgba(245, 158, 11, 0.2); transform: translateX(0); }
         nav a i { font-size: 16px; width: 20px; text-align: center; }
 
-        /* --- MAIN CONTENT & GRID --- */
         main { margin-left: 260px; flex: 1; padding: 2.5rem 3.5rem; transition: all 0.4s ease; width: calc(100% - 260px); }
-        
+
         header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2.5rem; flex-wrap: wrap; gap: 1.5rem; }
         .header-title h1 { font-size: clamp(2rem, 4vw, 2.5rem); font-weight: 900; letter-spacing: -1px; line-height: 1; margin-bottom: 5px; color: var(--text-main);}
         .header-title p { color: var(--text-muted); font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;}
-        
+
         .header-actions { display: flex; align-items: center; gap: 20px; flex: 1; justify-content: flex-end;}
-        
-        .search-wrapper { position: relative; width: 100%; max-width: 400px; }
+        .search-wrapper { position: relative; width: 100%; max-width: 420px; }
         .search-wrapper input {
             width: 100%; padding: 12px 20px 12px 50px; border-radius: 50px; background: var(--card-bg);
             border: 1px solid var(--card-border); color: var(--text-main); font-size: 13px; font-weight: 600;
@@ -103,7 +109,6 @@
         .card:hover { box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
         .card h3 { font-size: 18px; font-weight: 900; margin-bottom: 25px; display: flex; align-items: center; gap: 12px; color: var(--text-main);}
 
-        /* CARD VISUALIZER */
         .card-preview {
             background: linear-gradient(135deg, #1c1c1c 0%, #050505 100%);
             aspect-ratio: 1.6 / 1; width: 100%; max-width: 420px; border-radius: 24px; padding: 30px;
@@ -114,8 +119,9 @@
         .card-preview .chip { width: 45px; height: 35px; background: linear-gradient(135deg, #e6c27a, #d4a017); border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
         .card-preview .number { font-size: clamp(1.2rem, 3.5vw, 1.8rem); letter-spacing: 4px; font-family: 'Courier New', monospace; font-weight: 800; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); z-index: 2;}
         .card-preview .logo { position: absolute; top: 30px; right: 30px; font-weight: 900; color: var(--mango); letter-spacing: 2px; font-size: 14px;}
+        .member-meta { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; z-index: 2; position: relative; }
+        .member-meta p { font-size: 12px; color: rgba(255,255,255,0.85); }
 
-        /* ACTION PANELS */
         .summary-box {
             background: var(--icon-bg); border-radius: 24px; padding: 1.5rem; text-align: left;
             border: 1px solid var(--card-border); margin-bottom: 2rem;
@@ -126,7 +132,6 @@
         .form-group { margin-bottom: 1.5rem; }
         .form-group label { display: block; margin-bottom: 10px; font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
 
-        /* RELOAD OPTIONS */
         .option-chip {
             padding: 15px; background: var(--input-bg); border: 1px solid var(--card-border); border-radius: 16px;
             font-size: 13px; font-weight: 800; cursor: pointer; text-align: center; transition: 0.3s;
@@ -146,10 +151,10 @@
             width: 100%; padding: 1.2rem; border-radius: 16px; border: none; font-weight: 900; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;
             cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; transition: 0.3s;
         }
+        .btn-action:disabled { opacity: .65; cursor: not-allowed; }
         .btn-primary { background: var(--success); color: white; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.2); }
         .btn-primary:hover { background: #059669; transform: translateY(-2px); }
 
-        /* HISTORY TABLE */
         .history-wrapper { overflow-x: auto; width: 100%; }
         .history-table { width: 100%; min-width: 500px; border-collapse: collapse; }
         .history-table th { text-align: left; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); padding: 15px 20px; border-bottom: 2px solid var(--card-border); }
@@ -166,6 +171,16 @@
             .dashboard-grid { grid-template-columns: 1fr; }
         }
     </style>
+    <script>
+(function () {
+    const savedTheme = localStorage.getItem("staff-theme");
+    if (savedTheme === "light") {
+        document.documentElement.classList.add("preload-light");
+    } else {
+        document.documentElement.classList.remove("preload-light");
+    }
+})();
+</script>
 </head>
 <body>
 
@@ -178,10 +193,10 @@
                 <li><a href="menustaff.html"><i class="fa-solid fa-receipt"></i> <span>Menu</span></a></li>
                 <li><a href="inventory.html"><i class="fa-solid fa-boxes-stacked"></i> <span>Inventory</span></a></li>
                 <li><a href="dashboardstaff.html"><i class="fa-solid fa-user-clock"></i> <span>Attendance</span></a></li>
-                <li class="active"><a href="topupstaff.html"><i class="fa-solid fa-credit-card"></i> <span>RPAY</span></a></li>
+                <li class="active"><a href="walletstaff.html"><i class="fa-solid fa-credit-card"></i> <span>RPAY</span></a></li>
                 <li><a href="rewardsstaff.html"><i class="fa-solid fa-gift"></i> <span>Rewards</span></a></li>
                 <li><a href="dashaccsettstaff.html"><i class="fa-solid fa-gear"></i> <span>Settings</span></a></li>
-                <li style="margin-top: auto;"><a href="index.html" style="color: var(--danger);"><i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></a></li>
+                <li style="margin-top: auto;"><a href="index.html" style="color: var(--danger);" class="logout-link"><i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></a></li>
             </ul>
         </nav>
     </aside>
@@ -195,7 +210,7 @@
             <div class="header-actions">
                 <div class="search-wrapper">
                     <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" placeholder="Scan QR or Enter Member ID...">
+                    <input type="text" id="memberSearchInput" placeholder="Scan QR or Enter Member ID / Email / Wallet Code...">
                 </div>
                 <button class="theme-btn" id="themeToggle"><i class="fa-solid fa-sun"></i></button>
             </div>
@@ -209,8 +224,13 @@
                         <div class="logo">TIMS <span>RPAY</span></div>
                         <div class="chip"></div>
                         <div>
-                            <div class="number">881 000</div>
-                            <div style="text-transform: uppercase; font-size: 14px; letter-spacing: 2px; font-weight: 700; margin-top: 10px;">Jane Doe</div>
+                            <div class="number" id="memberCodeText">------</div>
+                            <div id="memberNameText" style="text-transform: uppercase; font-size: 14px; letter-spacing: 2px; font-weight: 700; margin-top: 10px;">No Member Selected</div>
+                            <div class="member-meta">
+                                <p>Email: <span id="memberEmailText">-</span></p>
+                                <p>Balance: <strong id="memberBalanceText">₱0.00</strong></p>
+                                <p>Status: <strong id="memberStatusText">-</strong></p>
+                            </div>
                         </div>
                     </div>
 
@@ -225,18 +245,9 @@
                                     <th>Status</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="historyTableBody">
                                 <tr>
-                                    <td>07:22 PM</td>
-                                    <td>Cash</td>
-                                    <td style="color: var(--success); font-weight: 900;">+₱500.00</td>
-                                    <td><span class="status-badge">Completed</span></td>
-                                </tr>
-                                <tr>
-                                    <td>04:15 PM</td>
-                                    <td>GCash</td>
-                                    <td style="color: var(--success); font-weight: 900;">+₱200.00</td>
-                                    <td><span class="status-badge">Completed</span></td>
+                                    <td colspan="4" style="text-align:center; color: var(--text-muted); font-style: italic;">No top-up logs yet today.</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -249,35 +260,41 @@
                     <h3><i class="fa-solid fa-chart-pie" style="color:var(--success)"></i> Shift Summary</h3>
                     <div class="summary-box">
                         <h4>Total Reloads Collected</h4>
-                        <div class="amount">₱700.00</div>
+                        <div class="amount" id="summaryAmount">₱0.00</div>
                         <p style="font-size: 11px; margin-top: 15px; font-weight: 700; text-transform: uppercase; color: var(--text-muted);">
-                            Transaction Count: <span style="color: var(--text-main);">2 Top-ups</span>
+                            Transaction Count: <span style="color: var(--text-main);" id="summaryCount">0 Top-ups</span>
                         </p>
                     </div>
                 </div>
 
                 <div class="card">
                     <h3><i class="fa-solid fa-bolt" style="color:var(--mango)"></i> Process Top-up</h3>
-                    
+
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <button class="btn-action" type="button" onclick="quickSearchAndRedirect()" style="background: var(--icon-bg); color: var(--text-main); border: 1px solid var(--card-border);">
+                            <i class="fa-solid fa-users"></i> Search / Change Member
+                        </button>
+                    </div>
+
                     <div class="form-group">
                         <label>Select Amount</label>
                         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px;">
-                            <button class="option-chip" onclick="setAmount(100)">₱100</button>
-                            <button class="option-chip" onclick="setAmount(500)">₱500</button>
-                            <button class="option-chip" onclick="setAmount(1000)">₱1,000</button>
+                            <button class="option-chip" type="button" onclick="setAmount(100)">₱100</button>
+                            <button class="option-chip" type="button" onclick="setAmount(500)">₱500</button>
+                            <button class="option-chip" type="button" onclick="setAmount(1000)">₱1,000</button>
                         </div>
-                        <input type="number" placeholder="Enter custom amount" id="reloadAmount">
+                        <input type="number" placeholder="Enter custom amount" id="reloadAmount" min="1" step="0.01">
                     </div>
+<div class="form-group" style="margin-bottom: 2rem;">
+    <label>Payment Method</label>
+    <div id="methods">
+        <div class="option-chip active">
+            <i class="fa-solid fa-money-bill"></i> Cash
+        </div>
+    </div>
+</div>
 
-                    <div class="form-group" style="margin-bottom: 2rem;">
-                        <label>Payment Method</label>
-                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;" id="methods">
-                            <div class="option-chip active" onclick="setMethod(this, 'Cash')"><i class="fa-solid fa-money-bill"></i> Cash</div>
-                            <div class="option-chip" onclick="setMethod(this, 'GCash')"><i class="fa-solid fa-mobile-screen"></i> GCash</div>
-                        </div>
-                    </div>
-
-                    <button class="btn-action btn-primary" onclick="processReload()">
+                    <button class="btn-action btn-primary" id="processReloadBtn" onclick="processReload()">
                         <i class="fa-solid fa-check-double"></i> Confirm & Process
                     </button>
                 </div>
@@ -285,34 +302,10 @@
         </div>
     </main>
 
-    <script>
-        // --- ROLE LOGIC ---
-        const currentRole = localStorage.getItem('staffRole') || 'cashier'; 
-        if(currentRole === 'admin') {
-            document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'flex');
-        }
-
-        // --- THEME TOGGLE ---
-        const body = document.body;
-        const themeToggle = document.getElementById('themeToggle');
-        themeToggle.addEventListener('click', () => {
-            body.classList.toggle('light-mode');
-            const isLight = body.classList.contains('light-mode');
-            themeToggle.innerHTML = isLight ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
-        });
-
-        // --- RELOAD LOGIC ---
-        function setAmount(val) { document.getElementById('reloadAmount').value = val; }
-        function setMethod(el, method) {
-            document.querySelectorAll('#methods .option-chip').forEach(c => c.classList.remove('active'));
-            el.classList.add('active');
-        }
-        function processReload() {
-            const amt = document.getElementById('reloadAmount').value;
-            if(!amt || amt < 1) return alert("Enter a valid amount.");
-            alert(`₱${amt} top-up processed successfully for Jane Doe.`);
-            document.getElementById('reloadAmount').value = '';
-        }
-    </script>
+    <script src="js/authGuard.js"></script>
+    <script src="js/logoutstaff.js"></script>
+    <script src="js/themesync.js"></script>
+    
+    <script src="js/topupstaff.js"></script>
 </body>
 </html>

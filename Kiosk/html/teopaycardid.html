@@ -68,6 +68,7 @@
             width: 3rem; height: 3rem; border-radius: 1rem;
             display: flex; align-items: center; justify-content: center;
             z-index: 100; backdrop-filter: var(--glass-blur); color: var(--text-dark);
+            cursor: pointer;
         }
 
         .container { width: 95%; max-width: 900px; text-align: center; z-index: 10; transition: 0.4s; }
@@ -90,7 +91,6 @@
         .pin-dot { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--mango-deep); transition: 0.2s; }
         .pin-dot.filled { background: var(--mango-deep); transform: scale(1.2); }
 
-        /* --- LOADING & CONFIRMATION --- */
         .verifying-content { display: none; flex-direction: column; align-items: center; gap: 20px; }
         .loader-ring {
             width: 80px; height: 80px; border: 8px solid rgba(255,255,255,0.3);
@@ -117,7 +117,6 @@
         }
         .icon-box { width: 60px; height: 60px; margin-bottom: 15px; color: var(--mango-deep); }
 
-        /* --- MODAL --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.4); backdrop-filter: blur(8px);
@@ -134,7 +133,6 @@
             width: 100%; margin-top: 20px; cursor: pointer;
         }
 
-        /* --- KEYBOARD --- */
         .keyboard-container {
             position: fixed; bottom: 0; left: 0; width: 100%;
             background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(30px);
@@ -158,7 +156,7 @@
 </head>
 <body>
 
-    <button class="back-btn" onclick="handleBack()">
+    <button class="back-btn" id="backBtn">
         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
     </button>
 
@@ -167,13 +165,13 @@
 
         <div class="ui-phase active-phase" id="selectionPhase">
             <div class="login-choices">
-                <div class="option-card" onclick="startLogin('email')">
+                <div class="option-card" id="emailLoginCard">
                     <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
                     <span style="font-weight:800">EMAIL ADDRESS</span>
                 </div>
-                <div class="option-card" onclick="startLogin('card')">
+                <div class="option-card" id="cardLoginCard">
                     <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
-                    <span style="font-weight:800">6-DIGIT CARD</span>
+                    <span style="font-weight:800">WALLET CODE</span>
                 </div>
             </div>
         </div>
@@ -189,7 +187,7 @@
             <div class="glass-panel" id="pinContainer">
                 <div class="pin-display" id="pinDisplay">
                     <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
-                    <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+                    <div class="pin-dot"></div>
                 </div>
                 <p style="margin-top:15px; color:#5d4037; font-weight:600;">ENTER YOUR PIN</p>
             </div>
@@ -210,9 +208,9 @@
     <div class="modal-overlay" id="errorModal">
         <div class="modal-card">
             <div style="color:var(--error-red); font-size:3.5rem; margin-bottom:15px;">⚠</div>
-            <h2 style="font-weight:800; margin-bottom:10px;">PIN INCORRECT</h2>
-            <p style="color:#5d4037; font-size:0.95rem; line-height:1.4;">The PIN you entered does not match our records. Please try again.</p>
-            <button class="modal-btn" onclick="closeError()">TRY AGAIN</button>
+            <h2 style="font-weight:800; margin-bottom:10px;" id="errorTitle">Payment Error</h2>
+            <p style="color:#5d4037; font-size:0.95rem; line-height:1.4;" id="errorMessage">Something went wrong. Please try again.</p>
+            <button class="modal-btn" id="errorOkBtn">TRY AGAIN</button>
         </div>
     </div>
 
@@ -220,148 +218,6 @@
         <div id="keyboardLayout"></div>
     </div>
 
-    <script>
-        let currentMode = '';
-        let phase = 'selection';
-        let isShift = true;
-        let isAlt = false;
-        let pinCode = "";
-        const input = document.getElementById('loginInput');
-        const layout = document.getElementById('keyboardLayout');
-
-        function switchUI(targetPhase) {
-            document.querySelectorAll('.ui-phase, .verifying-content, .success-content').forEach(p => p.style.display = 'none');
-            const target = document.getElementById(targetPhase);
-            if(target) target.style.display = 'flex';
-            phase = targetPhase;
-        }
-
-        function handleBack() {
-            if(phase === 'inputPhase') location.reload();
-            else if(phase === 'pinPhase') { switchUI('inputPhase'); renderKeyboard(); }
-            else history.back();
-        }
-
-        function startLogin(mode) {
-            currentMode = mode;
-            switchUI('inputPhase');
-            document.getElementById('pageTitle').innerText = mode === 'email' ? 'LOGIN VIA EMAIL' : 'LOGIN VIA CARD';
-            document.getElementById('inputHint').innerText = mode === 'email' ? 'Input registered email' : 'Input card number';
-            renderKeyboard();
-            document.getElementById('keyboard').style.display = 'flex';
-            document.body.classList.add('kb-active');
-        }
-
-        function renderKeyboard() {
-            layout.innerHTML = '';
-            const isNumeric = (currentMode === 'card' && phase === 'inputPhase') || phase === 'pinPhase';
-            if (!isNumeric) {
-                let rows = isAlt ? [['1','2','3','4','5','6','7','8','9','0'],['-','/',':',';','(',')','$','&','@','"']] : 
-                                   [['Q','W','E','R','T','Y','U','I','O','P'],['A','S','D','F','G','H','J','K','L'],['Z','X','C','V','B','N','M']];
-                rows.forEach(row => {
-                    const rDiv = document.createElement('div'); rDiv.className = 'kb-row';
-                    row.forEach(key => rDiv.appendChild(createKey(isShift || isAlt ? key : key.toLowerCase())));
-                    layout.appendChild(rDiv);
-                });
-                const last = document.createElement('div'); last.className = 'kb-row';
-                last.appendChild(createKey(isAlt ? 'ABC' : '123', 'action', () => { isAlt = !isAlt; renderKeyboard(); }));
-                last.appendChild(createKey('SPACE', '', () => type(' '), 2));
-                last.appendChild(createKey('⌫', 'action', del));
-                last.appendChild(createKey('OK', 'done', nextPhase, 1.2));
-                layout.appendChild(last);
-            } else {
-                [['1','2','3'],['4','5','6'],['7','8','9'],['0']].forEach(row => {
-                    const rDiv = document.createElement('div'); rDiv.className = 'kb-row';
-                    row.forEach(key => rDiv.appendChild(createKey(key)));
-                    if(row[0] === '0') {
-                        rDiv.appendChild(createKey('⌫', 'action', del));
-                        rDiv.appendChild(createKey('OK', 'done', nextPhase));
-                    }
-                    layout.appendChild(rDiv);
-                });
-            }
-            validate();
-        }
-
-        function createKey(lbl, cls = '', fn = null, flex = 1) {
-            const k = document.createElement('div'); k.className = `key ${cls}`;
-            k.innerText = lbl; k.style.flex = flex;
-            k.onclick = fn || (() => type(lbl));
-            if(lbl === 'OK') k.id = 'okBtn';
-            return k;
-        }
-
-        function type(char) {
-            if(phase === 'pinPhase') {
-                if(pinCode.length < 6) { pinCode += char; updatePinDots(); }
-            } else {
-                if(currentMode === 'card' && input.value.length >= 6) return;
-                input.value += char;
-                adjustFont();
-            }
-            validate();
-        }
-
-        function del() {
-            if(phase === 'pinPhase') { pinCode = pinCode.slice(0, -1); updatePinDots(); }
-            else { input.value = input.value.slice(0, -1); adjustFont(); }
-            validate();
-        }
-
-        function updatePinDots() {
-            const dots = document.querySelectorAll('.pin-dot');
-            dots.forEach((d, i) => i < pinCode.length ? d.classList.add('filled') : d.classList.remove('filled'));
-        }
-
-        function adjustFont() {
-            const l = input.value.length;
-            input.style.fontSize = l > 25 ? "1rem" : l > 15 ? "1.3rem" : "1.8rem";
-        }
-
-        function validate() {
-            const btn = document.getElementById('okBtn');
-            if(!btn) return;
-            let ok = phase === 'pinPhase' ? pinCode.length === 6 : (currentMode === 'card' ? input.value.length === 6 : input.value.includes('@'));
-            ok ? btn.classList.add('ready') : btn.classList.remove('ready');
-        }
-
-        function showPinError() {
-            document.getElementById('errorModal').style.display = 'flex';
-            const container = document.getElementById('pinContainer');
-            container.classList.add('shake');
-            setTimeout(() => container.classList.remove('shake'), 500);
-            document.getElementById('keyboard').style.display = 'flex';
-        }
-
-        function closeError() {
-            document.getElementById('errorModal').style.display = 'none';
-            pinCode = "";
-            updatePinDots();
-            validate();
-        }
-
-        function nextPhase() {
-            if(phase === 'inputPhase') {
-                switchUI('pinPhase');
-                document.getElementById('pageTitle').innerText = "VERIFICATION";
-                renderKeyboard();
-            } else {
-                // START LOADING
-                document.getElementById('keyboard').style.display = 'none';
-                switchUI('verifyingPhase'); 
-                document.getElementById('pageTitle').style.display = 'none';
-                
-                setTimeout(() => {
-                    // SHOW AUTHORIZATION CONFIRMATION
-                    switchUI('authorizedPhase');
-                    
-                    // AUTO-PROCEED TO RECEIPT
-                    setTimeout(() => {
-                        window.location.href = 'receipt.html';
-                    }, 2000); 
-                }, 2500); 
-            }
-        }
-    </script>
+    <script src="../js/kiosk-teopay.js"></script>
 </body>
 </html>

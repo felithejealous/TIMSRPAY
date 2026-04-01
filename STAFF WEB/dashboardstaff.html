@@ -6,7 +6,6 @@
     <title>Staff Overview | Teo D' Mango Premium</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* --- DYNAMIC THEME VARIABLES (DEFAULT: DARK MODE) --- */
         :root {
             --mango: #ffc244;
             --mango-dark: #d4a017;
@@ -14,8 +13,7 @@
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
-            
-            /* DARK MODE (Default) */
+
             --bg-main: #050505;
             --text-main: #ffffff;
             --text-muted: #888888;
@@ -26,36 +24,65 @@
             --hover-bg: rgba(255, 255, 255, 0.06);
             --icon-bg: rgba(255, 255, 255, 0.05);
             --glow-opacity: 0.15;
+            --clock-panel-bg: linear-gradient(135deg, #1c1c1c 0%, #050505 100%);
+            --clock-panel-text: #ffffff;
+            --clock-panel-subtext: #888888;
+            --clock-panel-border: rgba(255, 194, 68, 0.2);
+            --clock-panel-divider: rgba(255,255,255,0.1);
+            --clock-panel-chip-bg: rgba(255,255,255,0.1);
         }
 
-        /* --- LIGHT MODE OVERRIDES --- */
         body.light-mode {
-            --bg-main: #f4f5f7;
-            --text-main: #1a1a1a;
-            --text-muted: #666666;
-            --card-bg: rgba(255, 255, 255, 0.7);
-            --card-border: rgba(0, 0, 0, 0.05);
-            --sidebar-bg: rgba(255, 255, 255, 0.9);
-            --shadow: 0 10px 30px rgba(0,0,0,0.05);
-            --hover-bg: rgba(255, 255, 255, 1);
-            --icon-bg: rgba(0, 0, 0, 0.03);
-            --glow-opacity: 0.3; 
-        }
+    --bg-main: #f4f5f7;
+    --text-main: #1a1a1a;
+    --text-muted: #666666;
+    --card-bg: rgba(255, 255, 255, 0.7);
+    --card-border: rgba(0, 0, 0, 0.05);
+    --sidebar-bg: rgba(255, 255, 255, 0.9);
+    --shadow: 0 10px 30px rgba(0,0,0,0.05);
+    --hover-bg: rgba(255, 255, 255, 1);
+    --icon-bg: rgba(0, 0, 0, 0.03);
+    --glow-opacity: 0.3;
+    --clock-panel-bg: linear-gradient(135deg, rgba(255,255,255,0.92) 0%, rgba(245,245,245,0.96) 100%);
+    --clock-panel-text: #1a1a1a;
+    --clock-panel-subtext: #666666;
+    --clock-panel-border: rgba(212, 160, 23, 0.18);
+    --clock-panel-divider: rgba(0,0,0,0.08);
+    --clock-panel-chip-bg: rgba(0,0,0,0.05);
+}
+
+html.preload-light body {
+    --bg-main: #f4f5f7;
+    --text-main: #1a1a1a;
+    --text-muted: #666666;
+    --card-bg: rgba(255, 255, 255, 0.7);
+    --card-border: rgba(0, 0, 0, 0.05);
+    --sidebar-bg: rgba(255, 255, 255, 0.9);
+    --shadow: 0 10px 30px rgba(0,0,0,0.05);
+    --hover-bg: rgba(255, 255, 255, 1);
+    --icon-bg: rgba(0, 0, 0, 0.03);
+    --glow-opacity: 0.3;
+    --input-bg: rgba(0, 0, 0, 0.03);
+     --clock-panel-bg: linear-gradient(135deg, rgba(255,255,255,0.92) 0%, rgba(245,245,245,0.96) 100%);
+    --clock-panel-text: #1a1a1a;
+    --clock-panel-subtext: #666666;
+    --clock-panel-border: rgba(212, 160, 23, 0.18);
+    --clock-panel-divider: rgba(0,0,0,0.08);
+    --clock-panel-chip-bg: rgba(0,0,0,0.05);
+}
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; scroll-behavior: smooth; }
-        
-        body { 
-            background-color: var(--bg-main); color: var(--text-main); 
+
+        body {
+            background-color: var(--bg-main); color: var(--text-main);
             display: flex; min-height: 100vh; transition: 0.4s ease;
             position: relative; overflow-x: hidden;
         }
 
-        /* Glowing Background Orbs */
         body::before, body::after { content: ''; position: fixed; border-radius: 50%; z-index: -1; pointer-events: none; transition: 0.5s ease; }
         body::before { top: -10%; left: -5%; width: 500px; height: 500px; background: var(--mango); filter: blur(120px); opacity: var(--glow-opacity); }
         body::after { bottom: -10%; right: -5%; width: 400px; height: 400px; background: var(--strawberry); filter: blur(150px); opacity: calc(var(--glow-opacity) - 0.05); }
 
-        /* --- SLEEK RESPONSIVE SIDEBAR --- */
         aside {
             width: 260px; background: var(--sidebar-bg); height: 100vh; position: fixed;
             border-right: 1px solid var(--card-border); padding: 2rem 1.2rem; display: flex;
@@ -63,7 +90,7 @@
         }
         .sidebar-logo { padding: 10px 5px; margin-bottom: 2rem; text-align: center; }
         .sidebar-logo img { max-width: 100%; height: auto; max-height: 50px; display: block; margin: 0 auto; filter: drop-shadow(0 0 5px var(--mango)); }
-        
+
         nav { flex: 1; display: flex; flex-direction: column; }
         nav ul { list-style: none; display: flex; flex-direction: column; height: 100%; }
         nav a {
@@ -75,13 +102,12 @@
         nav li.active a { background: var(--mango); color: #111; box-shadow: 0 8px 20px rgba(245, 158, 11, 0.2); transform: translateX(0); }
         nav a i { font-size: 16px; width: 20px; text-align: center; }
 
-        /* --- MAIN CONTENT & GRID --- */
         main { margin-left: 260px; flex: 1; padding: 2.5rem 3.5rem; transition: all 0.4s ease; width: calc(100% - 260px); }
-        
+
         header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2.5rem; }
         header h1 { font-size: clamp(2rem, 4vw, 2.5rem); font-weight: 900; letter-spacing: -1px; line-height: 1; margin-bottom: 5px; color: var(--text-main);}
         header p { color: var(--text-muted); font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;}
-        
+
         .theme-btn { background: var(--icon-bg); border: 1px solid var(--card-border); color: var(--text-main); width: 45px; height: 45px; border-radius: 50%; cursor: pointer; transition: 0.3s; display: grid; place-items: center; font-size: 16px;}
         .theme-btn:hover { background: var(--mango); color: #111; transform: rotate(15deg); }
 
@@ -94,33 +120,103 @@
         .card { background: var(--card-bg); backdrop-filter: blur(20px); border: 1px solid var(--card-border); border-radius: 30px; padding: 2.5rem; box-shadow: var(--shadow); height: fit-content; transition: 0.3s; }
         .card:hover { box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
         .card h3 { font-size: 18px; font-weight: 900; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; color: var(--text-main);}
-
-        /* SLEEK CLOCK & BUTTONS */
-        .clock-panel { background: linear-gradient(135deg, #1c1c1c 0%, #050505 100%); color: #fff; border: 1px solid rgba(255, 194, 68, 0.2); position: relative; overflow: hidden; }
+         .clock-panel {
+            background: var(--clock-panel-bg);
+            color: var(--clock-panel-text);
+            border: 1px solid var(--clock-panel-border);
+            position: relative;
+            overflow: hidden;
+        }
         .clock-panel::before { content: ''; position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; background: radial-gradient(circle, var(--mango) 0%, transparent 60%); opacity: 0.15; filter: blur(30px); pointer-events: none;}
         .clock-display { font-size: clamp(2.5rem, 6vw, 4.5rem); font-family: 'Courier New', monospace; font-weight: 900; letter-spacing: -2px; margin: 10px 0; text-shadow: 0 5px 15px rgba(0,0,0,0.8); position: relative; z-index: 2;}
-        
+                .clock-panel-title {
+            color: var(--clock-panel-text) !important;
+            position: relative;
+            z-index: 2;
+        }
+
+        .clock-panel-subtext {
+            color: var(--clock-panel-subtext) !important;
+            position: relative;
+            z-index: 2;
+        }
+
+        .clock-panel-footer {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--clock-panel-divider);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .clock-panel-timer-chip {
+            font-family: monospace;
+            font-weight: 800;
+            background: var(--clock-panel-chip-bg);
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: var(--clock-panel-text);
+        }
+
         .btn-main {
             width: 100%; padding: 1.2rem; border: none; border-radius: 16px; font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;
             cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; position: relative; z-index: 2;
+        }
+        .btn-main:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+                .logs-card {
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .logs-scroll-area {
+            flex: 1;
+            min-height: 0;
+            max-height: 420px;
+            overflow-y: auto;
+            overflow-x: auto;
+            border-radius: 16px;
+        }
+
+        .logs-scroll-area::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .logs-scroll-area::-webkit-scrollbar-thumb {
+            background: var(--card-border);
+            border-radius: 999px;
+        }
+
+        .logs-scroll-area::-webkit-scrollbar-track {
+            background: transparent;
         }
         .btn-clock-in { background: var(--mango); color: #111; box-shadow: 0 10px 25px rgba(245, 158, 11, 0.2); }
         .btn-clock-in:hover { transform: translateY(-3px); background: #fff; }
         .btn-clock-out { background: var(--danger); color: white; display: none; box-shadow: 0 10px 25px rgba(239, 68, 68, 0.2); }
         .btn-clock-out:hover { transform: translateY(-3px); opacity: 0.9; }
-        
+
         .btn-break { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); margin-top: 12px; }
         .btn-break:hover { background: rgba(255,255,255,0.2); }
         .btn-break.active { background: var(--warning); color: #111; border-color: var(--warning); }
 
-        /* SLEEK CHECKLIST */
         .checklist-item { display: flex; align-items: center; gap: 15px; padding: 16px 0; border-bottom: 1px solid var(--card-border); cursor: pointer; transition: 0.2s; }
         .checklist-item:last-child { border-bottom: none; padding-bottom: 0; }
         .checklist-item:hover { padding-left: 10px; }
         .checklist-item input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--mango); cursor: pointer; border-radius: 6px; }
+        .checklist-item input[type="checkbox"]:disabled { cursor: not-allowed; opacity: 0.7; }
         .checklist-item span { font-size: 14px; font-weight: 600; color: var(--text-main); }
 
-        /* SLEEK TABLE */
         .table-responsive { overflow-x: auto; margin-top: 1rem; width: 100%; }
         table { width: 100%; border-collapse: collapse; min-width: 600px; }
         th { text-align: left; color: var(--text-muted); font-size: 11px; font-weight: 800; padding: 15px 20px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid var(--card-border); }
@@ -128,7 +224,6 @@
         tr:hover td { background: var(--hover-bg); }
         .empty-state { text-align: center; color: var(--text-muted); padding: 30px; font-style: italic; }
 
-        /* --- MEDIA QUERIES --- */
         @media screen and (max-width: 1100px) {
             aside { width: 90px; padding: 2rem 0.5rem; }
             aside span, .sidebar-logo img { display: none; }
@@ -148,12 +243,22 @@
             nav li { margin-bottom: 0; }
             nav a { flex-direction: column; gap: 4px; font-size: 0.65rem; padding: 8px; border-radius: 0; }
             nav li.active a { background: none; color: var(--mango); box-shadow: none; transform: translateY(-3px); }
-            
+
             main { margin-left: 0; width: 100%; margin-bottom: 70px; padding: 1.5rem; }
             .stats-grid { grid-template-columns: 1fr 1fr; }
             header { flex-direction: column; align-items: flex-start; gap: 15px; }
         }
     </style>
+    <script>
+(function () {
+    const savedTheme = localStorage.getItem("staff-theme");
+    if (savedTheme === "light") {
+        document.documentElement.classList.add("preload-light");
+    } else {
+        document.documentElement.classList.remove("preload-light");
+    }
+})();
+</script>
 </head>
 <body>
 
@@ -165,14 +270,14 @@
                 <li><a href="orderstaffs.html"><i class="fa-solid fa-bell-concierge"></i> <span>Orders</span></a></li>
                 <li><a href="menustaff.html"><i class="fa-solid fa-receipt"></i> <span>Menu</span></a></li>
                 <li><a href="inventory.html"><i class="fa-solid fa-boxes-stacked"></i> <span>Inventory</span></a></li>
-                
+
                 <li class="active"><a href="dashboardstaff.html"><i class="fa-solid fa-user-clock"></i> <span>Attendance</span></a></li>
-                
-                <li><a href="topupstaff.html"><i class="fa-solid fa-credit-card"></i> <span>RPAY</span></a></li>
+
+                <li><a href="walletstaff.html"><i class="fa-solid fa-credit-card"></i> <span>RPAY</span></a></li>
                 <li><a href="rewardsstaff.html"><i class="fa-solid fa-gift"></i> <span>Rewards</span></a></li>
                 <li><a href="dashaccsettstaff.html"><i class="fa-solid fa-gear"></i> <span>Settings</span></a></li>
-                
-                <li style="margin-top: auto;"><a href="index.html" style="color: var(--danger);"><i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></a></li>
+
+                <li style="margin-top: auto;"><a href="loginstaff.html" style="color: var(--danger);" class="logout-link"><i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></a></li>
             </ul>
         </nav>
     </aside>
@@ -193,174 +298,105 @@
                 <div class="icon-circle" style="color: var(--mango);"><i class="fa-solid fa-calendar-check"></i></div>
                 <div>
                     <h4 style="font-size: 10px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px;">Shift Target</h4>
-                    <div style="font-size: 20px; font-weight: 900; color: var(--text-main);">8.0 Hours</div>
+                    <div id="shiftTargetHours" style="font-size: 20px; font-weight: 900; color: var(--text-main);">8.0 Hours</div>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="icon-circle" style="color: var(--success);"><i class="fa-solid fa-clock"></i></div>
                 <div>
                     <h4 style="font-size: 10px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px;">Weekly Total</h4>
-                    <div style="font-size: 20px; font-weight: 900; color: var(--text-main);">32.5 Hours</div>
+                    <div id="weeklyTotalHours" style="font-size: 20px; font-weight: 900; color: var(--text-main);">0.0 Hours</div>
                 </div>
             </div>
         </div>
 
         <div class="dashboard-grid">
             <div class="card clock-panel">
-                <h3 style="color: #fff; position: relative; z-index: 2;"><i class="fa-solid fa-stopwatch" style="color: var(--mango);"></i> Shift Control</h3>
-                <div class="clock-display" id="live-clock">00:00:00 PM</div>
-                <div style="color: #888; font-weight: 600; margin-bottom: 2rem; text-transform: uppercase; letter-spacing: 2px; font-size: 12px; position: relative; z-index: 2;" id="live-date">Loading...</div>
-                
+                <h3 class="clock-panel-title"><i class="fa-solid fa-stopwatch" style="color: var(--mango);"></i> Shift Control</h3>
+                <div class="clock-display" id="live-clock">00:00:00</div>
+                <div class="clock-panel-subtext" style="font-weight: 600; margin-bottom: 2rem; text-transform: uppercase; letter-spacing: 2px; font-size: 12px;" id="live-date">Loading...</div>
+
                 <button id="clockInBtn" class="btn-main btn-clock-in"><i class="fa-solid fa-play"></i> Clock In Shift</button>
                 <button id="clockOutBtn" class="btn-main btn-clock-out"><i class="fa-solid fa-stop"></i> End Shift</button>
 
                 <div id="breakArea" style="display: none; flex-direction: column; position: relative; z-index: 2;">
-                    <button id="breakBtn" class="btn-main btn-break"><i class="fa-solid fa-mug-hot"></i> Take a Break</button>
+                    <button id="breakBtn" class="btn-main btn-break" type="button"><i class="fa-solid fa-mug-hot"></i> Break Not Yet Connected</button>
                 </div>
 
-                <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 2;">
-                    <span style="font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">Status: <span id="statusLabel" style="color: #888;">Offline</span></span>
-                    <span id="shiftTimer" style="font-family: monospace; font-weight: 800; background: rgba(255,255,255,0.1); padding: 8px 15px; border-radius: 8px; font-size: 14px;">00:00:00</span>
+                <div class="clock-panel-footer">
+                    <span style="font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: var(--clock-panel-text);">
+                        Status: <span id="statusLabel" style="color: var(--clock-panel-subtext);">Offline</span>
+                    </span>
+                    <span id="shiftTimer" class="clock-panel-timer-chip">00:00:00</span>
                 </div>
             </div>
 
             <div class="card">
                 <h3><i class="fa-solid fa-list-check" style="color: var(--mango);"></i> Closing Checklist</h3>
+
                 <div style="margin-top: 1.5rem;">
-                    <label class="checklist-item"><input type="checkbox"> <span>Wipe all counters & blenders</span></label>
-                    <label class="checklist-item"><input type="checkbox"> <span>Refill fruit bins (Mango/Avocado)</span></label>
-                    <label class="checklist-item"><input type="checkbox"> <span>Final Cash Register Count</span></label>
-                    <label class="checklist-item"><input type="checkbox"> <span>Ensure all POS devices are charging</span></label>
+                    <label class="checklist-item">
+                        <input type="checkbox" id="checkWipeCounters">
+                        <span>Wipe all counters & blenders</span>
+                    </label>
+
+                    <label class="checklist-item">
+                        <input type="checkbox" id="checkRefillBins">
+                        <span>Refill fruit bins (Mango/Avocado)</span>
+                    </label>
+
+                    <label class="checklist-item">
+                        <input type="checkbox" id="checkFinalCashRegister">
+                        <span>Final Cash Register Count</span>
+                    </label>
+
+                    <label class="checklist-item">
+                        <input type="checkbox" id="checkPosDevicesCharging">
+                        <span>Ensure all POS devices are charging</span>
+                    </label>
+                </div>
+
+                <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 12px;">
+                    <button id="saveChecklistBtn" class="btn-main btn-break" type="button">
+                        <i class="fa-solid fa-floppy-disk"></i> Save Checklist
+                    </button>
+
+                    <div id="checklistStatusText" style="font-size: 12px; color: var(--text-muted); font-weight: 700;">
+                        Checklist not yet submitted today.
+                    </div>
                 </div>
             </div>
 
-            <div class="card" style="grid-column: 1 / -1;">
+                        <div class="card logs-card" style="grid-column: 1 / -1;">
                 <h3 style="margin-bottom: 1rem;"><i class="fa-solid fa-history" style="color: var(--mango);"></i> Recent Logs</h3>
-                <div class="table-responsive">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Clock In</th>
-                                <th>Break Details</th>
-                                <th>Clock Out</th>
-                                <th>Total Hours</th>
-                            </tr>
-                        </thead>
-                        <tbody id="historyBody">
-                            <tr>
-                                <td colspan="5" class="empty-state">No logs recorded for this session yet.</td>
-                            </tr>
-                        </tbody>
-                    </table>
+
+                <div class="logs-scroll-area">
+                    <div class="table-responsive" style="margin-top: 0;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Clock In</th>
+                                    <th>Break Details</th>
+                                    <th>Clock Out</th>
+                                    <th>Total Hours</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyBody">
+                                <tr>
+                                    <td colspan="5" class="empty-state">Loading attendance logs...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </main>
 
-    <script>
-        // --- ROLE CHECKING LOGIC ---
-        // Reads the role saved from loginstaff.html
-        const currentRole = localStorage.getItem('staffRole') || 'cashier'; 
-        
-        if(currentRole === 'admin') {
-            document.getElementById('welcomeText').innerText = "Manager Portal";
-        } else {
-            document.getElementById('welcomeText').innerText = "Cashier Portal";
-        }
-
-        // --- THEME TOGGLE LOGIC ---
-        const body = document.body;
-        const themeToggle = document.getElementById('themeToggle');
-        
-        themeToggle.addEventListener('click', () => {
-            body.classList.toggle('light-mode');
-            const isLight = body.classList.contains('light-mode');
-            themeToggle.innerHTML = isLight ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
-        });
-
-        // --- CLOCK & ATTENDANCE LOGIC ---
-        function updateClock() {
-            const now = new Date();
-            document.getElementById('live-clock').textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            document.getElementById('live-date').textContent = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-        }
-        setInterval(updateClock, 1000); updateClock();
-
-        let shiftStart = null;
-        let breakStart = null;
-        let totalBreakTime = 0;
-        let breakLogs = [];
-
-        const clockInBtn = document.getElementById('clockInBtn');
-        const clockOutBtn = document.getElementById('clockOutBtn');
-        const breakBtn = document.getElementById('breakBtn');
-        const breakArea = document.getElementById('breakArea');
-        const statusLabel = document.getElementById('statusLabel');
-
-        clockInBtn.onclick = () => {
-            shiftStart = new Date();
-            clockInBtn.style.display = 'none';
-            clockOutBtn.style.display = 'flex';
-            breakArea.style.display = 'flex';
-            statusLabel.textContent = 'Active';
-            statusLabel.style.color = 'var(--success)';
-        };
-
-        breakBtn.onclick = () => {
-            const now = new Date();
-            const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-            if (!breakStart) {
-                breakStart = now;
-                breakBtn.classList.add('active');
-                breakBtn.innerHTML = `<i class="fa-solid fa-play"></i> End Break`;
-                statusLabel.textContent = 'On Break';
-                statusLabel.style.color = 'var(--warning)';
-                breakLogs.push(timeStr);
-            } else {
-                totalBreakTime += (now - breakStart);
-                breakStart = null;
-                breakBtn.classList.remove('active');
-                breakBtn.innerHTML = `<i class="fa-solid fa-mug-hot"></i> Take a Break`;
-                statusLabel.textContent = 'Active';
-                statusLabel.style.color = 'var(--success)';
-                breakLogs[breakLogs.length - 1] += ` - ${timeStr}`;
-            }
-        };
-
-        clockOutBtn.onclick = () => {
-            if(!confirm('Are you sure you want to end your shift?')) return;
-            const shiftEnd = new Date();
-            const dateStr = shiftEnd.toLocaleDateString([], { month: 'short', day: 'numeric' });
-            const inTime = shiftStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            const outTime = shiftEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            
-            const totalMs = (shiftEnd - shiftStart) - totalBreakTime;
-            const h = Math.floor(totalMs / 3600000);
-            const m = Math.floor((totalMs % 3600000) / 60000);
-
-            const row = `<tr>
-                <td style="color: var(--mango);"><strong>${dateStr}</strong></td>
-                <td>${inTime}</td>
-                <td style="color: var(--text-muted);">${breakLogs.join(', ') || '<span style="opacity:0.5">No breaks</span>'}</td>
-                <td>${outTime}</td>
-                <td><strong style="color: var(--text-main); font-size: 15px;">${h}h ${m}m</strong></td>
-            </tr>`;
-            
-            const tbody = document.getElementById('historyBody');
-            if(tbody.innerText.includes('No logs')) tbody.innerHTML = '';
-            tbody.insertAdjacentHTML('afterbegin', row);
-
-            // Reset UI
-            clockInBtn.style.display = 'flex';
-            clockOutBtn.style.display = 'none';
-            breakArea.style.display = 'none';
-            statusLabel.textContent = 'Offline';
-            statusLabel.style.color = '#888';
-            breakLogs = [];
-            totalBreakTime = 0;
-        };
-    </script>
+    <script src="js/authGuard.js"></script>
+    <script src="js/logoutstaff.js"></script>
+    <script src="js/themesync.js"></script>
+    <script src="js/dashboardstaff.js"></script>
 </body>
 </html>

@@ -91,7 +91,6 @@
             cursor: pointer;
         }
 
-        /* KEYBOARD STYLING */
         .keyboard-container {
             position: fixed; bottom: 0; left: 0; width: 100%;
             background: rgba(255, 255, 255, 0.4);
@@ -127,7 +126,6 @@
         .key:active { background: white; transform: translateY(2px); box-shadow: none; }
         .key.space { flex: 4; font-size: 0.9rem; letter-spacing: 3px; }
 
-        /* THE NEW CONFIRM (DONE) BUTTON */
         .key.done { 
             flex: 2; 
             background: var(--text-dark); 
@@ -164,11 +162,37 @@
         }
 
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+            display: none; align-items: center; justify-content: center; z-index: 5000;
+            padding: 20px;
+        }
+
+        .modal-card {
+            background: white; width: 100%; max-width: 340px;
+            border-radius: 22px; padding: 24px; text-align: center;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+
+        .modal-card h3 {
+            color: #ff8c00; font-size: 18px; margin-bottom: 10px; font-weight: 900;
+        }
+
+        .modal-card p {
+            color: #555; font-size: 14px; line-height: 1.5; margin-bottom: 20px;
+        }
+
+        .modal-btn {
+            width: 100%; padding: 12px; border-radius: 12px; border: none;
+            font-weight: 700; cursor: pointer; font-size: 14px;
+            background: #ff8c00; color: white;
+        }
     </style>
 </head>
 <body>
 
-    <button class="back-btn" onclick="history.back()">
+    <button class="back-btn" id="backBtn">
         <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
     </button>
 
@@ -186,6 +210,14 @@
         <p style="font-size: 1.1rem; color: #5d4037; font-weight: 600; margin-top: 0.5rem;">Please wait while we prepare your order...</p>
     </div>
 
+    <div class="modal-overlay" id="errorModal">
+        <div class="modal-card">
+            <h3 id="modalTitle">Order Error</h3>
+            <p id="modalMessage">Something went wrong.</p>
+            <button class="modal-btn" id="modalOkBtn">OK</button>
+        </div>
+    </div>
+
     <div class="keyboard-container" id="keyboard">
         <div class="kb-row">
             <div class="key" onclick="type('Q')">Q</div><div class="key" onclick="type('W')">W</div><div class="key" onclick="type('E')">E</div><div class="key" onclick="type('R')">R</div><div class="key" onclick="type('T')">T</div><div class="key" onclick="type('Y')">Y</div><div class="key" onclick="type('U')">U</div><div class="key" onclick="type('I')">I</div><div class="key" onclick="type('O')">O</div><div class="key" onclick="type('P')">P</div>
@@ -198,61 +230,10 @@
         </div>
         <div class="kb-row">
             <div class="key space" onclick="type(' ')">SPACE</div>
-            <div class="key done" id="doneBtn" onclick="processOrder()">CONFIRM</div>
+            <div class="key done" id="doneBtn">CONFIRM</div>
         </div>
     </div>
 
-    <script>
-        const input = document.getElementById('customerName');
-        const kb = document.getElementById('keyboard');
-        const doneBtn = document.getElementById('doneBtn');
-        const overlay = document.getElementById('successOverlay');
-
-        function updateBtnState() {
-            if (input.value.trim().length >= 2) {
-                doneBtn.classList.add('ready');
-            } else {
-                doneBtn.classList.remove('ready');
-            }
-        }
-
-        input.addEventListener('click', (e) => {
-            e.stopPropagation();
-            kb.classList.add('show');
-            document.body.classList.add('keyboard-open');
-        });
-
-        function type(c) { 
-            input.value += c; 
-            updateBtnState();
-        }
-
-        function del() { 
-            input.value = input.value.slice(0, -1); 
-            updateBtnState();
-        }
-
-        function processOrder() {
-            localStorage.setItem('customerName', input.value.trim());
-            // Close keyboard immediately
-            kb.classList.remove('show');
-            document.body.classList.remove('keyboard-open');
-            
-            // Show processing screen
-            overlay.classList.add('active');
-            
-            setTimeout(() => {
-                window.location.href = 'receipt.html';
-            }, 3500);
-        }
-
-        // Close keyboard if clicking outside
-        document.addEventListener('click', (e) => {
-            if (!kb.contains(e.target) && e.target !== input) {
-                kb.classList.remove('show');
-                document.body.classList.remove('keyboard-open');
-            }
-        });
-    </script>
+    <script src="../js/kiosk-counter.js"></script>
 </body>
 </html>

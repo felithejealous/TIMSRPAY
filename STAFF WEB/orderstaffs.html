@@ -6,7 +6,6 @@
     <title>Orders & Queue | Teo D' Mango Staff</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* --- DYNAMIC THEME VARIABLES (DEFAULT: DARK MODE) --- */
         :root {
             --mango: #ffc244;
             --mango-dark: #d4a017;
@@ -14,189 +13,1011 @@
             --success: #10b981;
             --danger: #ef4444;
             --warning: #f59e0b;
-            --info: #3b82f6; 
-            
-            /* DARK MODE (Default) */
+            --info: #3b82f6;
+
             --bg-main: #050505;
             --text-main: #ffffff;
             --text-muted: #888888;
-            --card-bg: rgba(30, 30, 30, 0.4);
+            --card-bg: rgba(30, 30, 30, 0.45);
             --card-border: rgba(255, 255, 255, 0.08);
             --sidebar-bg: rgba(10, 10, 10, 0.95);
-            --shadow: 0 15px 40px rgba(0,0,0,0.5);
+            --shadow: 0 15px 40px rgba(0,0,0,0.45);
             --hover-bg: rgba(255, 255, 255, 0.06);
             --icon-bg: rgba(255, 255, 255, 0.05);
             --glow-opacity: 0.15;
             --input-bg: rgba(0,0,0,0.3);
+            --panel-bg: #0a0a0a;
         }
 
-        /* --- LIGHT MODE OVERRIDES --- */
         body.light-mode {
             --bg-main: #f4f5f7;
             --text-main: #1a1a1a;
             --text-muted: #666666;
-            --card-bg: rgba(255, 255, 255, 0.7);
+            --card-bg: rgba(255, 255, 255, 0.78);
             --card-border: rgba(0, 0, 0, 0.05);
-            --sidebar-bg: rgba(255, 255, 255, 0.9);
+            --sidebar-bg: rgba(255, 255, 255, 0.92);
             --shadow: 0 10px 30px rgba(0,0,0,0.05);
             --hover-bg: rgba(255, 255, 255, 1);
             --icon-bg: rgba(0, 0, 0, 0.03);
-            --glow-opacity: 0.3; 
+            --glow-opacity: 0.3;
             --input-bg: #ffffff;
+            --panel-bg: #ffffff;
+        }
+         html.preload-light body {
+    --bg-main: #f4f5f7;
+    --text-main: #1a1a1a;
+    --text-muted: #666666;
+    --card-bg: rgba(255, 255, 255, 0.7);
+    --card-border: rgba(0, 0, 0, 0.05);
+    --sidebar-bg: rgba(255, 255, 255, 0.9);
+    --shadow: 0 10px 30px rgba(0,0,0,0.05);
+    --hover-bg: rgba(255, 255, 255, 1);
+    --icon-bg: rgba(0, 0, 0, 0.03);
+    --glow-opacity: 0.3;
+    --input-bg: rgba(0, 0, 0, 0.03);
+}
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            scroll-behavior: smooth;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; scroll-behavior: smooth; }
-        
-        body { 
-            background-color: var(--bg-main); color: var(--text-main); 
-            display: flex; min-height: 100vh; transition: 0.4s ease;
-            position: relative; overflow-x: hidden;
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+            transition: 0.4s ease;
+            position: relative;
+            overflow-x: hidden;
         }
 
-        /* Glowing Background Orbs */
-        body::before, body::after { content: ''; position: fixed; border-radius: 50%; z-index: -1; pointer-events: none; transition: 0.5s ease; }
-        body::before { top: -10%; left: -5%; width: 500px; height: 500px; background: var(--mango); filter: blur(120px); opacity: var(--glow-opacity); }
-        body::after { bottom: -10%; right: -5%; width: 400px; height: 400px; background: var(--strawberry); filter: blur(150px); opacity: calc(var(--glow-opacity) - 0.05); }
+        body::before,
+        body::after {
+            content: '';
+            position: fixed;
+            border-radius: 50%;
+            z-index: -1;
+            pointer-events: none;
+            transition: 0.5s ease;
+        }
 
-        /* --- SIDEBAR (Styles applied to your exact HTML structure) --- */
+        body::before {
+            top: -10%;
+            left: -5%;
+            width: 500px;
+            height: 500px;
+            background: var(--mango);
+            filter: blur(120px);
+            opacity: var(--glow-opacity);
+        }
+
+        body::after {
+            bottom: -10%;
+            right: -5%;
+            width: 400px;
+            height: 400px;
+            background: var(--strawberry);
+            filter: blur(150px);
+            opacity: calc(var(--glow-opacity) - 0.05);
+        }
+
         aside {
-            width: 260px; background: var(--sidebar-bg); height: 100vh; position: fixed;
-            border-right: 1px solid var(--card-border); padding: 2rem 1.2rem; display: flex;
-            flex-direction: column; z-index: 1000; backdrop-filter: blur(20px); transition: all 0.4s ease;
+            width: 260px;
+            background: var(--sidebar-bg);
+            height: 100vh;
+            position: fixed;
+            border-right: 1px solid var(--card-border);
+            padding: 2rem 1.2rem;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            backdrop-filter: blur(20px);
+            transition: all 0.4s ease;
         }
-        .sidebar-logo { padding: 10px 5px; margin-bottom: 2rem; text-align: center; }
-        .sidebar-logo img { max-width: 100%; height: auto; max-height: 50px; display: block; margin: 0 auto; filter: drop-shadow(0 0 5px var(--mango)); }
-        
-        nav { flex: 1; display: flex; flex-direction: column; }
-        nav ul { list-style: none; display: flex; flex-direction: column; height: 100%; }
+
+        .sidebar-logo {
+            padding: 10px 5px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .sidebar-logo img {
+            max-width: 100%;
+            height: auto;
+            max-height: 50px;
+            display: block;
+            margin: 0 auto;
+            filter: drop-shadow(0 0 5px var(--mango));
+        }
+
+        nav {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
         nav a {
-            text-decoration: none; color: var(--text-muted); padding: 1rem 1.2rem;
-            display: flex; align-items: center; gap: 15px; font-weight: 700; font-size: 13px;
-            border-radius: 14px; margin-bottom: 0.5rem; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px;
+            text-decoration: none;
+            color: var(--text-muted);
+            padding: 1rem 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-weight: 700;
+            font-size: 13px;
+            border-radius: 14px;
+            margin-bottom: 0.5rem;
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        nav a:hover { color: var(--text-main); background: var(--icon-bg); transform: translateX(5px); }
-        nav li.active a { background: var(--mango); color: #111; box-shadow: 0 8px 20px rgba(245, 158, 11, 0.2); transform: translateX(0); }
-        nav a i { font-size: 16px; width: 20px; text-align: center; }
 
-        /* --- MAIN CONTENT --- */
-        main { margin-left: 260px; flex: 1; padding: 2rem; transition: all 0.4s ease; width: calc(100% - 260px); }
-        
-        header { margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
-        .page-title { font-size: clamp(1.8rem, 4vw, 2.2rem); font-weight: 900; letter-spacing: -1px; color: var(--text-main); }
-        
-        .header-actions { display: flex; align-items: center; gap: 20px; }
-        .theme-btn { background: var(--icon-bg); border: 1px solid var(--card-border); color: var(--text-main); width: 45px; height: 45px; border-radius: 50%; cursor: pointer; transition: 0.3s; display: grid; place-items: center; font-size: 16px;}
-        .theme-btn:hover { background: var(--mango); color: #111; transform: rotate(15deg); }
+        nav a:hover {
+            color: var(--text-main);
+            background: var(--icon-bg);
+            transform: translateX(5px);
+        }
 
-        /* --- FILTER TABS --- */
-        .filter-tabs { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 10px; }
+        nav li.active a {
+            background: var(--mango);
+            color: #111;
+            box-shadow: 0 8px 20px rgba(245, 158, 11, 0.2);
+            transform: translateX(0);
+        }
+
+        nav a i {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .logout-link {
+            color: var(--danger) !important;
+        }
+
+        main {
+            margin-left: 260px;
+            flex: 1;
+            padding: 2rem;
+            transition: all 0.4s ease;
+            width: calc(100% - 260px);
+        }
+
+        header {
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .page-title {
+            font-size: clamp(1.9rem, 4vw, 2.4rem);
+            font-weight: 900;
+            letter-spacing: -1px;
+            color: var(--text-main);
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .summary-chip {
+            text-align: right;
+            background: var(--card-bg);
+            padding: 12px 18px;
+            border-radius: 16px;
+            border: 1px solid var(--card-border);
+            min-width: 130px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(20px);
+        }
+
+        .summary-chip strong {
+            font-weight: 900;
+            font-size: 1.25rem;
+            display: block;
+            color: var(--text-main);
+        }
+
+        .summary-chip span {
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .theme-btn {
+            background: var(--icon-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.3s;
+            display: grid;
+            place-items: center;
+            font-size: 16px;
+        }
+
+        .theme-btn:hover {
+            background: var(--mango);
+            color: #111;
+            transform: rotate(15deg);
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+
+        .filter-tabs::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .filter-tabs::-webkit-scrollbar-thumb {
+            background: var(--card-border);
+            border-radius: 999px;
+        }
+
         .filter-btn {
-            background: var(--icon-bg); border: 1px solid var(--card-border); color: var(--text-muted);
-            padding: 10px 20px; border-radius: 50px; font-size: 12px; font-weight: 800;
-            text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: 0.3s; white-space: nowrap;
+            background: var(--icon-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            padding: 10px 18px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: 0.3s;
+            white-space: nowrap;
         }
-        .filter-btn:hover { color: var(--text-main); border-color: var(--mango); }
-        .filter-btn.active { background: var(--mango); color: #111; border-color: var(--mango); }
 
-        /* --- QUEUE LAYOUT --- */
-        .queue-container { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; height: calc(100vh - 180px); }
-        .queue-column { background: var(--card-bg); backdrop-filter: blur(20px); border: 1px solid var(--card-border); border-radius: 20px; padding: 1.5rem; display: flex; flex-direction: column; overflow-y: hidden; box-shadow: var(--shadow);}
-        .col-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 2px dashed var(--card-border); }
-        .col-title { font-size: 1.2rem; font-weight: 900; display: flex; align-items: center; gap: 10px; color: var(--text-main);}
-        .badge { padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; color: white; text-transform: uppercase; letter-spacing: 1px;}
-        
-        .kiosk-col .badge { background: var(--info); }
-        .kiosk-col .col-title i { color: var(--info); }
-        .walkin-col .badge { background: var(--mango-dark); color: #111;}
-        .walkin-col .col-title i { color: var(--mango); }
+        .filter-btn:hover {
+            color: var(--text-main);
+            border-color: var(--mango);
+        }
 
-        .card-scroller { flex: 1; overflow-y: auto; padding-right: 5px; }
-        .card-scroller::-webkit-scrollbar { width: 6px; }
-        .card-scroller::-webkit-scrollbar-thumb { background: var(--card-border); border-radius: 10px; }
+        .filter-btn.active {
+            background: var(--mango);
+            color: #111;
+            border-color: var(--mango);
+        }
 
-        /* TICKET CARDS */
+        .queue-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            height: calc(100vh - 210px);
+            min-height: calc(100vh - 210px);
+        }
+
+        .queue-column {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            border-radius: 22px;
+            padding: 1.35rem;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            min-height: 0;
+            height: 100%;
+        }
+
+        .col-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.15rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px dashed var(--card-border);
+            gap: 10px;
+        }
+
+        .col-title {
+            font-size: 1.1rem;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-main);
+        }
+
+        .badge {
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 900;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        .online-col .badge {
+            background: var(--info);
+        }
+
+        .online-col .col-title i {
+            color: var(--info);
+        }
+
+        .instore-col .badge {
+            background: var(--mango-dark);
+            color: #111;
+        }
+
+        .instore-col .col-title i {
+            color: var(--mango);
+        }
+
+        .card-scroller {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 4px;
+            min-height: 0;
+        }
+
+        .card-scroller::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .card-scroller::-webkit-scrollbar-thumb {
+            background: var(--card-border);
+            border-radius: 10px;
+        }
+
         .ticket-card {
-            background: var(--bg-main); border-radius: 16px; padding: 1.2rem; margin-bottom: 1rem;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-left: 6px solid transparent; border-top: 1px solid var(--card-border); border-right: 1px solid var(--card-border); border-bottom: 1px solid var(--card-border);
-            cursor: pointer; transition: all 0.3s ease; position: relative;
+            background: var(--bg-main);
+            border-radius: 18px;
+            padding: 1rem;
+            margin-bottom: 0.95rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-left: 5px solid transparent;
+            border-top: 1px solid var(--card-border);
+            border-right: 1px solid var(--card-border);
+            border-bottom: 1px solid var(--card-border);
+            transition: all 0.25s ease;
         }
-        .ticket-card:hover { transform: translateY(-3px); border-color: var(--mango); }
-        .kiosk-col .ticket-card { border-left-color: var(--info); }
-        .walkin-col .ticket-card { border-left-color: var(--mango); }
 
-        .ticket-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .ticket-id { font-weight: 900; font-size: 1.1rem; color: var(--text-main); }
-        .ticket-time { font-size: 11px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
-        .ticket-items { font-size: 13px; color: var(--text-main); line-height: 1.5; margin-bottom: 12px; font-weight: 600;}
-        .ticket-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--card-border); padding-top: 10px; }
-        
-        .status-pill { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; padding: 4px 10px; border-radius: 8px; }
-        .status-pending { background: rgba(59, 130, 246, 0.1); color: var(--info); border: 1px solid var(--info); }
-        .status-unpaid { background: rgba(245, 158, 11, 0.1); color: var(--warning); border: 1px solid var(--warning); }
-        .status-completed { background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid var(--success); }
-        .status-cancelled { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid var(--danger); }
+        .ticket-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--mango);
+        }
 
-        /* --- POPUP MODAL --- */
+        .online-col .ticket-card {
+            border-left-color: var(--info);
+        }
+
+        .instore-col .ticket-card {
+            border-left-color: var(--mango);
+        }
+
+        .ticket-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            gap: 12px;
+        }
+
+        .ticket-id {
+            font-weight: 900;
+            font-size: 1.02rem;
+            color: var(--text-main);
+            line-height: 1.2;
+        }
+
+        .ticket-time {
+            font-size: 10px;
+            color: var(--text-muted);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        .ticket-items {
+            font-size: 13px;
+            color: var(--text-main);
+            line-height: 1.55;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .ticket-meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px 14px;
+            margin-bottom: 12px;
+        }
+
+        .ticket-meta {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 700;
+            line-height: 1.45;
+        }
+
+        .ticket-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            border-top: 1px solid var(--card-border);
+            padding-top: 12px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        .status-pill {
+            font-size: 10px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 6px 10px;
+            border-radius: 999px;
+        }
+
+        .status-pending {
+            background: rgba(59, 130, 246, 0.12);
+            color: var(--info);
+            border: 1px solid rgba(59, 130, 246, 0.5);
+        }
+
+        .status-unpaid {
+            background: rgba(245, 158, 11, 0.12);
+            color: var(--warning);
+            border: 1px solid rgba(245, 158, 11, 0.5);
+        }
+
+        .status-paid {
+            background: rgba(16, 185, 129, 0.12);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.5);
+        }
+
+        .status-completed {
+            background: rgba(16, 185, 129, 0.12);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.5);
+        }
+
+        .status-cancelled {
+            background: rgba(239, 68, 68, 0.12);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.5);
+        }
+
+        .ticket-actions {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+            width: 100%;
+        }
+
+        .ticket-btn {
+            border: none;
+            padding: 11px 12px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            cursor: pointer;
+            transition: 0.2s;
+            min-height: 42px;
+        }
+
+        .ticket-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-view {
+            background: var(--icon-bg);
+            color: var(--text-main);
+            border: 1px solid var(--card-border);
+        }
+
+        .btn-resume {
+            background: var(--warning);
+            color: #111;
+        }
+
+        .btn-pay {
+            background: var(--success);
+            color: #fff;
+        }
+
+        .btn-complete-card {
+            background: var(--text-main);
+            color: #111;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--text-muted);
+            font-weight: 700;
+            padding: 2rem 1rem;
+            border: 1px dashed var(--card-border);
+            border-radius: 16px;
+            background: var(--icon-bg);
+            margin-top: 4px;
+        }
+
         .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
-            z-index: 2000; display: none; justify-content: center; align-items: center;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            display: none;
+            justify-content: center;
+            align-items: flex-start;
+            overflow-y: auto;
+            padding: 20px;
         }
 
         .modal-content {
-            background: var(--bg-main); width: 90%; max-width: 480px; border-radius: 24px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5); overflow: hidden; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            border: 1px solid var(--card-border); display: flex; flex-direction: column; max-height: 90vh;
+            background: var(--bg-main);
+            width: 100%;
+            max-width: 640px;
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            overflow: hidden;
+            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid var(--card-border);
+            display: flex;
+            flex-direction: column;
+            max-height: 92vh;
+            margin: auto;
         }
-        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        .modal-header { background: #111; color: white; padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
-        .close-icon { cursor: pointer; font-size: 1.5rem; transition: 0.3s; }
-        .close-icon:hover { color: var(--danger); transform: rotate(90deg);}
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
 
-        /* Receipt Body (Paper Look even in dark mode for realism) */
-        .receipt-body { padding: 2rem; background: #fffdf5; font-family: 'Courier New', Courier, monospace; color: #111; overflow-y: auto; flex: 1;}
-        .receipt-item-row { display: flex; justify-content: space-between; font-weight: 800; font-size: 14px; margin-top: 10px; }
-        .receipt-addon-row { display: flex; justify-content: space-between; font-size: 12px; color: #555; padding-left: 20px; margin-top: 2px; position: relative; font-weight: 600;}
-        .receipt-addon-row::before { content: "+"; position: absolute; left: 8px; font-size: 10px; top: 2px; }
-        
-        .receipt-note { background: rgba(239, 68, 68, 0.1); border: 1px dashed var(--danger); padding: 12px; border-radius: 8px; font-size: 12px; margin-top: 20px; color: #111; font-family: 'Helvetica Neue', sans-serif; display: none; font-weight: 700;}
-        .receipt-divider { border-bottom: 2px dashed #ccc; margin: 15px 0; }
-        .receipt-total { font-weight: 900; font-size: 18px; display: flex; justify-content: space-between; margin-top: 10px; }
+        .modal-header {
+            background: #111;
+            color: white;
+            padding: 1.35rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
 
-        /* Action Panel */
-        .modal-actions { padding: 1.5rem; background: var(--card-bg); border-top: 1px solid var(--card-border); display: flex; flex-direction: column; gap: 15px; }
-        
-        .status-update-row { display: flex; align-items: center; gap: 10px; }
-        .status-update-row label { font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; white-space: nowrap;}
-        .status-dropdown { flex: 1; padding: 10px; background: var(--input-bg); color: var(--text-main); border: 1px solid var(--card-border); border-radius: 8px; outline: none; font-weight: 700; font-size: 13px;}
+        .close-icon {
+            cursor: pointer;
+            font-size: 1.4rem;
+            transition: 0.3s;
+        }
 
-        .action-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .btn { border: none; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px; }
-        .btn-complete { background: var(--success); color: white; grid-column: span 2; font-size: 14px; padding: 15px;}
-        .btn-complete:hover { background: #059669; transform: translateY(-2px);}
-        .btn-print { background: var(--icon-bg); color: var(--text-main); border: 1px solid var(--card-border);}
-        .btn-print:hover { background: var(--hover-bg); }
-        .btn-cancel-ord { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid var(--danger);}
-        .btn-cancel-ord:hover { background: var(--danger); color: #fff; }
+        .close-icon:hover {
+            color: var(--danger);
+            transform: rotate(90deg);
+        }
 
-        /* Cancel Reason Area */
-        .cancel-area { display: none; flex-direction: column; gap: 10px; margin-top: 10px; padding-top: 15px; border-top: 1px dashed var(--card-border); animation: slideUp 0.3s ease;}
-        .cancel-area input { padding: 12px; background: var(--input-bg); border: 1px solid var(--danger); color: var(--text-main); border-radius: 8px; outline: none; font-weight: 600;}
-        .btn-confirm-cancel { background: var(--danger); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 800; cursor: pointer;}
+        .receipt-body {
+            padding: 1.5rem;
+            background: #fffdf5;
+            color: #111;
+            overflow-y: auto;
+            flex: 1;
+        }
 
-        .hidden { display: none !important; }
+        .manifest-title {
+            text-transform: uppercase;
+            font-weight: 900;
+            font-size: 18px;
+            color: #111;
+        }
 
-        /* RESPONSIVE */
-        @media screen and (max-width: 1100px) { aside { width: 90px; } aside span, .sidebar-logo img { display: none; } nav a { justify-content: center; } main { margin-left: 90px; width: calc(100% - 90px); padding: 1.5rem; } }
-        @media screen and (max-width: 900px) { .queue-container { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; height: auto;} .queue-column { height: 500px;} }
-        @media screen and (max-width: 768px) { 
-            aside { width: 100%; height: 70px; bottom: 0; top: auto; flex-direction: row; padding: 0; } 
-            nav ul { display: flex; flex-direction: row; width: 100%; justify-content: space-around; } 
-            nav a { flex-direction: column; font-size: 0.6rem; padding: 8px; gap: 4px; } 
-            main { margin-left: 0; width: 100%; margin-bottom: 70px; padding: 1rem; } 
+        .manifest-subtitle {
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #666;
+        }
+
+        .manifest-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .manifest-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #ddd;
+            align-items: flex-start;
+        }
+
+        .manifest-row span:first-child {
+            font-size: 10px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #666;
+            flex: 0 0 110px;
+        }
+
+        .manifest-row span:last-child {
+            font-size: 13px;
+            font-weight: 800;
+            color: #111;
+            text-align: right;
+            flex: 1;
+            word-break: break-word;
+        }
+
+        .receipt-divider {
+            border-bottom: 2px dashed #ccc;
+            margin: 16px 0;
+        }
+
+        .reward-box {
+            background: rgba(255, 194, 68, 0.12);
+            border: 1px dashed #d4a017;
+            border-radius: 18px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+
+        .reward-title {
+            font-size: 11px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #b88700;
+            margin-bottom: 12px;
+        }
+
+        .reward-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+
+        .reward-row span:first-child {
+            color: #333;
+            font-weight: 700;
+        }
+
+        .reward-row span:last-child {
+            color: #111;
+            font-weight: 800;
+            text-align: right;
+        }
+
+        .text-green {
+            color: #059669 !important;
+        }
+
+        .text-red {
+            color: #dc2626 !important;
+        }
+
+        .text-yellow {
+            color: #b45309 !important;
+        }
+
+        .modal-actions {
+            padding: 1.25rem 1.5rem 1.5rem;
+            background: var(--card-bg);
+            border-top: 1px solid var(--card-border);
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .status-update-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .status-update-row label {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        .status-dropdown {
+            flex: 1;
+            min-width: 180px;
+            padding: 11px 12px;
+            background: var(--input-bg);
+            color: var(--text-main);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            outline: none;
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .btn {
+            border: none;
+            padding: 12px 14px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            min-height: 46px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-complete {
+            background: var(--success);
+            color: white;
+            grid-column: span 2;
+            font-size: 13px;
+        }
+
+        .btn-print {
+            background: var(--icon-bg);
+            color: var(--text-main);
+            border: 1px solid var(--card-border);
+        }
+
+        .btn-cancel-ord {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .btn-resume-modal {
+            background: var(--warning);
+            color: #111;
+        }
+
+        .btn-pay-modal {
+            background: var(--success);
+            color: #fff;
+        }
+
+        .cancel-area {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 4px;
+            padding-top: 14px;
+            border-top: 1px dashed var(--card-border);
+            animation: slideUp 0.25s ease;
+        }
+
+        .cancel-area input {
+            padding: 12px;
+            background: var(--input-bg);
+            border: 1px solid var(--danger);
+            color: var(--text-main);
+            border-radius: 10px;
+            outline: none;
+            font-weight: 600;
+        }
+
+        .btn-confirm-cancel {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        @media screen and (max-width: 1100px) {
+            aside {
+                width: 90px;
+            }
+
+            aside span,
+            .sidebar-logo img {
+                display: none;
+            }
+
+            nav a {
+                justify-content: center;
+            }
+
+            main {
+                margin-left: 90px;
+                width: calc(100% - 90px);
+                padding: 1.5rem;
+            }
+        }
+
+        @media screen and (max-width: 980px) {
+            .queue-container {
+                grid-template-columns: 1fr;
+                height: auto;
+                min-height: auto;
+            }
+
+            .queue-column {
+                height: 500px;
+                min-height: 500px;
+            }
+        }
+
+        @media screen and (max-width: 768px) {
+            aside {
+                width: 100%;
+                height: 70px;
+                bottom: 0;
+                top: auto;
+                flex-direction: row;
+                padding: 0;
+            }
+
+            nav ul {
+                display: flex;
+                flex-direction: row;
+                width: 100%;
+                justify-content: space-around;
+            }
+
+            nav a {
+                flex-direction: column;
+                font-size: 0.6rem;
+                padding: 8px;
+                gap: 4px;
+                margin-bottom: 0;
+            }
+
+            main {
+                margin-left: 0;
+                width: 100%;
+                margin-bottom: 70px;
+                padding: 1rem;
+            }
+
+            header {
+                align-items: stretch;
+            }
+
+            .header-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .summary-chip {
+                min-width: 0;
+                flex: 1;
+                text-align: left;
+            }
+
+            .ticket-meta-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .ticket-actions,
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .btn-complete {
+                grid-column: span 1;
+            }
+
+            .modal-content {
+                max-width: 100%;
+                max-height: 95vh;
+            }
+
+            .manifest-row {
+                flex-direction: column;
+                gap: 6px;
+            }
+
+            .manifest-row span:first-child,
+            .manifest-row span:last-child {
+                flex: unset;
+                text-align: left;
+            }
+        }
+
+        @media print {
+            body * {
+                visibility: hidden !important;
+            }
+
+            #modalPrintArea,
+            #modalPrintArea * {
+                visibility: visible !important;
+            }
+
+            #modalPrintArea {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                background: white !important;
+                color: black !important;
+                padding: 20px !important;
+            }
+
+            .modal-header,
+            .modal-actions {
+                display: none !important;
+            }
+
+            body::before,
+            body::after {
+                display: none !important;
+            }
         }
     </style>
+    <script>
+(function () {
+    const savedTheme = localStorage.getItem("staff-theme");
+    if (savedTheme === "light") {
+        document.documentElement.classList.add("preload-light");
+    } else {
+        document.documentElement.classList.remove("preload-light");
+    }
+})();
+</script>
 </head>
 <body>
 
@@ -208,14 +1029,11 @@
                 <li class="active"><a href="orderstaffs.html"><i class="fa-solid fa-bell-concierge"></i> <span>Orders</span></a></li>
                 <li><a href="menustaff.html"><i class="fa-solid fa-receipt"></i> <span>Menu</span></a></li>
                 <li><a href="inventory.html"><i class="fa-solid fa-boxes-stacked"></i> <span>Inventory</span></a></li>
-                
                 <li><a href="dashboardstaff.html"><i class="fa-solid fa-user-clock"></i> <span>Attendance</span></a></li>
-                
-                <li><a href="topupstaff.html"><i class="fa-solid fa-credit-card"></i> <span>RPAY</span></a></li>
+                <li><a href="walletstaff.html"><i class="fa-solid fa-credit-card"></i> <span>RPAY</span></a></li>
                 <li><a href="rewardsstaff.html"><i class="fa-solid fa-gift"></i> <span>Rewards</span></a></li>
                 <li><a href="dashaccsettstaff.html"><i class="fa-solid fa-gear"></i> <span>Settings</span></a></li>
-                
-                <li style="margin-top: auto;"><a href="index.html" style="color: var(--danger);"><i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></a></li>
+                <li style="margin-top: auto;"><a href="loginstaff.html" class="logout-link"><i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></a></li>
             </ul>
         </nav>
     </aside>
@@ -224,110 +1042,47 @@
         <header>
             <div>
                 <h1 class="page-title">Orders & Queue</h1>
-                <p style="color: var(--text-muted); font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Manage real-time incoming orders.</p>
+                <p class="page-subtitle">Manage real-time incoming orders</p>
             </div>
+
             <div class="header-actions">
-                <div style="text-align: right; background: var(--card-bg); padding: 10px 20px; border-radius: 15px; border: 1px solid var(--card-border);">
-                    <span style="font-weight: 900; font-size: 1.2rem; display: block; color: var(--text-main);" id="pendingCount">4</span>
-                    <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 800; letter-spacing: 1px;">Pending Items</span>
+                <div class="summary-chip">
+                    <strong id="pendingCount">0</strong>
+                    <span>Active Orders</span>
                 </div>
-                <button class="theme-btn" id="themeToggle" title="Toggle Theme"><i class="fa-solid fa-sun"></i></button>
+                <button class="theme-btn" id="themeToggle" title="Toggle Theme">
+                    <i class="fa-solid fa-sun"></i>
+                </button>
             </div>
         </header>
 
         <div class="filter-tabs">
-            <button class="filter-btn active" onclick="filterOrders('all', this)">All Orders</button>
-            <button class="filter-btn" onclick="filterOrders('pending', this)">Pending</button>
-            <button class="filter-btn" onclick="filterOrders('unpaid', this)">Unpaid</button>
-            <button class="filter-btn" onclick="filterOrders('completed', this)">Completed</button>
-            <button class="filter-btn" onclick="filterOrders('cancelled', this)">Cancelled</button>
+            <button class="filter-btn active" data-filter="all">All Orders</button>
+            <button class="filter-btn" data-filter="pending">Pending</button>
+            <button class="filter-btn" data-filter="unpaid">Unpaid</button>
+            <button class="filter-btn" data-filter="paid">Paid</button>
+            <button class="filter-btn" data-filter="completed">Completed</button>
+            <button class="filter-btn" data-filter="cancelled">Cancelled</button>
         </div>
 
         <div class="queue-container">
-            
-            <div class="queue-column kiosk-col">
+            <div class="queue-column online-col">
                 <div class="col-header">
-                    <div class="col-title"><i class="fa-solid fa-mobile-screen-button"></i> Kiosk App</div>
+                    <div class="col-title"><i class="fa-solid fa-globe"></i> Online Orders</div>
                     <span class="badge">Online</span>
                 </div>
-                <div class="card-scroller" id="kioskQueue">
-                    
-                    <div class="ticket-card order-item" data-status="pending" data-id="K-104" onclick='openOrder("K-104", "Kiosk App", [
-                        {qty:"2x", name:"Mango Graham (L)", price:"220.00", addons:["Extra Pearl", "Less Ice"]},
-                        {qty:"1x", name:"Mineral Water", price:"20.00", addons:[]}
-                    ], "₱240.00", "Please add extra tissue and separate the pearls for the second cup.", "pending")'>
-                        <div class="ticket-header">
-                            <span class="ticket-id">#K-104</span>
-                            <span class="ticket-time">2m ago</span>
-                        </div>
-                        <div class="ticket-items">
-                            <strong>2x</strong> Mango Graham (L)<br>
-                            <strong>1x</strong> Mineral Water
-                        </div>
-                        <div class="ticket-footer">
-                            <span class="status-pill status-pending"><i class="fa-solid fa-circle-notch fa-spin"></i> Pending</span>
-                            <i class="fa-solid fa-chevron-right" style="color:var(--text-muted)"></i>
-                        </div>
-                    </div>
-
-                    <div class="ticket-card order-item" data-status="completed" data-id="K-102" onclick='openOrder("K-102", "Kiosk App", [
-                        {qty:"1x", name:"Avocado Dream (M)", price:"120.00", addons:["No Milk"]}
-                    ], "₱120.00", "", "completed")'>
-                        <div class="ticket-header">
-                            <span class="ticket-id">#K-102</span>
-                            <span class="ticket-time">15m ago</span>
-                        </div>
-                        <div class="ticket-items">
-                            <strong>1x</strong> Avocado Dream (M)
-                        </div>
-                        <div class="ticket-footer">
-                            <span class="status-pill status-completed"><i class="fa-solid fa-check-double"></i> Completed</span>
-                            <i class="fa-solid fa-chevron-right" style="color:var(--text-muted)"></i>
-                        </div>
-                    </div>
-
+                <div class="card-scroller" id="onlineQueue">
+                    <div class="empty-state">Loading online orders...</div>
                 </div>
             </div>
 
-            <div class="queue-column walkin-col">
+            <div class="queue-column instore-col">
                 <div class="col-header">
-                    <div class="col-title"><i class="fa-solid fa-cash-register"></i> Walk-In / POS</div>
+                    <div class="col-title"><i class="fa-solid fa-store"></i> Walk-In / POS</div>
                     <span class="badge">In-Store</span>
                 </div>
-                <div class="card-scroller" id="walkinQueue">
-                    
-                    <div class="ticket-card order-item" data-status="unpaid" data-id="W-882" onclick='openOrder("W-882", "POS Counter 1", [
-                        {qty:"4x", name:"Mango Loco (Family)", price:"680.00", addons:["Separate Sauce", "Extra Spoon"]}
-                    ], "₱680.00", "ALLERGY ALERT: No nuts on one serving.", "unpaid")'>
-                        <div class="ticket-header">
-                            <span class="ticket-id">#W-882</span>
-                            <span class="ticket-time">Just Now</span>
-                        </div>
-                        <div class="ticket-items">
-                            <strong>4x</strong> Mango Loco (Family)
-                        </div>
-                        <div class="ticket-footer">
-                            <span class="status-pill status-unpaid"><i class="fa-solid fa-wallet"></i> Unpaid</span>
-                            <i class="fa-solid fa-chevron-right" style="color:var(--text-muted)"></i>
-                        </div>
-                    </div>
-
-                    <div class="ticket-card order-item" data-status="cancelled" data-id="W-880" onclick='openOrder("W-880", "POS Counter 1", [
-                        {qty:"1x", name:"Strawberry Slush", price:"110.00", addons:[]}
-                    ], "₱110.00", "Customer changed mind.", "cancelled")'>
-                        <div class="ticket-header">
-                            <span class="ticket-id">#W-880</span>
-                            <span class="ticket-time">30m ago</span>
-                        </div>
-                        <div class="ticket-items">
-                            <strong>1x</strong> Strawberry Slush
-                        </div>
-                        <div class="ticket-footer">
-                            <span class="status-pill status-cancelled"><i class="fa-solid fa-ban"></i> Cancelled</span>
-                            <i class="fa-solid fa-chevron-right" style="color:var(--text-muted)"></i>
-                        </div>
-                    </div>
-
+                <div class="card-scroller" id="instoreQueue">
+                    <div class="empty-state">Loading in-store orders...</div>
                 </div>
             </div>
         </div>
@@ -338,205 +1093,53 @@
             <div class="modal-header">
                 <div>
                     <h3 id="modalOrderId" style="font-size: 22px; font-weight: 900; letter-spacing: 1px;">#000</h3>
-                    <small id="modalSource" style="opacity: 0.8; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;">Source</small>
+                    <small id="modalSource" style="opacity: 0.8; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;">Source</small>
                 </div>
-                <i class="fa-solid fa-xmark close-icon" onclick="closeModal()"></i>
+                <i class="fa-solid fa-xmark close-icon" id="closeModalBtn"></i>
             </div>
-            
-            <div class="receipt-body">
+
+            <div class="receipt-body" id="modalPrintArea">
                 <div style="text-align: center; margin-bottom: 20px;">
-                    <h4 style="text-transform: uppercase; font-weight: 900; font-size: 18px;">Teo D' Mango</h4>
-                    <p style="font-size: 10px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;">Order Ticket</p>
+                    <h4 class="manifest-title">Teo D' Mango</h4>
+                    <p class="manifest-subtitle">Order Manifest</p>
                 </div>
 
                 <div class="receipt-divider"></div>
-                <div id="receiptItems"></div>
 
-                <div id="receiptNote" class="receipt-note">
-                    <strong><i class="fa-solid fa-message"></i> Special Request:</strong>
-                    <span id="receiptNoteText"></span>
-                </div>
-
-                <div class="receipt-divider"></div>
-                <div class="receipt-row receipt-item-row" style="font-size: 0.9rem;">
-                    <span>Subtotal</span><span>--</span>
-                </div>
-                <div class="receipt-total">
-                    <span>TOTAL</span>
-                    <span id="modalTotal">₱0.00</span>
-                </div>
+                <div id="modalContent" class="manifest-grid"></div>
+                <div id="rewardSection"></div>
             </div>
 
             <div class="modal-actions">
-                
                 <div class="status-update-row">
-                    <label>Set Status:</label>
+                    <label for="statusSelect">Set Status:</label>
                     <select id="statusSelect" class="status-dropdown">
-                        <option value="pending">Pending (Preparing)</option>
-                        <option value="unpaid">Unpaid (Awaiting Cash)</option>
+                        <option value="pending">Pending</option>
+                        <option value="unpaid">Unpaid</option>
+                        <option value="paid">Paid</option>
                         <option value="completed">Completed</option>
-                        <option value="cancelled">Cancelled</option>
                     </select>
                 </div>
 
                 <div class="action-buttons">
-                    <button class="btn btn-print"><i class="fa-solid fa-print"></i> Print</button>
-                    <button class="btn btn-cancel-ord" onclick="showCancelReason()"><i class="fa-solid fa-ban"></i> Cancel</button>
-                    <button class="btn btn-complete" onclick="saveOrderChanges()"><i class="fa-solid fa-check-double"></i> Save & Complete</button>
+                    <button class="btn btn-print" id="printBtn"><i class="fa-solid fa-print"></i> Print</button>
+                    <button class="btn btn-cancel-ord" id="showCancelBtn"><i class="fa-solid fa-ban"></i> Cancel</button>
+                    <button class="btn btn-resume-modal" id="resumePaymentBtn" style="display:none;"><i class="fa-solid fa-wallet"></i> Resume Payment</button>
+                    <button class="btn btn-pay-modal" id="markPaidBtn" style="display:none;"><i class="fa-solid fa-money-bill-wave"></i> Mark Paid</button>
+                    <button class="btn btn-complete" id="saveChangesBtn"><i class="fa-solid fa-check-double"></i> Save Changes</button>
                 </div>
 
                 <div id="cancelArea" class="cancel-area">
                     <input type="text" id="cancelReasonInput" placeholder="Reason for cancellation (required)...">
-                    <button class="btn-confirm-cancel" onclick="confirmCancel()"><i class="fa-solid fa-trash-can"></i> Confirm Cancellation</button>
+                    <button class="btn-confirm-cancel" id="confirmCancelBtn"><i class="fa-solid fa-trash-can"></i> Confirm Cancellation</button>
                 </div>
-
             </div>
         </div>
     </div>
 
-    <script>
-        // --- THEME TOGGLE LOGIC ---
-        const body = document.body;
-        const themeToggle = document.getElementById('themeToggle');
-        
-        themeToggle.addEventListener('click', () => {
-            body.classList.toggle('light-mode');
-            const isLight = body.classList.contains('light-mode');
-            themeToggle.innerHTML = isLight ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
-        });
-
-        // --- FILTER LOGIC ---
-        function filterOrders(status, btnElement) {
-            // Update active tab
-            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-            btnElement.classList.add('active');
-
-            // Filter cards
-            const orders = document.querySelectorAll('.order-item');
-            let pendingCount = 0;
-
-            orders.forEach(order => {
-                const orderStatus = order.getAttribute('data-status');
-                if(status === 'all' || orderStatus === status) {
-                    order.classList.remove('hidden');
-                } else {
-                    order.classList.add('hidden');
-                }
-
-                // Recalculate pending/unpaid count for header
-                if(orderStatus === 'pending' || orderStatus === 'unpaid') {
-                    pendingCount++;
-                }
-            });
-
-            document.getElementById('pendingCount').innerText = pendingCount;
-        }
-
-        // --- MODAL LOGIC ---
-        const modal = document.getElementById('orderModal');
-        const noteContainer = document.getElementById('receiptNote');
-        const noteText = document.getElementById('receiptNoteText');
-        const cancelArea = document.getElementById('cancelArea');
-        const statusSelect = document.getElementById('statusSelect');
-        let currentOpenOrderId = null;
-
-        function openOrder(id, source, items, total, note, currentStatus) {
-            currentOpenOrderId = id;
-            document.getElementById('modalOrderId').innerText = id;
-            document.getElementById('modalSource').innerText = source + ' • ' + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            document.getElementById('modalTotal').innerText = total;
-
-            // Render Items
-            const itemsContainer = document.getElementById('receiptItems');
-            itemsContainer.innerHTML = ''; 
-            items.forEach(item => {
-                const itemRow = document.createElement('div');
-                itemRow.className = 'receipt-item-row';
-                itemRow.innerHTML = `<span>${item.qty} ${item.name}</span> <span>${item.price}</span>`;
-                itemsContainer.appendChild(itemRow);
-
-                if (item.addons && item.addons.length > 0) {
-                    item.addons.forEach(addon => {
-                        const addonRow = document.createElement('div');
-                        addonRow.className = 'receipt-addon-row';
-                        addonRow.innerHTML = `<span>${addon}</span>`; 
-                        itemsContainer.appendChild(addonRow);
-                    });
-                }
-            });
-
-            // Note Logic
-            if (note && note.trim() !== "") {
-                noteText.innerText = note;
-                noteContainer.style.display = 'block';
-            } else {
-                noteContainer.style.display = 'none';
-            }
-
-            // Reset Action Panel
-            statusSelect.value = currentStatus;
-            cancelArea.style.display = 'none';
-            document.getElementById('cancelReasonInput').value = '';
-
-            modal.style.display = 'flex';
-        }
-
-        function closeModal() {
-            modal.style.display = 'none';
-            currentOpenOrderId = null;
-        }
-
-        window.onclick = function(event) {
-            if (event.target == modal) closeModal();
-        }
-
-        // --- ORDER ACTIONS LOGIC ---
-        function showCancelReason() {
-            cancelArea.style.display = 'flex';
-        }
-
-        function confirmCancel() {
-            const reason = document.getElementById('cancelReasonInput').value;
-            if(!reason) {
-                alert("Please enter a reason for cancellation.");
-                return;
-            }
-            updateCardStatus(currentOpenOrderId, 'cancelled');
-            closeModal();
-            alert(`Order ${currentOpenOrderId} cancelled. Reason: ${reason}`);
-        }
-
-        function saveOrderChanges() {
-            const newStatus = statusSelect.value;
-            updateCardStatus(currentOpenOrderId, newStatus);
-            closeModal();
-        }
-
-        function updateCardStatus(orderId, newStatus) {
-            // Find the card in DOM
-            const cards = document.querySelectorAll('.order-item');
-            cards.forEach(card => {
-                if(card.getAttribute('data-id') === orderId) {
-                    card.setAttribute('data-status', newStatus);
-                    
-                    // Update pill UI
-                    const pill = card.querySelector('.status-pill');
-                    pill.className = `status-pill status-${newStatus}`;
-                    
-                    if(newStatus === 'completed') pill.innerHTML = '<i class="fa-solid fa-check-double"></i> Completed';
-                    else if(newStatus === 'cancelled') pill.innerHTML = '<i class="fa-solid fa-ban"></i> Cancelled';
-                    else if(newStatus === 'unpaid') pill.innerHTML = '<i class="fa-solid fa-wallet"></i> Unpaid';
-                    else pill.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Pending';
-
-                    // Update onclick to pass new status
-                    // Note: In a real DB driven app, this updates via backend. Here we just visually change it.
-                }
-            });
-
-            // Re-trigger current filter to update counts/visibility
-            const activeFilter = document.querySelector('.filter-btn.active');
-            filterOrders(activeFilter.innerText.toLowerCase().replace(' orders', ''), activeFilter);
-        }
-    </script>
+    <script src="js/authGuard.js"></script>
+    <script src="js/logoutstaff.js"></script>
+    <script src="js/themesync.js"></script>
+    <script src="js/orderstaffs.js"></script>
 </body>
 </html>

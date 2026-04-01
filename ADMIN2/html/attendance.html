@@ -350,6 +350,25 @@
             vertical-align: top;
         }
 
+        .table-scroll-container {
+    max-height: 420px;
+    overflow-y: auto;
+}
+
+/* optional scrollbar styling */
+.table-scroll-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.table-scroll-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.table-scroll-container::-webkit-scrollbar-thumb {
+    background: var(--mango-yellow);
+    border-radius: 10px;
+}
+
         .empty-box {
             border-radius: 24px;
             padding: 40px 20px;
@@ -541,6 +560,37 @@
             </div>
         </section>
 
+        <section class="report-grid">
+            <div class="report-card glass">
+                <div class="report-icon"><i class="fas fa-clipboard-list"></i></div>
+                <div>
+                    <h3 class="text-[10px] uppercase font-bold opacity-50">Checklist Staff</h3>
+                    <p id="complianceTotalStaff" class="text-xl font-black">0</p>
+                </div>
+            </div>
+            <div class="report-card glass">
+                <div class="report-icon"><i class="fas fa-check-circle"></i></div>
+                <div>
+                    <h3 class="text-[10px] uppercase font-bold opacity-50">Submitted</h3>
+                    <p id="complianceSubmitted" class="text-xl font-black">0</p>
+                </div>
+            </div>
+            <div class="report-card glass">
+                <div class="report-icon"><i class="fas fa-circle-xmark"></i></div>
+                <div>
+                    <h3 class="text-[10px] uppercase font-bold opacity-50">Missing</h3>
+                    <p id="complianceMissing" class="text-xl font-black">0</p>
+                </div>
+            </div>
+            <div class="report-card glass">
+                <div class="report-icon"><i class="fas fa-chart-pie"></i></div>
+                <div>
+                    <h3 class="text-[10px] uppercase font-bold opacity-50">Compliance Rate</h3>
+                    <p id="complianceRate" class="text-xl font-black">0%</p>
+                </div>
+            </div>
+        </section>
+
         <div class="flex flex-wrap justify-between items-center mb-4 gap-4">
             <div class="search-container">
                 <i class="fas fa-search"></i>
@@ -552,6 +602,7 @@
                 <button class="filter-btn" data-filter="clocked-in" onclick="setAttendanceFilter('clocked-in')">Clocked In</button>
                 <button class="filter-btn" data-filter="clocked-out" onclick="setAttendanceFilter('clocked-out')">Clocked Out</button>
                 <button class="filter-btn" data-filter="late" onclick="setAttendanceFilter('late')">Late / Long Shift</button>
+                <button class="filter-btn" data-filter="missing-checklist" onclick="setAttendanceFilter('missing-checklist')">Missing Checklist</button>
             </div>
         </div>
 
@@ -561,17 +612,16 @@
 
         <section class="table-card glass">
             <div class="flex items-center justify-between mb-4 gap-4 flex-wrap">
+                <div class="flex gap-2">
+                    <input type="date" id="startDate" class="filter-select">
+                    <input type="date" id="endDate" class="filter-select">
+                    <button class="btn-primary" onclick="downloadAttendance()">Download CSV</button>
+                </div>
 
-    <div class="flex gap-2">
-        <input type="date" id="startDate" class="filter-select">
-        <input type="date" id="endDate" class="filter-select">
-        <button class="btn-primary" onclick="downloadAttendance()">Download CSV</button>
-    </div>
+                <button class="btn-muted" onclick="refreshAttendancePage()">Refresh</button>
+            </div>
 
-    <button class="btn-muted" onclick="refreshAttendancePage()">Refresh</button>
-
-</div>
-            <div class="overflow-x-auto">
+            <div class="table-scroll-container overflow-x-auto">
                 <table class="data-table">
                     <thead>
                         <tr>
@@ -637,6 +687,11 @@
                     <h2 class="text-xl font-black uppercase text-yellow-400 mb-6">Recent Attendance History</h2>
                     <div id="attendanceDetailHistory" class="space-y-3">
                         <div class="history-box opacity-60">No history loaded.</div>
+                    </div>
+
+                    <h2 class="text-xl font-black uppercase text-yellow-400 mb-4 mt-6">Closing Checklist Today</h2>
+                    <div id="attendanceDetailChecklist" class="space-y-3">
+                        <div class="history-box opacity-60">No checklist submitted today.</div>
                     </div>
 
                     <div class="flex gap-3 pt-6">

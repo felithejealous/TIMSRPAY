@@ -6,7 +6,7 @@ import hmac
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, aliased
 from sqlalchemy import func as sa_func
 
 from backend.database import SessionLocal
@@ -28,6 +28,7 @@ from backend.models import (
     CustomerProfile,
     PromoCode,
     PromoCodeRedemption,
+    StaffProfile,
 )
 from backend.schemas import OrderCreate
 from backend.security import get_current_user, require_roles
@@ -38,7 +39,14 @@ VAT_RATE = Decimal("0.12")
 REQUIRED_POINTS = 2800
 ORDER_POINTS_CLAIM_WINDOW_HOURS = 24
 ORDER_DISPLAY_OFFSET = 900
-
+PLACEHOLDER_CUSTOMER_NAMES = {
+    "teopay customer",
+    "wallet customer",
+    "walk-in customer",
+    "guest",
+    "guest customer",
+    "customer",
+}
 
 def compute_initial_status(order_type: str, payment_method: str) -> str:
     order_type = (order_type or "").strip().lower()
@@ -77,13 +85,22 @@ def _display_order_id(order_id: int) -> str:
     return f"#TM-{ORDER_DISPLAY_OFFSET + int(order_id)}"
 
 
+def _sync_all_product_availability(db: Session):
+    from backend.routers.products import sync_all_product_availability
+    sync_all_product_availability(db, commit=False)
+
+
 class OrderItemPayload(BaseModel):
     product_id: int
     quantity: int = Field(gt=0)
     size: Optional[str] = "small"
     add_ons: Optional[List[int]] = None
+    notes: Optional[str] = Field(default=None,  max_length=500)
 
-
+class WalletPayPayload(BaseModel):
+    wallet_email: Optional[str] = None
+    wallet_code: Optional[str] = None
+    wallet_pin: str = Field(min_length=4, max_length=6)
 class BaseOrderPayload(BaseModel):
     order_type: Optional[str] = None
     payment_method: Optional[str] = "cash"
@@ -93,7 +110,8 @@ class BaseOrderPayload(BaseModel):
     wallet_pin: Optional[str] = None
     promo_code: Optional[str] = None
     user_id: Optional[int] = None
-
+class CashPayPayload(BaseModel):
+    amount_received: Decimal = Field(gt=0)
 
 class KioskOrderCreate(BaseOrderPayload):
     customer_name: str = Field(min_length=1, max_length=150)
@@ -119,7 +137,6 @@ class OrderStatusUpdate(BaseModel):
 class CancelPayload(BaseModel):
     reason: str
 
-
 @router.get("/")
 def list_orders(
     status: Optional[str] = None,
@@ -127,10 +144,16 @@ def list_orders(
     db: Session = Depends(get_db),
     _: User = Depends(require_roles("staff", "cashier", "admin")),
 ):
+    customer_user = aliased(User)
+    staff_user = aliased(User)
+    staff_profile = aliased(StaffProfile)
+
     q = (
-        db.query(Order, User, CustomerProfile)
-        .outerjoin(User, User.id == Order.user_id)
-        .outerjoin(CustomerProfile, CustomerProfile.user_id == User.id)
+        db.query(Order, customer_user, CustomerProfile, staff_user, staff_profile)
+        .outerjoin(customer_user, customer_user.id == Order.user_id)
+        .outerjoin(CustomerProfile, CustomerProfile.user_id == customer_user.id)
+        .outerjoin(staff_user, staff_user.id == Order.processed_by_staff_id)
+        .outerjoin(staff_profile, staff_profile.user_id == staff_user.id)
     )
 
     if status:
@@ -139,7 +162,7 @@ def list_orders(
     rows = q.order_by(Order.id.desc()).limit(limit).all()
 
     result = []
-    for order, user, profile in rows:
+    for order, user, profile, processed_by_user, processed_by_profile in rows:
         item_rows = (
             db.query(OrderItem, Product)
             .join(Product, Product.id == OrderItem.product_id)
@@ -148,6 +171,17 @@ def list_orders(
         )
 
         item_names = [f"{int(oi.quantity)}x {p.name}" for oi, p in item_rows]
+
+        item_details = [
+            {
+                "order_item_id": oi.id,
+                "product_id": p.id,
+                "name": p.name,
+                "qty": int(oi.quantity),
+                "notes": getattr(oi, "notes", None),
+            }
+            for oi, p in item_rows
+        ]
 
         payment_method = getattr(order, "payment_method", None)
         if not payment_method:
@@ -170,6 +204,13 @@ def list_orders(
         else:
             customer_name = f"Guest #{order.id}"
 
+        if processed_by_profile and getattr(processed_by_profile, "full_name", None):
+            processed_by_staff_name = processed_by_profile.full_name
+        elif processed_by_user and getattr(processed_by_user, "email", None):
+            processed_by_staff_name = processed_by_user.email
+        else:
+            processed_by_staff_name = None
+
         refund_info = get_order_refund_summary(db, order.id)
 
         result.append({
@@ -178,6 +219,8 @@ def list_orders(
             "user_id": order.user_id,
             "customer_name": customer_name,
             "customer_email": getattr(user, "email", None) if user else None,
+            "processed_by_staff_id": getattr(order, "processed_by_staff_id", None),
+            "processed_by_staff_name": processed_by_staff_name,
             "order_type": order.order_type,
             "status": order.status,
             "payment_method": payment_method,
@@ -194,10 +237,11 @@ def list_orders(
             "refund_count": refund_info["refund_count"],
             "refund_amount": refund_info["refund_amount"],
             "last_refund_at": refund_info["last_refund_at"],
+            "has_item_notes": any(bool((getattr(oi, "notes", "") or "").strip()) for oi, _ in item_rows),
+            "item_details": item_details,
         })
 
     return {"count": len(result), "data": result}
-
 
 @router.get("/refunds")
 def list_refunded_orders(
@@ -205,10 +249,16 @@ def list_refunded_orders(
     db: Session = Depends(get_db),
     _: User = Depends(require_roles("staff", "cashier", "admin")),
 ):
+    customer_user = aliased(User)
+    staff_user = aliased(User)
+    staff_profile = aliased(StaffProfile)
+
     q = (
-        db.query(Order, User, CustomerProfile)
-        .outerjoin(User, User.id == Order.user_id)
-        .outerjoin(CustomerProfile, CustomerProfile.user_id == User.id)
+        db.query(Order, customer_user, CustomerProfile, staff_user, staff_profile)
+        .outerjoin(customer_user, customer_user.id == Order.user_id)
+        .outerjoin(CustomerProfile, CustomerProfile.user_id == customer_user.id)
+        .outerjoin(staff_user, staff_user.id == Order.processed_by_staff_id)
+        .outerjoin(staff_profile, staff_profile.user_id == staff_user.id)
         .order_by(Order.id.desc())
         .limit(limit)
     )
@@ -216,7 +266,7 @@ def list_refunded_orders(
     rows = q.all()
     result = []
 
-    for order, user, profile in rows:
+    for order, user, profile, processed_by_user, processed_by_profile in rows:
         refund_info = get_order_refund_summary(db, order.id)
         if not refund_info["is_refunded"]:
             continue
@@ -242,11 +292,20 @@ def list_refunded_orders(
         else:
             customer_name = f"Guest #{order.id}"
 
+        if processed_by_profile and getattr(processed_by_profile, "full_name", None):
+            processed_by_staff_name = processed_by_profile.full_name
+        elif processed_by_user and getattr(processed_by_user, "email", None):
+            processed_by_staff_name = processed_by_user.email
+        else:
+            processed_by_staff_name = None
+
         result.append({
             "order_id": order.id,
             "display_id": _display_order_id(order.id),
             "customer_name": customer_name,
             "customer_email": getattr(user, "email", None) if user else None,
+            "processed_by_staff_id": getattr(order, "processed_by_staff_id", None),
+            "processed_by_staff_name": processed_by_staff_name,
             "order_type": order.order_type,
             "status": order.status,
             "payment_method": payment_method,
@@ -622,7 +681,14 @@ def resolve_customer_name(
     explicit_customer_name: Optional[str] = None,
 ) -> Optional[str]:
     explicit_customer_name = (explicit_customer_name or "").strip()
-    if explicit_customer_name:
+
+    explicit_lower = explicit_customer_name.lower()
+    is_placeholder_name = (
+        not explicit_customer_name
+        or explicit_lower in PLACEHOLDER_CUSTOMER_NAMES
+    )
+
+    if not is_placeholder_name:
         return explicit_customer_name
 
     if user_id:
@@ -634,7 +700,7 @@ def resolve_customer_name(
         if user and getattr(user, "email", None):
             return user.email.strip()
 
-    return None
+    return explicit_customer_name or None
 
 
 def get_order_refund_summary(db: Session, order_id: int) -> Dict[str, object]:
@@ -826,6 +892,9 @@ def _create_order_core(
         if hasattr(product, "is_active") and product.is_active is False:
             raise HTTPException(status_code=400, detail=f"Product '{product.name}' is inactive")
 
+        if hasattr(product, "is_available") and product.is_available is False:
+            raise HTTPException(status_code=400, detail=f"Product '{product.name}' is currently unavailable/out of stock")
+
         base_price = Decimal(str(product.price))
         size_name = (it.size or "small").strip().lower()
         size_upcharge = size_price_map.get(size_name, Decimal("0"))
@@ -919,18 +988,22 @@ def _create_order_core(
             order.user_id = int(wallet.user_id)
             user_id = int(wallet.user_id)
 
-            if not order.customer_name:
-                order.customer_name = resolve_customer_name(db, user_id=user_id)
+        # Always resolve the final customer name from the real wallet owner
+        order.customer_name = resolve_customer_name(
+            db=db,
+            user_id=int(wallet.user_id),
+            explicit_customer_name=customer_name,
+        )
 
-            earned_points = 0
-            for it in items:
-                product = db.query(Product).filter(Product.id == int(it.product_id)).first()
-                if product:
-                    ppu = int(getattr(product, "points_per_unit", 0) or 0)
-                    earned_points += ppu * int(it.quantity)
+        earned_points = 0
+        for it in items:
+            product = db.query(Product).filter(Product.id == int(it.product_id)).first()
+            if product:
+                ppu = int(getattr(product, "points_per_unit", 0) or 0)
+                earned_points += ppu * int(it.quantity)
 
-            order.earned_points = int(earned_points)
-            order.points_claim_expires_at = None
+        order.earned_points = int(earned_points)
+        order.points_claim_expires_at = None
 
     if promo_row and not order.user_id:
         raise HTTPException(
@@ -964,11 +1037,13 @@ def _create_order_core(
 
         unit_price = base_price + size_upcharge + addon_total
 
+        cleaned_notes = (it.notes or "").strip() if hasattr(it, "notes") else ""
         order_item = OrderItem(
             order_id=order.id,
             product_id=int(it.product_id),
             quantity=int(it.quantity),
             price=unit_price,
+            notes=cleaned_notes or None,
         )
         db.add(order_item)
         db.flush()
@@ -1014,6 +1089,8 @@ def _create_order_core(
     if order.user_id and order.status in {"paid", "completed"}:
         sync_order_rewards_if_eligible(db, order)
 
+    _sync_all_product_availability(db)
+
     db.commit()
     db.refresh(order)
 
@@ -1057,6 +1134,7 @@ def create_order(payload: OrderCreate, db: Session = Depends(get_db)):
                     quantity=int(it.quantity),
                     size=(getattr(it, "size", None) or "small"),
                     add_ons=[int(x) for x in (getattr(it, "add_ons", None) or [])] or None,
+                    notes=(getattr(it, "notes", None)or None),
                 )
             )
 
@@ -1231,6 +1309,8 @@ def cancel_my_order(
         if hasattr(order, "cancelled_at"):
             order.cancelled_at = sa_func.now()
 
+        _sync_all_product_availability(db)
+
         db.commit()
         db.refresh(order)
 
@@ -1359,6 +1439,8 @@ def cancel_order(
         if hasattr(order, "cancelled_at"):
             order.cancelled_at = sa_func.now()
 
+        _sync_all_product_availability(db)
+
         db.commit()
         db.refresh(order)
 
@@ -1392,7 +1474,7 @@ def void_order(
 def complete_order(
     order_id: int,
     db: Session = Depends(get_db),
-    _: User = Depends(require_roles("staff", "cashier", "admin")),
+   current_staff: User = Depends(require_roles("staff", "cashier", "admin")),
 ):
     try:
         order = db.query(Order).filter(Order.id == order_id).first()
@@ -1436,8 +1518,9 @@ def complete_order(
 @router.post("/{order_id}/pay-cash")
 def pay_cash_order(
     order_id: int,
+    payload: Optional[CashPayPayload] = None,
     db: Session = Depends(get_db),
-    _: User = Depends(require_roles("cashier", "staff", "admin")),
+    current_staff: User = Depends(require_roles("cashier", "staff", "admin")),
 ):
     try:
         order = db.query(Order).filter(Order.id == order_id).first()
@@ -1454,7 +1537,27 @@ def pay_cash_order(
         if order.status not in {"pending", "unpaid"}:
             raise HTTPException(status_code=400, detail="Only pending/unpaid orders can be marked as paid")
 
+        total_amount = _money(order.total_amount or 0)
+
+        amount_received = None
+        change_amount = None
+
+        if payload is not None:
+            amount_received = _money(payload.amount_received)
+            if amount_received < total_amount:
+                raise HTTPException(status_code=400, detail="Insufficient payment amount.")
+            change_amount = _money(amount_received - total_amount)
+
+        order.payment_method = "cash"
         order.status = "paid"
+        order.processed_by_staff_id = int(current_staff.id)
+
+        if amount_received is not None:
+            order.amount_received = amount_received
+            order.change_amount = change_amount
+        else:
+            order.amount_received = None
+            order.change_amount = None
 
         if hasattr(order, "paid_at"):
             order.paid_at = sa_func.now()
@@ -1464,13 +1567,17 @@ def pay_cash_order(
         if not order.points_synced and int(getattr(order, "earned_points", 0) or 0) > 0:
             if not getattr(order, "points_claim_expires_at", None):
                 order.points_claim_expires_at = _utcnow() + timedelta(hours=ORDER_POINTS_CLAIM_WINDOW_HOURS)
-
+        if not getattr(order, "processed_by_staff_id", None):
+            order.processed_by_staff_id = int(current_staff.id)
         db.commit()
         db.refresh(order)
 
         return {
             "order_id": order.id,
             "status": order.status,
+            "payment_method": order.payment_method,
+            "amount_received": float(order.amount_received) if order.amount_received is not None else None,
+            "change_amount": float(order.change_amount) if order.change_amount is not None else None,
             "earned_points": int(getattr(order, "earned_points", 0) or 0),
             "points_synced": bool(getattr(order, "points_synced", False)),
         }
@@ -1482,7 +1589,94 @@ def pay_cash_order(
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")
 
+@router.post("/{order_id}/pay-wallet")
+def pay_wallet_order(
+    order_id: int,
+    payload: WalletPayPayload,
+    db: Session = Depends(get_db),
+   current_staff: User = Depends(require_roles("cashier", "staff", "admin")),
+):
+    try:
+        order = db.query(Order).filter(Order.id == order_id).first()
+        if not order:
+            raise HTTPException(status_code=404, detail="Order not found")
 
+        if order.status in {"cancelled", "completed"}:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot pay order with status '{order.status}'",
+            )
+
+        if order.status == "paid":
+            raise HTTPException(status_code=400, detail="Order already paid")
+
+        if order.status not in {"pending", "unpaid"}:
+            raise HTTPException(status_code=400, detail="Only pending/unpaid orders can be paid")
+
+        wallet = verify_wallet_by_identifier_pin(
+            db=db,
+            wallet_code=payload.wallet_code,
+            email=payload.wallet_email,
+            pin=payload.wallet_pin,
+        )
+
+        pay_with_wallet(
+            db=db,
+            user_id=int(wallet.user_id),
+            order_id=order.id,
+            amount=Decimal(str(order.total_amount or 0)),
+        )
+
+        order.payment_method = "wallet"
+        order.status = "paid"
+        order.processed_by_staff_id = int(current_staff.id)
+
+        if hasattr(order, "paid_at"):
+            order.paid_at = sa_func.now()
+
+        if not order.user_id:
+            order.user_id = int(wallet.user_id)
+
+        if not getattr(order, "customer_name", None):
+            order.customer_name = resolve_customer_name(db, user_id=int(wallet.user_id))
+
+        earned_points = 0
+        rows = (
+            db.query(OrderItem, Product)
+            .join(Product, Product.id == OrderItem.product_id)
+            .filter(OrderItem.order_id == order.id)
+            .all()
+        )
+
+        for oi, p in rows:
+            ppu = int(getattr(p, "points_per_unit", 0) or 0)
+            earned_points += ppu * int(oi.quantity)
+
+        order.earned_points = int(earned_points)
+        order.points_claim_expires_at = None
+
+        sync_order_rewards_if_eligible(db, order)
+
+        db.commit()
+        db.refresh(order)
+
+        return {
+            "order_id": order.id,
+            "status": order.status,
+            "payment_method": order.payment_method,
+            "user_id": order.user_id,
+            "customer_name": order.customer_name,
+            "earned_points": int(getattr(order, "earned_points", 0) or 0),
+            "points_synced": bool(getattr(order, "points_synced", False)),
+        }
+
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")
+    
 @router.get("/{order_id}/receipt")
 def get_receipt(order_id: int, db: Session = Depends(get_db)):
     order = db.query(Order).filter(Order.id == order_id).first()
@@ -1526,6 +1720,7 @@ def get_receipt(order_id: int, db: Session = Depends(get_db)):
             "qty": int(oi.quantity),
             "unit_price": float(oi.price),
             "line_total": float(Decimal(str(oi.price)) * Decimal(int(oi.quantity))),
+            "notes": getattr(oi, "notes", None),
             "add_ons": addons,
             "add_ons_total": float(addons_total),
         })
@@ -1541,14 +1736,40 @@ def get_receipt(order_id: int, db: Session = Depends(get_db)):
 
     refund_info = get_order_refund_summary(db, order.id)
 
+    payment_method = getattr(order, "payment_method", None)
+    if not payment_method:
+        wallet_payment = (
+            db.query(WalletTransaction)
+            .filter(
+                WalletTransaction.order_id == order.id,
+                WalletTransaction.transaction_type == "PAYMENT",
+            )
+            .first()
+        )
+        payment_method = "wallet" if wallet_payment else "cash"
+
+    resolved_customer_name = getattr(order, "customer_name", None)
+    if not resolved_customer_name and getattr(order, "user_id", None):
+        resolved_customer_name = resolve_customer_name(db, user_id=order.user_id)
+
+    claim_message = None
+    if points_status == "synced":
+        claim_message = "Rewards points already added to the customer account."
+    elif points_status == "claimable":
+        claim_message = "Rewards points can still be claimed for this order."
+    else:
+        claim_message = "No rewards points available for this order."
+
     return {
         "order_id": order.id,
         "display_id": _display_order_id(order.id),
         "user_id": order.user_id,
-        "customer_name": getattr(order, "customer_name", None),
+        "customer_name": resolved_customer_name or "Walk-in Customer",
         "order_type": order.order_type,
         "status": order.status,
+        "payment_method": payment_method,
         "created_at": str(order.created_at),
+
         "items": receipt_items,
         "subtotal": float(order.subtotal),
         "vat_rate": float(order.vat_rate),
@@ -1562,6 +1783,7 @@ def get_receipt(order_id: int, db: Session = Depends(get_db)):
             else None
         ),
         "total_amount": float(order.total_amount),
+
         "earned_points": int(earned_points),
         "potential_points": int(potential_points),
         "points_status": points_status,
@@ -1579,6 +1801,18 @@ def get_receipt(order_id: int, db: Session = Depends(get_db)):
             if getattr(order, "points_claim_expires_at", None)
             else None
         ),
+        "claim_message": claim_message,
+        "amount_received": (
+             float(getattr(order, "amount_received", 0) or 0)
+             if getattr(order, "amount_received", None) is not None
+            else None
+            ),
+        "change_amount": (
+            float(getattr(order, "change_amount", 0) or 0)
+            if getattr(order, "change_amount", None) is not None
+            else None
+            ),
+
         "is_refunded": refund_info["is_refunded"],
         "refund_count": refund_info["refund_count"],
         "refund_amount": refund_info["refund_amount"],

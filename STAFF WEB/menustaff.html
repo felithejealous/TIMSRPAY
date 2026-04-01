@@ -6,15 +6,15 @@
     <title>Menu Explorer | Teo D' Mango Staff</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* --- DYNAMIC THEME VARIABLES (DEFAULT: DARK MODE) --- */
         :root {
             --mango: #ffc244;
             --mango-dark: #d4a017;
             --strawberry: #ff4d6d;
             --success: #10b981;
             --danger: #ef4444;
-            
-            /* DARK MODE (Default) */
+            --warning: #f59e0b;
+            --info: #3b82f6;
+
             --bg-main: #050505;
             --text-main: #ffffff;
             --text-muted: #888888;
@@ -29,7 +29,6 @@
             --panel-bg: #0a0a0a;
         }
 
-        /* --- LIGHT MODE OVERRIDES --- */
         body.light-mode {
             --bg-main: #f4f5f7;
             --text-main: #1a1a1a;
@@ -40,113 +39,693 @@
             --shadow: 0 10px 30px rgba(0,0,0,0.05);
             --hover-bg: rgba(255, 255, 255, 1);
             --icon-bg: rgba(0, 0, 0, 0.03);
-            --glow-opacity: 0.3; 
+            --glow-opacity: 0.3;
             --input-bg: #ffffff;
             --panel-bg: #ffffff;
         }
+        html.preload-light body {
+    --bg-main: #f4f5f7;
+    --text-main: #1a1a1a;
+    --text-muted: #666666;
+    --card-bg: rgba(255, 255, 255, 0.7);
+    --card-border: rgba(0, 0, 0, 0.05);
+    --sidebar-bg: rgba(255, 255, 255, 0.9);
+    --shadow: 0 10px 30px rgba(0,0,0,0.05);
+    --hover-bg: rgba(255, 255, 255, 1);
+    --icon-bg: rgba(0, 0, 0, 0.03);
+    --glow-opacity: 0.3;
+    --input-bg: rgba(0, 0, 0, 0.03);
+}
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; scroll-behavior: smooth; }
-        
-        body { 
-            background-color: var(--bg-main); color: var(--text-main); 
-            display: flex; min-height: 100vh; transition: 0.4s ease;
-            position: relative; overflow: hidden;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            scroll-behavior: smooth;
         }
 
-        body::before, body::after { content: ''; position: fixed; border-radius: 50%; z-index: -1; pointer-events: none; transition: 0.5s ease; }
-        body::before { top: -10%; left: -5%; width: 500px; height: 500px; background: var(--mango); filter: blur(120px); opacity: var(--glow-opacity); }
-        body::after { bottom: -10%; right: -5%; width: 400px; height: 400px; background: var(--strawberry); filter: blur(150px); opacity: calc(var(--glow-opacity) - 0.05); }
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+            transition: 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
 
-        /* --- SIDEBAR --- */
+        body::before,
+        body::after {
+            content: '';
+            position: fixed;
+            border-radius: 50%;
+            z-index: -1;
+            pointer-events: none;
+            transition: 0.5s ease;
+        }
+
+        body::before {
+            top: -10%;
+            left: -5%;
+            width: 500px;
+            height: 500px;
+            background: var(--mango);
+            filter: blur(120px);
+            opacity: var(--glow-opacity);
+        }
+
+        body::after {
+            bottom: -10%;
+            right: -5%;
+            width: 400px;
+            height: 400px;
+            background: var(--strawberry);
+            filter: blur(150px);
+            opacity: calc(var(--glow-opacity) - 0.05);
+        }
+
         aside {
-            width: 260px; background: var(--sidebar-bg); height: 100vh; position: fixed;
-            border-right: 1px solid var(--card-border); padding: 2rem 1.2rem; display: flex;
-            flex-direction: column; z-index: 1000; backdrop-filter: blur(20px); transition: all 0.4s ease;
+            width: 260px;
+            background: var(--sidebar-bg);
+            height: 100vh;
+            position: fixed;
+            border-right: 1px solid var(--card-border);
+            padding: 2rem 1.2rem;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            backdrop-filter: blur(20px);
+            transition: all 0.4s ease;
         }
-        .sidebar-logo { padding: 10px 5px; margin-bottom: 2rem; text-align: center; }
-        .sidebar-logo img { max-width: 100%; height: auto; max-height: 50px; display: block; margin: 0 auto; filter: drop-shadow(0 0 5px var(--mango)); }
-        
-        nav { flex: 1; display: flex; flex-direction: column; }
-        nav ul { list-style: none; display: flex; flex-direction: column; height: 100%; }
+
+        .sidebar-logo {
+            padding: 10px 5px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .sidebar-logo img {
+            max-width: 100%;
+            height: auto;
+            max-height: 50px;
+            display: block;
+            margin: 0 auto;
+            filter: drop-shadow(0 0 5px var(--mango));
+        }
+
+        nav {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
         nav a {
-            text-decoration: none; color: var(--text-muted); padding: 1rem 1.2rem;
-            display: flex; align-items: center; gap: 15px; font-weight: 700; font-size: 13px;
-            border-radius: 14px; margin-bottom: 0.5rem; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px;
+            text-decoration: none;
+            color: var(--text-muted);
+            padding: 1rem 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-weight: 700;
+            font-size: 13px;
+            border-radius: 14px;
+            margin-bottom: 0.5rem;
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        nav a:hover { color: var(--text-main); background: var(--icon-bg); transform: translateX(5px); }
-        nav li.active a { background: var(--mango); color: #111; box-shadow: 0 8px 20px rgba(245, 158, 11, 0.2); transform: translateX(0); }
-        nav a i { font-size: 16px; width: 20px; text-align: center; }
 
-        /* --- MAIN LAYOUT --- */
-        main { margin-left: 260px; flex: 1; display: flex; height: 100vh; width: calc(100% - 260px); transition: all 0.4s ease; }
+        nav a:hover {
+            color: var(--text-main);
+            background: var(--icon-bg);
+            transform: translateX(5px);
+        }
 
-        .menu-container { flex: 1.5; padding: 2.5rem 3.5rem; overflow-y: auto; }
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem; }
-        .page-title { font-size: clamp(1.8rem, 4vw, 2.2rem); font-weight: 900; letter-spacing: -1px; color: var(--text-main); margin-bottom: 5px; line-height: 1;}
-        .page-desc { color: var(--text-muted); font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
-        
-        .theme-btn { background: var(--icon-bg); border: 1px solid var(--card-border); color: var(--text-main); width: 45px; height: 45px; border-radius: 50%; cursor: pointer; transition: 0.3s; display: grid; place-items: center; font-size: 16px;}
-        .theme-btn:hover { background: var(--mango); color: #111; transform: rotate(15deg); }
+        nav li.active a {
+            background: var(--mango);
+            color: #111;
+            box-shadow: 0 8px 20px rgba(245, 158, 11, 0.2);
+            transform: translateX(0);
+        }
 
-        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1.5rem; padding-bottom: 40px;}
-        
-        .product-card { 
-            background: var(--card-bg); backdrop-filter: blur(20px); border-radius: 24px; padding: 1rem; 
-            box-shadow: var(--shadow); text-align: center; cursor: pointer; transition: 0.3s; 
+        nav a i {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+
+        main {
+            margin-left: 260px;
+            flex: 1;
+            display: flex;
+            height: 100vh;
+            width: calc(100% - 260px);
+            transition: all 0.4s ease;
+        }
+
+        .menu-container {
+            flex: 1.5;
+            padding: 2.5rem 3.5rem;
+            overflow-y: auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+            gap: 1rem;
+        }
+
+        .page-title {
+            font-size: clamp(1.8rem, 4vw, 2.2rem);
+            font-weight: 900;
+            letter-spacing: -1px;
+            color: var(--text-main);
+            margin-bottom: 5px;
+            line-height: 1;
+        }
+
+        .page-desc {
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .theme-btn {
+            background: var(--icon-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.3s;
+            display: grid;
+            place-items: center;
+            font-size: 16px;
+        }
+
+        .theme-btn:hover {
+            background: var(--mango);
+            color: #111;
+            transform: rotate(15deg);
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 1.5rem;
+            padding-bottom: 40px;
+        }
+
+        .product-card {
+            position: relative;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 1rem;
+            box-shadow: var(--shadow);
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
             border: 2px solid var(--card-border);
         }
-        .product-card:hover { border-color: var(--mango); transform: translateY(-5px); }
-        .product-card img { width: 100%; height: 140px; border-radius: 15px; object-fit: cover; margin-bottom: 15px; background: var(--icon-bg); }
-        .product-card h4 { font-weight: 900; font-size: 1rem; margin-bottom: 5px; color: var(--text-main); }
-        .product-price { font-weight: 900; color: var(--mango); font-size: 1.1rem;}
 
-        /* ORDER PANEL */
-        .order-panel { 
-            width: 400px; background: var(--panel-bg); border-left: 1px solid var(--card-border); 
-            padding: 2.5rem; display: flex; flex-direction: column; height: 100vh; box-shadow: -10px 0 30px rgba(0,0,0,0.2);
+        .product-card:hover {
+            border-color: var(--mango);
+            transform: translateY(-5px);
         }
-        
-        .panel-title { font-weight: 900; font-size: 18px; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px; color: var(--text-main); }
-        
+
+        .product-card.active {
+            border-color: var(--mango);
+            box-shadow: 0 0 0 2px rgba(255, 194, 68, 0.15);
+        }
+
+        .product-card.out-of-stock {
+            opacity: 0.55;
+            cursor: not-allowed;
+            border-color: rgba(239, 68, 68, 0.35);
+        }
+
+        .product-card.out-of-stock:hover {
+            transform: none;
+            border-color: rgba(239, 68, 68, 0.35);
+        }
+
+        .stock-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(16, 185, 129, 0.12);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .stock-badge.out {
+            background: rgba(239, 68, 68, 0.12);
+            color: var(--danger);
+            border-color: rgba(239, 68, 68, 0.35);
+        }
+
+        .product-card img {
+            width: 100%;
+            height: 140px;
+            border-radius: 15px;
+            object-fit: cover;
+            margin-bottom: 15px;
+            background: var(--icon-bg);
+        }
+
+        .product-card h4 {
+            font-weight: 900;
+            font-size: 1rem;
+            margin-bottom: 5px;
+            color: var(--text-main);
+        }
+
+        .product-sub {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 700;
+            min-height: 16px;
+            margin-bottom: 6px;
+        }
+
+        .product-price {
+            font-weight: 900;
+            color: var(--mango);
+            font-size: 1.1rem;
+        }
+
+        .stock-note {
+            margin-top: 8px;
+            font-size: 10px;
+            font-weight: 800;
+            color: var(--danger);
+            min-height: 14px;
+        }
+
+        .loading-box,
+        .empty-menu {
+            grid-column: 1 / -1;
+            text-align: center;
+            color: var(--text-muted);
+            font-weight: 700;
+            padding: 2rem;
+            border-radius: 18px;
+            border: 1px dashed var(--card-border);
+            background: var(--icon-bg);
+        }
+
+        .order-panel {
+            width: 400px;
+            background: var(--panel-bg);
+            border-left: 1px solid var(--card-border);
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            box-shadow: -10px 0 30px rgba(0,0,0,0.2);
+            scroll-behavior: smooth;
+        }
+
+        .order-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .order-panel::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .order-panel::-webkit-scrollbar-thumb {
+            background: rgba(255, 194, 68, 0.35);
+            border-radius: 999px;
+        }
+
+        .order-panel::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 194, 68, 0.6);
+        }
+
+        .panel-title {
+            font-weight: 900;
+            font-size: 18px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-main);
+        }
+
         .selected-item-display {
-            background: var(--icon-bg); color: var(--text-main); padding: 15px; border-radius: 16px; 
-            margin-bottom: 1.5rem; font-weight: 800; text-align: center; font-size: 14px; border: 1px solid var(--card-border);
-            display: flex; align-items: center; justify-content: center; gap: 10px;
+            background: var(--icon-bg);
+            color: var(--text-main);
+            padding: 15px;
+            border-radius: 16px;
+            margin-bottom: 1.5rem;
+            font-weight: 800;
+            text-align: center;
+            font-size: 14px;
+            border: 1px solid var(--card-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            min-height: 58px;
         }
 
-        .card-custom { background: var(--card-bg); border-radius: 20px; padding: 1.2rem; margin-bottom: 1.2rem; border: 1px solid var(--card-border); }
-        .card-custom h4 { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; font-weight: 800; }
-
-        .options-flex { display: flex; gap: 8px; flex-wrap: wrap; }
-        .option-chip { 
-            padding: 10px 16px; background: var(--input-bg); border-radius: 12px; border: 1px solid var(--card-border); 
-            font-size: 12px; font-weight: 800; cursor: pointer; transition: 0.2s; color: var(--text-main);
+        .card-custom {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 1.2rem;
+            margin-bottom: 1.2rem;
+            border: 1px solid var(--card-border);
         }
-        .option-chip.active { background: var(--mango); border-color: var(--mango); color: #111; }
 
-        .btn-add-cart { 
-            width: 100%; padding: 1rem; background: var(--text-main); color: var(--bg-main); border: none; 
-            border-radius: 16px; font-weight: 900; cursor: pointer; transition: 0.3s; font-size: 13px; text-transform: uppercase; margin-bottom: 1.5rem;
+        .card-custom h4 {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            font-weight: 800;
         }
-        .btn-add-cart:hover { background: var(--mango); color: #111; transform: translateY(-2px); }
 
-        .cart-list { flex: 1; overflow-y: auto; padding-right: 5px; margin-bottom: 1rem;}
-        .cart-item { padding: 15px 0; border-bottom: 1px dashed var(--card-border); display: flex; justify-content: space-between; align-items: center; }
-        .cart-item-name { font-weight: 800; color: var(--text-main); font-size: 14px;}
-        .cart-item-addons { display: block; color: var(--text-muted); margin-top: 4px; font-size: 11px;}
-        .cart-item-price { font-weight: 900; color: var(--text-main); font-size: 14px;}
-        .cart-delete { color: var(--danger); cursor: pointer; margin-left: 15px;}
-
-        .checkout-section { padding-top: 1.5rem; border-top: 2px solid var(--card-border); }
-        .grand-total { display: flex; justify-content: space-between; font-size: 24px; font-weight: 900; margin-bottom: 1.5rem; color: var(--text-main);}
-        .btn-checkout { 
-            width: 100%; padding: 1.2rem; background: var(--success); color: white; border: none; 
-            border-radius: 16px; font-weight: 900; cursor: pointer; transition: 0.3s; font-size: 14px; text-transform: uppercase;
+        .options-flex {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
         }
-        .btn-checkout:hover { background: #059669; transform: translateY(-2px);}
 
-        @media screen and (max-width: 1000px) { aside { width: 90px; } aside span, .sidebar-logo { display: none; } main { margin-left: 90px; width: calc(100% - 90px); } }
+        .option-chip {
+            padding: 10px 16px;
+            background: var(--input-bg);
+            border-radius: 12px;
+            border: 1px solid var(--card-border);
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: 0.2s;
+            color: var(--text-main);
+            user-select: none;
+        }
+
+        .option-chip.active {
+            background: var(--mango);
+            border-color: var(--mango);
+            color: #111;
+        }
+
+        .option-chip.disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+
+        .helper-text {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 700;
+            margin-top: 10px;
+            line-height: 1.4;
+        }
+
+        .customer-box input,
+        .promo-box input {
+            width: 100%;
+            padding: 12px 14px;
+            background: var(--input-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            color: var(--text-main);
+            outline: none;
+            font-weight: 700;
+        }
+
+        .customer-box input:focus,
+        .promo-box input:focus {
+            border-color: var(--mango);
+        }
+
+        .quantity-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .qty-btn {
+            width: 42px;
+            height: 42px;
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            background: var(--input-bg);
+            color: var(--text-main);
+            font-size: 18px;
+            font-weight: 900;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .qty-btn:hover {
+            background: var(--mango);
+            color: #111;
+            border-color: var(--mango);
+        }
+
+        .qty-input {
+            flex: 1;
+            height: 42px;
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            background: var(--input-bg);
+            color: var(--text-main);
+            text-align: center;
+            font-weight: 900;
+            outline: none;
+        }
+
+        .btn-add-cart {
+            width: 100%;
+            padding: 1rem;
+            background: var(--text-main);
+            color: var(--bg-main);
+            border: none;
+            border-radius: 16px;
+            font-weight: 900;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 13px;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-add-cart:hover {
+            background: var(--mango);
+            color: #111;
+            transform: translateY(-2px);
+        }
+
+        .cart-list {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 5px;
+            margin-bottom: 1rem;
+        }
+
+        .cart-empty {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 12px;
+            margin-top: 20px;
+            font-weight: 700;
+        }
+
+        .cart-item {
+            padding: 15px 0;
+            border-bottom: 1px dashed var(--card-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .cart-item-name {
+            font-weight: 800;
+            color: var(--text-main);
+            font-size: 14px;
+        }
+
+        .cart-item-meta {
+            color: var(--text-muted);
+            margin-top: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            line-height: 1.4;
+        }
+
+        .cart-item-price {
+            font-weight: 900;
+            color: var(--text-main);
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .cart-delete {
+            color: var(--danger);
+            cursor: pointer;
+            margin-left: 12px;
+        }
+
+        .checkout-section {
+            padding-top: 1.5rem;
+            border-top: 2px solid var(--card-border);
+        }
+
+        .grand-total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 24px;
+            font-weight: 900;
+            margin-bottom: 1.5rem;
+            color: var(--text-main);
+        }
+
+        .btn-checkout {
+            width: 100%;
+            padding: 1.2rem;
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-weight: 900;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+
+        .btn-checkout:hover {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+
+        .btn-checkout:disabled,
+        .btn-add-cart:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        @media screen and (max-width: 1100px) {
+            aside {
+                width: 90px;
+            }
+
+            aside span,
+            .sidebar-logo {
+                display: none;
+            }
+
+            main {
+                margin-left: 90px;
+                width: calc(100% - 90px);
+            }
+
+            .order-panel {
+                width: 360px;
+            }
+
+            nav a {
+                justify-content: center;
+            }
+        }
+
+        @media screen and (max-width: 950px) {
+            body {
+                overflow: auto;
+            }
+
+            main {
+                flex-direction: column;
+                height: auto;
+            }
+
+            .menu-container,
+            .order-panel {
+                width: 100%;
+                height: auto;
+            }
+
+            .order-panel {
+                border-left: none;
+                border-top: 1px solid var(--card-border);
+            }
+        }
+
+        @media screen and (max-width: 768px) {
+            aside {
+                width: 100%;
+                height: 70px;
+                bottom: 0;
+                top: auto;
+                flex-direction: row;
+                padding: 0;
+            }
+
+            nav ul {
+                display: flex;
+                flex-direction: row;
+                justify-content: space-around;
+                width: 100%;
+            }
+
+            nav a {
+                flex-direction: column;
+                font-size: 0.6rem;
+                padding: 8px;
+                gap: 4px;
+                margin-bottom: 0;
+            }
+
+            main {
+                margin-left: 0;
+                width: 100%;
+                margin-bottom: 70px;
+            }
+
+            .menu-container,
+            .order-panel {
+                padding: 1.2rem;
+            }
+        }
     </style>
+    <script>
+(function () {
+    const savedTheme = localStorage.getItem("staff-theme");
+    if (savedTheme === "light") {
+        document.documentElement.classList.add("preload-light");
+    } else {
+        document.documentElement.classList.remove("preload-light");
+    }
+})();
+</script>
 </head>
 <body>
 
@@ -159,10 +738,10 @@
                 <li class="active"><a href="menustaff.html"><i class="fa-solid fa-receipt"></i> <span>Menu</span></a></li>
                 <li><a href="inventory.html"><i class="fa-solid fa-boxes-stacked"></i> <span>Inventory</span></a></li>
                 <li><a href="dashboardstaff.html"><i class="fa-solid fa-user-clock"></i> <span>Attendance</span></a></li>
-                <li><a href="topupstaff.html"><i class="fa-solid fa-credit-card"></i> <span>RPAY</span></a></li>
+                <li><a href="walletstaff.html"><i class="fa-solid fa-credit-card"></i> <span>RPAY</span></a></li>
                 <li><a href="rewardsstaff.html"><i class="fa-solid fa-gift"></i> <span>Rewards</span></a></li>
                 <li><a href="dashaccsettstaff.html"><i class="fa-solid fa-gear"></i> <span>Settings</span></a></li>
-                <li style="margin-top: auto;"><a href="index.html" style="color: var(--danger);"><i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></a></li>
+                <li style="margin-top: auto;"><a href="loginstaff.html" class="logout-link" style="color: var(--danger);"><i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></a></li>
             </ul>
         </nav>
     </aside>
@@ -174,72 +753,68 @@
                     <h1 class="page-title">Menu Explorer</h1>
                     <p class="page-desc">Select a drink to customize order</p>
                 </div>
-                <button class="theme-btn" id="themeToggle"><i class="fa-solid fa-sun"></i></button>
+                <button class="theme-btn" id="themeToggle" title="Toggle Theme">
+                    <i class="fa-solid fa-sun"></i>
+                </button>
             </header>
 
-            <div class="menu-grid">
-                <div class="product-card" onclick="selectItem('Mango Bliss', 85)">
-                    <img src="mango.png" alt="Mango">
-                    <h4>Classic Mango Bliss</h4>
-                    <p class="product-price">₱85.00</p>
-                </div>
-                <div class="product-card" onclick="selectItem('Avocado Dream', 95)">
-                    <img src="lychee.png" alt="Avocado">
-                    <h4>Summer Lychee Sunset</h4>
-                    <p class="product-price">₱95.00</p>
-                </div>
-                <div class="product-card" onclick="selectItem('Classic Ube', 75)">
-                    <img src="ube2.png" alt="Ube">
-                    <h4>Ube Macapuno Slush</h4>
-                    <p class="product-price">₱75.00</p>
-                </div>
-                 <div class="product-card" onclick="selectItem('Mango Bliss', 85)">
-                    <img src="avo2.png" alt="Mango">
-                    <h4>Avocado Supreme</h4>
-                    <p class="product-price">₱85.00</p>
-                </div>
-                <div class="product-card" onclick="selectItem('Avocado Dream', 95)">
-                    <img src="buko2.png" alt="Avocado">
-                    <h4>Creamy Buko Slush</h4>
-                    <p class="product-price">₱95.00</p>
-                </div>
-                <div class="product-card" onclick="selectItem('Classic Ube', 75)">
-                    <img src="berry2.png" alt="Ube">
-                    <h4>Strawberry Dream</h4>
-                    <p class="product-price">₱75.00</p>
-                </div>
+            <div class="menu-grid" id="menuGrid">
+                <div class="loading-box">Loading menu...</div>
             </div>
         </section>
 
         <section class="order-panel">
-            <h3 class="panel-title"><i class="fa-solid fa-sliders" style="color: var(--mango);"></i> Order Setup</h3>
-            
+            <h3 class="panel-title">
+                <i class="fa-solid fa-sliders" style="color: var(--mango);"></i>
+                Order Setup
+            </h3>
+
             <div id="selectedItemDisplay" class="selected-item-display">
                 <i class="fa-solid fa-circle-info"></i> Select an item from the menu
             </div>
 
-            <div class="card-custom">
-                <h4>Sugar Level</h4>
-                <div class="options-flex" id="sugarOptions">
-                    <div class="option-chip" onclick="setSugar('0%', this)">0%</div>
-                    <div class="option-chip" onclick="setSugar('50%', this)">50%</div>
-                    <div class="option-chip active" onclick="setSugar('100%', this)">100%</div>
-                </div>
+            <div class="card-custom customer-box">
+                <h4>Customer Name</h4>
+                <input type="text" id="customerNameInput" placeholder="Enter walk-in customer name (optional)">
+                <div class="helper-text">Kapag walang nilagay, automatic na Walk-in Customer ang gagamitin natin.</div>
             </div>
 
             <div class="card-custom">
-                <h4>Add-ons (+₱15.00)</h4>
+                <h4>Cup Size</h4>
+                <div class="options-flex" id="sizeOptions">
+                    <div class="option-chip disabled">Loading sizes...</div>
+                </div>
+                <div class="helper-text">Dito na pipili kung Small, Medium, or Large ang cup ng order.</div>
+            </div>
+
+            <div class="card-custom">
+                <h4>Quantity</h4>
+                <div class="quantity-wrap">
+                    <button type="button" class="qty-btn" id="qtyMinusBtn">-</button>
+                    <input type="number" id="quantityInput" class="qty-input" min="1" value="1">
+                    <button type="button" class="qty-btn" id="qtyPlusBtn">+</button>
+                </div>
+                <div class="helper-text">Pwede ka na magset ng quantity bago i-add to cart.</div>
+            </div>
+
+            <div class="card-custom">
+                <h4>Add-ons</h4>
                 <div class="options-flex" id="addonOptions">
-                    <div class="option-chip" onclick="toggleAddon(this, 'Graham', 15)">Graham</div>
-                    <div class="option-chip" onclick="toggleAddon(this, 'Pearls', 15)">Pearls</div>
-                    <div class="option-chip" onclick="toggleAddon(this, 'Cheese', 15)">Cheese</div>
+                    <div class="option-chip disabled">Loading...</div>
                 </div>
+                <div class="helper-text">Optional add-ons lang ito.</div>
             </div>
 
-            <button class="btn-add-cart" onclick="addToCart()">Add to Cart</button>
+            <div class="card-custom promo-box">
+                <h4>Promo Code (Optional)</h4>
+                <input type="text" id="promoCodeInput" placeholder="Enter promo code if applicable">
+                <div class="helper-text">Mag-aapply lang ito kung pasado sa backend rules ng promo mo.</div>
+            </div>
+
+            <button class="btn-add-cart" id="addToCartBtn">Add to Cart</button>
 
             <div class="cart-list" id="cartList">
-                <div style="text-align: center; color: var(--text-muted); font-size: 12px; margin-top: 20px;">Cart is empty</div>
+                <div class="cart-empty">Cart is empty</div>
             </div>
 
             <div class="checkout-section">
@@ -247,81 +822,14 @@
                     <span>Total</span>
                     <span id="totalPrice" style="color: var(--mango);">₱0.00</span>
                 </div>
-                <button class="btn-checkout" onclick="proceedToPayment()">Proceed to Payment</button>
+                <button class="btn-checkout" id="checkoutBtn">Proceed to Payment</button>
             </div>
         </section>
     </main>
 
-    <script>
-        let currentItem = null;
-        let selectedSugar = "100%";
-        let selectedAddons = [];
-        let cart = [];
-        let total = 0;
-
-        // Theme Toggle
-        const themeToggle = document.getElementById('themeToggle');
-        themeToggle.addEventListener('click', () => {
-            document.body.classList.toggle('light-mode');
-            const isLight = document.body.classList.contains('light-mode');
-            themeToggle.innerHTML = isLight ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
-        });
-
-        function selectItem(name, price) {
-            currentItem = { name, basePrice: price };
-            document.getElementById('selectedItemDisplay').innerHTML = `<i class="fa-solid fa-check-circle" style="color:var(--success)"></i> ${name} - ₱${price.toFixed(2)}`;
-        }
-
-        function setSugar(level, el) {
-            selectedSugar = level;
-            document.querySelectorAll('#sugarOptions .option-chip').forEach(c => c.classList.remove('active'));
-            el.classList.add('active');
-        }
-
-        function toggleAddon(el, name, price) {
-            el.classList.toggle('active');
-            if(el.classList.contains('active')) {
-                selectedAddons.push({ name, price });
-            } else {
-                selectedAddons = selectedAddons.filter(a => a.name !== name);
-            }
-        }
-
-        function addToCart() {
-            if(!currentItem) return alert("Select a drink first!");
-            let finalPrice = currentItem.basePrice;
-            selectedAddons.forEach(a => finalPrice += a.price);
-            cart.push({ display: `${currentItem.name} (${selectedSugar})`, details: selectedAddons.map(a => a.name).join(", ") || "No Add-ons", price: finalPrice });
-            updateCartUI();
-            resetSelection();
-        }
-
-        function updateCartUI() {
-            const list = document.getElementById('cartList');
-            list.innerHTML = "";
-            total = 0;
-            cart.forEach((item, index) => {
-                total += item.price;
-                list.innerHTML += `<div class="cart-item"><div><div class="cart-item-name">${item.display}</div><div class="cart-item-addons">${item.details}</div></div><div style="display:flex; align-items:center;"><div class="cart-item-price">₱${item.price.toFixed(2)}</div><i class="fa-solid fa-xmark cart-delete" onclick="removeItem(${index})"></i></div></div>`;
-            });
-            document.getElementById('totalPrice').innerText = `₱${total.toFixed(2)}`;
-        }
-
-        function removeItem(index) { cart.splice(index, 1); updateCartUI(); }
-
-        function resetSelection() {
-            currentItem = null; selectedAddons = [];
-            document.getElementById('selectedItemDisplay').innerHTML = `<i class="fa-solid fa-circle-info"></i> Select an item from the menu`;
-            document.querySelectorAll('#addonOptions .option-chip').forEach(c => c.classList.remove('active'));
-        }
-
-        function proceedToPayment() {
-            if(cart.length === 0) return alert("Cart is empty!");
-            if(confirm(`Finalize order with total of ₱${total.toFixed(2)}?`)) {
-                // Eto yung redirect sa payment page
-                window.location.href = 'paymentstaff.html';
-            }
-        }
-    </script>
+    <script src="js/authGuard.js"></script>
+    <script src="js/logoutstaff.js"></script>
+    <script src="js/themesync.js"></script>
+    <script src="js/menustaff.js"></script>
 </body>
 </html>

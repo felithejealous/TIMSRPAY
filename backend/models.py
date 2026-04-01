@@ -54,6 +54,9 @@ class Product(Base):
     name = Column(String(150), nullable=False)
     price = Column(Numeric(12, 2), nullable=False)
 
+    description = Column(Text, nullable=True)
+    image_url = Column(Text, nullable=True)
+
     is_active = Column(Boolean, default=True)
     is_available = Column(Boolean, default=True, nullable=False)
     points_per_unit = Column(Integer, default=0, nullable=False)
@@ -85,6 +88,7 @@ class Order(Base):
     order_type = Column(String(20), nullable=False)
     payment_method = Column(String(20), nullable=True)
     customer_name = Column(String(150), nullable=True)
+    processed_by_staff_id = Column(Integer, ForeignKey("users.id"), nullable=True)
 
     status = Column(String(20), default="pending")
     total_amount = Column(Numeric(12, 2), default=0)
@@ -98,6 +102,9 @@ class Order(Base):
     discount_amount = Column(Numeric(12, 2), nullable=False, default=0)
     discount_type = Column(String(20), nullable=True)
     discount_value = Column(Numeric(12, 2), nullable=True)
+    
+    amount_received = Column(Numeric(12, 2), nullable=True)
+    change_amount = Column(Numeric(12, 2), nullable=True)
 
     earned_points = Column(Integer, nullable=False, default=0)
     points_synced = Column(Boolean, nullable=False, default=False)
@@ -120,6 +127,7 @@ class OrderItem(Base):
     product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
     quantity = Column(Integer, nullable=False)
     price = Column(Numeric(12, 2), nullable=False)
+    notes = Column(Text, nullable=True)
 
 
 class AddOn(Base):
@@ -269,6 +277,21 @@ class AttendanceLog(Base):
     created_at = Column(DateTime(timezone=False), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=False), server_default=func.now(), onupdate=func.now(), nullable=False)
 
+class ClosingChecklist(Base):
+    __tablename__ = "closing_checklists"
+
+    id = Column(Integer, primary_key=True, index=True)
+    staff_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+
+    checklist_date = Column(DateTime(timezone=False), nullable=False, index=True)
+
+    wipe_counters = Column(Boolean, nullable=False, default=False)
+    refill_bins = Column(Boolean, nullable=False, default=False)
+    final_cash_register = Column(Boolean, nullable=False, default=False)
+    pos_devices_charging = Column(Boolean, nullable=False, default=False)
+
+    submitted_at = Column(DateTime(timezone=False), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=False), server_default=func.now(), onupdate=func.now(), nullable=False)
 
 class StaffProfile(Base):
     __tablename__ = "staff_profiles"
@@ -299,6 +322,18 @@ class PasswordResetToken(Base):
 
     created_at = Column(DateTime(timezone=False), server_default=func.now(), nullable=False)
 
+class LoginRateLimit(Base):
+    __tablename__ = "login_rate_limits"
+
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String(150), nullable=False, index=True)
+    ip_address = Column(String(100), nullable=False, index=True)
+
+    failed_count = Column(Integer, nullable=False, default=0)
+    locked_until = Column(DateTime(timezone=False), nullable=True)
+    last_attempt_at = Column(DateTime(timezone=False), server_default=func.now(), nullable=False)
+    created_at = Column(DateTime(timezone=False), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=False), server_default=func.now(), onupdate=func.now(), nullable=False)
 
 class RewardManualOTP(Base):
     __tablename__ = "reward_manual_otp"

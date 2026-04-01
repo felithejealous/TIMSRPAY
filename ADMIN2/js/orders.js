@@ -236,28 +236,28 @@ function loadOrders() {
         }
 
         return `
-            <tr>
-                <td class="font-mono text-yellow-400 font-bold">${escapeHtml(getOrderDisplayId(order))}</td>
-                <td>
-                    <div class="font-bold">${escapeHtml(order.customer_name || "Unknown Customer")}</div>
-                    <div class="text-[10px] opacity-50 flex gap-2 flex-wrap">
-                        <span>${escapeHtml(service)}</span>
-                        <span class="${getPointsSyncColor(order)}">${escapeHtml(getPointsSyncLabel(order))}</span>
-                    </div>
-                </td>
-                <td class="text-xs opacity-70">${escapeHtml(formatDateTime(order.created_at))}</td>
-                <td class="text-xs opacity-70">-</td>
-                <td class="font-black">${escapeHtml(formatPeso(order.total_amount))}</td>
-                <td>
-                    <button
-                        onclick="viewDetails(${Number(order.order_id)})"
-                        class="bg-white/5 hover:bg-yellow-400 hover:text-black p-2 px-4 rounded-lg text-[10px] font-black uppercase transition"
-                    >
-                        View
-                    </button>
-                </td>
-            </tr>
-        `;
+    <tr>
+        <td class="font-mono text-yellow-400 font-bold">${escapeHtml(getOrderDisplayId(order))}</td>
+        <td>
+            <div class="font-bold">${escapeHtml(order.customer_name || "Unknown Customer")}</div>
+            <div class="text-[10px] opacity-50 flex gap-2 flex-wrap">
+                <span>${escapeHtml(service)}</span>
+                <span class="${getPointsSyncColor(order)}">${escapeHtml(getPointsSyncLabel(order))}</span>
+            </div>
+        </td>
+        <td class="text-xs opacity-70">${escapeHtml(formatDateTime(order.created_at))}</td>
+        <td class="text-xs opacity-70">${escapeHtml(order.processed_by_staff_name || "-")}</td>
+        <td class="font-black">${escapeHtml(formatPeso(order.total_amount))}</td>
+        <td>
+            <button
+                onclick="viewDetails(${Number(order.order_id)})"
+                class="bg-white/5 hover:bg-yellow-400 hover:text-black p-2 px-4 rounded-lg text-[10px] font-black uppercase transition"
+            >
+                View
+            </button>
+        </td>
+    </tr>
+`;
     }).join("");
 
     $("countToday").innerText = String(totalCount);

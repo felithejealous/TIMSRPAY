@@ -16,7 +16,7 @@ from fastapi.responses import RedirectResponse
 from urllib.parse import urlencode
 
 from backend.database import SessionLocal
-from backend.models import User, Wallet, RewardWallet, Role, PasswordResetToken
+from backend.models import User, Wallet, RewardWallet, Role, PasswordResetToken, LoginRateLimit
 from backend.security import create_access_token, get_current_user
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
@@ -123,6 +123,82 @@ def _as_utc(dt: datetime):
 
 
 # -----------------------
+# LOGIN RATE LIMIT
+# -----------------------
+LOGIN_MAX_FAILED_ATTEMPTS = 5
+LOGIN_LOCK_MINUTES = 15
+
+
+def _get_client_ip(request: Request) -> str:
+    forwarded_for = request.headers.get("x-forwarded-for")
+    if forwarded_for:
+        return forwarded_for.split(",")[0].strip()
+
+    real_ip = request.headers.get("x-real-ip")
+    if real_ip:
+        return real_ip.strip()
+
+    if request.client and request.client.host:
+        return request.client.host.strip()
+
+    return "unknown"
+
+
+def _get_login_rate_limit_row(db: Session, email: str, ip_address: str) -> LoginRateLimit:
+    row = db.query(LoginRateLimit).filter(
+        LoginRateLimit.email == email,
+        LoginRateLimit.ip_address == ip_address
+    ).first()
+
+    if not row:
+        row = LoginRateLimit(
+            email=email,
+            ip_address=ip_address,
+            failed_count=0,
+            locked_until=None
+        )
+        db.add(row)
+        db.flush()
+
+    return row
+
+
+def _check_login_lock(row: LoginRateLimit):
+    now = datetime.utcnow()
+
+    if row.locked_until and now < row.locked_until:
+        remaining_seconds = int((row.locked_until - now).total_seconds())
+        remaining_minutes = max(1, (remaining_seconds + 59) // 60)
+        raise HTTPException(
+            status_code=429,
+            detail=f"Too many failed login attempts. Try again in about {remaining_minutes} minute(s)."
+        )
+
+    if row.locked_until and now >= row.locked_until:
+        row.failed_count = 0
+        row.locked_until = None
+
+
+def _register_failed_login(db: Session, row: LoginRateLimit):
+    now = datetime.utcnow()
+
+    row.failed_count = int(row.failed_count or 0) + 1
+    row.last_attempt_at = now
+
+    if row.failed_count >= LOGIN_MAX_FAILED_ATTEMPTS:
+        row.locked_until = now + timedelta(minutes=LOGIN_LOCK_MINUTES)
+
+    db.commit()
+
+
+def _reset_login_rate_limit(db: Session, row: LoginRateLimit):
+    row.failed_count = 0
+    row.locked_until = None
+    row.last_attempt_at = datetime.utcnow()
+    db.commit()
+
+
+# -----------------------
 # EMAIL SENDER
 # -----------------------
 def _send_email(to_email: str, subject: str, body: str):
@@ -159,6 +235,7 @@ def _send_email(to_email: str, subject: str, body: str):
 # TOKEN HASH
 # -----------------------
 TOKEN_ITERS = 120_000
+
 
 def _hash_token(token_str: str, salt: bytes) -> str:
     dk = hashlib.pbkdf2_hmac("sha256", token_str.encode(), salt, TOKEN_ITERS, dklen=32)
@@ -233,19 +310,28 @@ def register_user(email: str, password: str, db: Session = Depends(get_db)):
 # ============================================================
 @router.post("/login")
 def login(
+    request: Request,
     email: str = Form(...),
     password: str = Form(...),
     response: Response = None,
     db: Session = Depends(get_db)
 ):
     email = email.strip().lower()
+    ip_address = _get_client_ip(request)
+
+    rate_limit_row = _get_login_rate_limit_row(db, email, ip_address)
+    _check_login_lock(rate_limit_row)
+
     user = db.query(User).filter(User.email == email).first()
 
     if not user or not verify_password(password, user.password_hash):
+        _register_failed_login(db, rate_limit_row)
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     if hasattr(user, "is_active") and not bool(user.is_active):
         raise HTTPException(status_code=403, detail="Account is deactivated")
+
+    _reset_login_rate_limit(db, rate_limit_row)
 
     role = db.query(Role).filter(Role.id == user.role_id).first()
     role_name = (role.name if role else "customer").lower()
@@ -262,7 +348,7 @@ def login(
         httponly=True,
         secure=True,
         samesite="lax",
-        max_age=60*60*24*7
+        max_age=60 * 60 * 24 * 7
     )
 
     return {
@@ -290,6 +376,7 @@ def logout(response: Response):
 # ============================================================
 RESET_TTL_SECONDS = 15 * 60
 RESET_MAX_ATTEMPTS = 3
+
 
 @router.post("/forgot-password/request")
 def forgot_password_request(email: str, db: Session = Depends(get_db)):
@@ -383,6 +470,7 @@ GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
 GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
 
+
 def _google_env(name: str) -> str:
     v = (os.getenv(name) or "").strip()
     if not v:
@@ -438,9 +526,7 @@ def google_callback(
     client_secret = _google_env("GOOGLE_CLIENT_SECRET")
     redirect_uri = _google_env("GOOGLE_REDIRECT_URI")
 
-    frontend_redirect = os.getenv(
-        "FRONTEND_OAUTH_REDIRECT",
-    )
+    frontend_redirect = os.getenv("FRONTEND_OAUTH_REDIRECT")
 
     token_res = requests.post(
         GOOGLE_TOKEN_URL,

@@ -225,45 +225,6 @@
 
         <button class="footer-btn" id="nextBtn">Next</button>
     </div>
-
-    <script>
-        const optionCards = document.querySelectorAll('.option-card');
-        const nextBtn = document.getElementById('nextBtn');
-        let selectedTarget = null;
-
-        optionCards.forEach(card => {
-            card.addEventListener('click', () => {
-                optionCards.forEach(c => c.classList.remove('selected'));
-                card.classList.add('selected');
-                
-                selectedTarget = card.getAttribute('data-target');
-                
-                if (selectedTarget.includes('teopaycardid')) {
-                    localStorage.setItem('paymentMethod', 'Teo Pay');
-                } else {
-                    localStorage.setItem('paymentMethod', 'Counter');
-                }
-                
-                nextBtn.classList.add('active');
-            });
-        });
-
-        nextBtn.addEventListener('click', () => {
-            if (selectedTarget) {
-                window.location.href = selectedTarget;
-            } else {
-                showToast("Please select an order type first!");
-            }
-        });
-
-        function showToast(text) {
-            const msg = document.createElement('div');
-            msg.className = 'toast';
-            msg.innerText = text;
-            document.body.appendChild(msg);
-            setTimeout(() => msg.remove(), 2500);
-        }
-    </script>
-
+    <script src="../js/kiosk-payment-option.js"></script>
 </body>
 </html>

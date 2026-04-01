@@ -10,6 +10,7 @@ import hmac
 import os
 import re
 import smtplib
+import string
 from email.message import EmailMessage
 
 from backend.security import get_current_user, require_roles
@@ -23,12 +24,16 @@ from backend.models import (
     RewardRedemptionToken,
     RewardManualOTP,
     CustomerProfile,
+    Wallet,
 )
 
 router = APIRouter(prefix="/rewards", tags=["Rewards"])
 
 REQUIRED_POINTS = 2800
-QR_TOKEN_TTL_SECONDS = 120
+
+# token is effectively "no expiry" now for free drink redeem
+NO_EXPIRY_TOKEN_PLACEHOLDER = datetime(2099, 12, 31, 23, 59, 59, tzinfo=timezone.utc)
+
 MANUAL_OTP_TTL_SECONDS = 300
 OTP_ITERS = 120_000
 MANUAL_OTP_MAX_ATTEMPTS = 3
@@ -44,6 +49,19 @@ def get_db():
     finally:
         db.close()
 
+def _generate_short_redeem_token(db, length: int = 6):
+    alphabet = string.ascii_uppercase + string.digits
+
+    while True:
+        token_body = "".join(secrets.choice(alphabet) for _ in range(length))
+        token = f"TDM-{token_body}"
+
+        existing = db.query(RewardRedemptionToken).filter(
+            RewardRedemptionToken.token == token
+        ).first()
+
+        if not existing:
+            return token
 
 def require_staff_or_admin(x_role: str = Header(default="", alias="X-Role")):
     role = (x_role or "").strip().lower()
@@ -56,7 +74,7 @@ def _utcnow():
     return datetime.now(timezone.utc)
 
 
-def _as_utc(dt: datetime) -> Optional[datetime]:
+def _as_utc(dt: Optional[datetime]) -> Optional[datetime]:
     if dt is None:
         return None
     if dt.tzinfo is None:
@@ -97,6 +115,27 @@ def _resolve_order_id(order_reference: Optional[str], order_id: Optional[int] = 
         status_code=400,
         detail="Invalid order reference. Use DB order id like 190 or UI order id like #TM-1090"
     )
+
+
+def _get_user_role_name(db: Session, user: Optional[User]) -> str:
+    if not user:
+        return ""
+
+    direct = getattr(user, "role_name", None)
+    if direct:
+        return str(direct).strip().lower()
+
+    role_obj = getattr(user, "role", None)
+    if role_obj and getattr(role_obj, "name", None):
+        return str(role_obj.name).strip().lower()
+
+    role_id = getattr(user, "role_id", None)
+    if role_id:
+        role = db.query(Role).filter(Role.id == role_id).first()
+        if role and role.name:
+            return str(role.name).strip().lower()
+
+    return ""
 
 
 def _get_user_by_email(db: Session, email: str) -> User:
@@ -228,17 +267,102 @@ def _ensure_claim_user_matches_order(user: User, order: Order):
         )
 
 
+def _find_customer_by_identifier(db: Session, raw_query: str):
+    q = (raw_query or "").strip()
+    if not q:
+        raise HTTPException(status_code=400, detail="Query is required")
+
+    customer_role_id = _get_customer_role_id(db)
+    if not customer_role_id:
+        raise HTTPException(status_code=500, detail="Role 'customer' not found")
+
+    user = None
+    wallet = None
+
+    if q.isdigit():
+        user = db.query(User).filter(
+            User.id == int(q),
+            User.role_id == customer_role_id
+        ).first()
+
+    if not user and "@" in q:
+        user = db.query(User).filter(
+            sa_func.lower(User.email) == q.lower(),
+            User.role_id == customer_role_id
+        ).first()
+
+    if not user:
+        wallet = db.query(Wallet).join(User, User.id == Wallet.user_id).filter(
+            sa_func.upper(Wallet.wallet_code) == q.upper(),
+            User.role_id == customer_role_id
+        ).first()
+
+        if wallet:
+            user = db.query(User).filter(User.id == wallet.user_id).first()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="Customer not found")
+
+    if not wallet:
+        wallet = db.query(Wallet).filter(Wallet.user_id == user.id).first()
+
+    customer_profile = db.query(CustomerProfile).filter(CustomerProfile.user_id == user.id).first()
+    reward_wallet = db.query(RewardWallet).filter(RewardWallet.user_id == user.id).first()
+
+    return {
+        "user": user,
+        "wallet": wallet,
+        "customer_profile": customer_profile,
+        "reward_wallet": reward_wallet,
+    }
+
+
+def _clear_unused_redeem_tokens(db: Session, user_id: int):
+    db.query(RewardRedemptionToken).filter(
+        RewardRedemptionToken.user_id == user_id,
+        RewardRedemptionToken.is_used == False
+    ).delete(synchronize_session=False)
+
+
+def _create_no_expiry_redeem_token(db: Session, user: User):
+    rw = _get_reward_wallet(db, int(user.id))
+    points = int(rw.total_points or 0)
+
+    if points < REQUIRED_POINTS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Not enough points. Need {REQUIRED_POINTS}, you have {points}."
+        )
+
+    _clear_unused_redeem_tokens(db, int(user.id))
+
+    token = _generate_short_redeem_token(db)
+
+    row = RewardRedemptionToken(
+        user_id=int(user.id),
+        token=token,
+        required_points=REQUIRED_POINTS,
+        expires_at=NO_EXPIRY_TOKEN_PLACEHOLDER,
+        is_used=False
+    )
+    db.add(row)
+    db.commit()
+    db.refresh(row)
+
+    return row
 class ManualOTPRequest(BaseModel):
     email: EmailStr
-    order_reference: str = Field(min_length=1, max_length=50)
-
-
+    order_reference: Optional[str] = Field(default=None, max_length=50)
 class ManualOTPConfirm(BaseModel):
     email: EmailStr
     otp: str = Field(min_length=4, max_length=8)
     order_reference: Optional[str] = Field(default=None, max_length=50)
     order_id: Optional[int] = Field(default=None, gt=0)
     points_to_add: Optional[int] = Field(default=None, gt=0)
+
+
+class StaffRedeemTokenGenerateRequest(BaseModel):
+    q: str = Field(min_length=1, description="Customer email, wallet code, or user id")
 
 
 # ============================================================
@@ -318,13 +442,21 @@ def admin_rewards_customers(
     )
 
     if q:
-        search = f"%{q.strip()}%"
-        query = query.filter(
-            or_(
-                User.email.ilike(search),
-                CustomerProfile.full_name.ilike(search),
-            )
-        )
+        raw_q = (q or "").strip()
+        search = f"%{raw_q}%"
+
+        query = query.outerjoin(Wallet, Wallet.user_id == User.id)
+
+        conditions = [
+            User.email.ilike(search),
+            CustomerProfile.full_name.ilike(search),
+            Wallet.wallet_code.ilike(search),
+        ]
+
+        if raw_q.isdigit():
+            conditions.append(User.id == int(raw_q))
+
+        query = query.filter(or_(*conditions))
 
     rows = query.order_by(User.id.desc()).limit(limit).all()
     user_ids = [user.id for user, _, _ in rows]
@@ -575,40 +707,39 @@ def generate_redeem_qr(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles("customer")),
 ):
-    user_id = int(current_user.id)
-
-    rw = _get_reward_wallet(db, user_id)
-    points = int(rw.total_points or 0)
-
-    if points < REQUIRED_POINTS:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Not enough points. Need {REQUIRED_POINTS}, you have {points}."
-        )
-
-    db.query(RewardRedemptionToken).filter(
-        RewardRedemptionToken.user_id == user_id,
-        RewardRedemptionToken.is_used == False
-    ).delete(synchronize_session=False)
-
-    token = "RDM_" + secrets.token_urlsafe(24)
-    expires_at = _utcnow() + timedelta(seconds=QR_TOKEN_TTL_SECONDS)
-
-    row = RewardRedemptionToken(
-        user_id=user_id,
-        token=token,
-        required_points=REQUIRED_POINTS,
-        expires_at=expires_at,
-        is_used=False
-    )
-    db.add(row)
-    db.commit()
-    db.refresh(row)
+    row = _create_no_expiry_redeem_token(db, current_user)
 
     return {
-        "user_id": user_id,
+        "user_id": int(current_user.id),
         "token": row.token,
-        "expires_at": str(row.expires_at)
+        "qr_value": row.token,
+        "expires_at": None,
+        "has_expiry": False,
+        "message": "Redeem token generated successfully"
+    }
+
+
+@router.post("/redeem-qr/generate-for-customer")
+def generate_redeem_qr_for_customer(
+    payload: StaffRedeemTokenGenerateRequest,
+    db: Session = Depends(get_db),
+    _: User = Depends(require_roles("cashier", "admin", "staff")),
+):
+    result = _find_customer_by_identifier(db, payload.q)
+    user = result["user"]
+    customer_profile = result["customer_profile"]
+
+    row = _create_no_expiry_redeem_token(db, user)
+
+    return {
+        "user_id": int(user.id),
+        "full_name": customer_profile.full_name if customer_profile else None,
+        "email": getattr(user, "email", None),
+        "token": row.token,
+        "qr_value": row.token,
+        "expires_at": None,
+        "has_expiry": False,
+        "message": "Redeem token generated successfully for customer"
     }
 
 
@@ -616,7 +747,7 @@ def generate_redeem_qr(
 def consume_redeem_qr(
     qr_token: str,
     db: Session = Depends(get_db),
-    _: User = Depends(require_roles("cashier", "admin")),
+    _: User = Depends(require_roles("cashier", "admin", "staff")),
 ):
     token = (qr_token or "").strip()
     if not token:
@@ -629,16 +760,14 @@ def consume_redeem_qr(
     if row.is_used:
         raise HTTPException(status_code=400, detail="Token already used")
 
-    if row.expires_at and _utcnow() > _as_utc(row.expires_at):
-        raise HTTPException(status_code=400, detail="Token expired")
-
+    # NO EXPIRY CHECK HERE ON PURPOSE
     rw = _get_reward_wallet(db, row.user_id)
     if int(rw.total_points or 0) < REQUIRED_POINTS:
         raise HTTPException(status_code=400, detail="Not enough points")
 
     rw.total_points = 0
     row.is_used = True
-    row.used_at = _utcnow().replace(tzinfo=None)
+    row.used_at = _utcnow()
 
     db.add(
         RewardTransaction(
@@ -659,6 +788,39 @@ def consume_redeem_qr(
     }
 
 
+# ======================
+# INQUIRY
+# ======================
+@router.get("/inquiry")
+def rewards_inquiry(
+    q: str = Query(..., min_length=1, description="Email, wallet code, or user id"),
+    db: Session = Depends(get_db),
+    _: User = Depends(require_roles("staff", "cashier", "admin")),
+):
+    result = _find_customer_by_identifier(db, q)
+
+    user = result["user"]
+    wallet = result["wallet"]
+    customer_profile = result["customer_profile"]
+    reward_wallet = result["reward_wallet"]
+
+    active_token = db.query(RewardRedemptionToken).filter(
+        RewardRedemptionToken.user_id == user.id,
+        RewardRedemptionToken.is_used == False
+    ).order_by(RewardRedemptionToken.id.desc()).first()
+
+    return {
+        "user_id": user.id,
+        "full_name": customer_profile.full_name if customer_profile else None,
+        "email": user.email,
+        "wallet_code": getattr(wallet, "wallet_code", None) if wallet else None,
+        "reward_points": int(reward_wallet.total_points or 0) if reward_wallet else 0,
+        "wallet_balance": float(wallet.balance or 0) if wallet else 0.0,
+        "is_active": bool(getattr(user, "is_active", True)),
+        "has_active_redeem_token": bool(active_token),
+    }
+
+
 # ============================================================
 # MANUAL OTP REQUEST
 # ============================================================
@@ -669,21 +831,29 @@ def request_manual_points_otp(
     _: User = Depends(require_roles("staff", "admin", "cashier")),
 ):
     user = _get_user_by_email(db, str(payload.email))
-    resolved_order_id = _resolve_order_id(payload.order_reference)
-    order = _get_order_for_claim(db, resolved_order_id)
-    _ensure_claim_user_matches_order(user, order)
+
+    resolved_order_id = None
+    claim_points = None
+
+    if payload.order_reference:
+        resolved_order_id = _resolve_order_id(payload.order_reference)
+        order = _get_order_for_claim(db, resolved_order_id)
+        _ensure_claim_user_matches_order(user, order)
+        claim_points = int(getattr(order, "earned_points", 0) or 0)
 
     last = db.query(RewardManualOTP).filter(
         RewardManualOTP.user_id == user.id
     ).order_by(RewardManualOTP.id.desc()).first()
 
+    elapsed = MANUAL_OTP_REQUEST_COOLDOWN_SECONDS + 1
     if last and getattr(last, "created_at", None):
         elapsed = (_utcnow() - _as_utc(last.created_at)).total_seconds()
+
     if elapsed < MANUAL_OTP_REQUEST_COOLDOWN_SECONDS:
-              remaining = int(MANUAL_OTP_REQUEST_COOLDOWN_SECONDS - elapsed)
-              raise HTTPException(
-                 status_code=429,
-                 detail=f"Please wait {remaining} seconds before requesting a new OTP."
+        remaining = int(MANUAL_OTP_REQUEST_COOLDOWN_SECONDS - elapsed)
+        raise HTTPException(
+            status_code=429,
+            detail=f"Please wait {remaining} seconds before requesting a new OTP."
         )
 
     db.query(RewardManualOTP).filter(
@@ -710,14 +880,13 @@ def request_manual_points_otp(
     db.refresh(row)
 
     sent = _send_otp_email(str(payload.email), otp, MANUAL_OTP_TTL_SECONDS)
-    claim_points = int(getattr(order, "earned_points", 0) or 0)
 
     if sent:
         return {
             "message": "OTP sent to email",
             "email": str(payload.email),
             "order_id": resolved_order_id,
-            "display_id": _format_order_display_id(resolved_order_id),
+            "display_id": _format_order_display_id(resolved_order_id) if resolved_order_id else None,
             "claim_points": claim_points,
             "expires_at": str(row.expires_at)
         }
@@ -726,7 +895,7 @@ def request_manual_points_otp(
         "message": "OTP generated (DEV MODE - SMTP disabled)",
         "email": str(payload.email),
         "order_id": resolved_order_id,
-        "display_id": _format_order_display_id(resolved_order_id),
+        "display_id": _format_order_display_id(resolved_order_id) if resolved_order_id else None,
         "claim_points": claim_points,
         "otp_dev": otp,
         "expires_at": str(row.expires_at)
@@ -873,10 +1042,10 @@ def confirm_manual_points_otp(
             detail="order_reference/order_id is required for claim, or provide points_to_add for manual adjustment"
         )
 
-    staff_role = (getattr(staff_user, "role_name", "") or "").strip().lower()
-    if staff_role != "admin":
+    staff_role = _get_user_role_name(db, staff_user)
+    if staff_role not in {"admin", "staff", "cashier"}:
         db.commit()
-        raise HTTPException(status_code=403, detail="Admin only for manual point adjustments")
+        raise HTTPException(status_code=403, detail="Staff/Admin/Cashier only for manual point adjustments")
 
     rw = _get_reward_wallet(db, user.id)
     current = int(rw.total_points or 0)

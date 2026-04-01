@@ -10,9 +10,8 @@
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
 
         :root {
-            /* DARK THEME (Default) */
             --mango-yellow: #fcdb05;
-            --mango-dark: #120f0a; 
+            --mango-dark: #120f0a;
             --text-main: #ffffff;
             --text-sub: #9ca3af;
             --glass-bg: rgba(255, 255, 255, 0.05);
@@ -21,9 +20,10 @@
             --logo-filter: brightness(0) invert(1);
             --mesh-color-1: rgba(252, 219, 5, 0.08);
             --mesh-color-2: rgba(252, 219, 5, 0.04);
+            --danger: #ef4444;
+            --success: #22c55e;
         }
 
-        /* LIGHT THEME OVERRIDES */
         body.light-theme {
             --mango-dark: #FFFDF5;
             --text-main: #2d1e18;
@@ -50,15 +50,27 @@
         }
 
         .page-transition {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: #120f0a; z-index: 9999;
-            opacity: 1; transition: opacity 0.5s ease-in-out; pointer-events: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #120f0a;
+            z-index: 9999;
+            opacity: 1;
+            transition: opacity 0.5s ease-in-out;
+            pointer-events: none;
         }
+
         .page-transition.fade-out { opacity: 0; }
 
         .mesh-bg {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: 
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
                 radial-gradient(circle at 10% 10%, var(--mesh-color-1) 0%, transparent 40%),
                 radial-gradient(circle at 90% 80%, var(--mesh-color-2) 0%, transparent 40%);
             z-index: -1;
@@ -93,13 +105,21 @@
             box-shadow: 0 0 0 4px rgba(252, 219, 5, 0.2);
         }
 
-        .input-group { position: relative; margin-bottom: 1.5rem; }
-        .input-icon {
-            position: absolute; left: 1rem; top: 50%;
-            transform: translateY(-50%); color: var(--text-sub);
+        .input-group {
+            position: relative;
+            margin-bottom: 1.25rem;
         }
 
-        .login-btn {
+        .input-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-sub);
+        }
+
+        .login-btn,
+        .primary-btn {
             width: 100%;
             background: var(--mango-yellow);
             color: #120f0a;
@@ -108,11 +128,30 @@
             border-radius: 16px;
             transition: all 0.3s ease;
             box-shadow: 0 10px 20px rgba(252, 219, 5, 0.2);
+            border: none;
+            cursor: pointer;
         }
 
-        .login-btn:hover {
+        .login-btn:hover,
+        .primary-btn:hover {
             transform: translateY(-2px);
             filter: brightness(1.1);
+        }
+
+        .secondary-btn {
+            width: 100%;
+            background: transparent;
+            color: var(--text-main);
+            font-weight: 700;
+            padding: 0.95rem;
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .secondary-btn:hover {
+            background: rgba(255,255,255,0.06);
         }
 
         .logo-img {
@@ -120,9 +159,10 @@
             transition: filter 0.4s ease;
         }
 
-        /* Theme Toggle in Login (Optional, but good for UX) */
         .theme-switch-login {
-            position: absolute; top: 2rem; right: 2rem;
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
             padding: 8px 15px;
@@ -131,6 +171,185 @@
             font-weight: 700;
             cursor: pointer;
             color: var(--text-main);
+        }
+
+        .forgot-link {
+            color: #facc15;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .forgot-link:hover {
+            opacity: 0.85;
+        }
+
+        .status-box {
+            margin-top: 1rem;
+            padding: 0.9rem 1rem;
+            border-radius: 14px;
+            font-size: 0.92rem;
+            font-weight: 600;
+            display: none;
+            line-height: 1.4;
+        }
+
+        .status-box.show {
+            display: block;
+        }
+
+        .status-box.error {
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.28);
+            color: #fecaca;
+        }
+
+        .status-box.success {
+            background: rgba(34, 197, 94, 0.12);
+            border: 1px solid rgba(34, 197, 94, 0.28);
+            color: #bbf7d0;
+        }
+
+        body.light-theme .status-box.error {
+            color: #991b1b;
+        }
+
+        body.light-theme .status-box.success {
+            color: #166534;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 20px;
+            backdrop-filter: blur(8px);
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-card {
+            width: 100%;
+            max-width: 500px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 32px;
+            padding: 2rem;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+        }
+
+        .modal-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin-bottom: 0.4rem;
+        }
+
+        .modal-subtitle {
+            color: var(--text-sub);
+            font-size: 0.95rem;
+            margin-bottom: 1.4rem;
+            line-height: 1.5;
+        }
+        .modal-card {
+    position: relative;
+}
+
+.modal-close-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1px solid var(--glass-border);
+    background: rgba(255,255,255,0.06);
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    font-size: 1rem;
+}
+
+.modal-close-btn:hover {
+    transform: scale(1.06);
+    background: rgba(255,255,255,0.12);
+}
+
+body.light-theme .modal-close-btn {
+    background: rgba(255,255,255,0.65);
+}
+
+        .step-indicator {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 1.2rem;
+        }
+
+        .step-pill {
+            flex: 1;
+            height: 8px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid var(--glass-border);
+        }
+
+        .step-pill.active {
+            background: var(--mango-yellow);
+            border-color: var(--mango-yellow);
+        }
+
+        .fp-step {
+            display: none;
+        }
+
+        .fp-step.active {
+            display: block;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 1rem;
+        }
+
+        .helper-text {
+            font-size: 0.85rem;
+            color: var(--text-sub);
+            margin-top: -0.4rem;
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+
+        .dev-code-box {
+            margin-top: 1rem;
+            padding: 0.9rem 1rem;
+            border-radius: 14px;
+            border: 1px dashed rgba(252, 219, 5, 0.4);
+            background: rgba(252, 219, 5, 0.08);
+            color: var(--text-main);
+            display: none;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .dev-code-box.show {
+            display: block;
+        }
+
+        .dev-code {
+            font-weight: 800;
+            letter-spacing: 2px;
+            color: var(--mango-yellow);
         }
     </style>
 </head>
@@ -148,7 +367,7 @@
             <h2 class="text-3xl font-extrabold">System Login</h2>
             <p style="color: var(--text-sub);" class="mt-2 font-medium">Secure access to Admin Portal</p>
         </div>
-        
+
         <div class="input-group">
             <i class="fas fa-user input-icon"></i>
             <input type="email" id="email" placeholder="Email" required>
@@ -159,17 +378,99 @@
             <input type="password" id="password" placeholder="Password" required>
         </div>
 
-        <button type="submit" class="login-btn">
+        <button type="submit" class="login-btn" id="loginBtn">
             Log In
         </button>
-        
+
+        <div id="loginStatus" class="status-box"></div>
+
         <div class="text-center mt-6">
-            <a href="#" class="text-sm text-yellow-500 hover:text-yellow-400 font-bold">Forgot password?</a>
+            <a href="#" class="text-sm forgot-link" id="forgotPasswordLink">Forgot password?</a>
         </div>
     </form>
 
+    <!-- Forgot Password Modal -->
+    <div class="modal-overlay" id="forgotModal">
+        <div class="modal-card">
+    <button type="button" class="modal-close-btn" id="forgotModalCloseBtn" aria-label="Close">
+        <i class="fas fa-xmark"></i>
+    </button>
+            <div class="modal-title">Reset Password</div>
+            <div class="modal-subtitle" id="forgotSubtitle">
+                Enter your admin email to receive a 6-digit reset code.
+            </div>
+
+            <div class="step-indicator">
+                <div class="step-pill active" id="stepPill1"></div>
+                <div class="step-pill" id="stepPill2"></div>
+                <div class="step-pill" id="stepPill3"></div>
+            </div>
+
+            <!-- Step 1 -->
+            <div class="fp-step active" id="forgotStep1">
+                <div class="input-group">
+                    <i class="fas fa-envelope input-icon"></i>
+                    <input type="email" id="fpEmail" placeholder="Enter your admin email">
+                </div>
+
+                <div class="helper-text">
+                    We will send a 6-digit reset code to this email address.
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="secondary-btn" id="forgotCancelBtn1">Cancel</button>
+                    <button type="button" class="primary-btn" id="sendCodeBtn">Send Code</button>
+                </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="fp-step" id="forgotStep2">
+                <div class="input-group">
+                    <i class="fas fa-shield-halved input-icon"></i>
+                    <input type="text" id="fpCode" placeholder="Enter 6-digit code" maxlength="6">
+                </div>
+
+                <div class="helper-text">
+                    Check your email for the reset code. If SMTP is off, a dev code may appear below.
+                </div>
+
+                <div id="devCodeBox" class="dev-code-box">
+                    Dev code: <span class="dev-code" id="devCodeText"></span>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="secondary-btn" id="backToStep1Btn">Back</button>
+                    <button type="button" class="primary-btn" id="goToStep3Btn">Next</button>
+                </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="fp-step" id="forgotStep3">
+                <div class="input-group">
+                    <i class="fas fa-lock input-icon"></i>
+                    <input type="password" id="fpNewPassword" placeholder="New password">
+                </div>
+
+                <div class="input-group">
+                    <i class="fas fa-lock input-icon"></i>
+                    <input type="password" id="fpConfirmPassword" placeholder="Confirm new password">
+                </div>
+
+                <div class="helper-text">
+                    Password must be at least 8 characters and include uppercase, lowercase, number, and special character.
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="secondary-btn" id="backToStep2Btn">Back</button>
+                    <button type="button" class="primary-btn" id="resetPasswordBtn">Reset Password</button>
+                </div>
+            </div>
+
+            <div id="forgotStatus" class="status-box"></div>
+        </div>
+    </div>
+
     <script>
-        // Sync and Toggle Theme
         function applyTheme() {
             if (localStorage.getItem('admin-theme') === 'light') {
                 document.body.classList.add('light-theme');
@@ -183,7 +484,6 @@
             localStorage.setItem('admin-theme', isLight ? 'light' : 'dark');
         }
 
-        // Run on load
         applyTheme();
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -192,7 +492,6 @@
                 overlay.classList.add('fade-out');
             }, 100);
         });
-
     </script>
     <script src="../js/login.js"></script>
 </body>

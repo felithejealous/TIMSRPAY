@@ -2,14 +2,22 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
-import hashlib, hmac, secrets
+from sqlalchemy import func as sa_func
+
+import secrets
 import string
 
 from backend.database import SessionLocal
 from backend.models import User, Role, StaffProfile
 from backend.security import get_current_user, require_roles
-from backend.routers.auth import hash_password as auth_hash_password
+from backend.routers.auth import (
+    hash_password as auth_hash_password,
+    verify_password as auth_verify_password,
+    validate_password_strength,
+)
+
 router = APIRouter(prefix="/staff", tags=["Staff"])
+
 
 def get_db():
     db = SessionLocal()
@@ -18,42 +26,6 @@ def get_db():
     finally:
         db.close()
 
-PBKDF2_ITERS = 200_000
-
-def hash_password(password: str) -> str:
-    password = (password or "").strip()
-
-    if len(password) < 6:
-        raise HTTPException(status_code=400, detail="password must be at least 6 characters")
-
-    salt = secrets.token_bytes(16)
-    dk = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, PBKDF2_ITERS)
-
-    return f"pbkdf2_sha256${PBKDF2_ITERS}${salt.hex()}${dk.hex()}"
-
-def verify_password(password: str, stored: str) -> bool:
-    try:
-        algo, iters, salt_hex, dk_hex = stored.split("$", 3)
-
-        if algo != "pbkdf2_sha256":
-            return False
-
-        iters = int(iters)
-        salt = bytes.fromhex(salt_hex)
-        expected = bytes.fromhex(dk_hex)
-
-        dk = hashlib.pbkdf2_hmac(
-            "sha256",
-            password.encode("utf-8"),
-            salt,
-            iters,
-            dklen=len(expected),
-        )
-
-        return hmac.compare_digest(dk, expected)
-
-    except Exception:
-        return False
 
 def generate_temp_password(length: int = 10) -> str:
     alphabet = string.ascii_letters + string.digits + "@#$%!"
@@ -67,6 +39,8 @@ def generate_temp_password(length: int = 10) -> str:
 
         if has_lower and has_upper and has_digit and has_special:
             return pw
+
+
 class StaffRegister(BaseModel):
     email: EmailStr
     password: Optional[str] = None
@@ -75,12 +49,26 @@ class StaffRegister(BaseModel):
     position: Optional[str] = None
     is_active: bool = True
 
+
 class StaffPatch(BaseModel):
     full_name: Optional[str] = None
     position: Optional[str] = None
     role: Optional[str] = None
     is_active: Optional[bool] = None
     profile_picture: Optional[str] = None
+
+
+class StaffSelfPatch(BaseModel):
+    full_name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    profile_picture: Optional[str] = None
+
+
+class ChangeMyPasswordPayload(BaseModel):
+    current_password: str
+    new_password: str
+    confirm_password: str
+
 
 def _get_role(db: Session, role_name: str) -> Role:
     role_name = (role_name or "").strip().lower()
@@ -98,6 +86,31 @@ def _get_role(db: Session, role_name: str) -> Role:
 
     return r
 
+
+def _get_role_name(db: Session, role_id: Optional[int]) -> str:
+    if not role_id:
+        return "unknown"
+
+    role = db.query(Role).filter(Role.id == role_id).first()
+    return (role.name if role and role.name else "unknown").lower()
+
+
+def _get_or_create_staff_profile(db: Session, user: User) -> StaffProfile:
+    sp = db.query(StaffProfile).filter(StaffProfile.user_id == user.id).first()
+
+    if not sp:
+        fallback_name = user.email.split("@")[0] if getattr(user, "email", None) else f"Staff {user.id}"
+        sp = StaffProfile(
+            user_id=user.id,
+            full_name=fallback_name,
+            position=_get_role_name(db, getattr(user, "role_id", None)).title()
+        )
+        db.add(sp)
+        db.flush()
+
+    return sp
+
+
 @router.post("/register")
 def register_staff(
     payload: StaffRegister,
@@ -113,9 +126,11 @@ def register_staff(
     role = _get_role(db, payload.role)
     temp_password = (payload.password or "").strip() or generate_temp_password()
 
+    validate_password_strength(temp_password)
+
     u = User(
         email=email,
-        password_hash=hash_password(temp_password),
+        password_hash=auth_hash_password(temp_password),
         role_id=role.id,
         is_active=bool(payload.is_active),
     )
@@ -145,6 +160,7 @@ def register_staff(
         "position": sp.position,
         "temporary_password": temp_password,
     }
+
 
 @router.get("/")
 def list_staff(
@@ -190,9 +206,132 @@ def list_staff(
             "is_active": bool(u.is_active),
             "full_name": sp.full_name,
             "position": sp.position,
+            "staff_code": sp.staff_code,
+            "profile_picture": getattr(u, "profile_picture", None),
         })
 
     return {"count": len(data), "data": data}
+
+
+@router.get("/me")
+def get_my_staff_profile(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles("staff", "cashier", "admin")),
+):
+    user = db.query(User).filter(User.id == current_user.id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    sp = _get_or_create_staff_profile(db, user)
+    role_name = _get_role_name(db, getattr(user, "role_id", None))
+
+    db.commit()
+    db.refresh(user)
+    db.refresh(sp)
+
+    return {
+        "user_id": user.id,
+        "email": user.email,
+        "full_name": sp.full_name,
+        "position": sp.position,
+        "staff_code": sp.staff_code,
+        "role": role_name,
+        "is_active": bool(getattr(user, "is_active", True)),
+        "profile_picture": getattr(user, "profile_picture", None),
+    }
+
+
+@router.patch("/me")
+def patch_my_staff_profile(
+    payload: StaffSelfPatch,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles("staff", "cashier", "admin")),
+):
+    user = db.query(User).filter(User.id == current_user.id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    sp = _get_or_create_staff_profile(db, user)
+
+    if payload.full_name is not None:
+        full_name = payload.full_name.strip()
+        if not full_name:
+            raise HTTPException(status_code=400, detail="Full name cannot be empty")
+        sp.full_name = full_name
+
+    if payload.email is not None:
+        new_email = payload.email.strip().lower()
+
+        existing = db.query(User).filter(
+            sa_func.lower(User.email) == new_email,
+            User.id != user.id
+        ).first()
+
+        if existing:
+            raise HTTPException(status_code=400, detail="Email already exists")
+
+        user.email = new_email
+
+    if payload.profile_picture is not None:
+        profile_picture = payload.profile_picture.strip()
+        user.profile_picture = profile_picture or None
+
+    db.commit()
+    db.refresh(user)
+    db.refresh(sp)
+
+    role_name = _get_role_name(db, getattr(user, "role_id", None))
+
+    return {
+        "message": "Profile updated successfully",
+        "user_id": user.id,
+        "email": user.email,
+        "full_name": sp.full_name,
+        "position": sp.position,
+        "staff_code": sp.staff_code,
+        "role": role_name,
+        "is_active": bool(getattr(user, "is_active", True)),
+        "profile_picture": getattr(user, "profile_picture", None),
+    }
+
+
+@router.post("/change-password")
+def change_my_password(
+    payload: ChangeMyPasswordPayload,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles("staff", "cashier", "admin")),
+):
+    user = db.query(User).filter(User.id == current_user.id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    current_password = (payload.current_password or "").strip()
+    new_password = (payload.new_password or "").strip()
+    confirm_password = (payload.confirm_password or "").strip()
+
+    if not current_password or not new_password or not confirm_password:
+        raise HTTPException(status_code=400, detail="All password fields are required")
+
+    if not user.password_hash:
+        raise HTTPException(status_code=400, detail="This account does not support password change")
+
+    if not auth_verify_password(current_password, user.password_hash):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+
+    if new_password != confirm_password:
+        raise HTTPException(status_code=400, detail="New password and confirm password do not match")
+
+    if current_password == new_password:
+        raise HTTPException(status_code=400, detail="New password must be different from current password")
+
+    validate_password_strength(new_password)
+    user.password_hash = auth_hash_password(new_password)
+
+    db.commit()
+    db.refresh(user)
+
+    return {"message": "Password updated successfully"}
+
 
 @router.post("/{user_id}/reset-password")
 def reset_staff_password(
@@ -211,6 +350,7 @@ def reset_staff_password(
         raise HTTPException(status_code=400, detail="Password reset here is for staff/admin/cashier only")
 
     temp_password = generate_temp_password()
+    validate_password_strength(temp_password)
     u.password_hash = auth_hash_password(temp_password)
 
     db.commit()
@@ -222,6 +362,7 @@ def reset_staff_password(
         "email": u.email,
         "temporary_password": temp_password,
     }
+
 
 @router.patch("/{user_id}")
 def patch_staff(
@@ -268,4 +409,6 @@ def patch_staff(
         "is_active": u.is_active,
         "full_name": sp.full_name,
         "position": sp.position,
+        "staff_code": sp.staff_code,
+        "profile_picture": getattr(u, "profile_picture", None),
     }
