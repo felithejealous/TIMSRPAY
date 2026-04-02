@@ -23,6 +23,18 @@
             --mesh-color-1: rgba(252, 219, 5, 0.15); --mesh-color-2: rgba(255, 140, 0, 0.05);
             --logo-filter: none; --modal-card: #ffffff;
         }
+        html.preload-light body {
+    --mango-dark: #f8f9fa;
+    --text-main: #1a1a1a;
+    --text-sub: #4a4a4a;
+    --glass-bg: rgba(255, 255, 255, 0.8);
+    --glass-border: rgba(0, 0, 0, 0.1);
+    --mesh-color-1: rgba(252, 219, 5, 0.15);
+    --mesh-color-2: rgba(255, 140, 0, 0.05);
+    --logo-filter: none;
+    --modal-card: #ffffff;
+    --modal-overlay: rgba(0,0,0,0.4);
+}
 
         * { box-sizing: border-box; margin: 0; padding: 0; transition: background 0.3s, color 0.3s, border 0.3s; }
         ::-webkit-scrollbar { width: 0px; background: transparent; }
@@ -63,7 +75,27 @@
         .btn-export { background: #22c55e; color: #fff; padding: 12px 20px; border-radius: 14px; font-weight: 900; text-transform: uppercase; font-size: 11px; transition: 0.3s; }
 
         /* --- TABLE --- */
-        .content-container { background: var(--glass-bg); border-radius: 28px; border: 1px solid var(--glass-border); padding: 25px; }
+        .content-container {
+            background: var(--glass-bg);
+            border-radius: 28px;
+            border: 1px solid var(--glass-border);
+            padding: 25px;
+        }
+        .table-scroll {
+    max-height: 38vh;
+    overflow-y: auto;
+    border-radius: 18px;
+}
+
+.table-scroll::-webkit-scrollbar {
+    width: 6px;
+    opacity: 50px;
+}
+
+.table-scroll::-webkit-scrollbar-thumb {
+    background: rgba(252, 219, 5, 0.4);
+    border-radius: 10px;
+}
         .data-table { width: 100%; border-collapse: collapse; }
         .data-table th { text-align: left; padding: 15px; font-size: 11px; text-transform: uppercase; color: var(--mango-yellow); border-bottom: 1px solid var(--glass-border); letter-spacing: 1px; }
         .data-table td { padding: 18px 15px; border-bottom: 1px solid var(--glass-border); font-size: 13px; }
@@ -101,6 +133,14 @@
 
         .reward-highlight { background: rgba(252, 219, 5, 0.08); border: 1px dashed var(--mango-yellow); padding: 20px; border-radius: 24px; margin-top: 20px; }
     </style>
+    <script>
+(function () {
+    const savedTheme = localStorage.getItem("admin-theme");
+    if (savedTheme === "light") {
+        document.documentElement.classList.add("preload-light");
+    }
+})();
+</script>
 </head>
 <body>
 
@@ -116,6 +156,7 @@
             <a href="promo.html" class="nav-item" data-lang="nav_promo"><i class="fa-solid fa-tags"></i> Promos</a>
             <a href="rewards.html" class="nav-item" data-lang="nav_rewards"><i class="fa-solid fa-gift"></i> Rewards</a>
             <a href="announce.html" class="nav-item" data-lang="nav_ann"><i class="fa-solid fa-bell"></i> Announce</a>
+            <a href="engagement.html" class="nav-item"><i class="fa-solid fa-comments"></i> Engagement</a>
             <a href="attendance.html" class="nav-item "><i class="fa-solid fa-user-clock"></i> Employee Shift Logs</a>
             <a href="payments.html" class="nav-item" data-lang="nav_pay"><i class="fa-solid fa-file-arrow-down"></i>Reports</a>
             <a href="settings.html" class="nav-item" data-lang="nav_set"><i class="fa-solid fa-cog"></i> Settings</a>
@@ -129,7 +170,7 @@
                 <h1 class="text-2xl font-black uppercase tracking-tighter" style="color: var(--mango-yellow);">Order Ledger</h1>
                 <p class="text-xs font-mono opacity-60">Operations & Financial Archive</p>
             </div>
-            <button class="w-10 h-10 rounded-full bg-yellow-400 text-black flex items-center justify-center shadow-lg" onclick="toggleTheme()">
+            <button class="theme-toggle-circle" id="themeToggle">
                 <i class="fa-solid fa-sun" id="themeIcon"></i>
             </button>
         </header>
@@ -163,7 +204,6 @@
                 <select id="paymentFilter" onchange="loadOrdersView()">
                     <option value="all">All Modes</option>
                     <option value="TeoPay">TeoPay</option>
-                    <option value="GCash">GCash</option>
                     <option value="Cash">Cash</option>
                 </select>
             </div>
@@ -189,6 +229,7 @@
         </div>
 
         <div class="content-container glass" id="ordersSection">
+            <div class="table-scroll">
             <table class="data-table" id="orderTable">
                 <thead>
                     <tr>
@@ -202,6 +243,7 @@
                 </thead>
                 <tbody id="orderTableBody"></tbody>
             </table>
+            </div>
         </div>
 
         <div class="content-container glass mt-8" id="refundSection">
@@ -213,6 +255,7 @@
                     <p class="text-xs opacity-60">Refunded wallet transactions archive</p>
                 </div>
             </div>
+            <div class="table-scroll">
 
             <table class="data-table" id="refundTable">
                 <thead>
@@ -227,6 +270,7 @@
                 </thead>
                 <tbody id="refundTableBody"></tbody>
             </table>
+            </div>
         </div>
     </main>
 
@@ -267,6 +311,7 @@
     </script>
     <script src="../js/authGuard.js"></script>
     <script src="../js/logout.js"></script>
+    <script src="../js/admin-theme-sync.js"></script>
     <script src="../js/orders.js"></script>
 </body>
 </html>

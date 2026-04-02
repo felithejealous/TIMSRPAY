@@ -537,19 +537,6 @@ function exportToExcel() {
         `TeoDMango_Ledger_${new Date().toISOString().split("T")[0]}.xlsx`
     );
 }
-
-function toggleTheme() {
-    document.body.classList.toggle("light-theme");
-
-    const isLight = document.body.classList.contains("light-theme");
-    localStorage.setItem("theme", isLight ? "light" : "dark");
-
-    const themeIcon = $("themeIcon");
-    if (themeIcon) {
-        themeIcon.className = isLight ? "fa-solid fa-moon" : "fa-solid fa-sun";
-    }
-}
-
 async function refreshOrdersData() {
     await Promise.all([fetchOrders(), fetchRefunds()]);
     loadOrdersView();
@@ -583,7 +570,6 @@ document.addEventListener("visibilitychange", async () => {
 window.viewDetails = viewDetails;
 window.closeModal = closeModal;
 window.exportToExcel = exportToExcel;
-window.toggleTheme = toggleTheme;
 window.loadOrders = loadOrders;
 window.loadOrdersView = loadOrdersView;
 
@@ -591,16 +577,6 @@ window.onload = async () => {
     if (typeof applySync === "function") {
         applySync();
     }
-
-    const theme = localStorage.getItem("theme");
-    if (theme === "light") {
-        document.body.classList.add("light-theme");
-        const themeIcon = $("themeIcon");
-        if (themeIcon) {
-            themeIcon.className = "fa-solid fa-moon";
-        }
-    }
-
     await refreshOrdersData();
     startAutoRefresh();
 };

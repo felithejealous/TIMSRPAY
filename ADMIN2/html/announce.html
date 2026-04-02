@@ -36,6 +36,18 @@
             --modal-card: #ffffff;
             --modal-overlay: rgba(0, 0, 0, 0.4);
         }
+        html.preload-light body {
+    --mango-dark: #f8f9fa;
+    --text-main: #1a1a1a;
+    --text-sub: #4a4a4a;
+    --glass-bg: rgba(255, 255, 255, 0.8);
+    --glass-border: rgba(0, 0, 0, 0.1);
+    --mesh-color-1: rgba(252, 219, 5, 0.15);
+    --mesh-color-2: rgba(255, 140, 0, 0.05);
+    --logo-filter: none;
+    --modal-card: #ffffff;
+    --modal-overlay: rgba(0,0,0,0.4);
+}
 
         * {
             box-sizing: border-box;
@@ -453,6 +465,14 @@
             }
         }
     </style>
+    <script>
+(function () {
+    const savedTheme = localStorage.getItem("admin-theme");
+    if (savedTheme === "light") {
+        document.documentElement.classList.add("preload-light");
+    }
+})();
+</script>
 </head>
 <body>
 
@@ -468,6 +488,7 @@
             <a href="promo.html" class="nav-item"><i class="fa-solid fa-tags"></i> Promos</a>
             <a href="rewards.html" class="nav-item"><i class="fa-solid fa-gift"></i> Rewards</a>
             <a href="announce.html" class="nav-item active"><i class="fa-solid fa-bell"></i> Announce</a>
+            <a href="engagement.html" class="nav-item"><i class="fa-solid fa-comments"></i> Engagement</a>
             <a href="attendance.html" class="nav-item "><i class="fa-solid fa-user-clock"></i> Employee Shift Logs</a>
             <a href="payments.html" class="nav-item"><i class="fa-solid fa-file-arrow-down"></i> Reports</a>
             <a href="settings.html" class="nav-item"><i class="fa-solid fa-cog"></i> Settings</a>
@@ -486,7 +507,7 @@
                 <button class="btn-main" type="button" onclick="openModal()">
                     <i class="fas fa-plus mr-2"></i> New Post
                 </button>
-                <button class="theme-toggle-circle" type="button" onclick="toggleTheme()">
+                <button class="theme-toggle-circle" type="button">
                     <i class="fa-solid fa-sun" id="themeIcon"></i>
                 </button>
             </div>
@@ -567,6 +588,7 @@
 
     <script src="../js/authGuard.js"></script>
     <script src="../js/logout.js"></script>
+    <script src="../js/admin-theme-sync.js"></script>
     <script src="../js/announce.js"></script>
 </body>
 </html>

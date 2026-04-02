@@ -34,6 +34,18 @@
             --mesh-color-2: rgba(255, 140, 0, 0.15);
             --logo-filter: none;
         }
+        html.preload-light body {
+    --mango-dark: #f8f9fa;
+    --text-main: #1a1a1a;
+    --text-sub: #4a4a4a;
+    --glass-bg: rgba(255, 255, 255, 0.8);
+    --glass-border: rgba(0, 0, 0, 0.1);
+    --mesh-color-1: rgba(252, 219, 5, 0.15);
+    --mesh-color-2: rgba(255, 140, 0, 0.05);
+    --logo-filter: none;
+    --modal-card: #ffffff;
+    --modal-overlay: rgba(0,0,0,0.4);
+}
 
         body {
             background-color: var(--mango-dark);
@@ -114,6 +126,14 @@
             transition: filter 0.4s ease;
         }
     </style>
+    <script>
+(function () {
+    const savedTheme = localStorage.getItem("admin-theme");
+    if (savedTheme === "light") {
+        document.documentElement.classList.add("preload-light");
+    }
+})();
+</script>
 </head>
 <body class="antialiased flex flex-col justify-between">
     <div class="page-transition" id="transitionOverlay"></div>
@@ -124,7 +144,7 @@
             Secure Terminal
         </div>
         
-        <button id="theme-toggle" onclick="toggleTheme()">
+        <button id="theme-toggle">
             <i class="fas fa-circle-half-stroke mr-2"></i>
             <span id="theme-text">Light Mode</span>
         </button>
@@ -159,28 +179,6 @@
     </footer>
 
     <script>
-        // --- THEME TOGGLE LOGIC ---
-        function toggleTheme() {
-            const body = document.body;
-            const themeText = document.getElementById('theme-text');
-            
-            body.classList.toggle('light-theme');
-            
-            if (body.classList.contains('light-theme')) {
-                themeText.innerText = "Dark Mode";
-                localStorage.setItem('admin-theme', 'light');
-            } else {
-                themeText.innerText = "Light Mode";
-                localStorage.setItem('admin-theme', 'dark');
-            }
-        }
-
-        // Check for saved theme preference
-        if (localStorage.getItem('admin-theme') === 'light') {
-            document.body.classList.add('light-theme');
-            document.getElementById('theme-text').innerText = "Dark Mode";
-        }
-
         // --- TRANSITION LOGIC ---
         window.addEventListener('DOMContentLoaded', () => {
             const overlay = document.getElementById('transitionOverlay');
@@ -199,5 +197,6 @@
             }, 500);
         });
     </script>
+    <script src="../js/admin-theme-sync.js"></script>
 </body>
 </html>

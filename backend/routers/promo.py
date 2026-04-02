@@ -10,6 +10,7 @@ from backend.database import SessionLocal
 from backend.models import PromoCode, PromoBanner, PromoCodeRedemption, User
 from backend.security import require_roles, get_current_user
 from backend.schemas import PromoCodeUpdate
+from backend.models import PromoCode, Order
 
 
 router = APIRouter(prefix="/promo", tags=["Promotions"])
@@ -279,26 +280,39 @@ def toggle_promo_code(
     }
 
 
-@router.delete("/codes/{promo_id}")
+@router.delete("/codes/{promo_code_id}")
 def delete_promo_code(
-    promo_id: int,
+    promo_code_id: int,
     db: Session = Depends(get_db),
     _: User = Depends(require_roles("admin")),
 ):
-    row = db.query(PromoCode).filter(PromoCode.id == promo_id).first()
-    if not row:
+    promo = db.query(PromoCode).filter(PromoCode.id == promo_code_id).first()
+
+    if not promo:
         raise HTTPException(status_code=404, detail="Promo code not found")
 
-    redemption_rows = db.query(PromoCodeRedemption).filter(
-        PromoCodeRedemption.promo_code_id == promo_id
-    ).all()
-    for redemption in redemption_rows:
-        db.delete(redemption)
+    linked_order = db.query(Order).filter(Order.promo_code_id == promo_code_id).first()
 
-    db.delete(row)
+    if linked_order:
+        promo.is_active = False
+        db.commit()
+        db.refresh(promo)
+
+        return {
+            "message": "Promo code is already used in orders and has been deactivated instead of deleted.",
+            "promo_code_id": promo.id,
+            "is_active": promo.is_active,
+            "action": "deactivated"
+        }
+
+    db.delete(promo)
     db.commit()
 
-    return {"message": "Promo code deleted"}
+    return {
+        "message": "Promo code deleted successfully",
+        "promo_code_id": promo_code_id,
+        "action": "deleted"
+    }
 
 
 @router.get("/banners")

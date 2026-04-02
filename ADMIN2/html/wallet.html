@@ -36,6 +36,18 @@
             --modal-card: #ffffff;
             --modal-overlay: rgba(0,0,0,0.4);
         }
+        html.preload-light body {
+    --mango-dark: #f8f9fa;
+    --text-main: #1a1a1a;
+    --text-sub: #4a4a4a;
+    --glass-bg: rgba(255, 255, 255, 0.8);
+    --glass-border: rgba(0, 0, 0, 0.1);
+    --mesh-color-1: rgba(252, 219, 5, 0.15);
+    --mesh-color-2: rgba(255, 140, 0, 0.05);
+    --logo-filter: none;
+    --modal-card: #ffffff;
+    --modal-overlay: rgba(0,0,0,0.4);
+}
 
         * { box-sizing: border-box; margin: 0; padding: 0; transition: background 0.3s, color 0.3s, border 0.3s, transform 0.2s; }
         ::-webkit-scrollbar { width: 0px; background: transparent; }
@@ -257,7 +269,99 @@
             box-shadow: 0 10px 20px rgba(0,0,0,0.2);
         }
         #toast.show { transform: translateX(-50%) translateY(0); }
+        .search-container {
+    position: relative;
+    flex: 1;
+    max-width: 520px;
+}
+
+.wallet-suggestions {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    width: 100%;
+    background: var(--modal-card);
+    border: 1px solid var(--glass-border);
+    border-radius: 18px;
+    box-shadow: 0 18px 35px rgba(0,0,0,0.28);
+    overflow: hidden;
+    display: none;
+    z-index: 300;
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.wallet-suggestions.show {
+    display: block;
+}
+
+.wallet-suggestion-item {
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.wallet-suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.wallet-suggestion-item:hover {
+    background: rgba(252, 219, 5, 0.08);
+}
+
+.wallet-suggestion-main {
+    min-width: 0;
+    flex: 1;
+}
+
+.wallet-suggestion-name {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.wallet-suggestion-meta {
+    font-size: 0.78rem;
+    color: var(--text-sub);
+    margin-top: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.wallet-suggestion-code {
+    font-family: monospace;
+    font-size: 0.78rem;
+    font-weight: 900;
+    color: var(--mango-yellow);
+    background: rgba(252, 219, 5, 0.08);
+    border: 1px solid rgba(252, 219, 5, 0.15);
+    border-radius: 10px;
+    padding: 8px 10px;
+    flex-shrink: 0;
+}
+
+.wallet-suggestion-empty {
+    padding: 14px 16px;
+    font-size: 0.85rem;
+    color: var(--text-sub);
+}
     </style>
+    <script>
+(function () {
+    const savedTheme = localStorage.getItem("admin-theme");
+    if (savedTheme === "light") {
+        document.documentElement.classList.add("preload-light");
+    }
+})();
+</script>
 </head>
 <body>
 
@@ -273,6 +377,7 @@
             <a href="promo.html" class="nav-item"><i class="fa-solid fa-tags"></i> Promos</a>
             <a href="rewards.html" class="nav-item"><i class="fa-solid fa-gift"></i> Rewards</a>
             <a href="announce.html" class="nav-item"><i class="fa-solid fa-bell"></i> Announce</a>
+            <a href="engagement.html" class="nav-item"><i class="fa-solid fa-comments"></i> Engagement</a>
             <a href="attendance.html" class="nav-item "><i class="fa-solid fa-user-clock"></i> Employee Shift Logs</a>
             <a href="payments.html" class="nav-item"><i class="fa-solid fa-file-arrow-down"></i> Reports</a>
             <a href="settings.html" class="nav-item"><i class="fa-solid fa-cog"></i> Settings</a>
@@ -286,7 +391,7 @@
                 <h1 class="text-2xl font-black uppercase tracking-tighter" style="color: var(--mango-yellow);">Wallet Manager</h1>
                 <p class="text-xs font-mono opacity-60">Search, inspect, and top up customer TeoPay wallets</p>
             </div>
-            <button class="theme-toggle-circle" onclick="toggleTheme()">
+            <button class="theme-toggle-circle">
                 <i class="fa-solid fa-sun" id="themeIcon"></i>
             </button>
         </header>
@@ -316,14 +421,16 @@
         </section>
 
         <div class="flex flex-wrap justify-between items-center mb-6 gap-4">
-            <div class="search-container">
-                <i class="fas fa-search"></i>
-                <input
-                    type="text"
-                    id="walletSearchInput"
-                    placeholder="Search by email, full name, or wallet code..."
-                >
-            </div>
+       <div class="search-container">
+    <i class="fas fa-search"></i>
+    <input
+        type="text"
+        id="walletSearchInput"
+        placeholder="Search by email, full name, or wallet code..."
+        autocomplete="off"
+    >
+    <div id="walletSuggestions" class="wallet-suggestions"></div>
+</div>
             <button class="btn-primary" onclick="searchWallets()">
                 <i class="fas fa-search mr-2"></i>Search Wallet
             </button>
@@ -411,6 +518,7 @@
 
     <script src="../js/authGuard.js"></script>
     <script src="../js/logout.js"></script>
+    <script src="../js/admin-theme-sync.js"></script>
     <script src="../js/wallet.js"></script>
 </body>
 </html>

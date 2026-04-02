@@ -36,6 +36,18 @@
             --modal-card: #ffffff;
             --modal-overlay: rgba(0,0,0,0.4);
         }
+        html.preload-light body {
+    --mango-dark: #f8f9fa;
+    --text-main: #1a1a1a;
+    --text-sub: #4a4a4a;
+    --glass-bg: rgba(255, 255, 255, 0.8);
+    --glass-border: rgba(0, 0, 0, 0.1);
+    --mesh-color-1: rgba(252, 219, 5, 0.15);
+    --mesh-color-2: rgba(255, 140, 0, 0.05);
+    --logo-filter: none;
+    --modal-card: #ffffff;
+    --modal-overlay: rgba(0,0,0,0.4);
+}
 
         * { box-sizing: border-box; margin: 0; padding: 0; transition: background 0.3s, color 0.3s, border 0.3s, transform 0.2s; }
         ::-webkit-scrollbar { width: 0px; background: transparent; }
@@ -136,6 +148,14 @@
 
         .btn-gray { background: rgba(255,255,255,0.05); color: var(--text-sub); padding: 12px 24px; border-radius: 14px; font-weight: 700; font-size: 0.8rem; }
     </style>
+    <script>
+(function () {
+    const savedTheme = localStorage.getItem("admin-theme");
+    if (savedTheme === "light") {
+        document.documentElement.classList.add("preload-light");
+    }
+})();
+</script>
 </head>
 <body>
 
@@ -151,6 +171,7 @@
         <a href="promo.html" class="nav-item"><i class="fa-solid fa-tags"></i> Promos</a>
         <a href="rewards.html" class="nav-item"><i class="fa-solid fa-gift"></i> Rewards</a>
         <a href="announce.html" class="nav-item"><i class="fa-solid fa-bell"></i> Announce</a>
+        <a href="engagement.html" class="nav-item"><i class="fa-solid fa-comments"></i> Engagement</a>
         <a href="attendance.html" class="nav-item "><i class="fa-solid fa-user-clock"></i> Employee Shift Logs</a>
         <a href="payments.html" class="nav-item"><i class="fa-solid fa-credit-card"></i> Reports</a>
         <a href="settings.html" class="nav-item"><i class="fa-solid fa-cog"></i> Settings</a>
@@ -166,7 +187,7 @@
         </div>
         <div class="flex items-center gap-4">
             <span class="status-badge status-online"><i class="fa-solid fa-circle text-[8px] mr-2"></i>Sync Active</span>
-            <button class="theme-toggle-circle" onclick="toggleTheme()">
+            <button class="theme-toggle-circle">
                 <i class="fa-solid fa-sun" id="themeIcon"></i>
             </button>
         </div>
@@ -347,6 +368,7 @@
 
 <script src="../js/authGuard.js"></script>
 <script src="../js/logout.js"></script>
+<script src="../js/admin-theme-sync.js"></script>
 <script src="../js/menuman.js"></script>
 </body>
 </html>

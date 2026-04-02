@@ -36,6 +36,18 @@
             --modal-card: #ffffff;
             --modal-overlay: rgba(0,0,0,0.4);
         }
+        html.preload-light body {
+    --mango-dark: #f8f9fa;
+    --text-main: #1a1a1a;
+    --text-sub: #4a4a4a;
+    --glass-bg: rgba(255, 255, 255, 0.8);
+    --glass-border: rgba(0, 0, 0, 0.1);
+    --mesh-color-1: rgba(252, 219, 5, 0.15);
+    --mesh-color-2: rgba(255, 140, 0, 0.05);
+    --logo-filter: none;
+    --modal-card: #ffffff;
+    --modal-overlay: rgba(0,0,0,0.4);
+}
 
         * { box-sizing: border-box; margin: 0; padding: 0; transition: background 0.3s, color 0.3s, border 0.3s, transform 0.2s; }
         ::-webkit-scrollbar { width: 0px; background: transparent; }
@@ -141,6 +153,32 @@
             overflow-y: auto;          /* internal scroll if content is still too tall */
             margin: auto;              /* keeps it centered vertically when shorter than viewport */
         }
+        .modal-content {
+    position: relative;
+}
+
+.modal-close-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1px solid var(--glass-border);
+    background: rgba(255,255,255,0.06);
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    font-size: 1rem;
+}
+
+.modal-close-btn:hover {
+    transform: scale(1.06);
+    background: rgba(255,255,255,0.12);
+}
 
         .input-group label { display: block; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: var(--mango-orange); margin-bottom: 8px; letter-spacing: 1px; }
         .input-group input, .input-group select { width: 100%; padding: 14px; border-radius: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); color: var(--text-main); outline: none; margin-bottom: 15px; }
@@ -161,6 +199,14 @@
         }
         #toast.show { transform: translateX(-50%) translateY(0); }
     </style>
+    <script>
+(function () {
+    const savedTheme = localStorage.getItem("admin-theme");
+    if (savedTheme === "light") {
+        document.documentElement.classList.add("preload-light");
+    }
+})();
+</script>
 </head>
 <body>
 
@@ -176,6 +222,7 @@
         <a href="promo.html" class="nav-item active"><i class="fa-solid fa-tags"></i> Promos</a>
         <a href="rewards.html" class="nav-item"><i class="fa-solid fa-gift"></i> Rewards</a>
         <a href="announce.html" class="nav-item"><i class="fa-solid fa-bell"></i> Announce</a>
+        <a href="engagement.html" class="nav-item"><i class="fa-solid fa-comments"></i> Engagement</a>
         <a href="attendance.html" class="nav-item "><i class="fa-solid fa-user-clock"></i> Employee Shift Logs</a>
         <a href="payments.html" class="nav-item"><i class="fa-solid fa-file-arrow-down"></i> Reports</a>
         <a href="settings.html" class="nav-item"><i class="fa-solid fa-cog"></i> Settings</a>
@@ -189,7 +236,7 @@
             <h1 class="text-2xl font-black uppercase tracking-tighter" style="color: var(--mango-yellow);">Promotions</h1>
             <p class="text-xs font-mono opacity-60">Campaign Banners & Voucher Control</p>
         </div>
-        <button class="theme-toggle-circle" onclick="toggleTheme()">
+        <button class="theme-toggle-circle">
             <i class="fa-solid fa-sun" id="themeIcon"></i>
         </button>
     </header>
@@ -257,7 +304,11 @@
 </main>
 
 <div class="modal-overlay" id="promoModalOverlay">
-    <div class="modal-content">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <button type="button" class="modal-close-btn" onclick="closePromoModal()" aria-label="Close">
+            <i class="fas fa-xmark"></i>
+        </button>
+
         <input type="hidden" id="editingPromoId">
 
         <h3 class="text-xl font-black uppercase text-yellow-400 mb-8" id="promoModalTitle">Deploy Voucher</h3>
@@ -329,6 +380,7 @@
 
 <script src="../js/authGuard.js"></script>
 <script src="../js/logout.js"></script>
+<script src="../js/admin-theme-sync.js"></script>
 <script src="../js/promo.js"></script>
 </body>
 </html>

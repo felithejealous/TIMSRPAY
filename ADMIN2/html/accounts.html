@@ -36,6 +36,18 @@
             --modal-card: #ffffff;
             --modal-overlay: rgba(0,0,0,0.4);
         }
+        html.preload-light body {
+    --mango-dark: #f8f9fa;
+    --text-main: #1a1a1a;
+    --text-sub: #4a4a4a;
+    --glass-bg: rgba(255, 255, 255, 0.8);
+    --glass-border: rgba(0, 0, 0, 0.1);
+    --mesh-color-1: rgba(252, 219, 5, 0.15);
+    --mesh-color-2: rgba(255, 140, 0, 0.05);
+    --logo-filter: none;
+    --modal-card: #ffffff;
+    --modal-overlay: rgba(0,0,0,0.4);
+}
 
         * { box-sizing: border-box; margin: 0; padding: 0; transition: background 0.3s, color 0.3s, border 0.3s, transform 0.2s; }
         ::-webkit-scrollbar { width: 0px; background: transparent; }
@@ -140,6 +152,14 @@
         #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--mango-yellow); color: #000; padding: 12px 30px; border-radius: 50px; font-weight: 900; text-transform: uppercase; font-size: 10px; letter-spacing: 1px; transition: 0.5s; z-index: 2000; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
         #toast.show { transform: translateX(-50%) translateY(0); }
     </style>
+    <script>
+(function () {
+    const savedTheme = localStorage.getItem("admin-theme");
+    if (savedTheme === "light") {
+        document.documentElement.classList.add("preload-light");
+    }
+})();
+</script>
 </head>
 <body>
 
@@ -155,6 +175,7 @@
             <a href="promo.html" class="nav-item"><i class="fa-solid fa-tags"></i> Promos</a>
             <a href="rewards.html" class="nav-item"><i class="fa-solid fa-gift"></i> Rewards</a>
             <a href="announce.html" class="nav-item"><i class="fa-solid fa-bell"></i> Announce</a>
+            <a href="engagement.html" class="nav-item"><i class="fa-solid fa-comments"></i> Engagement</a>
             <a href="attendance.html" class="nav-item "><i class="fa-solid fa-user-clock"></i> Employee Shift Logs</a>
             <a href="payments.html" class="nav-item"><i class="fa-solid fa-file-arrow-down"></i> Reports</a>
             <a href="settings.html" class="nav-item"><i class="fa-solid fa-cog"></i> Settings</a>
@@ -168,7 +189,7 @@
                 <h1 class="text-2xl font-black uppercase tracking-tighter" style="color: var(--mango-yellow);">Accounts Center</h1>
                 <p class="text-xs font-mono opacity-60">System Security & Identity</p>
             </div>
-            <button class="theme-toggle-circle" onclick="toggleTheme()">
+            <button class="theme-toggle-circle">
                 <i class="fa-solid fa-sun" id="themeIcon"></i>
             </button>
         </header>
@@ -310,6 +331,7 @@
 
     <script src="../js/authGuard.js"></script>
     <script src="../js/logout.js"></script>
+    <script src="../js/admin-theme-sync.js"></script>
     <script src="../js/accounts.js"></script>
 </body>
 </html>

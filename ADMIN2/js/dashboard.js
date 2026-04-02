@@ -1,6 +1,7 @@
 let charts = {};
 let modalChartInstance = null;
-
+let lowStockPollInterval = null;
+const LOW_STOCK_POLL_MS = 15000;
 async function fetchInventoryMasterData() {
     try {
         const response = await fetch(`${API_URL}/inventory/master`, {
@@ -284,7 +285,130 @@ async function exportData() {
         console.error("Export error:", error);
     }
 }
+async function fetchLowStockAlerts() {
+    try {
+        const response = await fetch(`${API_URL}/inventory/alerts/low-stock`, {
+            method: "GET",
+            credentials: "include"
+        });
 
+        if (!response.ok) {
+            throw new Error(`Low stock alert fetch failed: ${response.status}`);
+        }
+
+        const result = await response.json();
+        return Array.isArray(result?.data) ? result.data : [];
+    } catch (error) {
+        console.error("fetchLowStockAlerts error:", error);
+        return [];
+    }
+}
+
+function renderLowStockToasts(items) {
+    const container = document.getElementById("lowStockToastContainer");
+    if (!container) return;
+
+    const currentIds = new Set(items.map(item => String(item.inventory_master_id)));
+
+    Array.from(container.querySelectorAll(".low-stock-toast")).forEach((toast) => {
+        const id = toast.dataset.alertId;
+        if (!currentIds.has(id)) {
+            toast.remove();
+        }
+    });
+
+    items.forEach((item) => {
+        const alertId = String(item.inventory_master_id);
+        let toast = container.querySelector(`.low-stock-toast[data-alert-id="${alertId}"]`);
+
+        const html = `
+            <div class="low-stock-toast-head">
+                <div class="low-stock-toast-title">
+                    Low Stock Alert
+                </div>
+                <button class="low-stock-toast-close" data-action="dismiss" data-id="${item.inventory_master_id}">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="low-stock-toast-body">
+                <strong>${item.name}</strong><br>
+                Current: ${item.quantity} ${item.unit}<br>
+                Threshold: ${item.alert_threshold} ${item.unit}<br>
+                Severity: ${item.severity}
+            </div>
+
+            <div class="low-stock-toast-actions">
+                <button class="low-stock-toast-btn primary" data-action="view">
+                    View Inventory
+                </button>
+                <button class="low-stock-toast-btn secondary" data-action="dismiss" data-id="${item.inventory_master_id}">
+                    Dismiss
+                </button>
+            </div>
+        `;
+
+        if (!toast) {
+            toast = document.createElement("div");
+            toast.className = `low-stock-toast ${item.severity}`;
+            toast.dataset.alertId = alertId;
+            container.appendChild(toast);
+        }
+
+        toast.innerHTML = html;
+
+        toast.querySelectorAll('[data-action="dismiss"]').forEach((btn) => {
+            btn.addEventListener("click", async () => {
+                await dismissLowStockAlert(item.inventory_master_id);
+            });
+        });
+
+        const viewBtn = toast.querySelector('[data-action="view"]');
+        if (viewBtn) {
+            viewBtn.addEventListener("click", () => {
+                window.location.href = "inventory.html";
+            });
+        }
+    });
+}
+
+async function dismissLowStockAlert(inventoryMasterId) {
+    try {
+        const response = await fetch(`${API_URL}/inventory/alerts/low-stock/${inventoryMasterId}/dismiss`, {
+            method: "POST",
+            credentials: "include"
+        });
+
+        const result = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            throw new Error(result?.detail || `Dismiss failed: ${response.status}`);
+        }
+
+        await refreshLowStockToasts();
+    } catch (error) {
+        console.error("dismissLowStockAlert error:", error);
+    }
+}
+
+async function refreshLowStockToasts() {
+    const items = await fetchLowStockAlerts();
+    renderLowStockToasts(items);
+}
+
+function startLowStockPolling() {
+    refreshLowStockToasts();
+
+    if (lowStockPollInterval) {
+        clearInterval(lowStockPollInterval);
+    }
+
+    lowStockPollInterval = setInterval(() => {
+        if (!document.hidden) {
+            refreshLowStockToasts();
+        }
+    }, LOW_STOCK_POLL_MS);
+}
 window.toggleTheme = function () {
     document.body.classList.toggle("light-theme");
     const isLight = document.body.classList.contains("light-theme");
@@ -303,4 +427,5 @@ window.onload = () => {
         document.getElementById("themeIcon").className = "fa-solid fa-moon";
     }
     fetchDashboardData();
+    startLowStockPolling();
 };

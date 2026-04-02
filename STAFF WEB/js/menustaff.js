@@ -7,6 +7,8 @@ const cartList = document.getElementById("cartList");
 const totalPrice = document.getElementById("totalPrice");
 const checkoutBtn = document.getElementById("checkoutBtn");
 const customerNameInput = document.getElementById("customerNameInput");
+const customerAccountInput = document.getElementById("customerAccountInput");
+const customerLookupStatus = document.getElementById("customerLookupStatus");
 const promoCodeInput = document.getElementById("promoCodeInput");
 const quantityInput = document.getElementById("quantityInput");
 const qtyMinusBtn = document.getElementById("qtyMinusBtn");
@@ -17,7 +19,8 @@ let addons = [];
 let sizeAddons = [];
 let inventoryItems = [];
 let recipeMap = new Map();
-
+let linkedCustomer = null;
+let customerLookupDebounce = null;
 let currentItem = null;
 let selectedAddons = [];
 let selectedSize = "small";
@@ -66,6 +69,63 @@ function escapeHTML(value) {
 
 function formatPeso(value) {
     return `₱${Number(value || 0).toFixed(2)}`;
+}
+function setCustomerLookupStatus(message = "", type = "") {
+    if (!customerLookupStatus) return;
+
+    customerLookupStatus.textContent = message || "";
+
+    if (!message) {
+        customerLookupStatus.style.color = "";
+        return;
+    }
+
+    if (type === "success") {
+        customerLookupStatus.style.color = "#10b981";
+    } else if (type === "error") {
+        customerLookupStatus.style.color = "#ef4444";
+    } else {
+        customerLookupStatus.style.color = "";
+    }
+}
+
+async function resolveCustomerAccount(queryText) {
+    const query = String(queryText || "").trim();
+
+    if (!query) {
+        linkedCustomer = null;
+        setCustomerLookupStatus("");
+        return null;
+    }
+
+    const result = await fetchJSON(
+        `${getAPIURL()}/users?q=${encodeURIComponent(query)}&limit=10&include_balances=true`
+    );
+
+    const rows = Array.isArray(result?.data) ? result.data : [];
+
+    const customers = rows.filter(item => (item.role_name || "").toLowerCase() === "customer");
+
+    if (!customers.length) {
+        linkedCustomer = null;
+        setCustomerLookupStatus("No matching customer account found.", "error");
+        return null;
+    }
+
+    const exactEmailMatch = customers.find(item =>
+        String(item.email || "").trim().toLowerCase() === query.toLowerCase()
+    );
+
+    const selected = exactEmailMatch || customers[0];
+    linkedCustomer = selected;
+
+    const displayName = selected.full_name || selected.email || `User #${selected.user_id}`;
+    setCustomerLookupStatus(
+        `Linked to ${displayName} (User ID #${selected.user_id})`,
+        "success"
+    );
+
+    return selected;
 }
 
 function getProductImageByName(name) {
@@ -671,8 +731,13 @@ function buildCashierOrderPayload() {
     const customerName = customerNameInput?.value?.trim() || "Walk-in Customer";
     const promoCode = promoCodeInput?.value?.trim() || null;
 
+    if (promoCode && !linkedCustomer?.user_id) {
+        throw new Error("Promo requires a linked customer account. Enter the customer's account email first.");
+    }
+
     return {
         customer_name: customerName,
+        user_id: linkedCustomer?.user_id || null,
         payment_method: "cash",
         order_type: "cashier",
         promo_code: promoCode,
@@ -708,9 +773,14 @@ async function proceedToPayment() {
         localStorage.setItem("staff_checkout_order", JSON.stringify({
             order_id: result.order_id,
             customer_name: payload.customer_name,
+            user_id: payload.user_id,
+            linked_customer_email: linkedCustomer?.email || null,
+            linked_customer_name: linkedCustomer?.full_name || null,
             promo_code: payload.promo_code,
             local_cart: cart,
-            total_amount: result.total_amount
+            total_amount: result.total_amount,
+            discount_amount: result.discount_amount || 0,
+            promo_code_text: result.promo_code_text || null
         }));
 
         cart = [];
@@ -730,6 +800,33 @@ async function proceedToPayment() {
 /* =========================
    BUTTONS
 ========================= */
+function setupCustomerLookup() {
+    if (!customerAccountInput) return;
+
+    customerAccountInput.addEventListener("input", () => {
+        clearTimeout(customerLookupDebounce);
+
+        const value = customerAccountInput.value || "";
+
+        customerLookupDebounce = setTimeout(async () => {
+            const trimmed = String(value).trim();
+
+            if (!trimmed) {
+                linkedCustomer = null;
+                setCustomerLookupStatus("");
+                return;
+            }
+
+            try {
+                await resolveCustomerAccount(trimmed);
+            } catch (error) {
+                console.error("Customer lookup failed:", error);
+                linkedCustomer = null;
+                setCustomerLookupStatus(error.message || "Customer lookup failed.", "error");
+            }
+        }, 300);
+    });
+}
 function setupButtons() {
     if (addToCartBtn) {
         addToCartBtn.addEventListener("click", addToCart);
@@ -749,6 +846,7 @@ async function initMenuStaffPage() {
         setupLogout();
         setupButtons();
         setupQuantityControls();
+        setupCustomerLookup();
         updateCartUI();
         setSelectedQuantity(1);
 

@@ -32,6 +32,18 @@
             --mesh-color-2: rgba(255, 140, 0, 0.05);
             --logo-filter: none;
         }
+        html.preload-light body {
+    --mango-dark: #f8f9fa;
+    --text-main: #1a1a1a;
+    --text-sub: #4a4a4a;
+    --glass-bg: rgba(255, 255, 255, 0.8);
+    --glass-border: rgba(0, 0, 0, 0.1);
+    --mesh-color-1: rgba(252, 219, 5, 0.15);
+    --mesh-color-2: rgba(255, 140, 0, 0.05);
+    --logo-filter: none;
+    --modal-card: #ffffff;
+    --modal-overlay: rgba(0,0,0,0.4);
+}
 
         * {
             box-sizing: border-box;
@@ -323,6 +335,14 @@
             }
         }
     </style>
+    <script>
+(function () {
+    const savedTheme = localStorage.getItem("admin-theme");
+    if (savedTheme === "light") {
+        document.documentElement.classList.add("preload-light");
+    }
+})();
+</script>
 </head>
 <body>
 
@@ -338,6 +358,7 @@
             <a href="promo.html" class="nav-item" data-lang="nav_promo"><i class="fa-solid fa-tags"></i> Promos</a>
             <a href="rewards.html" class="nav-item" data-lang="nav_rewards"><i class="fa-solid fa-gift"></i> Rewards</a>
             <a href="announce.html" class="nav-item" data-lang="nav_ann"><i class="fa-solid fa-bell"></i> Announce</a>
+            <a href="engagement.html" class="nav-item"><i class="fa-solid fa-comments"></i> Engagement</a>
             <a href="attendance.html" class="nav-item "><i class="fa-solid fa-user-clock"></i> Employee Shift Logs</a>
             <a href="payments.html" class="nav-item active" data-lang="nav_pay"><i class="fa-solid fa-file-arrow-down"></i> Reports</a>
             <a href="settings.html" class="nav-item" data-lang="nav_set"><i class="fa-solid fa-cog"></i> Settings</a>
@@ -353,7 +374,7 @@
                 <h1 class="text-2xl font-black uppercase tracking-tighter" style="color: var(--mango-yellow);">Reports Hub</h1>
                 <p class="text-xs font-mono opacity-60">Downloadable business data and audit exports</p>
             </div>
-            <button class="theme-toggle-circle" onclick="toggleTheme()">
+            <button class="theme-toggle-circle" >
                 <i class="fa-solid fa-sun" id="themeIcon"></i>
             </button>
         </header>
@@ -541,6 +562,7 @@
 
     <script src="../js/authGuard.js"></script>
     <script src="../js/logout.js"></script>
+    <script src="../js/admin-theme-sync.js"></script>
     <script src="../js/payments.js"></script>
 </body>
 </html>

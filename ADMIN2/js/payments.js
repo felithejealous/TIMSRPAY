@@ -55,30 +55,8 @@ function showAlert(message) {
         setTimeout(() => alert.remove(), 500);
     }, 2800);
 }
-
-function toggleTheme() {
-    document.body.classList.toggle("light-theme");
-    const isLight = document.body.classList.contains("light-theme");
-    localStorage.setItem("theme", isLight ? "light" : "dark");
-
-    const themeIcon = document.getElementById("themeIcon");
-    if (themeIcon) {
-        themeIcon.className = isLight ? "fa-solid fa-moon" : "fa-solid fa-sun";
-    }
-}
-
 function applySync() {
     const lang = localStorage.getItem("teoLang") || "en";
-    const theme = localStorage.getItem("theme");
-
-    if (theme === "light") {
-        document.body.classList.add("light-theme");
-        const themeIcon = document.getElementById("themeIcon");
-        if (themeIcon) {
-            themeIcon.className = "fa-solid fa-moon";
-        }
-    }
-
     document.querySelectorAll("[data-lang]").forEach((el) => {
         const key = el.getAttribute("data-lang");
         if (!translations[lang] || !translations[lang][key]) return;
@@ -469,12 +447,10 @@ function initializeDefaultDates() {
 }
 
 async function initializeReportsPage() {
-    applySync();
     initializeDefaultDates();
     await loadTopSummaryCards();
 }
 
-window.toggleTheme = toggleTheme;
 window.downloadOrdersCsv = downloadOrdersCsv;
 window.downloadWalletCsv = downloadWalletCsv;
 window.downloadLowStockCsv = downloadLowStockCsv;

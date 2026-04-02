@@ -16,29 +16,6 @@ function escapeHtml(value) {
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
 }
-
-function toggleTheme() {
-    document.body.classList.toggle("light-theme");
-    const isLight = document.body.classList.contains("light-theme");
-    localStorage.setItem("theme", isLight ? "light" : "dark");
-
-    const themeIcon = document.getElementById("themeIcon");
-    if (themeIcon) {
-        themeIcon.className = isLight ? "fa-solid fa-moon" : "fa-solid fa-sun";
-    }
-}
-
-function applySavedTheme() {
-    const savedTheme = localStorage.getItem("theme");
-    if (savedTheme === "light") {
-        document.body.classList.add("light-theme");
-        const themeIcon = document.getElementById("themeIcon");
-        if (themeIcon) {
-            themeIcon.className = "fa-solid fa-moon";
-        }
-    }
-}
-
 function switchTab(tab, btn) {
     document.querySelectorAll(".tab-content").forEach(content => {
         content.classList.remove("active");
@@ -675,8 +652,6 @@ function deleteOption() {
 }
 
 async function initializeMenuManager() {
-    applySavedTheme();
-
     await Promise.all([
         fetchCategories(),
         fetchProducts(),
@@ -689,8 +664,6 @@ async function initializeMenuManager() {
     renderOptions();
     populateRecipeProductSelect();
 }
-
-window.toggleTheme = toggleTheme;
 window.switchTab = switchTab;
 window.openProductModal = openProductModal;
 window.openAddonModal = openAddonModal;

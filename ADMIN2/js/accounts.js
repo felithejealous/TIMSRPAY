@@ -481,13 +481,6 @@ function editAccountFromProfile() {
     openModal("formModal", true);
 }
 
-function toggleTheme() {
-    document.body.classList.toggle("light-theme");
-    const isLight = document.body.classList.contains("light-theme");
-    localStorage.setItem("theme", isLight ? "light" : "dark");
-    document.getElementById("themeIcon").className = isLight ? "fa-solid fa-moon" : "fa-solid fa-sun";
-}
-
 async function submitAccountForm(event) {
     event.preventDefault();
 
@@ -611,7 +604,6 @@ async function initializeAccountsPage() {
     updateCounts();
 }
 
-window.toggleTheme = toggleTheme;
 window.searchCards = searchCards;
 window.openModal = openModal;
 window.closeModal = closeModal;

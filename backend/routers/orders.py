@@ -729,13 +729,13 @@ def get_order_refund_summary(db: Session, order_id: int) -> Dict[str, object]:
         "last_refund_at": str(last_refund_at) if last_refund_at else None,
     }
 
-
 def validate_and_compute_promo(
     db: Session,
     promo_code_text: Optional[str],
     base_total: Decimal,
     user_id: Optional[int] = None,
     payment_method: Optional[str] = None,
+    order_type: Optional[str] = None,
 ) -> Dict[str, object]:
     promo_code_text = (promo_code_text or "").strip().upper()
 
@@ -775,9 +775,16 @@ def validate_and_compute_promo(
     if not user_id:
         raise HTTPException(status_code=400, detail="Promo code requires a customer account")
 
-    if (payment_method or "").strip().lower() != "wallet":
-        raise HTTPException(status_code=400, detail="Promo code requires TeoPay wallet payment")
+    order_type_clean = (order_type or "").strip().lower()
+    payment_method_clean = (payment_method or "").strip().lower()
 
+    # Existing public/online behavior stays strict:
+    # promo still requires wallet payment outside cashier/staff-assisted flow.
+    if order_type_clean != "cashier" and payment_method_clean != "wallet":
+        raise HTTPException(
+            status_code=400,
+            detail="Promo code requires TeoPay wallet payment"
+        )
     per_user_limit = getattr(promo, "per_user_limit", None)
     if per_user_limit is not None:
         used_count = (
@@ -845,6 +852,11 @@ def _create_order_core(
 
     order_type = (order_type or "").strip().lower()
     payment_method = (payment_method or "cash").strip().lower()
+    if order_type == "cashier" and (promo_code or "").strip() and not user_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Staff-assisted promo requires a linked customer account"
+        )
 
     if order_type not in {"kiosk", "online", "cashier"}:
         raise HTTPException(status_code=400, detail="order_type must be kiosk|online|cashier")
@@ -933,6 +945,7 @@ def _create_order_core(
         base_total=total_before_discount,
         user_id=user_id,
         payment_method=payment_method,
+        order_type=order_type,
     )
     promo_row = promo_result["promo"]
 

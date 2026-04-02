@@ -22,29 +22,6 @@ function showToast(message) {
         toast.classList.remove("show");
     }, 2500);
 }
-
-function toggleTheme() {
-    document.body.classList.toggle("light-theme");
-    const isLight = document.body.classList.contains("light-theme");
-    localStorage.setItem("theme", isLight ? "light" : "dark");
-
-    const themeIcon = document.getElementById("themeIcon");
-    if (themeIcon) {
-        themeIcon.className = isLight ? "fa-solid fa-moon" : "fa-solid fa-sun";
-    }
-}
-
-function applySavedTheme() {
-    const savedTheme = localStorage.getItem("theme");
-    if (savedTheme === "light") {
-        document.body.classList.add("light-theme");
-        const themeIcon = document.getElementById("themeIcon");
-        if (themeIcon) {
-            themeIcon.className = "fa-solid fa-moon";
-        }
-    }
-}
-
 function resetPromoForm() {
     editingPromoId = null;
     document.getElementById("editingPromoId").value = "";
@@ -71,12 +48,11 @@ function closePromoModal() {
     setTimeout(() => resetPromoForm(), 150);
 }
 
-window.onclick = (e) => {
-    const modal = document.getElementById("promoModalOverlay");
-    if (e.target === modal) {
-        closePromoModal();
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+        return;
     }
-};
+});
 
 function toDatetimeLocalValue(value) {
     if (!value) return "";
@@ -162,53 +138,65 @@ function renderPromoTable() {
         `;
         return;
     }
+promoCodesCache.forEach(item => {
+    const usedOrArchived = Number(item.usage_count || 0) > 0;
+    const statusLabel = item.is_active ? "Active" : "Inactive";
 
-    promoCodesCache.forEach(item => {
-        tbody.innerHTML += `
-            <tr>
-                <td class="font-mono text-xs font-black text-yellow-400">
-                    ${escapeHtml(item.code)}
-                    <div class="text-[10px] opacity-50 mt-1">${escapeHtml(item.title || "-")}</div>
-                </td>
-                <td class="text-xs font-bold">
-                    ${escapeHtml(item.value_label)}
-                    <div class="text-[10px] opacity-50 mt-1">
-                        Min: ₱${Number(item.min_order_amount || 0).toFixed(2)}
-                    </div>
-                    <div class="text-[10px] opacity-50 mt-1">
-                        ${item.usage_limit ? `Total Limit: ${item.usage_limit}` : "Total Limit: Unlimited"}
-                    </div>
-                    <div class="text-[10px] opacity-50 mt-1">
-                        ${item.per_user_limit ? `Per User: ${item.per_user_limit}` : "Per User: Unlimited"}
-                    </div>
-                    <div class="text-[10px] opacity-50 mt-1">
-                        Used: ${Number(item.usage_count || 0)}
-                    </div>
-                    <div class="text-[10px] opacity-50 mt-1">
-                        ${item.valid_from ? `From: ${escapeHtml(item.valid_from)}` : "From: -"}
-                    </div>
-                    <div class="text-[10px] opacity-50 mt-1">
-                        ${item.valid_until ? `Until: ${escapeHtml(item.valid_until)}` : "Until: -"}
-                    </div>
-                </td>
-                <td>
-                    <label class="switch">
-                        <input type="checkbox" ${item.is_active ? "checked" : ""} onchange="togglePromoCode(${item.promo_id})">
-                        <span class="slider"></span>
-                    </label>
-                </td>
-                <td>
-                    <div class="flex flex-col gap-2 items-start">
-                        <button class="text-yellow-400 text-[10px] font-extrabold uppercase tracking-wider bg-transparent border-none cursor-pointer"
-                            onclick="editPromoCode(${item.promo_id})">
-                            Edit
-                        </button>
-                        <button class="btn-danger-text" onclick="deletePromoCode(${item.promo_id})">Delete</button>
-                    </div>
-                </td>
-            </tr>
-        `;
-    });
+    tbody.innerHTML += `
+        <tr>
+            <td class="font-mono text-xs font-black text-yellow-400">
+                ${escapeHtml(item.code)}
+                <div class="text-[10px] opacity-50 mt-1">${escapeHtml(item.title || "-")}</div>
+            </td>
+            <td class="text-xs font-bold">
+                ${escapeHtml(item.value_label)}
+                <div class="text-[10px] opacity-50 mt-1">
+                    Min: ₱${Number(item.min_order_amount || 0).toFixed(2)}
+                </div>
+                <div class="text-[10px] opacity-50 mt-1">
+                    ${item.usage_limit ? `Total Limit: ${item.usage_limit}` : "Total Limit: Unlimited"}
+                </div>
+                <div class="text-[10px] opacity-50 mt-1">
+                    ${item.per_user_limit ? `Per User: ${item.per_user_limit}` : "Per User: Unlimited"}
+                </div>
+                <div class="text-[10px] opacity-50 mt-1">
+                    Used: ${Number(item.usage_count || 0)}
+                </div>
+                <div class="text-[10px] opacity-50 mt-1">
+                    Status: ${statusLabel}
+                </div>
+                <div class="text-[10px] opacity-50 mt-1">
+                    ${item.valid_from ? `From: ${escapeHtml(item.valid_from)}` : "From: -"}
+                </div>
+                <div class="text-[10px] opacity-50 mt-1">
+                    ${item.valid_until ? `Until: ${escapeHtml(item.valid_until)}` : "Until: -"}
+                </div>
+            </td>
+            <td>
+                <label class="switch" style="${usedOrArchived ? "opacity:.5; cursor:not-allowed;" : ""}">
+                    <input 
+                        type="checkbox" 
+                        ${item.is_active ? "checked" : ""} 
+                        ${usedOrArchived ? "disabled" : ""}
+                        onchange="togglePromoCode(${item.promo_id})"
+                    >
+                    <span class="slider"></span>
+                </label>
+            </td>
+            <td>
+                <div class="flex flex-col gap-2 items-start">
+                    <button class="text-yellow-400 text-[10px] font-extrabold uppercase tracking-wider bg-transparent border-none cursor-pointer"
+                        onclick="editPromoCode(${item.promo_id})">
+                        Edit
+                    </button>
+                    <button class="btn-danger-text" onclick="deletePromoCode(${item.promo_id})">
+                        ${usedOrArchived ? "Archive" : "Delete"}
+                    </button>
+                </div>
+            </td>
+        </tr>
+    `;
+});
 }
 
 function renderBannerList() {
@@ -448,7 +436,6 @@ async function togglePromoCode(promoId) {
         alert(error.message || "Failed to update promo.");
     }
 }
-
 async function deletePromoCode(promoId) {
     const confirmed = confirm("Delete this promo code?");
     if (!confirmed) return;
@@ -466,7 +453,12 @@ async function deletePromoCode(promoId) {
         }
 
         await refreshPromoData();
-        showToast("Promo code deleted");
+
+        if (result.action === "deactivated") {
+            showToast("Promo code archived");
+        } else {
+            showToast("Promo code deleted");
+        }
     } catch (error) {
         console.error("Delete promo error:", error);
         alert(error.message || "Failed to delete promo code.");
@@ -527,11 +519,10 @@ async function refreshPromoData() {
 }
 
 async function initializePromoPage() {
-    applySavedTheme();
     await refreshPromoData();
 }
 
-window.toggleTheme = toggleTheme;
+
 window.openPromoModal = openPromoModal;
 window.closePromoModal = closePromoModal;
 window.previewBanner = previewBanner;

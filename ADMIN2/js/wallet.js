@@ -2,7 +2,7 @@ let walletResultsCache = [];
 let currentWalletUser = null;
 let walletSearchDebounce = null;
 let lastSearchValue = "";
-
+let walletSuggestionsCache = [];
 function escapeHtml(value) {
     return String(value ?? "")
         .replace(/&/g, "&amp;")
@@ -40,18 +40,6 @@ function buildInitialAvatar(name) {
 
     return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 }
-
-function toggleTheme() {
-    document.body.classList.toggle("light-theme");
-    const isLight = document.body.classList.contains("light-theme");
-    localStorage.setItem("theme", isLight ? "light" : "dark");
-
-    const themeIcon = document.getElementById("themeIcon");
-    if (themeIcon) {
-        themeIcon.className = isLight ? "fa-solid fa-moon" : "fa-solid fa-sun";
-    }
-}
-
 function applySavedTheme() {
     const savedTheme = localStorage.getItem("theme");
     if (savedTheme === "light") {
@@ -169,6 +157,96 @@ function renderWalletGrid() {
 
     updateSummaryCards();
 }
+function getSuggestionsBox() {
+    return document.getElementById("walletSuggestions");
+}
+
+function hideWalletSuggestions() {
+    const box = getSuggestionsBox();
+    if (!box) return;
+    box.classList.remove("show");
+    box.innerHTML = "";
+    walletSuggestionsCache = [];
+}
+
+function renderWalletSuggestions(items = []) {
+    const box = getSuggestionsBox();
+    if (!box) return;
+
+    if (!items.length) {
+        box.innerHTML = `<div class="wallet-suggestion-empty">No matching wallets found.</div>`;
+        box.classList.add("show");
+        return;
+    }
+
+    box.innerHTML = items.map(item => {
+        const displayName = item.full_name || item.email || `User #${item.user_id}`;
+        return `
+            <div class="wallet-suggestion-item" data-user-id="${item.user_id}">
+                <div class="wallet-suggestion-main">
+                    <div class="wallet-suggestion-name">${escapeHtml(displayName)}</div>
+                    <div class="wallet-suggestion-meta">
+                        ${escapeHtml(item.email || "-")} • User ID #${escapeHtml(item.user_id)}
+                    </div>
+                </div>
+                <div class="wallet-suggestion-code">${escapeHtml(maskWalletCode(item.wallet_code))}</div>
+            </div>
+        `;
+    }).join("");
+
+    box.classList.add("show");
+
+    box.querySelectorAll(".wallet-suggestion-item").forEach(el => {
+        el.addEventListener("click", () => {
+            const userId = Number(el.dataset.userId);
+            selectWalletSuggestion(userId);
+        });
+    });
+}
+
+async function fetchWalletSuggestions(q) {
+    const search = String(q || "").trim();
+
+    if (!search) {
+        hideWalletSuggestions();
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/wallet/lookup?q=${encodeURIComponent(search)}&limit=8`, {
+            method: "GET",
+            credentials: "include"
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.detail || `Wallet lookup failed: ${response.status}`);
+        }
+
+        walletSuggestionsCache = Array.isArray(result.data) ? result.data : [];
+        renderWalletSuggestions(walletSuggestionsCache);
+    } catch (error) {
+        console.error("fetchWalletSuggestions error:", error);
+        hideWalletSuggestions();
+    }
+}
+
+function selectWalletSuggestion(userId) {
+    const selected = walletSuggestionsCache.find(item => Number(item.user_id) === Number(userId));
+    const input = document.getElementById("walletSearchInput");
+
+    if (!selected || !input) return;
+
+    input.value = selected.full_name || selected.email || selected.wallet_code || "";
+    hideWalletSuggestions();
+
+    walletResultsCache = [selected];
+    lastSearchValue = input.value;
+    renderWalletGrid();
+
+    openWalletProfile(selected.user_id);
+}
 
 async function searchWallets(forceValue = null) {
     const input = document.getElementById("walletSearchInput");
@@ -201,6 +279,7 @@ async function searchWallets(forceValue = null) {
         walletResultsCache = [];
         renderWalletGrid();
     }
+   
 }
 
 function handleWalletSearch(event) {
@@ -208,9 +287,20 @@ function handleWalletSearch(event) {
 
     clearTimeout(walletSearchDebounce);
 
-    walletSearchDebounce = setTimeout(() => {
-        searchWallets(value);
-    }, 300);
+    walletSearchDebounce = setTimeout(async () => {
+        const trimmed = String(value).trim();
+
+        if (!trimmed) {
+            lastSearchValue = "";
+            walletResultsCache = [];
+            renderWalletGrid();
+            hideWalletSuggestions();
+            return;
+        }
+
+        await fetchWalletSuggestions(trimmed);
+        await searchWallets(trimmed);
+    }, 250);
 }
 
 function openWalletProfile(userId) {
@@ -322,10 +412,32 @@ function initializeWalletPage() {
     const searchInput = document.getElementById("walletSearchInput");
     if (searchInput) {
         searchInput.addEventListener("input", handleWalletSearch);
+
+        searchInput.addEventListener("focus", () => {
+            if (searchInput.value.trim()) {
+                fetchWalletSuggestions(searchInput.value);
+            }
+        });
+
+        searchInput.addEventListener("keydown", (event) => {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                hideWalletSuggestions();
+                searchWallets(searchInput.value);
+            }
+        });
     }
+
+    document.addEventListener("click", (event) => {
+        const searchContainer = document.querySelector(".search-container");
+        if (!searchContainer) return;
+
+        if (!searchContainer.contains(event.target)) {
+            hideWalletSuggestions();
+        }
+    });
 }
 
-window.toggleTheme = toggleTheme;
 window.searchWallets = searchWallets;
 window.handleWalletSearch = handleWalletSearch;
 window.openWalletProfile = openWalletProfile;

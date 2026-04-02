@@ -257,6 +257,10 @@ async function handlePasswordChange(event) {
         alert("New password and confirm password do not match.");
         return;
     }
+    if (currentPassword === newPassword) {
+    alert("New password must be different from current password.");
+    return;
+}
 
     try {
         setButtonLoading(
@@ -266,7 +270,7 @@ async function handlePasswordChange(event) {
             '<i class="fa-solid fa-circle-notch fa-spin"></i> Updating Password...'
         );
 
-        const result = await fetchJSON(`${getAPIURL()}/staff/change-password`, {
+        const result = await fetchJSON(`${getAPIURL()}/auth/change-password`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"

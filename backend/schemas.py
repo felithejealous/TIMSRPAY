@@ -135,3 +135,67 @@ class PromoCodeUpdate(BaseModel):
     per_user_limit: Optional[int] = Field(default=None, ge=1)
     valid_from: Optional[str] = None
     valid_until: Optional[str] = None
+
+# =========================
+# INQUIRIES
+# =========================
+class InquiryCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=150)
+    email: EmailStr
+    subject: Optional[str] = Field(default=None, max_length=200)
+    message: str = Field(min_length=1, max_length=3000)
+
+
+class InquiryReply(BaseModel):
+    admin_reply: str = Field(min_length=1, max_length=3000)
+    status: Optional[Literal["pending", "replied", "closed"]] = "replied"
+
+
+class InquiryStatusUpdate(BaseModel):
+    status: Literal["pending", "replied", "closed"]
+
+
+# =========================
+# PRODUCT FEEDBACK
+# =========================
+class ProductFeedbackCreate(BaseModel):
+    user_id: Optional[int] = None
+    order_id: Optional[int] = None
+    product_id: Optional[int] = None
+
+    customer_name: str = Field(min_length=1, max_length=150)
+    email: Optional[EmailStr] = None
+    product_name: Optional[str] = Field(default=None, max_length=150)
+
+    rating: int = Field(ge=1, le=5)
+    title: Optional[str] = Field(default=None, max_length=200)
+    comment: str = Field(min_length=1, max_length=3000)
+
+
+class ProductFeedbackReply(BaseModel):
+    admin_reply: str = Field(min_length=1, max_length=3000)
+
+
+class ProductFeedbackModerate(BaseModel):
+    is_approved: Optional[bool] = None
+    is_featured: Optional[bool] = None
+    is_visible: Optional[bool] = None
+
+
+# =========================
+# FAQ
+# =========================
+class FAQCreate(BaseModel):
+    question: str = Field(min_length=1, max_length=1000)
+    answer: str = Field(min_length=1, max_length=5000)
+    display_order: int = Field(default=0, ge=0)
+    is_active: Optional[bool] = True
+    is_pinned: Optional[bool] = False
+
+
+class FAQUpdate(BaseModel):
+    question: Optional[str] = Field(default=None, min_length=1, max_length=1000)
+    answer: Optional[str] = Field(default=None, min_length=1, max_length=5000)
+    display_order: Optional[int] = Field(default=None, ge=0)
+    is_active: Optional[bool] = None
+    is_pinned: Optional[bool] = None

@@ -21,29 +21,6 @@ function showToast(message) {
         toast.classList.remove("show");
     }, 2500);
 }
-
-function toggleTheme() {
-    document.body.classList.toggle("light-theme");
-    const isLight = document.body.classList.contains("light-theme");
-    localStorage.setItem("theme", isLight ? "light" : "dark");
-
-    const themeIcon = document.getElementById("themeIcon");
-    if (themeIcon) {
-        themeIcon.className = isLight ? "fa-solid fa-moon" : "fa-solid fa-sun";
-    }
-}
-
-function applySavedTheme() {
-    const savedTheme = localStorage.getItem("theme");
-    if (savedTheme === "light") {
-        document.body.classList.add("light-theme");
-        const themeIcon = document.getElementById("themeIcon");
-        if (themeIcon) {
-            themeIcon.className = "fa-solid fa-moon";
-        }
-    }
-}
-
 function formatPoints(value) {
     return `${Number(value || 0).toLocaleString()} pts`;
 }
@@ -407,12 +384,9 @@ function bindRewardsEvents() {
 }
 
 async function initializeRewardsPage() {
-    applySavedTheme();
     bindRewardsEvents();
     await refreshRewardsPage();
 }
-
-window.toggleTheme = toggleTheme;
 window.openClaimModal = openClaimModal;
 window.closeClaimModal = closeClaimModal;
 window.closeOtpModal = closeOtpModal;

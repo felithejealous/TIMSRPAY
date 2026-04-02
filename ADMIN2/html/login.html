@@ -35,6 +35,18 @@
             --mesh-color-1: rgba(252, 219, 5, 0.3);
             --mesh-color-2: rgba(255, 140, 0, 0.15);
         }
+        html.preload-light body {
+    --mango-dark: #f8f9fa;
+    --text-main: #1a1a1a;
+    --text-sub: #4a4a4a;
+    --glass-bg: rgba(255, 255, 255, 0.8);
+    --glass-border: rgba(0, 0, 0, 0.1);
+    --mesh-color-1: rgba(252, 219, 5, 0.15);
+    --mesh-color-2: rgba(255, 140, 0, 0.05);
+    --logo-filter: none;
+    --modal-card: #ffffff;
+    --modal-overlay: rgba(0,0,0,0.4);
+}
 
         body {
             background-color: var(--mango-dark);
@@ -352,6 +364,14 @@ body.light-theme .modal-close-btn {
             color: var(--mango-yellow);
         }
     </style>
+    <script>
+(function () {
+    const savedTheme = localStorage.getItem("admin-theme");
+    if (savedTheme === "light") {
+        document.documentElement.classList.add("preload-light");
+    }
+})();
+</script>
 </head>
 <body class="antialiased">
     <div class="page-transition" id="transitionOverlay"></div>
@@ -471,21 +491,6 @@ body.light-theme .modal-close-btn {
     </div>
 
     <script>
-        function applyTheme() {
-            if (localStorage.getItem('admin-theme') === 'light') {
-                document.body.classList.add('light-theme');
-            } else {
-                document.body.classList.remove('light-theme');
-            }
-        }
-
-        function toggleTheme() {
-            const isLight = document.body.classList.toggle('light-theme');
-            localStorage.setItem('admin-theme', isLight ? 'light' : 'dark');
-        }
-
-        applyTheme();
-
         window.addEventListener('DOMContentLoaded', () => {
             const overlay = document.getElementById('transitionOverlay');
             setTimeout(() => {
@@ -494,5 +499,6 @@ body.light-theme .modal-close-btn {
         });
     </script>
     <script src="../js/login.js"></script>
+    <script src="../js/admin-theme-sync.js"></script>
 </body>
 </html>

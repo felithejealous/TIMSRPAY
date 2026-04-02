@@ -7,11 +7,11 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func as sa_func
 
 from backend.database import SessionLocal
-from backend.models import InventoryMaster, InventoryMasterMovement
+from backend.models import InventoryMaster, InventoryMasterMovement, InventoryAlertDismissal
 
 from backend.security import require_roles
 from backend.models import User
-
+from backend.activity_logger import log_activity
 router = APIRouter(prefix="/inventory", tags=["Inventory"])
 
 
@@ -118,6 +118,27 @@ def _serialize_item(row: InventoryMaster):
         "is_active": bool(row.is_active),
         "updated_at": str(getattr(row, "updated_at", "")) if hasattr(row, "updated_at") else None,
     }
+def _is_low_stock(row: InventoryMaster) -> bool:
+    qty = Decimal(str(row.quantity or 0))
+    threshold = Decimal(str(getattr(row, "alert_threshold", 0) or 0))
+    return bool(row.is_active) and qty <= threshold
+
+
+def _get_low_stock_severity(row: InventoryMaster) -> str:
+    qty = Decimal(str(row.quantity or 0))
+    threshold = Decimal(str(getattr(row, "alert_threshold", 0) or 0))
+
+    if threshold <= 0:
+        return "warning"
+
+    return "critical" if qty <= (threshold / Decimal("2")) else "warning"
+
+
+def _clear_low_stock_dismissals_if_resolved(db: Session, row: InventoryMaster):
+    if not _is_low_stock(row):
+        db.query(InventoryAlertDismissal).filter(
+            InventoryAlertDismissal.inventory_master_id == row.id
+        ).delete(synchronize_session=False)
 
 
 # =========================================================
@@ -174,7 +195,7 @@ def get_inventory_master_item(
 def create_inventory_master_item(
     payload: InventoryCreate,
     db: Session = Depends(get_db),
-    _: User = Depends(require_roles("admin")),
+    admin_user: User = Depends(require_roles("admin")),
 ):
     name_norm = _normalize_name(payload.name)
     if not name_norm:
@@ -215,7 +236,17 @@ def create_inventory_master_item(
         )
 
     _sync_all_product_availability(db)
-
+    _clear_low_stock_dismissals_if_resolved(db, row)
+    
+    log_activity(
+        db,
+        user=admin_user,
+        action="Created inventory item",
+        module="inventory",
+        target_type="inventory_master",
+        target_id=row.id,
+        details=f"{row.name} | qty={row.quantity} {row.unit} | threshold={row.alert_threshold}"
+)
     db.commit()
     db.refresh(row)
 
@@ -234,7 +265,7 @@ def update_inventory_master_item(
     inventory_master_id: int,
     payload: InventoryUpdate,
     db: Session = Depends(get_db),
-    _: User = Depends(require_roles("admin")),
+    admin_user: User = Depends(require_roles("admin")),
 ):
     row = _get_item(db, inventory_master_id)
 
@@ -273,6 +304,16 @@ def update_inventory_master_item(
         row.is_active = bool(payload.is_active)
 
     _sync_all_product_availability(db)
+    _clear_low_stock_dismissals_if_resolved(db, row)
+    log_activity(
+        db,
+        user=admin_user,
+        action="Updated inventory item",
+        module="inventory",
+        target_type="inventory_master",
+        target_id=row.id,
+        details=f"{row.name} updated"
+)
 
     db.commit()
     db.refresh(row)
@@ -315,6 +356,17 @@ def restock_inventory_master_item(
     )
 
     _sync_all_product_availability(db)
+    _clear_low_stock_dismissals_if_resolved(db, row)
+
+    log_activity(
+    db,
+    user=_,
+    action="Restocked inventory item",
+    module="inventory",
+    target_type="inventory_master",
+    target_id=row.id,
+    details=f"{row.name} | added={add} {row.unit} | reason={(payload.reason or 'restock').strip()}"
+)
 
     db.commit()
     db.refresh(row)
@@ -334,7 +386,7 @@ def adjust_inventory_master_item(
     inventory_master_id: int,
     payload: AdjustPayload,
     db: Session = Depends(get_db),
-    _: User = Depends(require_roles("admin")),
+   admin_user: User = Depends(require_roles("admin")),
 ):
     row = _get_item(db, inventory_master_id)
 
@@ -365,6 +417,16 @@ def adjust_inventory_master_item(
     )
 
     _sync_all_product_availability(db)
+    _clear_low_stock_dismissals_if_resolved(db, row)
+    log_activity(
+    db,
+    user=admin_user,
+    action="Adjusted inventory item",
+    module="inventory",
+    target_type="inventory_master",
+    target_id=row.id,
+    details=f"{row.name} | change={change} {row.unit} | reason={(payload.reason or 'adjustment').strip()}"
+)
 
     db.commit()
     db.refresh(row)
@@ -388,12 +450,22 @@ def set_inventory_item_active(
     inventory_master_id: int,
     payload: ToggleInventoryActivePayload,
     db: Session = Depends(get_db),
-    _: User = Depends(require_roles("admin")),
+    admin_user: User = Depends(require_roles("admin")),
 ):
     row = _get_item(db, inventory_master_id)
     row.is_active = bool(payload.is_active)
 
     _sync_all_product_availability(db)
+    _clear_low_stock_dismissals_if_resolved(db, row)
+    log_activity(
+    db,
+    user=admin_user,
+    action="Changed inventory active status",
+    module="inventory",
+    target_type="inventory_master",
+    target_id=row.id,
+    details=f"{row.name} | is_active={row.is_active}"
+)
 
     db.commit()
     db.refresh(row)
@@ -440,3 +512,133 @@ def get_inventory_master_movements(
             for r in rows
         ],
     }
+# =========================================================
+# 9) LOW STOCK ALERTS (ADMIN)
+# =========================================================
+@router.get("/alerts/low-stock", operation_id="inventory_low_stock_alerts_v1")
+def get_low_stock_alerts(
+    include_dismissed: bool = False,
+    db: Session = Depends(get_db),
+    admin_user: User = Depends(require_roles("admin")),
+):
+    rows = (
+        db.query(InventoryMaster)
+        .filter(InventoryMaster.is_active == True)
+        .order_by(InventoryMaster.name.asc())
+        .all()
+    )
+
+    low_rows = [row for row in rows if _is_low_stock(row)]
+    item_ids = [row.id for row in low_rows]
+
+    dismissed_map = {}
+    if item_ids:
+        dismissed_rows = (
+            db.query(InventoryAlertDismissal)
+            .filter(
+                InventoryAlertDismissal.user_id == admin_user.id,
+                InventoryAlertDismissal.inventory_master_id.in_(item_ids),
+            )
+            .all()
+        )
+        dismissed_map = {row.inventory_master_id: row for row in dismissed_rows}
+
+    data = []
+    for row in sorted(
+        low_rows,
+        key=lambda r: (Decimal(str(r.quantity or 0)), r.name.lower())
+    ):
+        dismissed_row = dismissed_map.get(row.id)
+        is_dismissed = dismissed_row is not None
+
+        if is_dismissed and not include_dismissed:
+            continue
+
+        data.append({
+            "inventory_master_id": row.id,
+            "name": row.name,
+            "category": row.category,
+            "unit": row.unit,
+            "quantity": float(Decimal(str(row.quantity or 0))),
+            "alert_threshold": float(Decimal(str(getattr(row, "alert_threshold", 0) or 0))),
+            "severity": _get_low_stock_severity(row),
+            "is_dismissed": is_dismissed,
+            "dismissed_at": str(dismissed_row.dismissed_at) if dismissed_row else None,
+            "updated_at": str(row.updated_at) if row.updated_at else None,
+        })
+
+    return {
+        "count": len(data),
+        "data": data,
+    }
+
+
+@router.post("/alerts/low-stock/{inventory_master_id}/dismiss", operation_id="inventory_low_stock_alert_dismiss_v1")
+def dismiss_low_stock_alert(
+    inventory_master_id: int,
+    db: Session = Depends(get_db),
+    admin_user: User = Depends(require_roles("admin")),
+):
+    row = _get_item(db, inventory_master_id)
+
+    if not _is_low_stock(row):
+        return {"message": "Alert already resolved"}
+
+    existing = (
+        db.query(InventoryAlertDismissal)
+        .filter(
+            InventoryAlertDismissal.user_id == admin_user.id,
+            InventoryAlertDismissal.inventory_master_id == inventory_master_id,
+        )
+        .first()
+    )
+
+    if not existing:
+        db.add(
+            InventoryAlertDismissal(
+                user_id=admin_user.id,
+                inventory_master_id=inventory_master_id,
+            )
+        )
+        log_activity(
+    db,
+    user=admin_user,
+    action="Dismissed low stock alert",
+    module="inventory_alert",
+    target_type="inventory_master",
+    target_id=inventory_master_id,
+    details=f"{row.name}"
+)
+    
+        db.commit()
+
+    return {"message": "Alert dismissed successfully"}
+
+
+@router.post("/alerts/low-stock/{inventory_master_id}/restore", operation_id="inventory_low_stock_alert_restore_v1")
+def restore_low_stock_alert(
+    inventory_master_id: int,
+    db: Session = Depends(get_db),
+    admin_user: User = Depends(require_roles("admin")),
+):
+    (
+        db.query(InventoryAlertDismissal)
+        .filter(
+            InventoryAlertDismissal.user_id == admin_user.id,
+            InventoryAlertDismissal.inventory_master_id == inventory_master_id,
+        )
+        .delete(synchronize_session=False)
+    )
+    row = _get_item(db, inventory_master_id)
+    log_activity(
+    db,
+    user=admin_user,
+    action="Restored low stock alert",
+    module="inventory_alert",
+    target_type="inventory_master",
+    target_id=inventory_master_id,
+    details=f"{row.name}"
+)
+    db.commit()
+
+    return {"message": "Alert restored successfully"}

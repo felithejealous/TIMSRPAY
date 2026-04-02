@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, Text, ForeignKey, Numeric, DateTime
+from sqlalchemy import Column, Integer, String, Boolean, Text, ForeignKey, Numeric, DateTime, UniqueConstraint
 from sqlalchemy.sql import func
 from backend.database import Base
 from sqlalchemy.orm import relationship
@@ -213,7 +213,16 @@ class InventoryMasterMovement(Base):
     ref_order_id = Column(Integer, ForeignKey("orders.id"), nullable=True)
     created_at = Column(DateTime(timezone=False), server_default=func.now())
 
+class InventoryAlertDismissal(Base):
+    __tablename__ = "inventory_alert_dismissals"
+    __table_args__ = (
+        UniqueConstraint("user_id", "inventory_master_id", name="uq_inventory_alert_dismissals_user_item"),
+    )
 
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    inventory_master_id = Column(Integer, ForeignKey("inventory_master.id", ondelete="CASCADE"), nullable=False, index=True)
+    dismissed_at = Column(DateTime(timezone=False), server_default=func.now(), nullable=False)
 class ProductRecipe(Base):
     __tablename__ = "product_recipe"
 
@@ -432,3 +441,79 @@ class PromoCodeRedemption(Base):
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     order_id = Column(Integer, ForeignKey("orders.id", ondelete="CASCADE"), nullable=False, unique=True)
     redeemed_at = Column(DateTime(timezone=False), server_default=func.now(), nullable=False)
+
+class Inquiry(Base):
+    __tablename__ = "inquiries"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(150), nullable=False)
+    email = Column(String(150), nullable=False, index=True)
+    subject = Column(String(200), nullable=True)
+    message = Column(Text, nullable=False)
+
+    status = Column(String(20), nullable=False, default="pending")  # pending | replied | closed
+    admin_reply = Column(Text, nullable=True)
+    replied_by_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    replied_at = Column(DateTime(timezone=False), nullable=True)
+
+    is_visible = Column(Boolean, nullable=False, default=True)
+    created_at = Column(DateTime(timezone=False), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=False), server_default=func.now(), onupdate=func.now(), nullable=False)
+class ProductFeedback(Base):
+    __tablename__ = "product_feedback"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    order_id = Column(Integer, ForeignKey("orders.id"), nullable=True)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=True)
+
+    customer_name = Column(String(150), nullable=False)
+    email = Column(String(150), nullable=True)
+    product_name = Column(String(150), nullable=True)
+
+    rating = Column(Integer, nullable=False)  # 1 to 5
+    title = Column(String(200), nullable=True)
+    comment = Column(Text, nullable=False)
+
+    admin_reply = Column(Text, nullable=True)
+    replied_by_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    replied_at = Column(DateTime(timezone=False), nullable=True)
+
+    is_approved = Column(Boolean, nullable=False, default=False)
+    is_featured = Column(Boolean, nullable=False, default=False)
+    is_visible = Column(Boolean, nullable=False, default=True)
+
+    created_at = Column(DateTime(timezone=False), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=False), server_default=func.now(), onupdate=func.now(), nullable=False)
+class FAQ(Base):
+    __tablename__ = "faq"
+
+    id = Column(Integer, primary_key=True, index=True)
+    question = Column(Text, nullable=False)
+    answer = Column(Text, nullable=False)
+
+    display_order = Column(Integer, nullable=False, default=0)
+    is_active = Column(Boolean, nullable=False, default=True)
+    is_pinned = Column(Boolean, nullable=False, default=False)
+
+    created_by_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    updated_by_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+
+    created_at = Column(DateTime(timezone=False), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=False), server_default=func.now(), onupdate=func.now(), nullable=False)
+
+class ActivityLog(Base):
+    __tablename__ = "activity_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
+    user_email = Column(String(150), nullable=True)
+    role_name = Column(String(50), nullable=True)
+
+    action = Column(String(100), nullable=False)
+    module = Column(String(50), nullable=False)
+    target_type = Column(String(50), nullable=True)
+    target_id = Column(Integer, nullable=True)
+    details = Column(Text, nullable=True)
+
+    created_at = Column(DateTime(timezone=False), server_default=func.now(), nullable=False)

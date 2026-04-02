@@ -6,7 +6,7 @@ from sqlalchemy import func as sa_func
 
 import secrets
 import string
-
+from backend.activity_logger import log_activity
 from backend.database import SessionLocal
 from backend.models import User, Role, StaffProfile
 from backend.security import get_current_user, require_roles
@@ -145,6 +145,15 @@ def register_staff(
     )
 
     db.add(sp)
+    log_activity(
+    db,
+    user=_,
+    action="Registered staff account",
+    module="staff",
+    target_type="user",
+    target_id=u.id,
+    details=f"{u.email} | role={payload.role} | full_name={sp.full_name}"
+)
 
     db.commit()
     db.refresh(u)
@@ -293,46 +302,6 @@ def patch_my_staff_profile(
         "is_active": bool(getattr(user, "is_active", True)),
         "profile_picture": getattr(user, "profile_picture", None),
     }
-
-
-@router.post("/change-password")
-def change_my_password(
-    payload: ChangeMyPasswordPayload,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles("staff", "cashier", "admin")),
-):
-    user = db.query(User).filter(User.id == current_user.id).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    current_password = (payload.current_password or "").strip()
-    new_password = (payload.new_password or "").strip()
-    confirm_password = (payload.confirm_password or "").strip()
-
-    if not current_password or not new_password or not confirm_password:
-        raise HTTPException(status_code=400, detail="All password fields are required")
-
-    if not user.password_hash:
-        raise HTTPException(status_code=400, detail="This account does not support password change")
-
-    if not auth_verify_password(current_password, user.password_hash):
-        raise HTTPException(status_code=400, detail="Current password is incorrect")
-
-    if new_password != confirm_password:
-        raise HTTPException(status_code=400, detail="New password and confirm password do not match")
-
-    if current_password == new_password:
-        raise HTTPException(status_code=400, detail="New password must be different from current password")
-
-    validate_password_strength(new_password)
-    user.password_hash = auth_hash_password(new_password)
-
-    db.commit()
-    db.refresh(user)
-
-    return {"message": "Password updated successfully"}
-
-
 @router.post("/{user_id}/reset-password")
 def reset_staff_password(
     user_id: int,
@@ -352,6 +321,15 @@ def reset_staff_password(
     temp_password = generate_temp_password()
     validate_password_strength(temp_password)
     u.password_hash = auth_hash_password(temp_password)
+    log_activity(
+    db,
+    user=_,
+    action="Reset staff password",
+    module="staff",
+    target_type="user",
+    target_id=u.id,
+    details=f"{u.email}"
+)
 
     db.commit()
     db.refresh(u)
@@ -396,6 +374,15 @@ def patch_staff(
 
     if payload.profile_picture is not None:
         u.profile_picture = payload.profile_picture.strip() or None
+    log_activity(
+    db,
+    user=_,
+    action="Updated staff account",
+    module="staff",
+    target_type="user",
+    target_id=u.id,
+    details=f"{u.email} | full_name={sp.full_name} | position={sp.position}"
+)
 
     db.commit()
     db.refresh(u)

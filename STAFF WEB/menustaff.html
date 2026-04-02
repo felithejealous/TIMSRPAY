@@ -774,10 +774,20 @@
             </div>
 
             <div class="card-custom customer-box">
-                <h4>Customer Name</h4>
-                <input type="text" id="customerNameInput" placeholder="Enter walk-in customer name (optional)">
-                <div class="helper-text">Kapag walang nilagay, automatic na Walk-in Customer ang gagamitin natin.</div>
-            </div>
+    <h4>Customer Name</h4>
+    <input type="text" id="customerNameInput" placeholder="Enter walk-in customer name (optional)">
+    <div class="helper-text">Kapag walang nilagay, automatic na Walk-in Customer ang gagamitin natin.</div>
+
+    <div style="height: 12px;"></div>
+
+    <h4>Linked Customer Account</h4>
+    <input type="text" id="customerAccountInput" placeholder="Enter customer email to enable promo/account-linked order">
+    <div class="helper-text">
+        Required if promo will be used. This links the cashier order to a real customer account.
+    </div>
+
+    <div id="customerLookupStatus" class="helper-text" style="margin-top:10px;"></div>
+</div>
 
             <div class="card-custom">
                 <h4>Cup Size</h4>

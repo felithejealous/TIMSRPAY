@@ -18,7 +18,7 @@ from urllib.parse import urlencode
 from backend.database import SessionLocal
 from backend.models import User, Wallet, RewardWallet, Role, PasswordResetToken, LoginRateLimit
 from backend.security import create_access_token, get_current_user
-
+from backend.activity_logger import log_activity
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
@@ -268,7 +268,10 @@ class ForgotPasswordConfirmPayload(BaseModel):
     email: EmailStr
     code: str = Field(min_length=6, max_length=6)
     new_password: str = Field(min_length=8)
-
+class ChangePasswordPayload(BaseModel):
+    current_password: str
+    new_password: str
+    confirm_password: str
 
 # ============================================================
 # REGISTER
@@ -461,8 +464,54 @@ def forgot_password_confirm(payload: ForgotPasswordConfirmPayload, db: Session =
     db.commit()
 
     return {"message": "Password reset successful"}
+#==================
+#change password
+#==================
+@router.post("/change-password")
+def change_password(
+    payload: ChangePasswordPayload,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    user = db.query(User).filter(User.id == current_user.id).first()
 
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
 
+    current_password = (payload.current_password or "").strip()
+    new_password = (payload.new_password or "").strip()
+    confirm_password = (payload.confirm_password or "").strip()
+
+    if not current_password or not new_password or not confirm_password:
+        raise HTTPException(status_code=400, detail="All password fields are required")
+
+    if not user.password_hash:
+        raise HTTPException(status_code=400, detail="This account does not support password change")
+
+    if not verify_password(current_password, user.password_hash):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+
+    if new_password != confirm_password:
+        raise HTTPException(status_code=400, detail="New password and confirm password do not match")
+
+    if current_password == new_password:
+        raise HTTPException(status_code=400, detail="New password must be different from current password")
+
+    validate_password_strength(new_password)
+
+    user.password_hash = hash_password(new_password)
+    log_activity(
+    db,
+    user=current_user,
+    action="Changed password",
+    module="security",
+    target_type="user",
+    target_id=user.id,
+    details="User changed own password"
+)
+    db.commit()
+
+    return {"message": "Password updated successfully"}
 # ============================================================
 # GOOGLE OAUTH
 # ============================================================

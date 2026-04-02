@@ -4,20 +4,7 @@ let currentId = null;
 let historyCache = [];
 const LOW_STOCK_THRESHOLD = 10;
 
-function toggleTheme() {
-    document.body.classList.toggle("light-theme");
-    const isLight = document.body.classList.contains("light-theme");
-    localStorage.setItem("theme", isLight ? "light" : "dark");
-    document.getElementById("themeIcon").className = isLight ? "fa-solid fa-moon" : "fa-solid fa-sun";
-}
 
-function applySavedTheme() {
-    const savedTheme = localStorage.getItem("theme");
-    if (savedTheme === "light") {
-        document.body.classList.add("light-theme");
-        document.getElementById("themeIcon").className = "fa-solid fa-moon";
-    }
-}
 
 function getTodayDateString() {
     const now = new Date();
@@ -537,7 +524,6 @@ async function toggleItemActive(id, currentlyActive) {
 }
 
 async function initializeInventoryPage() {
-    applySavedTheme();
     applyDateMinimums();
     setView("grid");
     await fetchInventory();
@@ -550,8 +536,6 @@ async function initializeInventoryPage() {
         confirmAdjustBtn.onclick = commitAdjust;
     }
 }
-
-window.toggleTheme = toggleTheme;
 window.setView = setView;
 window.openModal = openModal;
 window.closeModal = closeModal;

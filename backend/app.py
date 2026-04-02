@@ -13,6 +13,10 @@ from backend import models
 from backend.routers.attendance import router as attendance_router
 from backend.routers.staff import router as staff_router
 from backend.routers.users import router as users_router
+from backend.routers.inquiries import router as inquiries_router
+from backend.routers.feedback import router as feedback_router
+from backend.routers.faq import router as faq_router
+from backend.routers.activity_logs import router as activity_logs_router
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
 import os
@@ -59,7 +63,10 @@ app.include_router(staff_router)
 app.include_router(users_router)
 app.include_router(announcements_router)
 app.include_router(admin_router)
-
+app.include_router(inquiries_router)
+app.include_router(feedback_router)
+app.include_router(faq_router)
+app.include_router(activity_logs_router)
 @app.get("/")
 def root():
     return {"message": "Backend is running"}
