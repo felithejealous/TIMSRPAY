@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script>
+        (function () { const t = localStorage.getItem("publicweb-theme") || "dark"; if (t === "light") document.documentElement.classList.add("light-mode"); })();
+    </script>
     <title>Account Settings | Teo D' Mango Premium</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -27,7 +30,7 @@
         }
 
         /* LIGHT MODE */
-        body.light-mode {
+        .light-mode {
             --bg-main: #f4f5f7;
             --text-main: #1a1a1a;
             --text-muted: #666666;
@@ -267,6 +270,14 @@
         .acc-link-btn.danger:hover { background: rgba(255, 77, 109, 0.1); border-color: var(--danger); color: var(--danger); }
         .acc-link-btn.danger:hover i { color: var(--danger); }
 
+        .password-field{ position: relative; }
+
+        .password-field input{ width: 100%; padding-right: 45px;}
+
+        .toggle-password{ position:absolute; right:0; top:38px; font-size:14px; color:var(--text-muted); cursor:pointer; transition:0.2s;}
+
+        .toggle-password:hover{ color:var(--mango);}
+
         /* Responsive */
         @media (max-width: 1024px) {
             .settings-wrapper { display: flex; flex-direction: column; padding: 20px;}
@@ -274,6 +285,7 @@
             .form-grid { grid-template-columns: 1fr; }
             .full-width { grid-column: span 1; }
         }
+        
     </style>
 </head>
 <body>
@@ -284,10 +296,9 @@
         </a>
         <div class="nav-links">
             <a href="welcome.html">HOME</a>
-            <a href="dashboard.html">OVERVIEW</a>
             <a href="menu.html">MENU</a>
             <a href="rewards.html">REWARDS</a>
-            <a href="topup.html">TOP-UP RPAY</a>
+            <a href="topup.html">TOP-UP TEOPAY</a>
             <a href="dashaccsett.html" class="active">SETTINGS</a>
             <a href="index.html" class="btn-logout">LOG OUT</a>
         </div>
@@ -309,10 +320,9 @@
         </div>
 
         <div class="glass-bento hero-bento">
-            <div class="avatar-massive">JD</div>
+            <div class="avatar-massive" id="settingsAvatar">--</div>
             <div class="hero-text">
-                <h2>Jane Doe</h2>
-                <p>Member Since Dec 2023</p>
+                <h2 id="settingsFullName">Loading...</h2>
             </div>
         </div>
 
@@ -320,93 +330,99 @@
             <div class="id-card-header">
                 <div>
                     <div class="tier-title">Current Status</div>
-                    <div class="tier-name">Gold Member</div>
+                    <div class="tier-name" id="settingsTierName">Bronze Member</div>
                 </div>
-                <i class="fa-solid fa-crown" style="font-size: 24px; color: var(--mango);"></i>
+                <i id="settingsTierIcon" class="fa-solid fa-medal" style="font-size: 24px; color: var(--mango);"></i>
             </div>
             <div class="points-wrap">
-                <h2>1,250</h2>
+                <h2 id="settingsPoints">0</h2>
                 <p>Available Points</p>
             </div>
         </div>
 
         <div class="glass-bento settings-bento">
             <form id="settingsForm" onsubmit="event.preventDefault(); alert('Profile Updated Successfully!');">
-                
+        
                 <h3><i class="fa-solid fa-address-card"></i> Identity</h3>
                 <div class="form-grid">
                     <div class="form-group">
                         <label>First Name</label>
-                        <input type="text" value="Jane">
+                        <input type="text" id="settingsFirstName" value="">
                     </div>
                     <div class="form-group">
                         <label>Last Name</label>
-                        <input type="text" value="Doe">
+                        <input type="text" id="settingsLastName" value="">
                     </div>
                     <div class="form-group full-width">
                         <label>Email Address</label>
-                        <input type="email" value="jane.doe@example.com">
+                        <input type="email" id="settingsEmail" value="">
                     </div>
                 </div>
-
+        
                 <div class="form-divider"></div>
-
+        
                 <h3><i class="fa-solid fa-shield-halved"></i> Security</h3>
                 <div class="form-grid">
                     <div class="form-group full-width">
                         <label>Current Password</label>
-                        <input type="password" placeholder="••••••••">
+                        <input type="password" id="settingsCurrentPassword" placeholder="••••••••">
+                        <i class="fa-solid fa-eye toggle-password"></i>
                     </div>
+        
                     <div class="form-group full-width">
                         <label>New Password</label>
-                        <input type="password" placeholder="Type new password...">
+                        <input type="password" id="settingsNewPassword" placeholder="Type new password...">
+                        <i class="fa-solid fa-eye toggle-password"></i>
                     </div>
                 </div>
             </form>
         </div>
-
+        
         <div class="action-bento">
-            <button class="btn-massive" onclick="document.getElementById('settingsForm').requestSubmit();">
+            <button class="btn-massive" type="button" onclick="document.getElementById('settingsForm').requestSubmit();">
                 <i class="fa-solid fa-check-double"></i>
                 Commit Changes
             </button>
-
+        
             <div class="danger-card">
                 <h4>Danger Zone</h4>
-                <p>Erasing your account will permanently wipe your data and forfeit your 1,250 points and TIMS-RPAY balance.</p>
-                <button type="button" class="btn-danger" onclick="confirm('Are you absolutely sure? This cannot be undone.');">Delete Account</button>
+                <p id="dangerZoneText"></p>
+        
+                <button type="button" class="btn-danger" onclick="confirm('Are you absolutely sure? This cannot be undone.');">
+                    Delete Account
+                </button>
             </div>
         </div>
-
-    </div>
-
-    <div class="panel-overlay" id="mainOverlay" onclick="closeAll()"></div>
+            
+    <div class="panel-overlay" id="mainOverlay" onclick="closeAllPanels()"></div>
 
     <div class="side-panel" id="accountPanel">
         <div class="panel-header">
             <h2>Account Info</h2>
-            <button class="panel-close-btn" onclick="closeAll()"><i class="fa-solid fa-xmark"></i></button>
+            <button class="panel-close-btn" onclick="closeAllPanels()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
         </div>
         
         <div class="panel-body">
             
             <div class="profile-card">
-                <div class="avatar-circle">JD</div>
+                <div class="avatar-circle" id="panelAvatar">--</div>
                 <div class="profile-details">
-                    <h3>Jane Doe</h3>
-                    <p>Gold Member</p>
+                    <h3 id="panelFullName">Loading...</h3>
+                    <p id="panelTier">Member</p>
                 </div>
             </div>
-
+            
             <div class="balance-grid">
                 <div class="balance-item">
                     <i class="fa-solid fa-star"></i>
-                    <span>1,250</span>
+                    <span id="panelPoints">0</span>
                     <small>Reward Points</small>
                 </div>
                 <div class="balance-item">
                     <i class="fa-solid fa-wallet"></i>
-                    <span>₱850.00</span>
+                    <span id="panelWallet">₱0.00</span>
                     <small>TIMS-RPAY Bal</small>
                 </div>
             </div>
@@ -429,36 +445,11 @@
         </div>
     </div>
 
-    <script>
-        // --- THEME TOGGLE LOGIC ---
-        const toggleBtn = document.getElementById('themeToggle');
-        const icon = toggleBtn.querySelector('i');
-        const body = document.body;
-
-        toggleBtn.addEventListener('click', () => {
-            body.classList.toggle('light-mode');
-            
-            if (body.classList.contains('light-mode')) {
-                icon.classList.remove('fa-sun');
-                icon.classList.add('fa-moon');
-            } else {
-                icon.classList.remove('fa-moon');
-                icon.classList.add('fa-sun');
-            }
-        });
-
-        // --- SIDE PANEL CONTROL LOGIC ---
-        function openAccountPanel() {
-            document.getElementById('mainOverlay').classList.add('active');
-            document.getElementById('accountPanel').classList.add('active');
-            document.body.style.overflow = 'hidden'; // Prevent background scrolling
-        }
-
-        function closeAll() {
-            document.getElementById('mainOverlay').classList.remove('active');
-            document.getElementById('accountPanel').classList.remove('active');
-            document.body.style.overflow = 'auto'; // Restore scrolling
-        }
-    </script>
+    <!-- Custom JS  -->
+    <script src="js/api.js"></script>
+    <script src="js/theme-sync.js"></script>
+    <script src="js/sidepanel-fetching.js"></script>
+    <script src="js/account-panel.js"></script>
+    <script src="js/settings.js"></script>
 </body>
 </html>

@@ -473,24 +473,17 @@
             const qrImg = document.getElementById('paymentQrImg');
             const qrText = document.getElementById('paymentQrText');
 
-            if(type === 'teopay') {
-                qrSection.classList.remove('active');
-                rpayForm.classList.add('active');
-            } else if (type === 'ebank') {
-                qrSection.classList.add('active');
-                rpayForm.classList.remove('active');
-                qrImg.src = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&color=1A120B&data=Standard_Bank_Transfer";
-                qrText.innerText = "SCAN TO PAY VIA GCASH, MAYA, OR BANK APP";
-            } else {
-                qrSection.classList.remove('active');
-                rpayForm.classList.remove('active');
+            if(type === 'teopay'){
+            rpayForm.classList.add('active');
+            }
+            else{
+            rpayForm.classList.remove('active');
             }
         }
 
         // --- EDITABLE CART LOGIC ---
         let checkoutItems = [
-            { id: 1, name: "Mango Bliss (Large)", addons: "+ Graham Crumbs, 100% Sugar", unitPrice: 95.00, qty: 1 },
-            { id: 2, name: "Creamy Buko Slush (Medium)", addons: "No Toppings, 50% Sugar", unitPrice: 75.00, qty: 1 }
+            let checkoutItems = JSON.parse(localStorage.getItem("cart")) || [];
         ];
 
         function renderCart() {
@@ -511,30 +504,33 @@
                 btnAddMore.style.display = "flex";
                 btnConfirm.disabled = false;
 
-                checkoutItems.forEach(item => {
-                    let lineTotal = item.unitPrice * item.qty;
-                    grandTotal += lineTotal;
+                checkoutItems.forEach((item, index) => {
+                let lineTotal = item.unitPrice * item.qty;
+                grandTotal += lineTotal;
 
-                    container.innerHTML += `
-                        <div class="order-item" id="item-${item.id}">
-                            <div class="item-info">
-                                <h4>${item.name}</h4>
-                                <p>${item.addons}</p>
-                            </div>
-                            <div class="item-actions">
-                                <div class="qty-edit">
-                                    <button onclick="updateQty(${item.id}, -1)"><i class="fa-solid fa-minus"></i></button>
-                                    <span>${item.qty}</span>
-                                    <button onclick="updateQty(${item.id}, 1)"><i class="fa-solid fa-plus"></i></button>
-                                </div>
-                                <div class="item-price">₱${lineTotal.toFixed(2)}</div>
-                                <button class="btn-remove" onclick="removeItem(${item.id})" title="Remove Item"><i class="fa-solid fa-trash"></i></button>
-                            </div>
-                        </div>
-                    `;
-                });
-            }
+    container.innerHTML += `
+        <div class="order-item">
+            <div class="item-info">
+                <h4>${item.qty}x ${item.name} (${item.size})</h4>
+                <p>${item.addons}</p>
+            </div>
 
+            <div class="item-actions">
+                <div class="qty-edit">
+                    <button onclick="updateQty(${index},-1)">-</button>
+                    <span>${item.qty}</span>
+                    <button onclick="updateQty(${index},1)">+</button>
+                </div>
+
+                <div class="item-price">₱${lineTotal.toFixed(2)}</div>
+
+                <button onclick="removeItem(${index})">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    `;
+});
             let pointsEarned = Math.floor(grandTotal * 0.10);
 
             document.getElementById('subtotalDisplay').innerText = `₱${grandTotal.toFixed(2)}`;
@@ -542,18 +538,22 @@
             document.getElementById('pointsDisplay').innerText = `+${pointsEarned} PTS`;
         }
 
-        function updateQty(id, delta) {
-            let item = checkoutItems.find(i => i.id === id);
-            if (item) {
-                item.qty += delta;
-                if (item.qty < 1) item.qty = 1; 
-                renderCart();
-            }
+        function updateQty(index, delta){
+        checkoutItems[index].qty += delta;
+
+        if(checkoutItems[index].qty < 1){
+        checkoutItems[index].qty = 1;
         }
 
-        function removeItem(id) {
-            checkoutItems = checkoutItems.filter(i => i.id !== id);
-            renderCart();
+        localStorage.setItem("cart", JSON.stringify(checkoutItems));
+        renderCart();
+        }
+
+        function removeItem(index){
+        checkoutItems.splice(index,1);
+
+        localStorage.setItem("cart", JSON.stringify(checkoutItems));
+        renderCart();
         }
 
         // Initialize Cart

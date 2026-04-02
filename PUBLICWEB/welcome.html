@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script>
+        (function () { const t = localStorage.getItem("publicweb-theme") || "dark"; if (t === "light") document.documentElement.classList.add("light-mode"); })();
+    </script>
     <title>Dashboard Overview | Teo D' Mango Premium</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -27,7 +30,7 @@
         }
 
         /* LIGHT MODE */
-        body.light-mode {
+        .light-mode {
             --bg-main: #f4f5f7;
             --text-main: #1a1a1a;
             --text-muted: #666666;
@@ -239,27 +242,28 @@
             background: var(--bg-main); border-left: 1px solid var(--card-border);
             box-shadow: -20px 0 50px rgba(0,0,0,0.5); display: flex; flex-direction: column;
             transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1); z-index: 2001;
+            max-width: 420px;
         }
         .side-panel.active { right: 0; }
         
-        .panel-header { padding: 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--card-border); }
+        .panel-header { padding: 22px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--card-border); }
         .panel-header h2 { font-size: 20px; font-weight: 900; letter-spacing: -0.5px; color: var(--text-main);}
         .panel-close-btn { background: transparent; border: none; font-size: 24px; color: var(--text-muted); cursor: pointer; transition: 0.3s; }
         .panel-close-btn:hover { color: var(--text-main); transform: rotate(90deg);}
 
-        .panel-body { padding: 30px; display: flex; flex-direction: column; gap: 30px; flex: 1; overflow-y: auto; }
+        .panel-body { padding: 24px; display: flex; flex-direction: column; gap: 18px; flex: 1; overflow-y: auto; }
         
-        .profile-card { display: flex; align-items: center; gap: 20px; padding: 20px; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 25px; }
+        .profile-card { display: flex; align-items: center; gap: 16px; padding: 20px; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 25px; }
         .avatar-circle { width: 60px; height: 60px; background: var(--mango); color: #111; border-radius: 50%; display: grid; place-items: center; font-size: 24px; font-weight: 900; }
         .profile-details h3 { font-size: 18px; font-weight: 900; margin-bottom: 3px; letter-spacing: -0.5px; color: var(--text-main);}
         .profile-details p { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;}
         
-        .balance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .balance-item { background: var(--icon-bg); border: 1px solid var(--card-border); padding: 25px 15px; border-radius: 20px; text-align: center; display: flex; flex-direction: column; gap: 8px; transition: 0.3s; }
+        .balance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .balance-item { background: var(--icon-bg); border: 1px solid var(--card-border); padding: 22px 12px; border-radius: 18px; text-align: center; display: flex; flex-direction: column; gap: 8px; transition: 0.3s; }
         .balance-item:hover { transform: translateY(-5px); border-color: var(--mango); background: rgba(255,194,68,0.05); }
-        .balance-item i { font-size: 24px; color: var(--mango); }
-        .balance-item span { font-size: 22px; font-weight: 900; letter-spacing: -1px; color: var(--text-main); }
-        .balance-item small { font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;}
+        .balance-item i { font-size: 22px; color: var(--mango); }
+        .balance-item span { font-size: 22px; font-weight: 900; letter-spacing: -1px; color: var(--text-main);line-height: 1.1; word-break: break-word; }
+        .balance-item small { font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; line-height: 1.3;}
         
         .account-menu { display: flex; flex-direction: column; gap: 10px; }
         .acc-link-btn {
@@ -281,6 +285,62 @@
         @media (max-width: 500px) {
             .bs-card { grid-column: span 12; } /* 1 per row on small phones */
         }
+
+        .announcement-bento {
+    grid-column: span 6;
+}
+
+.announcement-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.announcement-card {
+    background: var(--icon-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+    padding: 20px;
+    transition: 0.3s;
+}
+
+.announcement-card:hover {
+    border-color: var(--mango);
+    background: var(--hover-bg);
+}
+
+.announcement-title {
+    font-size: 16px;
+    font-weight: 900;
+    color: var(--text-main);
+    margin-bottom: 8px;
+}
+
+.announcement-meta {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+}
+
+.announcement-body {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-main);
+}
+
+.announcement-empty {
+    background: var(--icon-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+    padding: 20px;
+    color: var(--text-muted);
+    font-weight: 700;
+}
     </style>
 </head>
 <body>
@@ -291,10 +351,9 @@
         </a>
         <div class="nav-links">
             <a href="welcome.html" class="active">HOME</a>
-            <a href="dashboard.html">OVERVIEW</a>
             <a href="menu.html">MENU</a>
             <a href="rewards.html">REWARDS</a>
-            <a href="topup.html">TOP-UP RPAY</a>
+            <a href="topup.html">TOP-UP TEOPAY</a>
             <a href="dashaccsett.html">SETTINGS</a>
             <a href="index.html" class="btn-logout">LOG OUT</a>
         </div>
@@ -311,7 +370,7 @@
     <main class="dashboard-wrapper">
         
         <div class="hero-bento">
-            <h1>Hi, Jane! </h1>
+            <h1>Hi, <span class="user-name"></span>!</h1>
             <p>Ready for your daily mango fix? Skip the line and order ahead for a faster, premium experience.</p>
             <button class="btn-massive" onclick="window.location.href='menu.html'">Start New Order</button>
         </div>
@@ -321,13 +380,13 @@
                 <span>Current Balance</span>
                 <span style="font-size: 10px; color: #10b981;"><i class="fa-solid fa-circle-check"></i> Active</span>
             </div>
-            <div class="wallet-balance">₱850.00</div>
+            <div class="wallet-balance" id="walletBalance">₱0.00</div> <!-- changed it for js -->
 
             <div class="tims-card">
                 <div class="card-brand">TIMS <span>RPAY</span></div>
                 <div class="card-chip"></div>
-                <div class="card-num">8821 0000 9920</div>
-                <div class="card-name">Jane Doe</div>
+                <div class="card-number wallet-id" id="cardNumber">----</div> <!-- changed it for js -->
+                <div class="card-name user-name"></div> <!-- changed it for js -->
             </div>
 
             <div class="wallet-actions">
@@ -336,50 +395,25 @@
             </div>
         </div>
 
-        <div class="glass-bento status-bento">
-            <div class="status-header">
-                <h2 class="bento-title" style="margin:0;"><i class="fa-solid fa-clock-rotate-left"></i> Live Order Status</h2>
-                <span class="status-badge">In Progress</span>
-            </div>
-            
-            <div class="queue-num">
-                <span>Queue Number</span>
-                #042
-            </div>
-
-            <div class="progress-container">
-                <div class="progress-text">
-                    <span>Preparing your drinks...</span>
-                    <span style="color: var(--text-muted);">Est. 5 mins</span>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress-fill"></div>
-                </div>
-            </div>
-        </div>
-
         <div class="glass-bento reorder-bento">
             <h2 class="bento-title"><i class="fa-solid fa-rotate-right"></i> Order Again</h2>
+            <div class="reorder-list" id="reorderList">
             
-            <div class="reorder-list">
-                <div class="reorder-item" onclick="window.location.href='menu.html'">
-                    <div class="reorder-info">
-                        <h4>Large Mango Bliss</h4>
-                        <p>Less Sugar • Extra Graham</p>
-                    </div>
-                    <button class="btn-small">₱120.00</button>
-                </div>
-
-                <div class="reorder-item" onclick="window.location.href='menu.html'">
-                    <div class="reorder-info">
-                        <h4>Avocado Supreme</h4>
-                        <p>Standard Size • No Toppings</p>
-                    </div>
-                    <button class="btn-small">₱150.00</button>
-                </div>
+            </div>
+        </div>
+        
+        <div class="glass-bento announcement-bento">
+            <div class="announcement-header">
+                <h2 class="bento-title"><i class="fa-solid fa-bullhorn"></i> Announcements</h2>
+                <button class="wallet-btn" type="button" onclick="openAnnouncementModal()">View All</button>
+            </div>
+        
+            <div id="announcementPreview">
+                <div class="announcement-empty">No announcements available.</div>
             </div>
         </div>
 
+        
         <div class="bs-header">
             <h2>Best Sellers</h2>
             <i class="fa-solid fa-fire"></i>
@@ -390,7 +424,7 @@
                 <img src="mango.png" alt="Mango Bliss">
             </div>
             <h4>Classic Mango Bliss</h4>
-            <p>₱120.00</p>
+            <p id="priceMango">₱120.00</p> 
         </div>
 
         <div class="bs-card" onclick="window.location.href='menu.html'">
@@ -398,7 +432,7 @@
                 <img src="buko2.png" alt="Buko Slush">
             </div>
             <h4>Creamy Buko Slush</h4>
-            <p>₱130.00</p>
+            <p id="priceBuko">₱130.00</p> 
         </div>
 
         <div class="bs-card" onclick="window.location.href='menu.html'">
@@ -406,7 +440,7 @@
                 <img src="berry2.png" alt="Strawberry Dream">
             </div>
             <h4>Strawberry Dream</h4>
-            <p>₱140.00</p>
+            <p id="priceStrawberry">₱140.00</p> 
         </div>
 
         <div class="bs-card" onclick="window.location.href='menu.html'">
@@ -414,7 +448,7 @@
                 <img src="ube2.png" alt="Ube Macapuno">
             </div>
             <h4>Ube Macapuno Slush</h4>
-            <p>₱145.00</p>
+            <p id="priceUbe">₱145.00</p> 
         </div>
 
     </main>
@@ -435,36 +469,37 @@
         <p style="font-size: 11px; color: var(--text-muted); font-weight: 700;">&copy; 2026 TIMS-RPAY | Teo D' Mango. All rights reserved.</p>
     </footer>
 
-    <div class="panel-overlay" id="mainOverlay" onclick="closeAll()"></div>
+    <!-- Account Side Panel -->
+    <div class="panel-overlay" id="mainOverlay" onclick="closeAllPanels()"></div>
 
     <div class="side-panel" id="accountPanel">
         <div class="panel-header">
             <h2>Account Info</h2>
-            <button class="panel-close-btn" onclick="closeAll()"><i class="fa-solid fa-xmark"></i></button>
+            <button class="panel-close-btn" type="button" onclick="closeAllPanels()"><i class="fa-solid fa-xmark"></i></button>
         </div>
         
         <div class="panel-body">
             <div class="profile-card">
-                <div class="avatar-circle">JD</div>
+                <div class="avatar-circle" id="panelUserInitials">--</div>
                 <div class="profile-details">
-                    <h3>Jane Doe</h3>
-                    <p>Gold Member</p>
+                    <h3 id="panelUserName">Loading...</h3>
+                    <p id="panelUserTier">MEMBER</p>
                 </div>
             </div>
-
+        
             <div class="balance-grid">
                 <div class="balance-item">
                     <i class="fa-solid fa-star"></i>
-                    <span>1,250</span>
+                    <span id="panelRewardPoints">0</span>
                     <small>Reward Points</small>
                 </div>
                 <div class="balance-item">
                     <i class="fa-solid fa-wallet"></i>
-                    <span>₱850.00</span>
+                    <span id="panelWalletBalance">₱0.00</span>
                     <small>TIMS-RPAY Bal</small>
                 </div>
             </div>
-
+        
             <div class="account-menu">
                 <a href="dashaccsett.html" class="acc-link-btn">
                     <i class="fa-solid fa-gear"></i> Account Settings
@@ -480,38 +515,13 @@
                 </a>
             </div>
         </div>
-    </div>
 
-    <script>
-        // --- THEME TOGGLE LOGIC ---
-        const toggleBtn = document.getElementById('themeToggle');
-        const icon = toggleBtn.querySelector('i');
-        const body = document.body;
-
-        toggleBtn.addEventListener('click', () => {
-            body.classList.toggle('light-mode');
-            
-            if (body.classList.contains('light-mode')) {
-                icon.classList.remove('fa-sun');
-                icon.classList.add('fa-moon');
-            } else {
-                icon.classList.remove('fa-moon');
-                icon.classList.add('fa-sun');
-            }
-        });
-
-        // --- SIDE PANEL CONTROL LOGIC ---
-        function openAccountPanel() {
-            document.getElementById('mainOverlay').classList.add('active');
-            document.getElementById('accountPanel').classList.add('active');
-            document.body.style.overflow = 'hidden'; 
-        }
-
-        function closeAll() {
-            document.getElementById('mainOverlay').classList.remove('active');
-            document.getElementById('accountPanel').classList.remove('active');
-            document.body.style.overflow = 'auto'; 
-        }
-    </script>
+    <!-- JavaScript -->
+    <script src="js/api.js"></script>
+    <script src="js/theme-sync.js"></script>
+    <script src="js/sidepanel-fetching.js"></script>
+    <script src="js/account-panel.js"></script>
+    <script src="js/welcome.js"></script>
+    
 </body>
 </html>

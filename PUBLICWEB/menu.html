@@ -3,8 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script>
+        (function () { const t = localStorage.getItem("publicweb-theme") || "dark"; if (t === "light") document.documentElement.classList.add("light-mode"); })();
+    </script>
     <title>Premium Menu | Teo D' Mango</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
     <style>
         /* --- DYNAMIC THEME VARIABLES --- */
         :root {
@@ -23,11 +27,12 @@
             --hover-bg: rgba(255, 255, 255, 0.06);
             --icon-bg: rgba(255, 255, 255, 0.05);
             --glow-opacity: 0.15;
+            --danger: #ff4d6d;
             --input-bg: rgba(255, 255, 255, 0.05);
         }
 
         /* LIGHT MODE */
-        body.light-mode {
+        .light-mode {
             --bg-main: #f4f5f7;
             --text-main: #1a1a1a;
             --text-muted: #666666;
@@ -248,7 +253,7 @@
         .acc-link-btn {
             background: transparent; border: 1px solid var(--card-border); color: var(--text-main);
             padding: 18px 20px; border-radius: 15px; font-size: 13px; font-weight: 800;
-            text-align: left; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 15px;
+            text-align: left; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 15px; text-decoration: none;
         }
         .acc-link-btn i { font-size: 16px; color: var(--text-muted); width: 20px; text-align: center; transition: 0.3s; }
         .acc-link-btn:hover { background: var(--hover-bg); border-color: var(--text-main); }
@@ -257,7 +262,8 @@
         .acc-link-btn.danger:hover { background: rgba(255, 77, 109, 0.1); border-color: var(--danger); color: var(--danger); }
         .acc-link-btn.danger:hover i { color: var(--danger); }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .panel-close-btn { background: transparent; border: none; font-size: 22px; color: var(--text-muted); cursor: pointer; transition: 0.3s; display: grid; place-items: center; }
+        .panel-close-btn:hover { color: var(--text-main); transform: rotate(90deg); }
 
         @media (max-width: 768px) {
             .nav-links { display: none; }
@@ -273,10 +279,9 @@
         </a>
         <div class="nav-links">
             <a href="welcome.html">HOME</a>
-            <a href="dashboard.html">OVERVIEW</a>
             <a href="menu.html" class="active">MENU</a>
             <a href="rewards.html">REWARDS</a>
-            <a href="topup.html">TOP-UP RPAY</a>
+            <a href="topup.html">TOP-UP TEOPAY</a>
             <a href="dashaccsett.html">SETTINGS</a>
             <a href="index.html" class="btn-logout">LOG OUT</a>
         </div>
@@ -297,7 +302,6 @@
         <div class="menu-header">
             <div>
                 <h1>The Premium Selection</h1>
-                <p>PUP Sta. Mesa Delivery Available</p>
             </div>
             
             <div class="controls-bar">
@@ -397,7 +401,7 @@
         </div>
     </div>
 
-    <div class="overlay" id="mainOverlay" onclick="closeAll()"></div>
+    <div class="overlay" id="mainOverlay" onclick="closeAllPanels()"></div>
 
     <div class="center-modal" id="productModal">
         <button class="circle-btn" style="position:absolute; top:15px; right:15px; z-index:10; background:rgba(0,0,0,0.5); color:white; border:none;" onclick="closeAll()"><i class="fa-solid fa-xmark"></i></button>
@@ -487,66 +491,56 @@
         </div>
     </div>
 
+    <div class="panel-overlay" id="mainOverlay" onclick="closeAllPanels()"></div>
+
     <div class="side-panel" id="accountPanel">
         <div class="panel-header">
             <h2>Account Info</h2>
-            <button class="circle-btn" style="border:none;" onclick="closeAll()"><i class="fa-solid fa-xmark"></i></button>
+            <button class="panel-close-btn" type="button" onclick="closeAllPanels()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
         </div>
-        
+    
         <div class="panel-body">
-            
             <div class="profile-card">
-                <div class="avatar-circle">JD</div>
+                <div class="avatar-circle" id="panelUserInitials">--</div>
                 <div class="profile-details">
-                    <h3>Jane Doe</h3>
-                    <p>Member</p>
+                    <h3 id="panelUserName">Loading...</h3>
+                    <p id="panelUserTier">MEMBER</p>
                 </div>
             </div>
-
+    
             <div class="balance-grid">
                 <div class="balance-item">
                     <i class="fa-solid fa-star"></i>
-                    <span>1,250</span>
+                    <span id="panelRewardPoints">0</span>
                     <small>Reward Points</small>
                 </div>
                 <div class="balance-item">
                     <i class="fa-solid fa-wallet"></i>
-                    <span>₱850.00</span>
+                    <span id="panelWalletBalance">₱0.00</span>
                     <small>TIMS-RPAY Bal</small>
                 </div>
             </div>
-
+    
             <div class="account-menu">
-                <button class="acc-link-btn" onclick="window.location.href='dashaccsett.html'">
+                <a href="dashaccsett.html" class="acc-link-btn">
                     <i class="fa-solid fa-gear"></i> Account Settings
-                </button>
-                <button class="acc-link-btn" onclick="window.location.href='rewards.html'">
+                </a>
+                <a href="rewards.html" class="acc-link-btn">
                     <i class="fa-solid fa-clock-rotate-left"></i> Transaction History
-                </button>
-                <button class="acc-link-btn" onclick="window.location.href='topup.html'">
+                </a>
+                <a href="topup.html" class="acc-link-btn">
                     <i class="fa-solid fa-plus-circle"></i> Top-Up Wallet
-                </button>
-                <button class="acc-link-btn danger" onclick="window.location.href='index.html'">
+                </a>
+                <a href="index.html" class="acc-link-btn danger">
                     <i class="fa-solid fa-right-from-bracket"></i> Log Out
-                </button>
+                </a>
             </div>
-
         </div>
     </div>
 
     <script>
-        // --- THEME TOGGLE ---
-        const toggleBtn = document.getElementById('themeToggle');
-        const icon = toggleBtn.querySelector('i');
-        toggleBtn.addEventListener('click', () => {
-            document.body.classList.toggle('light-mode');
-            if (document.body.classList.contains('light-mode')) {
-                icon.classList.replace('fa-sun', 'fa-moon');
-            } else {
-                icon.classList.replace('fa-moon', 'fa-sun');
-            }
-        });
-
         // --- FILTER & SEARCH LOGIC ---
         let activeCategory = 'all';
 
@@ -598,15 +592,6 @@
         let currentProductTitle = "";
         let qty = 1;
 
-        // --- UI CONTROL FUNCTIONS ---
-        function closeAll() {
-            document.getElementById('mainOverlay').classList.remove('active');
-            document.getElementById('productModal').classList.remove('active');
-            document.getElementById('cartPanel').classList.remove('active');
-            document.getElementById('accountPanel').classList.remove('active');
-            document.body.style.overflow = 'auto';
-        }
-
         function openProduct(title, basePrice, img, desc) {
             currentProductTitle = title;
             currentProductBasePrice = basePrice;
@@ -633,13 +618,6 @@
             document.getElementById('cartPanel').classList.add('active');
             document.body.style.overflow = 'hidden';
             renderCart();
-        }
-
-        function openAccountPanel() {
-            document.getElementById('mainOverlay').classList.add('active');
-            document.getElementById('cartPanel').classList.remove('active'); // Close cart if open
-            document.getElementById('accountPanel').classList.add('active');
-            document.body.style.overflow = 'hidden';
         }
 
         // --- PRODUCT MODAL LOGIC ---
@@ -730,5 +708,18 @@
         }
 
     </script>
+    <script src="js/api.js"></script>
+    <script src="js/theme-sync.js"></script>
+    <script src="js/sidepanel-fetching.js"></script>
+    <script src="js/account-panel.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            if (typeof loadSharedAccountPanel === "function") {
+                await loadSharedAccountPanel();
+            }
+        });
+    </script>
+    
 </body>
 </html>
