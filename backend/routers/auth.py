@@ -401,10 +401,9 @@ def google_callback(
     redirect_uri = _google_env("GOOGLE_REDIRECT_URI")
 
     frontend_redirect = os.getenv(
-        "FRONTEND_OAUTH_REDIRECT",
-        "http://127.0.0.1:5500/PUBLICWEB/oauth-callback.html"
-    ) 
-
+    "FRONTEND_OAUTH_REDIRECT",
+    "http://127.0.0.1:5500/PUBLICWEB/oauth-callback.html"
+)
     token_res = requests.post(
         GOOGLE_TOKEN_URL,
         data={
