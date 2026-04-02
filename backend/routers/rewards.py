@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Header
+from flask_migrate import check
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta, timezone
@@ -8,13 +9,16 @@ import hashlib
 import hmac
 import os
 import smtplib
+import random
+import string
 from email.message import EmailMessage
 
 from backend.security import get_current_user, require_roles
 from backend.database import SessionLocal
 from backend.models import (
     User,
-    Order,  # ✅ for order_id claim flow
+    Order,
+    Reward,  # ✅ for order_id claim flow
     RewardWallet,
     RewardTransaction,
     RewardRedemptionToken,
@@ -27,8 +31,7 @@ router = APIRouter(prefix="/rewards", tags=["Rewards"])
 # CONSTANTS
 # =======================
 REQUIRED_POINTS = 2800
-
-QR_TOKEN_TTL_SECONDS = 120          # 2 minutes
+QR_TOKEN_TTL_SECONDS = 1800          # 30 minutes
 MANUAL_OTP_TTL_SECONDS = 300        # 5 minutes
 OTP_ITERS = 120_000
 
@@ -177,6 +180,10 @@ def _get_order_for_claim(db: Session, order_id: int) -> Order:
 
     return order
 
+ # to shorten the token, 6 random charac 
+def generate_short_token():
+        return "RDM-" + ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+
 
 # =======================
 # REQUEST BODIES (JSON)
@@ -202,43 +209,61 @@ class ManualOTPConfirm(BaseModel):
 # ============================================================
 @router.post("/redeem-qr/generate")
 def generate_redeem_qr(
+    reward_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles("customer")),
 ):
     user_id = int(current_user.id)
 
     rw = _get_reward_wallet(db, user_id)
-
     points = int(rw.total_points or 0)
+
+    # ✅ GET REWARD
+    reward = db.query(Reward).filter(Reward.id == reward_id).first()    
+    if not reward:
+        raise HTTPException(status_code=404, detail="Reward not found")
+
+    # ✅ CHECK POINTS (FIXED)
     if points < REQUIRED_POINTS:
         raise HTTPException(
             status_code=400,
             detail=f"Not enough points. Need {REQUIRED_POINTS}, you have {points}."
         )
 
-    # Remove any previous unused tokens for this user
+    # remove old tokens
     db.query(RewardRedemptionToken).filter(
         RewardRedemptionToken.user_id == user_id,
         RewardRedemptionToken.is_used == False
     ).delete(synchronize_session=False)
 
-    token = "RDM_" + secrets.token_urlsafe(24)
-    expires_at = _utcnow() + timedelta(seconds=QR_TOKEN_TTL_SECONDS)
+    # token generation - para di mag duplicate ung token since 6 characs na lng
+    while True:
+        token = generate_short_token()
+        exists = db.query(RewardRedemptionToken).filter_by(qr_token=token).first()
+        if not exists:
+            break
+    
+    # auto expire check
+        raise HTTPException(status_code=400, detail="Token expired")
 
+    expires_at = _utcnow() + timedelta(seconds=QR_TOKEN_TTL_SECONDS)
+    
+    # ✅ FIXED INSERT
     row = RewardRedemptionToken(
         user_id=user_id,
-        token=token,
-        required_points=REQUIRED_POINTS,
+        reward_id=reward.id,  # link to the specific reward being redeemed
+        qr_token=token,
         expires_at=expires_at,
         is_used=False
     )
+
     db.add(row)
     db.commit()
     db.refresh(row)
 
     return {
         "user_id": user_id,
-        "token": row.token,
+        "token": row.qr_token,
         "expires_at": str(row.expires_at)
     }
 
@@ -256,7 +281,7 @@ def consume_redeem_qr(
     if not token:
         raise HTTPException(status_code=400, detail="qr_token is required")
 
-    row = db.query(RewardRedemptionToken).filter(RewardRedemptionToken.token == token).first()
+    row = db.query(RewardRedemptionToken).filter(RewardRedemptionToken.qr_token == token).first() #added a qr_token
     if not row:
         raise HTTPException(status_code=404, detail="Invalid token")
 
@@ -270,14 +295,15 @@ def consume_redeem_qr(
     if int(rw.total_points or 0) < REQUIRED_POINTS:
         raise HTTPException(status_code=400, detail="Not enough points")
 
-    # NOTE: you currently reset to 0. If you want "minus 2800" instead, change logic here.
-    rw.total_points = 0
+    #deduct only the required points
+    rw.total_points = int(rw.total_points or 0) - REQUIRED_POINTS
+
     row.is_used = True
     row.used_at = _utcnow()
 
     db.add(RewardTransaction(
         reward_wallet_id=rw.id,
-        reward_id=None,
+        reward_id=row.reward_id,
         order_id=None,
         points_change=-REQUIRED_POINTS,
         transaction_type="REDEEM"
@@ -288,6 +314,8 @@ def consume_redeem_qr(
     return {
         "message": "Reward redeemed",
         "user_id": row.user_id,
+        "reward_id": row.reward_id,
+        "token": row.qr_token,
         "remaining_points": int(rw.total_points or 0)
     }
 
@@ -392,6 +420,7 @@ def get_my_reward_points_history(
                 "type": t.transaction_type,
                 "created_at": str(getattr(t, "created_at", "")),
                 "order_id": getattr(t, "order_id", None),
+                "reward_id": getattr(t, "reward_id", None),
             }
             for t in txs
         ],

@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func as sa_func
 from pydantic import BaseModel, Field
 from decimal import Decimal
+from datetime import datetime, timedelta #added
+from sqlalchemy import Column, Integer, DateTime #added
 import os
 import hashlib
 import hmac
@@ -101,19 +103,42 @@ def _get_user_by_id(db: Session, user_id: int) -> User:
     return user
 
 
-def _validate_pin(pin: str) -> str:
+def _validate_pin(pin: str) -> str: #updated
     pin = (pin or "").strip()
     if not pin.isdigit() or not (4 <= len(pin) <= 6):
         raise HTTPException(status_code=400, detail="PIN must be 4-6 digits")
     return pin
 
+LOCK_DURATION = 120 # seconds (e.g. 5 minutes = 300 seconds)
 
-def _verify_wallet_pin(wallet: Wallet, pin: str):
+def _verify_wallet_pin(wallet: Wallet, pin: str, db: Session):
     pin = _validate_pin(pin)
+
     if not getattr(wallet, "pin_hash", None):
         raise HTTPException(status_code=400, detail="Wallet PIN not set")
+
+    now = datetime.utcnow()
+
+    # 🔒 CHECK LOCK
+    if wallet.locked_until and now < wallet.locked_until:
+        remaining = int((wallet.locked_until - now).total_seconds())
+        raise HTTPException(
+            status_code=403,
+            detail=f"Locked. Try again in {remaining} seconds"
+        )
+
     if not verify_pin(pin, wallet.pin_hash):
+        wallet.failed_attempts += 1
+
+        if wallet.failed_attempts >= 3:
+            wallet.locked_until = now + timedelta(minutes=2)
+            wallet.failed_attempts = 0
+
         raise HTTPException(status_code=401, detail="Invalid PIN")
+
+    # ✅ SUCCESS RESET
+    wallet.failed_attempts = 0
+    wallet.locked_until = None
 
 
 def _decimal_amt(x) -> Decimal:
@@ -185,7 +210,7 @@ def verify_my_pin(
         raise HTTPException(status_code=400, detail="User is inactive")
 
     wallet = _get_wallet_by_user_id(db, current_user.id)
-    _verify_wallet_pin(wallet, payload.pin)
+    _verify_wallet_pin(wallet, payload.pin, db)
 
     return {"verified": True, "user_id": current_user.id, "wallet_id": wallet.id}
 
@@ -205,12 +230,11 @@ def top_up(
     if amt <= 0:
         raise HTTPException(status_code=400, detail="Amount must be > 0")
 
-    user = _get_user_by_id(db, payload.user_id)
-    if not bool(getattr(user, "is_active", True)):
-        raise HTTPException(status_code=400, detail="Cannot top-up inactive user")
+    try:
+        user = _get_user_by_id(db, payload.user_id)
+        if not bool(getattr(user, "is_active", True)):
+            raise HTTPException(status_code=400, detail="Cannot top-up inactive user")
 
-    with db.begin():
-        # lock wallet row
         wallet = (
             db.query(Wallet)
             .filter(Wallet.user_id == payload.user_id)
@@ -220,9 +244,9 @@ def top_up(
         if not wallet:
             raise HTTPException(status_code=404, detail="Wallet not found")
 
-        # idempotency check (only if column exists)
-        if _idempotency_already_used(db, wallet.id, (idempotency_key or "").strip() or None):
-            # no changes; return current balance
+        idem_key = (idempotency_key or "").strip() or None
+
+        if _idempotency_already_used(db, wallet.id, idem_key):
             return {
                 "message": "Top-up already processed (idempotent)",
                 "user_id": user.id,
@@ -237,12 +261,21 @@ def top_up(
             amount=amt,
             transaction_type="TOPUP",
         )
-        _apply_idempotency(tx, (idempotency_key or "").strip() or None)
+        _apply_idempotency(tx, idem_key)
         db.add(tx)
 
-    db.refresh(wallet)
-    return {"message": "Top-up successful", "user_id": user.id, "balance": float(wallet.balance)}
+        db.commit()
+        db.refresh(wallet)
 
+        return {
+            "message": "Top-up successful",
+            "user_id": user.id,
+            "balance": float(wallet.balance),
+        }
+
+    except Exception:
+        db.rollback()
+        raise
 
 # -----------------------
 # PAY (SELF ONLY) + must own the order — TRANSACTION SAFE
@@ -258,7 +291,7 @@ def pay_with_wallet(
     if not bool(getattr(current_user, "is_active", True)):
         raise HTTPException(status_code=400, detail="User is inactive")
 
-    with db.begin():
+    with db.begin_nested():
         # lock wallet
         wallet = (
             db.query(Wallet)
@@ -317,6 +350,7 @@ def pay_with_wallet(
         _apply_idempotency(tx, (idempotency_key or "").strip() or None)
         db.add(tx)
 
+    db.commit()  # commit the nested transaction
     db.refresh(wallet)
     return {
         "message": "Payment successful",
@@ -336,4 +370,8 @@ def get_my_wallet_balance(
 ):
     w = db.query(Wallet).filter(Wallet.user_id == current_user.id).first()
     bal = float(w.balance or 0) if w else 0.0
-    return {"user_id": current_user.id, "balance": bal}
+    return {
+    "user_id": current_user.id,
+    "balance": bal,
+    "has_pin": w.pin_hash is not None if w else False  # 🔥 ADD THIS
+}

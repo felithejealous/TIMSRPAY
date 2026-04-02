@@ -14,9 +14,12 @@ from pydantic import BaseModel, EmailStr, Field
 import requests
 from fastapi.responses import RedirectResponse
 from urllib.parse import urlencode
+from backend.routers.wallet import _get_wallet_by_user_id #added
 
 from backend.database import SessionLocal
 from backend.models import User, Wallet, RewardWallet, Role, PasswordResetToken
+from backend.routers import wallet
+from backend.routers.wallet import hash_pin
 from backend.security import create_access_token, get_current_user
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
@@ -179,7 +182,7 @@ class ForgotPasswordConfirmPayload(BaseModel):
 # REGISTER
 # ============================================================
 @router.post("/register")
-def register_user(email: str, password: str, db: Session = Depends(get_db)):
+def register_user(full_name: str, email: str, password: str, db: Session = Depends(get_db)): #added full_name param
     email = email.strip().lower()
 
     # ✅ ADD: enforce strong password rules on register
@@ -191,6 +194,7 @@ def register_user(email: str, password: str, db: Session = Depends(get_db)):
     role_id = _get_role_id(db, "customer")
 
     user = User(
+        full_name=full_name, #added full_name field
         email=email,
         password_hash=hash_password(password),
         role_id=role_id,
@@ -326,6 +330,9 @@ def forgot_password_confirm(payload: ForgotPasswordConfirmPayload, db: Session =
 
     row.is_used = True
     user.password_hash = hash_password(payload.new_password)
+    #  (RESET PIN)
+    wallet = _get_wallet_by_user_id(user.id)
+    wallet.pin_hash = hash_pin("0000")  # default PIN OR force change later
     db.commit()
 
     return {"message": "Password reset successful"}
@@ -395,8 +402,8 @@ def google_callback(
 
     frontend_redirect = os.getenv(
         "FRONTEND_OAUTH_REDIRECT",
-        "http://127.0.0.1:8000/PUBLICWEB/oauth-callback.html"
-    )
+        "http://127.0.0.1:5500/PUBLICWEB/oauth-callback.html"
+    ) 
 
     token_res = requests.post(
         GOOGLE_TOKEN_URL,
@@ -428,6 +435,7 @@ def google_callback(
     google_id = info.get("sub")
     email = (info.get("email") or "").strip().lower()
     picture = info.get("picture")
+    name = info.get("name") #added to capture full name from Google profile
 
     if not google_id or not email:
         raise HTTPException(status_code=400, detail="Google account missing required fields (sub/email)")
@@ -440,6 +448,11 @@ def google_callback(
         user.google_id = google_id
         user.oauth_provider = "google"
         user.profile_picture = picture
+
+        #added: only update full_name if it's not already set, to avoid overwriting existing names with empty or less accurate data from Google
+        if not user.full_name and name: 
+            user.full_name = name
+
     else:
         customer_role_id = _get_role_id(db, "customer")
         user = User(
@@ -450,6 +463,7 @@ def google_callback(
             google_id=google_id,
             oauth_provider="google",
             profile_picture=picture,
+            full_name=name, #added full_name from Google profile
         )
         db.add(user)
         db.flush()
@@ -483,6 +497,7 @@ def google_callback(
 def me(current_user: User = Depends(get_current_user)):
     return {
         "user_id": current_user.id,
+        "full_name": current_user.full_name, #added full_name to response
         "email": current_user.email,
         "role": getattr(current_user, "role_name", "customer"),
         "provider": getattr(current_user, "oauth_provider", None),

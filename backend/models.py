@@ -14,6 +14,8 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
+
+    full_name = Column(String(150), nullable=True)
     email = Column(String(150), unique=True, index=True, nullable=True)
     password_hash = Column(Text, nullable=True)
 
@@ -37,6 +39,8 @@ class Wallet(Base):
 
     pin_hash = Column(Text, nullable=True)  
 
+    locked_until = Column(DateTime, nullable=True)  # for brute-force protection
+    failed_attempts = Column(Integer, default=0)  # for brute-force protection
 
 class RewardWallet(Base):
     __tablename__ = "reward_wallets"
@@ -195,18 +199,16 @@ class ProductRecipe(Base):
     qty_used = Column(Numeric(12, 2), nullable=False)
 
 class RewardRedemptionToken(Base):
-    __tablename__ = "reward_redemption_tokens"
+    __tablename__ = "qr_redemptions" #changed it kasi di match sa db
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
-
-    token = Column(String(80), unique=True, index=True, nullable=False)
+    reward_id = Column(Integer, ForeignKey("rewards.id"), nullable=False)
+    
+    qr_token = Column(String(80), unique=True, index=True, nullable=False)
 
     # rule snapshot at time of generation (helpful for auditing)
-    required_points = Column(Integer, nullable=False, default=2800)
-
     expires_at = Column(DateTime(timezone=True), nullable=False)
-    used_at = Column(DateTime(timezone=True), nullable=True)
 
     is_used = Column(Boolean, nullable=False, default=False)
 

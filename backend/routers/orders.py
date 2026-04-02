@@ -1001,3 +1001,38 @@ def get_receipt(order_id: int, db: Session = Depends(get_db)):
             else None
         ),
     }
+
+# for customers to view their own recent orders (or staff to view their own orders if they also order as customers)
+@router.get("/my")
+def my_orders(
+    limit: int = 5,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    orders = (
+        db.query(Order)
+        .filter(Order.user_id == current_user.id)
+        .order_by(Order.id.desc())
+        .limit(limit)
+        .all()
+    )
+
+    result = []
+
+    for o in orders:
+        items = (
+            db.query(OrderItem, Product)
+            .join(Product, Product.id == OrderItem.product_id)
+            .filter(OrderItem.order_id == o.id)
+            .all()
+        )
+
+        for oi, p in items:
+            result.append({
+                "order_id": o.id,
+                "product_name": p.name,
+                "price": float(oi.price),
+                "qty": oi.quantity
+            })
+
+    return result
