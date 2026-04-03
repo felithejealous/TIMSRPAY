@@ -1,12 +1,12 @@
 from typing import Optional, List, Dict
-
+from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy import func as sa_func
 
 from backend.database import SessionLocal
-from backend.models import Product, ProductRecipe, InventoryMaster, User, Category, AddOn
+from backend.models import Product, ProductRecipe, InventoryMaster, User, Category, AddOn, Order, OrderItem
 from backend.security import require_roles
 
 router = APIRouter(prefix="/products", tags=["Products"])
@@ -315,7 +315,72 @@ def get_menu(db: Session = Depends(get_db)):
         ],
     }
 
+#--------------------------------------
+#_____________MENNUU
+#========================
+@router.get("/best-sellers/monthly")
+def get_monthly_best_sellers(
+    limit: int = Query(default=4, ge=1, le=12),
+    db: Session = Depends(get_db),
+):
+    now = datetime.utcnow()
+    month_start = datetime(now.year, now.month, 1)
 
+    if now.month == 12:
+        next_month_start = datetime(now.year + 1, 1, 1)
+    else:
+        next_month_start = datetime(now.year, now.month + 1, 1)
+
+    sold_qty_expr = sa_func.coalesce(sa_func.sum(OrderItem.quantity), 0)
+    sales_amount_expr = sa_func.coalesce(
+        sa_func.sum(OrderItem.quantity * OrderItem.price),
+        0
+    )
+
+    rows = (
+        db.query(
+            Product,
+            Category,
+            sold_qty_expr.label("sold_qty"),
+            sales_amount_expr.label("sales_amount"),
+        )
+        .join(OrderItem, OrderItem.product_id == Product.id)
+        .join(Order, Order.id == OrderItem.order_id)
+        .outerjoin(Category, Category.id == Product.category_id)
+        .filter(Product.is_active == True)
+        .filter(Order.status.in_(["paid", "completed"]))
+        .filter(Order.created_at >= month_start)
+        .filter(Order.created_at < next_month_start)
+        .group_by(Product.id, Category.id)
+        .order_by(
+            sold_qty_expr.desc(),
+            sales_amount_expr.desc(),
+            Product.name.asc(),
+        )
+        .limit(limit)
+        .all()
+    )
+
+    month_label = now.strftime("%B %Y")
+
+    return {
+        "month": month_label,
+        "count": len(rows),
+        "data": [
+            {
+                "product_id": product.id,
+                "name": product.name,
+                "price": float(product.price or 0),
+                "description": getattr(product, "description", None),
+                "image_url": getattr(product, "image_url", None),
+                "category_id": getattr(product, "category_id", None),
+                "category_name": category.name if category else None,
+                "sold_qty": int(sold_qty or 0),
+                "sales_amount": float(sales_amount or 0),
+            }
+            for product, category, sold_qty, sales_amount in rows
+        ],
+    }
 # ============================================================
 # LIST PRODUCTS (staff/cashier/admin)
 # ============================================================

@@ -102,8 +102,6 @@ def serialize_announcement(a: Announcement):
         "created_at": str(a.created_at),
         "updated_at": str(a.updated_at) if a.updated_at else None,
     }
-
-
 @router.get("/public")
 def list_public_announcements(
     limit: int = Query(default=20, ge=1, le=100),
@@ -113,14 +111,19 @@ def list_public_announcements(
 
     rows = (
         db.query(Announcement)
-        .filter(Announcement.status == "published")
+        .filter(sa_func.lower(Announcement.status) == "published")
         .filter(
-            (Announcement.publish_at == None) | (Announcement.publish_at <= now_naive_utc)
+            (Announcement.publish_at.is_(None)) | (Announcement.publish_at <= now_naive_utc)
         )
         .filter(
-            (Announcement.expire_at == None) | (Announcement.expire_at > now_naive_utc)
+            (Announcement.expire_at.is_(None)) | (Announcement.expire_at > now_naive_utc)
         )
-        .order_by(Announcement.is_pinned.desc(), Announcement.id.desc())
+        .order_by(
+            Announcement.is_pinned.desc(),
+            Announcement.publish_at.desc().nullslast(),
+            Announcement.created_at.desc(),
+            Announcement.id.desc(),
+        )
         .limit(limit)
         .all()
     )
@@ -129,7 +132,6 @@ def list_public_announcements(
         "count": len(rows),
         "data": [serialize_announcement(a) for a in rows],
     }
-
 
 @router.get("/")
 def list_all_announcements(

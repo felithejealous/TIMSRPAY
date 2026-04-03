@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Header, Query
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy.orm import Session
-from sqlalchemy import or_, func as sa_func
+from sqlalchemy import or_, func as sa_func, cast, String
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 import secrets
@@ -19,6 +19,7 @@ from backend.models import (
     User,
     Order,
     Role,
+    Reward,
     RewardWallet,
     RewardTransaction,
     RewardRedemptionToken,
@@ -49,7 +50,8 @@ def get_db():
     finally:
         db.close()
 
-def _generate_short_redeem_token(db, length: int = 6):
+
+def _generate_short_redeem_token(db: Session, length: int = 6) -> str:
     alphabet = string.ascii_uppercase + string.digits
 
     while True:
@@ -62,6 +64,7 @@ def _generate_short_redeem_token(db, length: int = 6):
 
         if not existing:
             return token
+
 
 def require_staff_or_admin(x_role: str = Header(default="", alias="X-Role")):
     role = (x_role or "").strip().lower()
@@ -140,12 +143,12 @@ def _get_user_role_name(db: Session, user: Optional[User]) -> str:
 
 def _get_user_by_email(db: Session, email: str) -> User:
     email = (email or "").strip().lower()
-    u = db.query(User).filter(User.email == email).first()
-    if not u:
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    if hasattr(u, "is_active") and not bool(u.is_active):
+    if hasattr(user, "is_active") and not bool(user.is_active):
         raise HTTPException(status_code=400, detail="User is inactive")
-    return u
+    return user
 
 
 def _get_reward_wallet(db: Session, user_id: int) -> RewardWallet:
@@ -350,9 +353,13 @@ def _create_no_expiry_redeem_token(db: Session, user: User):
     db.refresh(row)
 
     return row
+
+
 class ManualOTPRequest(BaseModel):
     email: EmailStr
     order_reference: Optional[str] = Field(default=None, max_length=50)
+
+
 class ManualOTPConfirm(BaseModel):
     email: EmailStr
     otp: str = Field(min_length=4, max_length=8)
@@ -621,7 +628,7 @@ def admin_claimable_orders(
         conditions = [
             User.email.ilike(search),
             CustomerProfile.full_name.ilike(search),
-            sa_func.cast(Order.id, sa_func.String).ilike(search),
+            cast(Order.id, String).ilike(search),
         ]
 
         if resolved_order_id is not None:
@@ -699,22 +706,89 @@ def get_my_reward_points(
     return {"user_id": current_user.id, "total_points": points}
 
 
+@router.get("/catalog")
+def get_reward_catalog(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    rw = _get_reward_wallet(db, current_user.id)
+    points = int(rw.total_points or 0)
+
+    rewards = db.query(Reward).filter(
+        Reward.is_active == True
+    ).order_by(Reward.id.asc()).all()
+
+    return {
+        "total_points": points,
+        "data": [
+            {
+                "reward_id": r.id,
+                "name": r.name,
+                "description": None,
+                "image_url": None,
+                "points_required": int(r.points_required or 0),
+                "reward_type": None,
+                "product_id": None,
+                "size_label": None,
+                "claimable": points >= int(r.points_required or 0),
+            }
+            for r in rewards
+        ]
+    }
+
+
 # ============================================================
 # CUSTOMER QR REDEMPTION
 # ============================================================
 @router.post("/redeem-qr/generate")
 def generate_redeem_qr(
+    reward_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles("customer")),
 ):
-    row = _create_no_expiry_redeem_token(db, current_user)
+    reward = db.query(Reward).filter(
+        Reward.id == reward_id,
+        Reward.is_active == True
+    ).first()
+
+    if not reward:
+        raise HTTPException(status_code=404, detail="Reward not found")
+
+    rw = _get_reward_wallet(db, int(current_user.id))
+    points = int(rw.total_points or 0)
+    required_points = int(reward.points_required or 0)
+
+    if points < required_points:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Not enough points. Need {required_points}, you have {points}."
+        )
+
+    _clear_unused_redeem_tokens(db, int(current_user.id))
+
+    token = _generate_short_redeem_token(db)
+
+    row = RewardRedemptionToken(
+        user_id=int(current_user.id),
+        token=token,
+        required_points=required_points,
+        expires_at=NO_EXPIRY_TOKEN_PLACEHOLDER,
+        is_used=False
+    )
+
+    db.add(row)
+    db.commit()
+    db.refresh(row)
 
     return {
         "user_id": int(current_user.id),
+        "reward_id": int(reward.id),
+        "reward_name": reward.name,
         "token": row.token,
         "qr_value": row.token,
         "expires_at": None,
         "has_expiry": False,
+        "required_points": required_points,
         "message": "Redeem token generated successfully"
     }
 
@@ -729,6 +803,15 @@ def generate_redeem_qr_for_customer(
     user = result["user"]
     customer_profile = result["customer_profile"]
 
+    rw = _get_reward_wallet(db, int(user.id))
+    points = int(rw.total_points or 0)
+
+    if points < REQUIRED_POINTS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Not enough points. Need {REQUIRED_POINTS}, you have {points}."
+        )
+
     row = _create_no_expiry_redeem_token(db, user)
 
     return {
@@ -739,6 +822,7 @@ def generate_redeem_qr_for_customer(
         "qr_value": row.token,
         "expires_at": None,
         "has_expiry": False,
+        "required_points": REQUIRED_POINTS,
         "message": "Redeem token generated successfully for customer"
     }
 
@@ -753,19 +837,24 @@ def consume_redeem_qr(
     if not token:
         raise HTTPException(status_code=400, detail="qr_token is required")
 
-    row = db.query(RewardRedemptionToken).filter(RewardRedemptionToken.token == token).first()
+    row = db.query(RewardRedemptionToken).filter(
+        RewardRedemptionToken.token == token
+    ).first()
+
     if not row:
         raise HTTPException(status_code=404, detail="Invalid token")
 
     if row.is_used:
         raise HTTPException(status_code=400, detail="Token already used")
 
-    # NO EXPIRY CHECK HERE ON PURPOSE
     rw = _get_reward_wallet(db, row.user_id)
-    if int(rw.total_points or 0) < REQUIRED_POINTS:
+    required_points = int(getattr(row, "required_points", REQUIRED_POINTS) or REQUIRED_POINTS)
+    current_points = int(rw.total_points or 0)
+
+    if current_points < required_points:
         raise HTTPException(status_code=400, detail="Not enough points")
 
-    rw.total_points = 0
+    rw.total_points = current_points - required_points
     row.is_used = True
     row.used_at = _utcnow()
 
@@ -774,7 +863,7 @@ def consume_redeem_qr(
             reward_wallet_id=rw.id,
             reward_id=None,
             order_id=None,
-            points_change=-REQUIRED_POINTS,
+            points_change=-required_points,
             transaction_type="REDEEM"
         )
     )

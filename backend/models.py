@@ -155,17 +155,19 @@ class AddOnRecipe(Base):
     add_on_id = Column(Integer, ForeignKey("add_ons.id", ondelete="CASCADE"), nullable=False)
     inventory_master_id = Column(Integer, ForeignKey("inventory_master.id"), nullable=False)
     qty_used = Column(Numeric(12, 4), nullable=False, default=1)
-
-
 class Reward(Base):
     __tablename__ = "rewards"
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(150), nullable=False)
+    description = Column(Text, nullable=True)
+    image_url = Column(Text, nullable=True)
     points_required = Column(Integer, nullable=False)
+    reward_type = Column(String(30), nullable=False, default="free_drink")
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=True)
+    size_label = Column(String(30), nullable=True)
     is_active = Column(Boolean, default=True)
-
-
+    sort_order = Column(Integer, default=0)
 class RewardTransaction(Base):
     __tablename__ = "reward_transactions"
     id = Column(Integer, primary_key=True, index=True)
@@ -230,13 +232,12 @@ class ProductRecipe(Base):
     product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
     inventory_master_id = Column(Integer, ForeignKey("inventory_master.id"), nullable=False)
     qty_used = Column(Numeric(12, 2), nullable=False)
-
-
 class RewardRedemptionToken(Base):
     __tablename__ = "reward_redemption_tokens"
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    reward_id = Column(Integer, ForeignKey("rewards.id"), nullable=True)
 
     token = Column(String(80), unique=True, index=True, nullable=False)
     required_points = Column(Integer, nullable=False, default=2800)
@@ -246,10 +247,6 @@ class RewardRedemptionToken(Base):
 
     is_used = Column(Boolean, nullable=False, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-
-    user = relationship("User", backref="reward_redemption_tokens")
-
-
 class Category(Base):
     __tablename__ = "categories"
 

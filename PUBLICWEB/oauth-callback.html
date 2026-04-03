@@ -9,22 +9,25 @@
   <p>Signing you in, please wait...</p>
 
   <script>
+    console.log("FULL URL:", window.location.href);
+
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token");
 
     if (!token) {
-      document.body.innerHTML = "<p>Login failed: missing token.</p>";
-      throw new Error("Missing token in callback");
-    }
+    document.body.innerHTML = "<p>Login failed: No token received.</p>";
+    throw new Error("Missing token");
+  }
 
-    // Save token
-    localStorage.setItem("access_token", token);
+    // save token
+    localStorage.setItem("token", token);
 
-    // (optional) remove token from URL for cleanliness
+    // remove token from URL (security)
     window.history.replaceState({}, document.title, window.location.pathname);
 
-    // Redirect
-    window.location.href = "http://127.0.0.1:5500/PUBLICWEB/index.html"; //http://127.0.0.1:5500/PUBLICWEB\oauth-callback.html
+    // redirect to welcome page
+    window.location.href = "welcome.html";
+
   </script>
 </body>
 </html>

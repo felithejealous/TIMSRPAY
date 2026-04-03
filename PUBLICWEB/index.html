@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        (function () { const t = localStorage.getItem("publicweb-theme") || "dark"; if (t === "light") document.documentElement.classList.add("light-mode"); })();
+    </script>
     <title>Teo D' Mango | The Overload Experience</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -28,7 +31,7 @@
         }
 
         /* DARK MODE OVERRIDES */
-        body.dark-mode {
+        .light-mode {
             --bg-main: #050505;
             --text-main: #ffffff;
             --text-muted: #888888;
@@ -317,7 +320,7 @@
         </ul>
         <div class="nav-actions">
             <button class="circle-btn" id="themeToggle" title="Toggle Light/Dark Mode">
-                <i class="fa-solid fa-moon"></i>
+                <i class="fa-solid fa-sun"></i>
             </button>
             <button class="circle-btn" onclick="window.location.href='login.html'" title="Sign In">
                 <i class="fa-solid fa-user"></i>
@@ -345,19 +348,19 @@
         </div>
         
         <div class="variant-grid">
-            <div class="variant-card mango-card" onclick="window.location.href='menu.html'">
+            <div class="variant-card mango-card" onclick="window.location.href='login.html'">
                 <div class="variant-img-wrapper"><img src="mango (2).png" alt="Classic Mango"></div>
                 <h3>Classic Overload</h3>
                 <span style="color: var(--mango-dark);">₱120.00</span>
             </div>
             
-            <div class="variant-card strawberry-card" onclick="window.location.href='menu.html'">
+            <div class="variant-card strawberry-card" onclick="window.location.href='login.html'">
                 <div class="variant-img-wrapper"><img src="STRAWBERRY.png" alt="Strawberry"></div>
                 <h3>Strawberry Bliss</h3>
                 <span style="color: var(--strawberry);">₱140.00</span>
             </div>
             
-            <div class="variant-card avocado-card" onclick="window.location.href='menu.html'">
+            <div class="variant-card avocado-card" onclick="window.location.href='login.html'">
                 <div class="variant-img-wrapper"><img src="avocado.png" alt="Avocado"></div>
                 <h3>Avocado Supreme</h3>
                 <span style="color: #10b981;">₱150.00</span>
@@ -477,23 +480,6 @@
     </div>
 
     <script>
-        // --- THEME TOGGLE LOGIC ---
-        const toggleBtn = document.getElementById('themeToggle');
-        const icon = toggleBtn.querySelector('i');
-        const body = document.body;
-
-        toggleBtn.addEventListener('click', () => {
-            body.classList.toggle('dark-mode');
-            
-            if (body.classList.contains('dark-mode')) {
-                icon.classList.remove('fa-moon');
-                icon.classList.add('fa-sun');
-            } else {
-                icon.classList.remove('fa-sun');
-                icon.classList.add('fa-moon');
-            }
-        });
-
         // --- HERO ANIMATIONS ---
         window.addEventListener('scroll', function() {
             const fade = document.getElementById('hero-fade');
@@ -529,5 +515,6 @@
             if (e.target === this) closeModal();
         });
     </script>
+    <script src="js/theme-sync.js"></script>
 </body>
 </html>

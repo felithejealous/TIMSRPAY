@@ -22,6 +22,7 @@ function showToast(message) {
         toast.classList.remove("show");
     }, 2500);
 }
+
 function formatDateTime(dateString) {
     if (!dateString) return "No schedule";
 
@@ -257,7 +258,7 @@ function resetAnnouncementForm() {
     if (announcementId) announcementId.value = "";
     if (modalTitle) modalTitle.innerText = "Broadcast Message";
     if (submitBtn) submitBtn.innerText = "Deploy Post";
-    if (annStatus) annStatus.value = "draft";
+    if (annStatus) annStatus.value = "published";
     if (annPinned) annPinned.checked = false;
     if (annImage) annImage.value = "";
     if (annSchedule) annSchedule.value = "";
@@ -394,7 +395,7 @@ async function submitAnnouncementForm(event) {
     const announcementId = (document.getElementById("announcementId")?.value || "").trim();
     const title = (document.getElementById("annTitle")?.value || "").trim();
     const body = (document.getElementById("annContent")?.value || "").trim();
-    const status = (document.getElementById("annStatus")?.value || "draft").trim().toLowerCase();
+    const status = (document.getElementById("annStatus")?.value || "published").trim().toLowerCase();
     const publishAt = (document.getElementById("annSchedule")?.value || "").trim();
     const expireAt = (document.getElementById("annExpire")?.value || "").trim();
     const isPinned = Boolean(document.getElementById("annPinned")?.checked);
@@ -609,6 +610,7 @@ async function initializeAnnouncementsPage() {
     setScheduleMin();
     await fetchAnnouncements();
 }
+
 window.openModal = openModal;
 window.closeModal = closeModal;
 

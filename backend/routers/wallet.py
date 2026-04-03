@@ -263,6 +263,23 @@ def verify_my_pin(
         "wallet_id": wallet.id,
         "wallet_code": getattr(wallet, "wallet_code", None),
     }
+#---------------
+#_-------------VERIFY PIN
+#---------
+# -----------------------
+# PIN STATUS (SELF ONLY)
+# -----------------------
+@router.get("/pin-status")
+def get_pin_status(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    wallet = _get_wallet_by_user_id(db, current_user.id)
+    _ensure_wallet_code(db, wallet)
+
+    return {
+        "has_pin": bool(getattr(wallet, "pin_hash", None))
+    }
 
 
 # -----------------------
@@ -536,3 +553,53 @@ def get_my_wallet_balance(
         "wallet_code": code,
         "balance": bal,
     }
+
+#-------------------------
+#-----HISTORY OF TRANSACTIONS (SELF ONLY)------
+#-------------------------
+# -----------------------
+# WALLET HISTORY (SELF ONLY)
+# -----------------------
+@router.get("/history")
+def get_wallet_history(
+    range: str = Query(default="month"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    wallet = db.query(Wallet).filter(Wallet.user_id == current_user.id).first()
+
+    if not wallet:
+        return {"transactions": []}
+
+    from datetime import datetime, timedelta
+
+    now = datetime.utcnow()
+
+    if range == "today":
+        since = now - timedelta(days=1)
+    elif range == "week":
+        since = now - timedelta(days=7)
+    else:
+        since = now - timedelta(days=30)
+
+    rows = (
+        db.query(WalletTransaction)
+        .filter(
+            WalletTransaction.wallet_id == wallet.id,
+            WalletTransaction.created_at >= since,
+            WalletTransaction.transaction_type == "TOPUP"
+        )
+        .order_by(WalletTransaction.created_at.desc())
+        .all()
+    )
+
+    data = []
+
+    for r in rows:
+        data.append({
+            "amount": float(r.amount),
+            "type": r.transaction_type,
+            "created_at": r.created_at
+        })
+
+    return {"transactions": data}

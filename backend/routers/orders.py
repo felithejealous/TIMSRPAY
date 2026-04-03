@@ -4,7 +4,7 @@ from datetime import datetime, timezone, timedelta
 import hashlib
 import hmac
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session, aliased
 from sqlalchemy import func as sa_func
@@ -242,7 +242,70 @@ def list_orders(
         })
 
     return {"count": len(result), "data": result}
+#===========
+#HELPER FOR ORDER HSITORYYYY
+#==============================
+@router.get("/my")
+def list_my_orders(
+    limit: int = Query(default=50, ge=1, le=100),
+    days: int = Query(default=30, ge=1, le=365),
+    status: Optional[str] = Query(default=None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    cutoff = datetime.utcnow() - timedelta(days=days)
 
+    q = (
+        db.query(Order)
+        .filter(Order.user_id == current_user.id)
+        .filter(Order.created_at >= cutoff)
+    )
+
+    if status:
+        q = q.filter(Order.status == status.strip().lower())
+
+    rows = (
+        q.order_by(Order.created_at.desc(), Order.id.desc())
+        .limit(limit)
+        .all()
+    )
+
+    result = []
+
+    for order in rows:
+        item_rows = (
+            db.query(OrderItem, Product)
+            .join(Product, Product.id == OrderItem.product_id)
+            .filter(OrderItem.order_id == order.id)
+            .all()
+        )
+
+        first_product_name = item_rows[0][1].name if item_rows else "Order Item"
+        items_summary = ", ".join(
+            [f"{int(oi.quantity)}x {p.name}" for oi, p in item_rows]
+        ) if item_rows else "No items"
+
+        result.append({
+            "order_id": order.id,
+            "display_id": _display_order_id(order.id),
+            "order_type": order.order_type,
+            "status": order.status,
+            "payment_method": (order.payment_method or "cash"),
+            "customer_name": getattr(order, "customer_name", None),
+            "created_at": str(order.created_at),
+            "product_name": first_product_name,
+            "items_summary": items_summary,
+            "item_count": sum(int(oi.quantity) for oi, _ in item_rows) if item_rows else 0,
+            "price": float(order.total_amount or 0),
+            "total_amount": float(order.total_amount or 0),
+            "earned_points": int(getattr(order, "earned_points", 0) or 0),
+            "points_synced": bool(getattr(order, "points_synced", False)),
+        })
+
+    return result
+#==========================
+#REFUNNNNFSSS
+#========================
 @router.get("/refunds")
 def list_refunded_orders(
     limit: int = 50,
@@ -1689,7 +1752,31 @@ def pay_wallet_order(
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")
-    
+def get_order_refund_summary(db: Session, order_id: int) -> Dict[str, object]:
+    refund_txs = (
+        db.query(WalletTransaction)
+        .filter(
+            WalletTransaction.order_id == order_id,
+            WalletTransaction.transaction_type == "REFUND",
+        )
+        .order_by(WalletTransaction.created_at.desc(), WalletTransaction.id.desc())
+        .all()
+    )
+
+    total_refund = Decimal("0")
+    last_refund_at = None
+
+    for tx in refund_txs:
+        total_refund += Decimal(str(tx.amount or 0))
+        if last_refund_at is None:
+            last_refund_at = getattr(tx, "created_at", None)
+
+    return {
+        "is_refunded": len(refund_txs) > 0,
+        "refund_count": len(refund_txs),
+        "refund_amount": float(total_refund),
+        "last_refund_at": str(last_refund_at) if last_refund_at else None,
+    }
 @router.get("/{order_id}/receipt")
 def get_receipt(order_id: int, db: Session = Depends(get_db)):
     order = db.query(Order).filter(Order.id == order_id).first()
