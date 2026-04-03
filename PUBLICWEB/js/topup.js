@@ -1,3 +1,11 @@
+let currentTopupUser = null;
+let forgotPinCooldownTimer = null;
+let forgotPinCooldownEnd = 0;
+
+/* =========================
+   BASIC HELPERS
+========================= */
+
 function getUserInitials(fullName) {
     if (!fullName) return "USR";
     const parts = fullName.trim().split(/\s+/).filter(Boolean);
@@ -50,6 +58,10 @@ function showToast(message, isError = false) {
         toast.classList.remove("show");
     }, 2500);
 }
+
+/* =========================
+   PAGE UI
+========================= */
 
 function renderStoreQr(walletCode) {
     const qrContainer = document.getElementById("qrcode");
@@ -112,6 +124,10 @@ function updateTopupPageUI({ user, walletBalance }) {
     renderStoreQr(walletCode);
 }
 
+/* =========================
+   HISTORY
+========================= */
+
 async function openHistory() {
     openModal("historyModal");
     await loadHistory("month");
@@ -158,6 +174,10 @@ async function loadHistory(range) {
     }
 }
 
+/* =========================
+   MODALS
+========================= */
+
 function openModal(id) {
     const modal = document.getElementById(id);
     const overlay = document.getElementById("mainOverlay");
@@ -196,7 +216,7 @@ window.openHistory = openHistory;
 window.loadHistory = loadHistory;
 
 /* =========================
-   PIN HELPERS
+   PIN INPUT HELPERS
 ========================= */
 
 function getPinValues(containerSelector) {
@@ -206,8 +226,13 @@ function getPinValues(containerSelector) {
 
 function clearPinInputs(containerSelector) {
     const inputs = document.querySelectorAll(`${containerSelector} .pin-box`);
-    inputs.forEach(input => input.value = "");
-    if (inputs.length) inputs[0].focus();
+    inputs.forEach(input => {
+        input.value = "";
+    });
+
+    if (inputs.length) {
+        inputs[0].focus();
+    }
 }
 
 function moveToNext(input, event) {
@@ -230,6 +255,10 @@ function moveToNext(input, event) {
 }
 
 window.moveToNext = moveToNext;
+
+/* =========================
+   PIN STATUS / SET / VERIFY
+========================= */
 
 async function fetchPinStatus() {
     const { res, data } = await apiGet("/wallet/pin-status");
@@ -313,14 +342,214 @@ async function verifyPIN() {
 window.verifyPIN = verifyPIN;
 
 /* =========================
-   FORGOT PIN PLACEHOLDER
+   FORGOT PIN COOLDOWN
 ========================= */
 
+function setForgotPinCooldown(seconds) {
+    forgotPinCooldownEnd = Date.now() + (seconds *100);
+    localStorage.setItem("forgotPinCooldownEnd", String(forgotPinCooldownEnd));
+    startForgotPinCooldownTimer();
+}
+
+function clearForgotPinCooldown() {
+    forgotPinCooldownEnd = 0;
+    localStorage.removeItem("forgotPinCooldownEnd");
+
+    if (forgotPinCooldownTimer) {
+        clearInterval(forgotPinCooldownTimer);
+        forgotPinCooldownTimer = null;
+    }
+
+    updateForgotPinCooldownUI(0);
+}
+
+function getRemainingForgotPinCooldown() {
+    const stored = Number(localStorage.getItem("forgotPinCooldownEnd") || 0);
+    if (!stored) return 0;
+
+    const remainingMs = stored - Date.now();
+    return remainingMs > 0 ? Math.ceil(remainingMs / 1000) : 0;
+}
+
+function updateForgotPinCooldownUI(seconds) {
+    const cooldownText = document.getElementById("forgotPinCooldownText");
+    const sendBtn = document.getElementById("sendForgotPinBtn");
+
+    if (seconds > 0) {
+        if (cooldownText) {
+            cooldownText.textContent = `You can request another code in ${seconds}s`;
+        }
+        if (sendBtn) {
+            sendBtn.disabled = true;
+            sendBtn.style.opacity = "0.6";
+            sendBtn.style.pointerEvents = "none";
+        }
+    } else {
+        if (cooldownText) {
+            cooldownText.textContent = "";
+        }
+        if (sendBtn) {
+            sendBtn.disabled = false;
+            sendBtn.style.opacity = "";
+            sendBtn.style.pointerEvents = "";
+        }
+    }
+}
+
+function startForgotPinCooldownTimer() {
+    if (forgotPinCooldownTimer) {
+        clearInterval(forgotPinCooldownTimer);
+        forgotPinCooldownTimer = null;
+    }
+
+    const tick = () => {
+        const remaining = getRemainingForgotPinCooldown();
+
+        if (remaining <= 0) {
+            clearForgotPinCooldown();
+            return;
+        }
+
+        updateForgotPinCooldownUI(remaining);
+    };
+
+    tick();
+    forgotPinCooldownTimer = setInterval(tick, 1000);
+}
+
+/* =========================
+   FORGOT PIN FLOW
+========================= */
+
+function resetForgotPinModalState() {
+    const requestView = document.getElementById("requestView");
+    const confirmView = document.getElementById("confirmView");
+    const emailInput = document.getElementById("forgotPinEmail");
+
+    if (requestView) requestView.style.display = "block";
+    if (confirmView) confirmView.style.display = "none";
+
+    if (emailInput) {
+        emailInput.value = currentTopupUser?.email || "";
+    }
+
+    clearPinInputs("#forgotPinCodeContainer");
+    clearPinInputs("#forgotPinNewPinContainer");
+
+    const remaining = getRemainingForgotPinCooldown();
+    if (remaining > 0) {
+        forgotPinCooldownEnd = Number(localStorage.getItem("forgotPinCooldownEnd") || 0);
+        startForgotPinCooldownTimer();
+    } else {
+        clearForgotPinCooldown();
+    }
+}
+
 function showForgotPin() {
-    showToast("Forgot PIN reset is not yet connected to backend.", true);
+    closeModal("verifyPinModal");
+    resetForgotPinModalState();
+    openModal("forgotPinModal");
 }
 
 window.showForgotPin = showForgotPin;
+
+function backToForgotPinRequest() {
+    const requestView = document.getElementById("requestView");
+    const confirmView = document.getElementById("confirmView");
+
+    if (requestView) requestView.style.display = "block";
+    if (confirmView) confirmView.style.display = "none";
+
+    clearPinInputs("#forgotPinCodeContainer");
+    clearPinInputs("#forgotPinNewPinContainer");
+}
+
+window.backToForgotPinRequest = backToForgotPinRequest;
+
+async function sendForgotPinCode() {
+    const emailInput = document.getElementById("forgotPinEmail");
+    const email = (emailInput?.value || "").trim();
+
+    if (!email) {
+        showToast("Enter your email first.", true);
+        return;
+    }
+
+    const remaining = getRemainingForgotPinCooldown();
+    if (remaining > 0) {
+        updateForgotPinCooldownUI(remaining);
+        showToast(`Please wait ${remaining}s before requesting again.`, true);
+        return;
+    }
+
+    try {
+        const { res, data } = await apiPost("/wallet/forgot-pin/request", { email });
+
+        if (!res.ok) {
+            throw new Error(data?.detail || "Failed to send reset code");
+        }
+
+        const requestView = document.getElementById("requestView");
+        const confirmView = document.getElementById("confirmView");
+
+        if (requestView) requestView.style.display = "none";
+        if (confirmView) confirmView.style.display = "block";
+
+        clearPinInputs("#forgotPinCodeContainer");
+        clearPinInputs("#forgotPinNewPinContainer");
+
+        setForgotPinCooldown(0);
+        showToast(data?.message || "Reset code sent.");
+    } catch (err) {
+        console.error("Forgot PIN request error:", err);
+        showToast(err.message || "Failed to send reset code.", true);
+    }
+}
+
+window.sendForgotPinCode = sendForgotPinCode;
+
+async function resetForgotPin() {
+    const email = (document.getElementById("forgotPinEmail")?.value || "").trim();
+    const code = getPinValues("#forgotPinCodeContainer");
+    const newPin = getPinValues("#forgotPinNewPinContainer");
+
+    if (!email) {
+        showToast("Email is required.", true);
+        return;
+    }
+
+    if (!/^\d{6}$/.test(code)) {
+        showToast("Enter a valid 6-digit code.", true);
+        return;
+    }
+
+    if (!/^\d{4,6}$/.test(newPin)) {
+        showToast("New PIN must be 4 to 6 digits.", true);
+        return;
+    }
+
+    try {
+        const { res, data } = await apiPost("/wallet/forgot-pin/confirm", {
+            email,
+            code,
+            new_pin: newPin
+        });
+
+        if (!res.ok) {
+            throw new Error(data?.detail || "Failed to reset PIN");
+        }
+
+        showToast(data?.message || "PIN reset successful.");
+        closeModal("forgotPinModal");
+        clearPinInputs("#verifyPinModal");
+        resetForgotPinModalState();
+    } catch (err) {
+        console.error("Forgot PIN confirm error:", err);
+        showToast(err.message || "Failed to reset PIN.", true);
+    }
+}
+
+window.resetForgotPin = resetForgotPin;
 
 /* =========================
    INIT
@@ -329,6 +558,8 @@ window.showForgotPin = showForgotPin;
 document.addEventListener("DOMContentLoaded", async () => {
     try {
         const user = await fetchCurrentUser();
+        currentTopupUser = user;
+
         const points = await fetchRewardPoints();
         const walletBalance = await fetchWalletBalance();
         const tier = getTierData(points);
@@ -341,6 +572,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             points,
             walletBalance
         });
+
+        resetForgotPinModalState();
     } catch (err) {
         console.error("Topup init error:", err);
         showToast("Failed to load wallet page.", true);

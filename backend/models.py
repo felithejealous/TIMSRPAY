@@ -514,3 +514,18 @@ class ActivityLog(Base):
     details = Column(Text, nullable=True)
 
     created_at = Column(DateTime(timezone=False), server_default=func.now(), nullable=False)
+class WalletPinResetToken(Base):
+    __tablename__ = "wallet_pin_reset_tokens"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+
+    token_hash = Column(Text, nullable=False)
+    expires_at = Column(DateTime(timezone=False), nullable=False)
+
+    attempts = Column(Integer, nullable=False, default=0)
+
+    is_used = Column(Boolean, nullable=False, default=False)
+    used_at = Column(DateTime(timezone=False), nullable=True)
+
+    created_at = Column(DateTime(timezone=False), server_default=func.now(), nullable=False)

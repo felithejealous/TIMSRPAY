@@ -8,10 +8,12 @@ import hashlib
 import hmac
 import secrets
 import string
-
+import smtplib
+from datetime import datetime, timedelta, timezone
+from email.message import EmailMessage
 from backend.security import get_current_user, require_roles
 from backend.database import SessionLocal
-from backend.models import Wallet, WalletTransaction, Order, User, CustomerProfile
+from backend.models import Wallet, WalletTransaction, Order, User, CustomerProfile, WalletPinResetToken
 
 
 router = APIRouter(prefix="/wallet", tags=["TeoPay"])
@@ -214,7 +216,118 @@ def _resolve_wallet_for_topup(
     _ensure_wallet_code(db, wallet)
     return user, wallet
 
+# -----------------------
+# RESET TOKEN HASH
+# -----------------------
+TOKEN_ITERS = 120_000
+PIN_RESET_TTL_SECONDS = 15*60
+PIN_RESET_COOLDOWN_SECONDS = 60
+PIN_RESET_MAX_ATTEMPTS = 5
 
+def _utcnow():
+    return datetime.now(timezone.utc)
+
+
+def _as_utc(dt: datetime):
+    if dt is None:
+        return None
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
+
+
+def _hash_token(token_str: str, salt: bytes) -> str:
+    dk = hashlib.pbkdf2_hmac("sha256", token_str.encode(), salt, TOKEN_ITERS, dklen=32)
+    return f"pbkdf2_sha256${TOKEN_ITERS}${salt.hex()}${dk.hex()}"
+
+
+def _verify_token(token_str: str, stored: str) -> bool:
+    try:
+        algo, iters, salt_hex, dk_hex = stored.split("$", 3)
+        if algo != "pbkdf2_sha256":
+            return False
+
+        salt = bytes.fromhex(salt_hex)
+        expected = bytes.fromhex(dk_hex)
+
+        dk = hashlib.pbkdf2_hmac(
+            "sha256",
+            token_str.encode(),
+            salt,
+            int(iters),
+            dklen=len(expected)
+        )
+        return hmac.compare_digest(dk, expected)
+    except Exception:
+        return False
+
+def _get_latest_pin_reset_token(db: Session, user_id: int):
+    return (
+        db.query(WalletPinResetToken)
+        .filter(WalletPinResetToken.user_id == user_id)
+        .order_by(WalletPinResetToken.id.desc())
+        .first()
+    )
+
+
+def _seconds_until_pin_reset_request_allowed(db: Session, user_id: int) -> int:
+    latest = _get_latest_pin_reset_token(db, user_id)
+    if not latest or not latest.created_at:
+        return 0
+
+    created_at_utc = _as_utc(latest.created_at)
+    now_utc = _utcnow()
+
+    elapsed = (now_utc - created_at_utc).total_seconds()
+    remaining = int(PIN_RESET_COOLDOWN_SECONDS - elapsed)
+
+    return max(0, remaining)
+
+
+def _ensure_new_pin_is_not_same_as_current(wallet: Wallet, new_pin: str):
+    if getattr(wallet, "pin_hash", None) and verify_pin(new_pin, wallet.pin_hash):
+        raise HTTPException(
+            status_code=400,
+            detail="New PIN must be different from your current PIN"
+        )
+def _send_email(to_email: str, subject: str, body: str):
+    enabled = (os.getenv("SMTP_ENABLED", "false").lower() == "true")
+    if not enabled:
+        return False
+
+    host = os.getenv("SMTP_HOST", "smtp.gmail.com")
+    port = int(os.getenv("SMTP_PORT", "587"))
+    user = os.getenv("SMTP_USER", "")
+    pw = os.getenv("SMTP_PASS", "")
+    from_addr = os.getenv("SMTP_FROM", user)
+
+    if not user or not pw:
+        raise HTTPException(status_code=500, detail="SMTP credentials not set")
+
+    msg = EmailMessage()
+    msg["Subject"] = subject
+    msg["From"] = from_addr
+    msg["To"] = to_email
+    msg.set_content(body)
+
+    try:
+        with smtplib.SMTP(host, port) as smtp:
+            smtp.starttls()
+            smtp.login(user, pw)
+            smtp.send_message(msg)
+        return True
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"SMTP send failed: {e}")
+
+
+class WalletForgotPinRequest(BaseModel):
+    email: str
+
+
+class WalletForgotPinConfirm(BaseModel):
+    email: str
+    code: str = Field(min_length=6, max_length=6)
+    new_pin: str = Field(min_length=4, max_length=6)
 # -----------------------
 # SET PIN (SELF ONLY)
 # -----------------------
@@ -230,17 +343,18 @@ def set_pin(
     wallet = _get_wallet_by_user_id(db, current_user.id)
     _ensure_wallet_code(db, wallet)
 
-    with db.begin():
-        wallet.pin_hash = hash_pin(_validate_pin(payload.pin))
+    new_pin = _validate_pin(payload.pin)
+    _ensure_new_pin_is_not_same_as_current(wallet, new_pin)
 
+    wallet.pin_hash = hash_pin(new_pin)
+    db.commit()
     db.refresh(wallet)
+
     return {
         "message": "PIN set successfully",
         "user_id": current_user.id,
         "wallet_code": getattr(wallet, "wallet_code", None),
     }
-
-
 # -----------------------
 # VERIFY PIN (SELF ONLY)
 # -----------------------
@@ -281,7 +395,160 @@ def get_pin_status(
         "has_pin": bool(getattr(wallet, "pin_hash", None))
     }
 
+# -----------------------
+# FORGOT PIN REQUEST (SELF ONLY)
+# -----------------------
+@router.post("/forgot-pin/request")
+def forgot_pin_request(
+    payload: WalletForgotPinRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    email = (payload.email or "").strip().lower()
+    current_email = (getattr(current_user, "email", "") or "").strip().lower()
 
+    if not email:
+        raise HTTPException(status_code=400, detail="Email is required")
+
+    if email != current_email:
+        raise HTTPException(status_code=403, detail="Email does not match your account")
+
+    wallet = _get_wallet_by_user_id(db, current_user.id)
+    _ensure_wallet_code(db, wallet)
+
+    seconds_left = _seconds_until_pin_reset_request_allowed(db, current_user.id)
+    if seconds_left > 0:
+        raise HTTPException(
+            status_code=429,
+            detail=f"Please wait {seconds_left} second(s) before requesting another code"
+        )
+
+    db.query(WalletPinResetToken).filter(
+        WalletPinResetToken.user_id == current_user.id,
+        WalletPinResetToken.is_used == False
+    ).update(
+        {
+            WalletPinResetToken.is_used: True,
+            WalletPinResetToken.used_at: datetime.utcnow(),
+        },
+        synchronize_session=False
+    )
+
+    code = f"{secrets.randbelow(1_000_000):06d}"
+    salt = secrets.token_bytes(16)
+
+    row = WalletPinResetToken(
+        user_id=current_user.id,
+        token_hash=_hash_token(code, salt),
+        expires_at=_utcnow() + timedelta(seconds=PIN_RESET_TTL_SECONDS),
+        attempts=0,
+        is_used=False
+    )
+    db.add(row)
+    db.commit()
+
+    sent = _send_email(
+        email,
+        "TIMSRPAY Wallet PIN Reset Code",
+        f"Your wallet PIN reset code is: {code}\n\nThis code will expire in 15 minutes."
+    )
+
+    if not sent:
+        return {
+            "message": "DEV MODE",
+            "code_dev": code,
+            "cooldown_seconds": PIN_RESET_COOLDOWN_SECONDS
+        }
+
+    return {
+        "message": "Wallet PIN reset code sent successfully",
+        "cooldown_seconds": PIN_RESET_COOLDOWN_SECONDS
+    }
+# -----------------------
+# FORGOT PIN CONFIRM (SELF ONLY)
+# -----------------------
+@router.post("/forgot-pin/confirm")
+def forgot_pin_confirm(
+    payload: WalletForgotPinConfirm,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    email = (payload.email or "").strip().lower()
+    code = (payload.code or "").strip()
+    new_pin = _validate_pin(payload.new_pin)
+
+    current_email = (getattr(current_user, "email", "") or "").strip().lower()
+
+    if not email:
+        raise HTTPException(status_code=400, detail="Email is required")
+
+    if email != current_email:
+        raise HTTPException(status_code=403, detail="Email does not match your account")
+
+    wallet = _get_wallet_by_user_id(db, current_user.id)
+    _ensure_wallet_code(db, wallet)
+    _ensure_new_pin_is_not_same_as_current(wallet, new_pin)
+
+    row = (
+        db.query(WalletPinResetToken)
+        .filter(
+            WalletPinResetToken.user_id == current_user.id,
+            WalletPinResetToken.is_used == False
+        )
+        .order_by(WalletPinResetToken.id.desc())
+        .first()
+    )
+
+    if not row:
+        raise HTTPException(status_code=400, detail="No active PIN reset code")
+
+    if _utcnow() > _as_utc(row.expires_at):
+        row.is_used = True
+        row.used_at = datetime.utcnow()
+        db.commit()
+        raise HTTPException(status_code=400, detail="PIN reset code expired")
+
+    if int(row.attempts or 0) >= PIN_RESET_MAX_ATTEMPTS:
+        row.is_used = True
+        row.used_at = datetime.utcnow()
+        db.commit()
+        raise HTTPException(
+            status_code=400,
+            detail="Too many invalid attempts. Please request a new code"
+        )
+
+    if not _verify_token(code, row.token_hash):
+        row.attempts = int(row.attempts or 0) + 1
+
+        remaining_attempts = PIN_RESET_MAX_ATTEMPTS - int(row.attempts)
+
+        if int(row.attempts) >= PIN_RESET_MAX_ATTEMPTS:
+            row.is_used = True
+            row.used_at = datetime.utcnow()
+            db.commit()
+            raise HTTPException(
+                status_code=400,
+                detail="Too many invalid attempts. Please request a new code"
+            )
+
+        db.commit()
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid code. {remaining_attempts} attempt(s) remaining"
+        )
+
+    wallet.pin_hash = hash_pin(new_pin)
+    row.is_used = True
+    row.used_at = datetime.utcnow()
+
+    db.commit()
+    db.refresh(wallet)
+
+    return {
+        "message": "Wallet PIN reset successful",
+        "user_id": current_user.id,
+        "wallet_code": getattr(wallet, "wallet_code", None),
+    }
 # -----------------------
 # LOOKUP WALLET USERS (STAFF/CASHIER/ADMIN)
 # search by wallet_code or email or full_name
