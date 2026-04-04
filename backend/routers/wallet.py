@@ -14,7 +14,7 @@ from email.message import EmailMessage
 from backend.security import get_current_user, require_roles
 from backend.database import SessionLocal
 from backend.models import Wallet, WalletTransaction, Order, User, CustomerProfile, WalletPinResetToken
-
+from backend.routers.notification import create_customer_notification
 
 router = APIRouter(prefix="/wallet", tags=["TeoPay"])
 
@@ -665,6 +665,19 @@ def top_up(
         db.commit()
         db.refresh(wallet)
 
+        create_customer_notification(
+            db,
+            user_id=user.id,
+            title="Wallet top-up successful",
+            message=f"₱{amt:.2f} has been added to your TeoPay wallet.",
+            notif_type="wallet",
+            priority="important",
+            is_sticky=True,
+            action_url="topup.html",
+            reference_type="wallet",
+            reference_id=wallet.id,
+        )
+
         return {
             "message": "Top-up successful",
             "user_id": user.id,
@@ -679,8 +692,6 @@ def top_up(
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Top-up failed: {str(e)}")
-
-
 # -----------------------
 # BACKFILL WALLET CODES (ADMIN ONLY)
 # for old wallets with null/empty wallet_code

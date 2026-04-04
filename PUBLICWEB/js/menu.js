@@ -424,23 +424,23 @@ function addToCartExecute() {
     addOnsTotal;
   const total = unitPrice * qty;
 
-  cart.push({
-    cart_item_id: `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-    product_id: Number(currentProduct.product_id),
-    title: currentProduct.name,
-    image_url: getProductImage(currentProduct),
-    base_price: Number(currentProduct.price || 0),
-    size: sizeValue,
-    size_label: sizeMeta.label,
-    size_price: Number(sizeMeta.addPrice || 0),
-    add_ons: selectedAddOns,
-    add_on_ids: selectedAddOns.map((item) => Number(item.add_on_id)),
-    notes,
-    qty: Number(qty),
-    unit_price: Number(unitPrice.toFixed(2)),
-    total: Number(total.toFixed(2)),
-  });
-
+ cart.push({
+  cart_item_id: `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+  product_id: Number(currentProduct.product_id),
+  title: currentProduct.name,
+  image_url: getProductImage(currentProduct),
+  base_price: Number(currentProduct.price || 0),
+  points_per_unit: Number(currentProduct.points_per_unit || 0),
+  size: sizeValue,
+  size_label: sizeMeta.label,
+  size_price: Number(sizeMeta.addPrice || 0),
+  add_ons: selectedAddOns,
+  add_on_ids: selectedAddOns.map((item) => Number(item.add_on_id)),
+  notes,
+  qty: Number(qty),
+  unit_price: Number(unitPrice.toFixed(2)),
+  total: Number(total.toFixed(2)),
+});
   saveCart();
   updateCartBadge();
   renderCart();

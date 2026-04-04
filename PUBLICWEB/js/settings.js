@@ -117,6 +117,41 @@ function bindPasswordToggles() {
     });
   });
 }
+async function apiPostForm(path, formData, extraHeaders = {}) {
+    const res = await fetch(`${API_BASE_URL}${path}`, {
+        method: "POST",
+        headers: {
+            ...getAuthHeaders(extraHeaders)
+        },
+        body: formData
+    });
+
+    let data = null;
+    const text = await res.text();
+    try {
+        data = text ? JSON.parse(text) : null;
+    } catch {
+        data = { detail: text || "Unexpected server response" };
+    }
+
+    return { res, data };
+}
+async function apiDelete(path, extraHeaders = {}) {
+    const res = await fetch(`${API_BASE_URL}${path}`, {
+        method: "DELETE",
+        headers: getAuthHeaders(extraHeaders)
+    });
+
+    let data = null;
+    const text = await res.text();
+    try {
+        data = text ? JSON.parse(text) : null;
+    } catch {
+        data = { detail: text || "Unexpected server response" };
+    }
+
+    return { res, data };
+}
 async function saveProfileAndPassword() {
   const firstName = (document.getElementById("settingsFirstName")?.value || "").trim();
   const lastName = (document.getElementById("settingsLastName")?.value || "").trim();

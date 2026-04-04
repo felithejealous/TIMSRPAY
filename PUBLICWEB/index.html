@@ -131,18 +131,27 @@
       .login-prompt-wrapper h2 { font-size:48px; font-weight:900; color:var(--text-main); letter-spacing:-2px; line-height:1.1; margin-bottom:20px; }
       .login-prompt-wrapper p { font-size:16px; color:var(--text-muted); font-weight:600; margin-bottom:40px; max-width:500px; }
 
-      footer { border-top:1px solid var(--card-border); padding:80px 10% 40px; background:var(--nav-bg); backdrop-filter:blur(20px); text-align:center; }
-      .footer-grid { display:grid; grid-template-columns:2fr 1fr 1fr; gap:50px; text-align:left; max-width:1200px; margin:0 auto; }
-      .footer-about h3 { font-size:24px; font-weight:900; margin-bottom:20px; color:var(--text-main); letter-spacing:-1px; }
-      .footer-about h3 span { color:var(--mango); }
-      .footer-about p { color:var(--text-muted); font-size:14px; line-height:1.6; max-width:300px; font-weight:600; }
-      .footer-links h4 { margin-bottom:25px; font-size:14px; font-weight:900; text-transform:uppercase; letter-spacing:2px; color:var(--text-main); }
-      .footer-links ul { list-style:none; }
-      .footer-links ul li { margin-bottom:15px; }
-      .footer-links ul li a { color:var(--text-muted); text-decoration:none; font-size:13px; transition:0.3s; display:inline-block; font-weight:700; }
-      .footer-links ul li a:hover { color:var(--mango); transform:translateX(5px); }
-      .footer-bottom { text-align:center; margin-top:80px; padding-top:30px; border-top:1px solid var(--card-border); color:var(--text-muted); font-size:12px; font-weight:700; }
+footer { border-top:1px solid var(--card-border); padding:80px 10% 40px; background:var(--nav-bg); backdrop-filter:blur(20px); text-align:center; }
+.footer-grid { display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:50px; text-align:left; max-width:1200px; margin:0 auto; }
+.footer-about h3 { font-size:24px; font-weight:900; margin-bottom:20px; color:var(--text-main); letter-spacing:-1px; }
+.footer-about h3 span { color:var(--mango); }
+.footer-about p { color:var(--text-muted); font-size:14px; line-height:1.6; max-width:300px; font-weight:600; }
+.footer-links h4 { margin-bottom:25px; font-size:14px; font-weight:900; text-transform:uppercase; letter-spacing:2px; color:var(--text-main); }
+.footer-links ul { list-style:none; padding:0; margin:0; }
+.footer-links ul li { margin-bottom:15px; }
+.footer-links ul li a, .footer-links ul li span { color:var(--text-muted); text-decoration:none; font-size:13px; transition:0.3s; display:inline-block; font-weight:700; line-height:1.6; }
+.footer-links ul li a:hover { color:var(--mango); transform:translateX(5px); }
+.footer-bottom { text-align:center; margin-top:80px; padding-top:30px; border-top:1px solid var(--card-border); color:var(--text-muted); font-size:12px; font-weight:700; }
 
+@media (max-width: 950px) {
+  .footer-grid { grid-template-columns:1fr 1fr; gap:35px; }
+}
+
+@media (max-width: 600px) {
+  footer { padding:60px 6% 30px; }
+  .footer-grid { grid-template-columns:1fr; gap:28px; text-align:left; }
+  .footer-bottom { margin-top:50px; padding-top:24px; }
+}
       .modal-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); backdrop-filter:blur(15px); z-index:2000; display:flex; justify-content:center; align-items:center; opacity:0; visibility:hidden; transition:0.4s; padding:20px; }
       .modal-overlay.active { opacity:1; visibility:visible; }
       .modal-content { background:var(--bg-main); color:var(--text-main); padding:40px; border-radius:32px; max-width:700px; width:100%; position:relative; transform:translateY(50px); transition:0.4s cubic-bezier(0.16,1,0.3,1); border:1px solid var(--card-border); box-shadow:var(--shadow); max-height:90vh; overflow-y:auto; }
@@ -362,39 +371,48 @@
         <a href="login.html" class="btn-massive">Log In / Sign Up</a>
       </div>
     </section>
+<footer>
+  <div class="footer-grid">
+    <div class="footer-about">
+      <h3>Teo D' <span>Mango</span></h3>
+      <p>The ultimate overload experience. Freshly blended, perfectly sweet, and crafted to satisfy your cravings.</p>
+    </div>
 
-    <footer>
-      <div class="footer-grid">
-        <div class="footer-about">
-          <h3>Teo D' <span>Mango</span></h3>
-          <p>The ultimate overload experience. Freshly blended, perfectly sweet, and crafted to satisfy your cravings.</p>
-        </div>
+    <div class="footer-links">
+      <h4>Explore</h4>
+      <ul>
+        <li><a href="#assortment">Best Sellers</a></li>
+        <li><a href="#public-menu">Menu & Prices</a></li>
+        <li><a href="#faq-section">FAQ</a></li>
+        <li><a href="#announcements">Latest Updates</a></li>
+        <li><a href="#feedback">Customer Feedback</a></li>
+      </ul>
+    </div>
 
-        <div class="footer-links">
-          <h4>Explore</h4>
-          <ul>
-            <li><a href="#assortment">Best Sellers</a></li>
-            <li><a href="#public-menu">Menu & Prices</a></li>
-            <li><a href="#faq-section">FAQ</a></li>
-            <li><a href="#announcements">Latest Updates</a></li>
-            <li><a href="#feedback">Customer Feedback</a></li>
-          </ul>
-        </div>
+    <div class="footer-links">
+      <h4>Visit Us</h4>
+      <ul>
+        <li><span>Lemery, Batangas</span></li>
+        <li><span>Open Daily: 10:00 AM – 10:00 PM</span></li>
+        <li><a href="mailto:teodmangolicious@gmail.com">teodmangolicious@gmail.com</a></li>
+      </ul>
+    </div>
 
-        <div class="footer-links">
-          <h4>Connect</h4>
-          <ul>
-            <li><a href="#">Instagram</a></li>
-            <li><a href="#">TikTok</a></li>
-            <li><a href="#">Facebook</a></li>
-            <li><a href="login.html">Member Portal</a></li>
-          </ul>
-        </div>
-      </div>
+    <div class="footer-links">
+      <h4>Connect</h4>
+      <ul>
+        <li><a href="#" target="_blank">Instagram</a></li>
+        <li><a href="#" target="_blank">TikTok</a>
+        </li>
+        <li><a href="https://www.facebook.com/teo.d.mango" target="_blank" rel="noopener noreferrer">Facebook</a></li>
+        <li><a href="login.html">Member Portal</a></li>
+      </ul>
+    </div>
+  </div>
 
-      <div class="footer-bottom">&copy; 2026 Teo D' Mango Premium. All rights reserved.</div>
-    </footer>
 
+  <div class="footer-bottom">&copy; 2026 Teo D' Mango Premium. All rights reserved.</div>
+</footer>
     <div class="modal-overlay" id="announcement-modal">
       <div class="modal-content">
         <button class="close-btn" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>

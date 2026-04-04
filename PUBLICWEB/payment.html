@@ -889,13 +889,15 @@
 
                 <div class="rpay-form active" id="rpayForm">
                     <h3>Verify Teo Pay Account</h3>
+
                     <div class="input-group">
                         <label for="rpayEmail">Registered Email</label>
                         <input type="email" class="rpay-input" id="rpayEmail" placeholder="e.g., user@timsrpay.com">
                     </div>
                     <div class="input-group" style="margin-bottom: 0;">
                         <label for="rpayPin">Wallet PIN</label>
-                        <input type="password" class="rpay-input pin-input" id="rpayPin" maxlength="6" placeholder="••••••">
+                        <input type="password"  class="rpay-input pin-input" id="rpayPin" name="rpayPin" inputmode="numeric" maxlength="6" autocomplete="new-password"
+                            autocorrect="off" autocapitalize="off" spellcheck="false" value="">
                     </div>
                 </div>
 
@@ -983,9 +985,6 @@
             </div>
 
             <div class="receipt-actions no-print">
-                <button class="btn-outline" type="button" onclick="window.print()">
-                    <i class="fa-solid fa-print"></i> Print
-                </button>
                 <button class="btn-fill" type="button" onclick="goBackToMenu()">
                     Back to Menu
                 </button>

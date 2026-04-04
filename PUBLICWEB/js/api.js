@@ -70,3 +70,16 @@ async function apiDelete(path, extraHeaders = {}) {
     const data = await res.json();
     return { res, data };
 }
+async function apiPatch(path, body = {}, extraHeaders = {}) {
+    const res = await fetch(`${API_BASE_URL}${path}`, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json",
+            ...getAuthHeaders(extraHeaders)
+        },
+        body: JSON.stringify(body)
+    });
+
+    const data = await res.json();
+    return { res, data };
+}

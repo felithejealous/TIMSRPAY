@@ -86,7 +86,6 @@
             opacity: calc(var(--glow-opacity) - 0.05);
         }
 
-        /* NAV */
         nav {
             display: flex;
             justify-content: space-between;
@@ -179,20 +178,14 @@
             color: var(--mango);
         }
 
-        /* LAYOUT */
         .settings-wrapper {
-            max-width: 1180px;
+            max-width: 980px;
             margin: 40px auto 80px;
             padding: 0 20px;
-            display: grid;
-            grid-template-columns: minmax(0, 1.6fr) minmax(320px, 0.9fr);
-            gap: 24px;
-            align-items: start;
         }
 
         .page-header {
-            grid-column: 1/-1;
-            margin-bottom: 4px;
+            margin-bottom: 18px;
         }
 
         .page-badge {
@@ -216,14 +209,6 @@
             line-height: 1.04;
         }
 
-        .left-column,
-        .right-column {
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-        }
-
-        /* GLASS BENTO */
         .glass-bento {
             background: var(--card-bg);
             backdrop-filter: blur(40px);
@@ -241,37 +226,37 @@
             border-color: rgba(255, 194, 68, 0.22);
         }
 
-        /* HERO BENTO — fixed: single card, horizontal layout */
-        .hero-bento {
+        .main-settings-card {
             display: flex;
-            align-items: center;
-            gap: 24px;
-            min-height: 180px;
-            background: linear-gradient(135deg, var(--card-bg), rgba(255, 194, 68, 0.06));
-            flex-wrap: wrap;
+            flex-direction: column;
+            gap: 30px;
         }
 
-        /* AVATAR */
+        .profile-top {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 14px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid var(--card-border);
+        }
+
         .avatar-massive {
-            width: 96px;
-            height: 96px;
+            width: 118px;
+            height: 118px;
             background: var(--mango);
             color: #111;
-            border-radius: 28px;
+            border-radius: 30px;
             display: grid;
             place-items: center;
-            font-size: 38px;
+            font-size: 42px;
             font-weight: 900;
             box-shadow: 0 15px 30px rgba(255, 194, 68, 0.25);
-            transform: rotate(-4deg);
             transition: 0.35s ease;
-            flex-shrink: 0;
             overflow: hidden;
             position: relative;
-        }
-
-        .hero-bento:hover .avatar-massive {
-            transform: rotate(0deg) scale(1.04);
+            flex-shrink: 0;
         }
 
         .avatar-image {
@@ -292,20 +277,38 @@
             height: 100%;
         }
 
-        /* AVATAR ACTIONS */
-        .settings-avatar-wrap {
+        .profile-name {
             display: flex;
             flex-direction: column;
-            align-items: flex-start;
-            gap: 14px;
-            flex-shrink: 0;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .profile-name h2 {
+            font-size: clamp(1.8rem, 3.4vw, 2.8rem);
+            font-weight: 900;
+            letter-spacing: -1.2px;
+            line-height: 1.05;
+            color: var(--text-main);
+            word-break: break-word;
+            overflow-wrap: anywhere;
+        }
+
+        .profile-name p {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-muted);
+            letter-spacing: 1.3px;
+            text-transform: uppercase;
         }
 
         .settings-avatar-actions {
             display: flex;
             flex-wrap: wrap;
+            justify-content: center;
             gap: 10px;
-            margin-top: 6px;
+            width: 100%;
+            margin-top: 2px;
         }
 
         .btn-avatar-action {
@@ -337,107 +340,28 @@
             color: var(--danger);
         }
 
-        /* HERO TEXT */
-        .hero-text {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            min-width: 0;
-            flex: 1;
+        .section-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 24px;
         }
 
-        .hero-text h2 {
-            font-size: clamp(1.6rem, 3.2vw, 2.8rem);
-            font-weight: 900;
-            letter-spacing: -1.2px;
-            line-height: 1.05;
-            color: var(--text-main);
-            word-break: break-word;
-            overflow-wrap: anywhere;
-        }
-
-        .hero-text p {
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--text-muted);
-            letter-spacing: 1.3px;
-            text-transform: uppercase;
-        }
-
-        /* ID CARD BENTO (points) */
-        .id-card-bento {
-            min-height: 180px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            background: linear-gradient(135deg, rgba(255, 194, 68, 0.06), rgba(255, 77, 109, 0.04));
-        }
-
-        .id-card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 12px;
-        }
-
-        .tier-title {
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: var(--text-muted);
-            font-weight: 800;
-            margin-bottom: 6px;
-        }
-
-        .tier-name {
-            font-size: 24px;
-            font-weight: 900;
-            letter-spacing: -0.6px;
-            color: var(--mango);
-            line-height: 1.1;
-        }
-
-        .points-wrap {
-            margin-top: 24px;
-        }
-
-        .points-wrap h2 {
-            font-size: 54px;
-            font-weight: 900;
-            letter-spacing: -2px;
-            line-height: 1;
-            margin-bottom: 8px;
-            color: var(--text-main);
-        }
-
-        .points-wrap p {
-            font-size: 12px;
-            font-weight: 800;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-        }
-
-        /* SETTINGS FORM */
-        .settings-bento h3 {
+        .section-card h3,
+        .section-card h4 {
             font-size: 22px;
             font-weight: 900;
             letter-spacing: -0.5px;
-            margin-bottom: 22px;
+            margin-bottom: 18px;
             display: flex;
             align-items: center;
             gap: 12px;
             color: var(--text-main);
         }
 
-        .settings-bento h3 i {
+        .section-card h3 i,
+        .section-card h4 i {
             color: var(--mango);
-        }
-
-        .section-block+.section-block {
-            margin-top: 34px;
-            padding-top: 34px;
-            border-top: 1px solid var(--card-border);
         }
 
         .form-grid {
@@ -522,40 +446,14 @@
             font-weight: 600;
         }
 
-        /* RIGHT COLUMN CARDS */
-        .action-card {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 28px;
-            padding: 24px;
-            box-shadow: var(--shadow);
-            backdrop-filter: blur(40px);
-            -webkit-backdrop-filter: blur(40px);
-        }
-
-        .action-card h4 {
-            font-size: 18px;
-            font-weight: 900;
-            letter-spacing: -0.4px;
-            margin-bottom: 8px;
-            color: var(--text-main);
-        }
-
-        .action-card p {
-            font-size: 13px;
-            line-height: 1.6;
-            color: var(--text-muted);
-            font-weight: 600;
-        }
-
-        .action-highlight {
+        .save-card .action-highlight {
             display: flex;
             align-items: center;
             gap: 14px;
             margin-bottom: 18px;
         }
 
-        .action-highlight i {
+        .save-card .action-highlight i {
             width: 46px;
             height: 46px;
             display: grid;
@@ -566,6 +464,14 @@
             font-size: 20px;
             border: 1px solid rgba(255, 194, 68, 0.2);
             flex-shrink: 0;
+        }
+
+        .save-card p,
+        .danger-card p {
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-muted);
+            font-weight: 600;
         }
 
         .btn-primary-compact {
@@ -623,7 +529,6 @@
             color: #fff;
         }
 
-        /* SIDE PANEL */
         .panel-overlay {
             position: fixed;
             top: 0;
@@ -840,18 +745,11 @@
             color: var(--danger);
         }
 
-        /* RESPONSIVE */
-        @media (max-width:1080px) {
-            .settings-wrapper {
-                grid-template-columns: 1fr;
-            }
-
+        @media (max-width: 768px) {
             .nav-links {
                 display: none;
             }
-        }
 
-        @media (max-width:720px) {
             .form-grid {
                 grid-template-columns: 1fr;
             }
@@ -860,39 +758,24 @@
                 grid-column: auto;
             }
 
-            .hero-bento {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
             .settings-avatar-actions {
-                width: 100%;
+                flex-direction: column;
+                align-items: stretch;
             }
 
             .btn-avatar-action {
-                flex: 1;
+                width: 100%;
                 justify-content: center;
             }
-        }
 
-        @media (max-width:520px) {
-            .settings-wrapper {
-                padding: 0 14px;
-                margin: 28px auto 60px;
-            }
-
-            .glass-bento,
-            .action-card {
+            .glass-bento {
                 padding: 24px;
                 border-radius: 24px;
             }
 
-            .page-header h1 {
-                font-size: 2rem;
-            }
-
-            .balance-grid {
-                grid-template-columns: 1fr;
+            .section-card {
+                padding: 20px;
+                border-radius: 20px;
             }
         }
     </style>
@@ -928,87 +811,80 @@
             <h1>Account Settings</h1>
         </div>
 
-        <div class="left-column">
-
-            <!-- HERO BENTO: single clean card -->
-            <div class="glass-bento hero-bento">
-                <div class="settings-avatar-wrap">
-                    <div class="avatar-massive" id="settingsAvatar">
-                        <span class="avatar-text">--</span>
-                    </div>
-                    <input type="file" id="settingsProfileUpload" accept="image/*" hidden>
-                    <div class="settings-avatar-actions">
-                        <button type="button" class="btn-avatar-action" id="changeProfilePhotoBtn">
-                            <i class="fa-solid fa-camera"></i> Change Photo
-                        </button>
-                        <button type="button" class="btn-avatar-action btn-avatar-remove" id="removeProfilePhotoBtn">
-                            <i class="fa-solid fa-trash"></i> Remove
-                        </button>
-                    </div>
+        <div class="glass-bento main-settings-card">
+            <div class="profile-top">
+                <div class="avatar-massive" id="settingsAvatar">
+                    <span class="avatar-text">--</span>
                 </div>
-                <div class="hero-text">
+
+                <div class="profile-name">
                     <h2 id="settingsFullName">Loading...</h2>
                     <p>Customer Profile</p>
                 </div>
+
+                <input type="file" id="settingsProfileUpload" accept="image/*" hidden>
+
+                <div class="settings-avatar-actions">
+                    <button type="button" class="btn-avatar-action" id="changeProfilePhotoBtn">
+                        <i class="fa-solid fa-camera"></i> Change Photo
+                    </button>
+                    <button type="button" class="btn-avatar-action btn-avatar-remove" id="removeProfilePhotoBtn">
+                        <i class="fa-solid fa-trash"></i> Remove
+                    </button>
+                </div>
             </div>
 
-            <!-- FORM BENTO -->
-            <div class="glass-bento settings-bento">
+            <div class="section-card">
                 <form id="settingsForm">
-                    <div class="section-block">
-                        <h3><i class="fa-solid fa-address-card"></i> Identity</h3>
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="settingsFirstName">First Name</label>
-                                <div class="input-shell">
-                                    <input type="text" id="settingsFirstName" placeholder="Enter first name">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="settingsLastName">Last Name</label>
-                                <div class="input-shell">
-                                    <input type="text" id="settingsLastName" placeholder="Enter last name">
-                                </div>
-                            </div>
-                            <div class="form-group full-width">
-                                <label for="settingsEmail">Email Address</label>
-                                <div class="input-shell">
-                                    <input type="email" id="settingsEmail" class="readonly-input" readonly>
-                                </div>
-                                <p class="helper-text">Email address is currently managed by your account registration
-                                    or Google sign-in.</p>
+                    <h3><i class="fa-solid fa-address-card"></i> Identity</h3>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="settingsFirstName">First Name</label>
+                            <div class="input-shell">
+                                <input type="text" id="settingsFirstName" placeholder="Enter first name">
                             </div>
                         </div>
-                    </div>
 
-                    <div class="section-block">
-                        <h3><i class="fa-solid fa-shield-halved"></i> Security</h3>
-                        <div class="form-grid">
-                            <div class="form-group full-width password-field">
-                                <label for="settingsCurrentPassword">Current Password</label>
-                                <div class="input-shell">
-                                    <input type="password" id="settingsCurrentPassword"
-                                        placeholder="Enter current password">
-                                    <i class="fa-solid fa-eye toggle-password"></i>
-                                </div>
+                        <div class="form-group">
+                            <label for="settingsLastName">Last Name</label>
+                            <div class="input-shell">
+                                <input type="text" id="settingsLastName" placeholder="Enter last name">
                             </div>
-                            <div class="form-group full-width password-field">
-                                <label for="settingsNewPassword">New Password</label>
-                                <div class="input-shell">
-                                    <input type="password" id="settingsNewPassword" placeholder="Type new password...">
-                                    <i class="fa-solid fa-eye toggle-password"></i>
-                                </div>
-                                <p class="helper-text">Leave both password fields blank if you only want to update your
-                                    profile details.</p>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label for="settingsEmail">Email Address</label>
+                            <div class="input-shell">
+                                <input type="email" id="settingsEmail" class="readonly-input" readonly>
                             </div>
+                            <p class="helper-text">Email address is currently managed by your account registration or
+                                Google sign-in.</p>
+                        </div>
+
+                        <div class="form-group full-width password-field">
+                            <label for="settingsCurrentPassword">Current Password</label>
+                            <div class="input-shell">
+                                <input type="password" id="settingsCurrentPassword"
+                                    placeholder="Enter current password">
+                                <i class="fa-solid fa-eye toggle-password"></i>
+                            </div>
+                        </div>
+
+                        <div class="form-group full-width password-field">
+                            <label for="settingsNewPassword">New Password</label>
+                            <div class="input-shell">
+                                <input type="password" id="settingsNewPassword" placeholder="Type new password...">
+                                <i class="fa-solid fa-eye toggle-password"></i>
+                            </div>
+                            <p class="helper-text">Leave both password fields blank if you only want to update your
+                                profile details.</p>
                         </div>
                     </div>
                 </form>
             </div>
-        </div>
 
-        <div class="right-column">
-            <div class="action-card">
+            <div class="section-card save-card">
                 <div class="action-highlight">
                     <i class="fa-solid fa-check-double"></i>
                     <div>
@@ -1016,13 +892,14 @@
                         <p>Update your profile details and password securely.</p>
                     </div>
                 </div>
+
                 <button class="btn-primary-compact" type="button"
                     onclick="document.getElementById('settingsForm').requestSubmit();">
                     <i class="fa-solid fa-floppy-disk"></i> Commit Changes
                 </button>
             </div>
 
-            <div class="action-card danger-card">
+            <div class="section-card danger-card">
                 <h4>Danger Zone</h4>
                 <p id="dangerZoneText">Deleting your account is permanent and cannot be undone.</p>
                 <button type="button" class="btn-danger"
@@ -1033,7 +910,6 @@
         </div>
     </div>
 
-    <!-- Account Side Panel -->
     <div class="panel-overlay" id="mainOverlay" onclick="closeAllPanels()"></div>
 
     <div class="side-panel" id="accountPanel">

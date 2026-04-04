@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session, aliased
 from sqlalchemy import func as sa_func
-
+from backend.routers.notification import create_customer_notification
 from backend.database import SessionLocal
 from backend.models import (
     Order,
@@ -1180,6 +1180,20 @@ def _create_order_core(
     db.commit()
     db.refresh(order)
 
+    if order.user_id:
+        create_customer_notification(
+            db,
+            user_id=order.user_id,
+            title="Order placed successfully",
+            message=f"Your order {_display_order_id(order.id)} has been placed and is now being processed.",
+            notif_type="order",
+            priority="important",
+            is_sticky=True,
+            action_url="welcome.html",
+            reference_type="order",
+            reference_id=order.id,
+        )
+
     return {
         "order_id": order.id,
         "order_type": order.order_type,
@@ -1591,6 +1605,19 @@ def complete_order(
         db.commit()
         db.refresh(order)
 
+        if order.user_id and order.status == "completed":
+            create_customer_notification(
+                db,
+                user_id=order.user_id,
+                title="Order completed",
+                message="Your order has been completed successfully.",
+                notif_type="order",
+                priority="important",
+                is_sticky=True,
+                action_url="welcome.html",
+                reference_type="order",
+                reference_id=order.id,
+            )
         return {"order_id": order.id, "status": order.status}
 
     except HTTPException:

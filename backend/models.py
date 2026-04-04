@@ -533,3 +533,23 @@ class WalletPinResetToken(Base):
     used_at = Column(DateTime(timezone=False), nullable=True)
 
     created_at = Column(DateTime(timezone=False), server_default=func.now(), nullable=False)
+class CustomerNotification(Base):
+    __tablename__ = "customer_notifications"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+
+    title = Column(String(200), nullable=False)
+    message = Column(Text, nullable=False)
+    notif_type = Column(String(30), nullable=False, default="general")  # order | reward | wallet | tier | announcement | inquiry
+    priority = Column(String(20), nullable=False, default="normal")     # low | normal | important
+    is_read = Column(Boolean, nullable=False, default=False)
+    is_dismissed = Column(Boolean, nullable=False, default=False)
+    is_sticky = Column(Boolean, nullable=False, default=False)
+
+    action_url = Column(Text, nullable=True)
+    reference_type = Column(String(50), nullable=True)
+    reference_id = Column(Integer, nullable=True)
+
+    expires_at = Column(DateTime(timezone=False), nullable=True)
+    created_at = Column(DateTime(timezone=False), server_default=func.now(), nullable=False)

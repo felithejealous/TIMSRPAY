@@ -814,17 +814,21 @@ async def upload_profile_picture(
     if len(content) > max_size:
         raise HTTPException(status_code=400, detail="Image must be 5MB or smaller")
 
-    filename = f"user_{current_user.id}_{uuid4().hex}{ext}"
+    user = db.query(User).filter(User.id == current_user.id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    filename = f"user_{user.id}_{uuid4().hex}{ext}"
     filepath = os.path.join(upload_dir, filename)
 
     with open(filepath, "wb") as f:
         f.write(content)
 
-    old_path = (getattr(current_user, "profile_picture", None) or "").strip()
+    old_path = (getattr(user, "profile_picture", None) or "").strip()
 
-    current_user.profile_picture = f"/uploads/profile_pictures/{filename}"
+    user.profile_picture = f"/uploads/profile_pictures/{filename}"
     db.commit()
-    db.refresh(current_user)
+    db.refresh(user)
 
     if old_path.startswith("/uploads/profile_pictures/"):
         old_file = old_path.lstrip("/")
@@ -836,18 +840,22 @@ async def upload_profile_picture(
 
     return {
         "message": "Profile picture uploaded successfully",
-        "profile_picture": current_user.profile_picture,
+        "profile_picture": user.profile_picture,
     }
 @router.delete("/profile-picture")
 def delete_profile_picture(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    old_path = (getattr(current_user, "profile_picture", None) or "").strip()
+    user = db.query(User).filter(User.id == current_user.id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
 
-    current_user.profile_picture = None
+    old_path = (getattr(user, "profile_picture", None) or "").strip()
+    user.profile_picture = None
+
     db.commit()
-    db.refresh(current_user)
+    db.refresh(user)
 
     if old_path.startswith("/uploads/profile_pictures/"):
         old_file = old_path.lstrip("/")
@@ -858,8 +866,8 @@ def delete_profile_picture(
                 pass
 
     return {
-        "message": "Profile picture removed successfully",
-        "profile_picture": None,
+        "message": "Profile picture removed successfully.",
+        "profile_picture": user.profile_picture
     }
 # ============================================================
 # BOOTSTRAP ADMIN

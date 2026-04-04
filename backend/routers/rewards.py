@@ -11,6 +11,7 @@ import os
 import re
 import smtplib
 import string
+from backend.routers.notification import create_customer_notification
 from email.message import EmailMessage
 from backend.models import Product
 from backend.schemas import RewardCreate, RewardUpdate
@@ -1297,6 +1298,19 @@ def confirm_manual_points_otp(
 
         db.commit()
         db.refresh(rw)
+
+        create_customer_notification(
+            db,
+            user_id=user.id,
+            title="Points claimed successfully",
+            message=f"{int(actual_added)} reward points were added to your account.",
+            notif_type="reward",
+            priority="important",
+            is_sticky=True,
+            action_url="rewards.html",
+            reference_type="order",
+            reference_id=resolved_order_id,
+        )
 
         return {
             "message": "Points claimed and synced to account",

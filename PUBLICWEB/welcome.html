@@ -227,7 +227,7 @@
             -webkit-backdrop-filter: blur(40px);
             border: 1px solid var(--card-border);
             border-radius: 35px;
-            padding: 40px;
+            padding: 20px;
             box-shadow: var(--shadow);
             transition: 0.3s ease;
         }
@@ -1513,6 +1513,151 @@
                 grid-column: span 12;
             }
         }
+    .notif-badge {
+    position: absolute;
+    top: -4px;
+    right: -2px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: var(--danger);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 900;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--bg-main);
+    line-height: 1;
+}
+.floating-sticky-notif {
+    position: fixed;
+    top: 88px;
+    right: 22px;
+    width: min(340px, calc(100vw - 24px));
+    padding: 16px 16px 14px;
+    border-radius: 18px;
+    background: rgba(10, 10, 10, 0.86);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
+    z-index: 2105;
+}
+
+.light-mode .floating-sticky-notif {
+    background: rgba(255, 255, 255, 0.82);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.floating-sticky-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.floating-sticky-type {
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--mango);
+}
+
+.floating-sticky-close {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1px solid var(--card-border);
+    background: var(--icon-bg);
+    color: var(--text-main);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: 0.3s ease;
+    flex-shrink: 0;
+}
+
+.floating-sticky-close:hover {
+    color: var(--mango);
+    border-color: var(--mango);
+    transform: scale(1.05);
+}
+
+.floating-sticky-title {
+    font-size: 15px;
+    font-weight: 900;
+    color: var(--text-main);
+    margin-bottom: 6px;
+    line-height: 1.35;
+}
+
+.floating-sticky-message {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--text-main);
+    opacity: 0.92;
+}
+@media (max-width: 768px) {
+    .floating-sticky-notif {
+        top: 78px;
+        right: 12px;
+        left: 12px;
+        width: auto;
+    }
+}
+.notification-item {
+    background: var(--icon-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 18px;
+    padding: 18px;
+    transition: 0.3s;
+}
+
+.notification-item:hover {
+    background: var(--hover-bg);
+    border-color: var(--mango);
+}
+
+.notification-item.unread {
+    border-color: rgba(255, 194, 68, 0.35);
+    box-shadow: inset 0 0 0 1px rgba(255, 194, 68, 0.08);
+}
+
+.notification-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.notification-title {
+    font-size: 15px;
+    font-weight: 900;
+    color: var(--text-main);
+    line-height: 1.35;
+}
+
+.notification-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    white-space: nowrap;
+}
+
+.notification-message {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-main);
+    margin-bottom: 12px;
+}
+
     #feedbackForm::-webkit-scrollbar{width:8px;}
     #feedbackForm::-webkit-scrollbar-thumb{background:var(--card-border);border-radius:999px;}
     .feedback-modal-content{max-width:720px;max-height:88vh;overflow:hidden;}
@@ -1525,11 +1670,205 @@
     .feedback-sent-btn{opacity:.7;cursor:not-allowed;}
     .feedback-sent-btn:hover{background:var(--icon-bg);border-color:var(--card-border);color:var(--text-main);transform:none;}
     @media (max-width:768px){.feedback-modal-content{max-height:92vh;}#feedbackForm{max-height:72vh;}}
+    #notificationHistoryList::-webkit-scrollbar {
+    width: 8px;
+}
+.footer-links a {
+    cursor: pointer;
+}
+
+.info-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.78);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 6000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    opacity: 0;
+    visibility: hidden;
+    transition: 0.3s ease;
+}
+
+.info-modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.info-modal {
+    width: 100%;
+    max-width: 760px;
+    max-height: 88vh;
+    background: var(--bg-main);
+    border: 1px solid var(--card-border);
+    border-radius: 28px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transform: translateY(24px) scale(0.98);
+    transition: 0.3s ease;
+}
+
+.info-modal-overlay.active .info-modal {
+    transform: translateY(0) scale(1);
+}
+
+.info-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 22px 24px;
+    border-bottom: 1px solid var(--card-border);
+    background: var(--bg-main);
+}
+
+.info-modal-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.info-modal-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    background: rgba(255, 194, 68, 0.12);
+    color: var(--mango);
+    border: 1px solid rgba(255, 194, 68, 0.18);
+    flex-shrink: 0;
+}
+
+.info-modal-title {
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    color: var(--text-main);
+    line-height: 1.2;
+}
+
+.info-modal-close {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1px solid var(--card-border);
+    background: var(--icon-bg);
+    color: var(--text-main);
+    font-size: 18px;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: 0.3s ease;
+    flex-shrink: 0;
+}
+
+.info-modal-close:hover {
+    background: var(--hover-bg);
+    border-color: var(--mango);
+    color: var(--mango);
+    transform: rotate(90deg) scale(1.05);
+}
+
+.info-modal-body {
+    padding: 24px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex: 1;
+}
+
+.info-modal-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.info-modal-body::-webkit-scrollbar-thumb {
+    background: var(--card-border);
+    border-radius: 999px;
+}
+
+.info-section {
+    background: var(--icon-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+    padding: 18px 18px;
+}
+
+.info-section + .info-section {
+    margin-top: 16px;
+}
+
+.info-section-title {
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1.4px;
+    color: var(--mango);
+    margin-bottom: 10px;
+}
+
+.info-section p,
+.info-section li {
+    font-size: 14px;
+    line-height: 1.75;
+    color: var(--text-main);
+    font-weight: 600;
+}
+
+.info-section ul {
+    padding-left: 18px;
+}
+
+.info-section li + li {
+    margin-top: 8px;
+}
+
+.info-note {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 700;
+    line-height: 1.6;
+    margin-top: 16px;
+}
+
+@media (max-width: 768px) {
+    .info-modal {
+        max-height: 92vh;
+        border-radius: 22px;
+    }
+
+    .info-modal-header {
+        padding: 18px;
+    }
+
+    .info-modal-body {
+        padding: 18px;
+    }
+
+    .info-modal-title {
+        font-size: 18px;
+    }
+}
 
     </style>
 </head>
 <body>
+<div id="stickyNotificationCard" class="floating-sticky-notif hidden">
+    <div class="floating-sticky-top">
+        <div class="floating-sticky-type" id="stickyNotifType">IMPORTANT</div>
+        <button type="button" class="floating-sticky-close" onclick="dismissStickyNotification()">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
 
+    <div class="floating-sticky-title" id="stickyNotifTitle">Notification Title</div>
+    <div class="floating-sticky-message" id="stickyNotifMessage">Notification message goes here.</div>
+</div>
     <nav>
         <a href="index.html" class="logo">
             <img src="logo.png" alt="Teo D' Mango">
@@ -1544,24 +1883,29 @@
             <a href="index.html" class="btn-logout">LOG OUT</a>
         </div>
 
-        <div class="nav-actions">
-            <button class="circle-btn" id="themeToggle" title="Toggle Light/Dark Mode">
-                <i class="fa-solid fa-sun"></i>
-            </button>
-            <button class="circle-btn" onclick="openAccountPanel()" title="Account Info">
-                <i class="fa-solid fa-user"></i>
-            </button>
-        </div>
+    <div class="nav-actions">
+        <button class="circle-btn" id="themeToggle" title="Toggle Light/Dark Mode">
+            <i class="fa-solid fa-sun"></i>
+        </button>
+    
+        <button class="circle-btn" id="notifBellBtn" type="button" title="Notifications" onclick="scrollToNotifications()">
+            <i class="fa-solid fa-bell"></i>
+            <span id="notifUnreadBadge" class="notif-badge hidden">0</span>
+        </button>
+    
+        <button class="circle-btn" onclick="openAccountPanel()" title="Account Info">
+            <i class="fa-solid fa-user"></i>
+        </button>
+    </div>
     </nav>
 
     <main class="dashboard-wrapper">
 
-        <div class="hero-bento">
-            <h1>Hi, <span class="user-name"></span>!</h1>
-            <p>Ready for your daily mango fix? Skip the line and order ahead for a faster, premium experience.</p>
-            <button class="btn-massive" onclick="window.location.href='menu.html'">Start New Order</button>
-        </div>
-
+<div class="hero-bento">
+    <h1>Hi, <span class="user-name"></span>!</h1>
+    <p>Ready for your daily mango fix? Skip the line and order ahead for a faster, premium experience.</p>
+    <button class="btn-massive" onclick="window.location.href='menu.html'">Start New Order</button>
+</div>
         <div class="glass-bento wallet-bento">
             <div class="wallet-header">
                 <span>Current Balance</span>
@@ -1613,7 +1957,21 @@
                 <div class="announcement-empty">No announcements available.</div>
             </div>
         </div>
-
+        <div class="glass-bento" id="notificationHistorySection" style="grid-column: span 12;">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+                <h2 class="bento-title" style="margin-bottom:0;">
+                    <i class="fa-solid fa-bell"></i> Notifications
+                </h2>
+                <span id="notifHistoryMeta"
+                    style="font-size:12px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;">
+                    Last 30 Days
+                </span>
+            </div>
+        
+        <div id="notificationHistoryList"
+            style="margin-top:20px;display:flex;flex-direction:column;gap:14px;max-height:420px;overflow-y:auto;overflow-x:hidden;padding-right:6px;">
+        </div>
+</div>
         <div class="bs-header">
             <h2 id="bestSellerTitle">Best Sellers</h2>
             <i class="fa-solid fa-fire"></i>
@@ -1668,21 +2026,31 @@
         </div>
 
     </main>
-
     <footer>
         <div class="footer-logo">Teo D' <span>Mango</span></div>
+    
         <div class="footer-links">
-            <a href="#">About Us</a>
-            <a href="#">Privacy Policy</a>
-            <a href="#">Terms of Service</a>
-            <a href="#">Support</a>
+            <a href="javascript:void(0)" id="footerAboutLink">About Us</a>
+            <a href="javascript:void(0)" id="footerPrivacyLink">Privacy Policy</a>
+            <a href="javascript:void(0)" id="footerTermsLink">Terms of Service</a>
+            <a href="javascript:void(0)" id="footerSupportLink">Support</a>
         </div>
+    
         <div class="social-icons">
-            <a href="#"><i class="fa-brands fa-facebook"></i></a>
-            <a href="#"><i class="fa-brands fa-instagram"></i></a>
-            <a href="#"><i class="fa-brands fa-tiktok"></i></a>
+            <a href="https://www.facebook.com/teo.d.mango" target="_blank" rel="noopener noreferrer">
+                <i class="fa-brands fa-facebook"></i>
+            </a>
+            <a href="#" target="_blank" rel="noopener noreferrer">
+                <i class="fa-brands fa-instagram"></i>
+            </a>
+            <a href="#" target="_blank" rel="noopener noreferrer">
+                <i class="fa-brands fa-tiktok"></i>
+            </a>
         </div>
-        <p style="font-size: 11px; color: var(--text-muted); font-weight: 700;">&copy; 2026 TIMS-RPAY | Teo D' Mango. All rights reserved.</p>
+    
+        <p style="font-size: 11px; color: var(--text-muted); font-weight: 700;">
+            &copy; 2026 TIMS-RPAY | Teo D' Mango. All rights reserved.
+        </p>
     </footer>
 
     <div class="panel-overlay" id="mainOverlay" onclick="closeAllPanels()"></div>
@@ -1884,6 +2252,29 @@
             <button type="submit" class="wallet-btn" style="width:100%;">Submit Feedback</button>
             <div id="feedbackStatus" style="font-weight:700;font-size:13px;min-height:20px;"></div>
         </form>
+    </div>
+</div>
+<div class="info-modal-overlay" id="footerInfoModal">
+    <div class="info-modal">
+        <div class="info-modal-header">
+            <div class="info-modal-title-wrap">
+                <div class="info-modal-icon" id="footerInfoModalIcon">
+                    <i class="fa-solid fa-circle-info"></i>
+                </div>
+                <div class="info-modal-title" id="footerInfoModalTitle">Information</div>
+            </div>
+
+            <button class="info-modal-close" type="button" id="footerInfoModalClose">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="info-modal-body" id="footerInfoModalBody">
+            <div class="info-section">
+                <div class="info-section-title">Loading</div>
+                <p>Please wait...</p>
+            </div>
+        </div>
     </div>
 </div>
     <script src="js/api.js"></script>

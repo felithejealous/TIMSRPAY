@@ -1,3 +1,5 @@
+let notificationCache = [];
+let stickyNotification = null;
 document.addEventListener("DOMContentLoaded", async () => {
   try {
     const token = localStorage.getItem("token");
@@ -46,11 +48,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     bindCustomerInquiryModal();
     bindAnnouncementModal();
     bindFeedbackModal();
+    bindFooterInfoModal();
 
     await loadWelcomeOrders();
     await loadAnnouncements();
     await loadMonthlyBestSellers();
     await loadMyInquiries();
+    await loadNotifications();
+    await loadUnreadNotificationCount();
   } catch (err) {
     console.error("Failed to initialize welcome page:", err);
   }
@@ -817,6 +822,414 @@ async function loadMyInquiries() {
     container.innerHTML = `<div class="announcement-empty">Failed to load your inquiries.</div>`;
   }
 }
+function formatNotifType(type) {
+  const value = String(type || "").toLowerCase();
+  if (value === "wallet") return "Wallet";
+  if (value === "reward") return "Reward";
+  if (value === "order") return "Order";
+  if (value === "tier") return "Tier";
+  if (value === "announcement") return "Announcement";
+  if (value === "inquiry") return "Inquiry";
+  return "General";
+}
+
+async function loadUnreadNotificationCount() {
+  try {
+    const badge = document.getElementById("notifUnreadBadge");
+    if (!badge) return;
+
+    const { res, data } = await apiGet("/notifications/me/unread-count");
+    if (!res.ok) {
+      badge.classList.add("hidden");
+      return;
+    }
+
+    const count = Number(data.unread_count || 0);
+    badge.textContent = count > 99 ? "99+" : String(count);
+
+    if (count > 0) badge.classList.remove("hidden");
+    else badge.classList.add("hidden");
+  } catch (err) {
+    console.error("Failed to load unread notification count:", err);
+  }
+}
+
+async function loadNotifications() {
+  try {
+    const { res, data } = await apiGet("/notifications/me?limit=20");
+    const historyContainer = document.getElementById("notificationHistoryList");
+
+    if (!historyContainer) return;
+
+    if (!res.ok) {
+      historyContainer.innerHTML = `<div class="announcement-empty">Failed to load notifications.</div>`;
+      hideStickyNotification();
+      return;
+    }
+
+    notificationCache = Array.isArray(data) ? data : [];
+    renderNotificationHistory(notificationCache);
+
+    const latestSticky = notificationCache.find(
+      (item) => item.is_sticky && !item.is_dismissed
+    );
+
+    if (latestSticky) {
+      stickyNotification = latestSticky;
+      renderStickyNotification(latestSticky);
+
+      if (!latestSticky.is_read) {
+        await markNotificationRead(latestSticky.id);
+      }
+    } else {
+      stickyNotification = null;
+      hideStickyNotification();
+    }
+  } catch (err) {
+    console.error("Failed to load notifications:", err);
+    const historyContainer = document.getElementById("notificationHistoryList");
+    if (historyContainer) {
+      historyContainer.innerHTML = `<div class="announcement-empty">Failed to load notifications.</div>`;
+    }
+    hideStickyNotification();
+  }
+}
+function renderStickyNotification(item) {
+  const card = document.getElementById("stickyNotificationCard");
+  const typeEl = document.getElementById("stickyNotifType");
+  const titleEl = document.getElementById("stickyNotifTitle");
+  const msgEl = document.getElementById("stickyNotifMessage");
+
+  if (!card || !typeEl || !titleEl || !msgEl) return;
+
+  typeEl.textContent = `${formatNotifType(item.notif_type)} Alert`;
+  titleEl.textContent = item.title || "Notification";
+  msgEl.textContent = item.message || "";
+
+  card.classList.remove("hidden");
+}
+function hideStickyNotification() {
+  const card = document.getElementById("stickyNotificationCard");
+  if (card) card.classList.add("hidden");
+}
+function renderNotificationHistory(items) {
+  const container = document.getElementById("notificationHistoryList");
+  if (!container) return;
+
+  if (!items.length) {
+    container.innerHTML = `<div class="announcement-empty">No notifications for the last 30 days.</div>`;
+    return;
+  }
+
+  container.innerHTML = items.map((item) => `
+    <div class="notification-item ${item.is_read ? "" : "unread"}">
+      <div class="notification-top">
+        <div class="notification-title">${escapeHtml(item.title || "Notification")}</div>
+        <div class="notification-meta">${escapeHtml(formatDateTime(item.created_at))}</div>
+      </div>
+
+      <div class="notification-message">${escapeHtml(item.message || "")}</div>
+    </div>
+  `).join("");
+}
+
+async function dismissStickyNotification() {
+  if (!stickyNotification?.id) return;
+
+  try {
+    const { res } = await apiPatch(`/notifications/${stickyNotification.id}/dismiss`, {
+      is_dismissed: true,
+    });
+
+    if (res.ok) {
+      hideStickyNotification();
+      stickyNotification = null;
+      await loadNotifications();
+      await loadUnreadNotificationCount();
+    }
+  } catch (err) {
+    console.error("Failed to dismiss sticky notification:", err);
+  }
+}
+
+async function markNotificationRead(notificationId) {
+  try {
+    await apiPatch(`/notifications/${notificationId}/read`, {
+      is_read: true,
+    });
+    await loadUnreadNotificationCount();
+  } catch (err) {
+    console.error("Failed to mark notification as read:", err);
+  }
+}
+
+function scrollToNotifications() {
+  const section = document.getElementById("notificationHistorySection");
+  if (section) section.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+const footerModalContentMap = {
+  about: {
+    title: "About Us",
+    icon: "fa-solid fa-store",
+    body: `
+      <div class="info-section">
+        <div class="info-section-title">Our Story</div>
+        <p>
+          Teo D' Mango Premium is a mango-based beverage shop focused on serving refreshing,
+          fruit-forward drinks made for everyday cravings. Built around the idea of quick service,
+          quality ingredients, and a satisfying customer experience, the brand continues to grow
+          as a local favorite for students, families, and mango lovers in the community.
+        </p>
+      </div>
+
+      <div class="info-section">
+        <div class="info-section-title">What We Serve</div>
+        <p>
+          Our menu highlights signature mango drinks, seasonal flavors, creamy blends, add-ons,
+          and customizable sizes designed to match different tastes and preferences. We aim to
+          provide a consistent and enjoyable experience whether customers order in-store, through
+          kiosk service, or online.
+        </p>
+      </div>
+
+      <div class="info-section">
+        <div class="info-section-title">Store Details</div>
+        <ul>
+          <li><strong>Business Name:</strong> Teo D' Mango Premium</li>
+          <li><strong>Location:</strong> Lemery, Batangas</li>
+          <li><strong>Business Hours:</strong> 10:00 AM - 10:00 PM</li>
+          <li><strong>Email:</strong> teodmangolicious@gmail.com</li>
+        </ul>
+      </div>
+
+      <p class="info-note">
+        We continuously improve our service, products, and digital experience to better serve our customers.
+      </p>
+    `
+  },
+
+  privacy: {
+    title: "Privacy Policy",
+    icon: "fa-solid fa-shield-halved",
+    body: `
+      <div class="info-section">
+        <div class="info-section-title">Information We Collect</div>
+        <p>
+          When you create an account, place an order, top up your wallet, submit inquiries, or
+          leave feedback, we may collect basic customer information such as your name, email
+          address, order details, wallet activity, and profile preferences.
+        </p>
+      </div>
+
+      <div class="info-section">
+        <div class="info-section-title">How We Use Your Information</div>
+        <ul>
+          <li>To process orders and payments securely</li>
+          <li>To manage rewards points, wallet balance, and customer accounts</li>
+          <li>To respond to inquiries, support requests, and service concerns</li>
+          <li>To improve product offerings, announcements, and customer experience</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <div class="info-section-title">Data Protection</div>
+        <p>
+          We take reasonable steps to protect account and transaction information through access
+          controls, authenticated account handling, and system-level safeguards. Only authorized
+          personnel and approved platform functions should access customer data relevant to store operations.
+        </p>
+      </div>
+
+      <div class="info-section">
+        <div class="info-section-title">Customer Responsibility</div>
+        <p>
+          Customers are encouraged to keep login credentials private, review account activity
+          regularly, and contact support immediately if they notice unauthorized access or unusual transactions.
+        </p>
+      </div>
+
+      <p class="info-note">
+        This policy may be updated from time to time to reflect operational improvements and service changes.
+      </p>
+    `
+  },
+
+  terms: {
+    title: "Terms of Service",
+    icon: "fa-solid fa-file-contract",
+    body: `
+      <div class="info-section">
+        <div class="info-section-title">General Use</div>
+        <p>
+          By using the Teo D' Mango Premium website, ordering system, rewards features, and wallet services,
+          you agree to use the platform responsibly and only for legitimate customer transactions and account activities.
+        </p>
+      </div>
+
+      <div class="info-section">
+        <div class="info-section-title">Orders and Payments</div>
+        <ul>
+          <li>All submitted orders are subject to store confirmation and product availability.</li>
+          <li>Wallet payments are processed against the available balance in the linked customer account.</li>
+          <li>Cash orders may remain pending until payment is completed at pickup or in-store processing.</li>
+          <li>Promos, rewards, and announcements may have separate conditions depending on current store rules.</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <div class="info-section-title">Rewards and Account Features</div>
+        <p>
+          Points, wallet balances, and notifications displayed in the customer portal are intended to reflect the
+          latest recorded transactions in the system. Store management reserves the right to validate suspicious,
+          duplicate, incomplete, or incorrect activity before applying benefits or adjustments.
+        </p>
+      </div>
+
+      <div class="info-section">
+        <div class="info-section-title">Acceptable Use</div>
+        <p>
+          Users must not attempt to misuse the ordering system, manipulate rewards, interfere with account access,
+          or submit false, abusive, or misleading information through the platform.
+        </p>
+      </div>
+
+      <p class="info-note">
+        Continued use of the platform means you understand and accept these service conditions.
+      </p>
+    `
+  },
+
+  support: {
+    title: "Support",
+    icon: "fa-solid fa-headset",
+    body: `
+      <div class="info-section">
+        <div class="info-section-title">Customer Assistance</div>
+        <p>
+          Our support channel is available for order concerns, reward questions, wallet issues,
+          account-related concerns, and general customer assistance. We aim to respond to submitted
+          concerns as promptly as possible during store operating hours.
+        </p>
+      </div>
+
+      <div class="info-section">
+        <div class="info-section-title">Best Ways to Reach Us</div>
+        <ul>
+          <li>Use the in-page <strong>Send Inquiry</strong> feature inside your customer dashboard</li>
+          <li>Email us at <strong>teodmangolicious@gmail.com</strong></li>
+          <li>Message the official store social pages for general updates and announcements</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <div class="info-section-title">Common Concerns We Handle</div>
+        <ul>
+          <li>Order verification and follow-up</li>
+          <li>Rewards points and redemption concerns</li>
+          <li>TeoPay wallet balance or payment issues</li>
+          <li>Profile account updates and access issues</li>
+          <li>Store announcements and general customer concerns</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <div class="info-section-title">Response Window</div>
+        <p>
+          Response times may vary depending on the volume of inquiries, store activity, and the nature of the concern.
+          For urgent payment or order-related issues, please provide complete details so the team can review them faster.
+        </p>
+      </div>
+
+      <p class="info-note">
+        Store support hours generally follow our business operations in Lemery, Batangas from 10:00 AM to 10:00 PM.
+      </p>
+    `
+  }
+};
+
+function openFooterInfoModal(type) {
+  const modal = document.getElementById("footerInfoModal");
+  const titleEl = document.getElementById("footerInfoModalTitle");
+  const bodyEl = document.getElementById("footerInfoModalBody");
+  const iconWrap = document.getElementById("footerInfoModalIcon");
+
+  if (!modal || !titleEl || !bodyEl || !iconWrap) return;
+
+  const content = footerModalContentMap[type];
+  if (!content) return;
+
+  titleEl.textContent = content.title;
+  iconWrap.innerHTML = `<i class="${content.icon}"></i>`;
+  bodyEl.innerHTML = content.body;
+
+  modal.classList.add("active");
+  document.body.style.overflow = "hidden";
+}
+
+function closeFooterInfoModal() {
+  const modal = document.getElementById("footerInfoModal");
+  if (!modal) return;
+
+  modal.classList.remove("active");
+  document.body.style.overflow = "auto";
+}
+
+function bindFooterInfoModal() {
+  const modal = document.getElementById("footerInfoModal");
+  const closeBtn = document.getElementById("footerInfoModalClose");
+
+  const aboutLink = document.getElementById("footerAboutLink");
+  const privacyLink = document.getElementById("footerPrivacyLink");
+  const termsLink = document.getElementById("footerTermsLink");
+  const supportLink = document.getElementById("footerSupportLink");
+
+  if (aboutLink) {
+    aboutLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      openFooterInfoModal("about");
+    });
+  }
+
+  if (privacyLink) {
+    privacyLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      openFooterInfoModal("privacy");
+    });
+  }
+
+  if (termsLink) {
+    termsLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      openFooterInfoModal("terms");
+    });
+  }
+
+  if (supportLink) {
+    supportLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      openFooterInfoModal("support");
+    });
+  }
+
+  if (closeBtn) {
+    closeBtn.addEventListener("click", closeFooterInfoModal);
+  }
+
+  if (modal) {
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) closeFooterInfoModal();
+    });
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && modal?.classList.contains("active")) {
+      closeFooterInfoModal();
+    }
+  });
+}
+
+window.dismissStickyNotification = dismissStickyNotification;
+window.scrollToNotifications = scrollToNotifications;
 
 window.openAnnouncementModal = openAnnouncementModal;
 window.closeAnnouncementModal = closeAnnouncementModal;

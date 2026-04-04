@@ -1,5 +1,6 @@
 (function () {
   const STORAGE_KEY = "publicweb-theme";
+  const PAGE_TRANSITION_MS = 380;
 
   function getSavedTheme() {
     return localStorage.getItem(STORAGE_KEY) || "dark";
@@ -38,6 +39,78 @@
     saveTheme(next);
   }
 
+  function shouldHandleAsInternalPageLink(anchor) {
+    if (!anchor) return false;
+
+    const href = (anchor.getAttribute("href") || "").trim();
+    if (!href) return false;
+    if (href.startsWith("javascript:")) return false;
+    if (href.startsWith("mailto:")) return false;
+    if (href.startsWith("tel:")) return false;
+    if (href.startsWith("#")) return false;
+    if (anchor.hasAttribute("download")) return false;
+    if (anchor.target && anchor.target !== "_self") return false;
+
+    try {
+      const url = new URL(anchor.href, window.location.href);
+      const isSameOrigin = url.origin === window.location.origin;
+      const looksLikeHtml =
+        url.pathname.endsWith(".html") ||
+        url.pathname === window.location.pathname ||
+        !url.pathname.split("/").pop().includes(".");
+
+      return isSameOrigin && looksLikeHtml;
+    } catch {
+      return false;
+    }
+  }
+
+  function handleTopLinks() {
+    document.querySelectorAll('a[href="#"]').forEach((link) => {
+      link.addEventListener("click", function (e) {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    });
+  }
+
+  function handlePageTransitions() {
+    document.querySelectorAll("a[href]").forEach((link) => {
+      link.addEventListener("click", function (e) {
+        if (!shouldHandleAsInternalPageLink(link)) return;
+
+        const href = link.href;
+        if (!href) return;
+
+        e.preventDefault();
+
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        document.body.classList.add("page-leave");
+
+        setTimeout(() => {
+          window.location.href = href;
+        }, PAGE_TRANSITION_MS);
+      });
+    });
+  }
+
+  function handlePageEnter() {
+    document.body.classList.add("page-enter");
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document.body.classList.remove("page-enter");
+      });
+    });
+  }
+
+  function forceTopOnLoad() {
+    if ("scrollRestoration" in history) {
+      history.scrollRestoration = "manual";
+    }
+    window.scrollTo(0, 0);
+  }
+
   function initTheme() {
     applyTheme(getSavedTheme());
 
@@ -51,6 +124,11 @@
         applyTheme(e.newValue || "dark");
       }
     });
+
+    forceTopOnLoad();
+    handlePageEnter();
+    handleTopLinks();
+    handlePageTransitions();
   }
 
   if (document.readyState === "loading") {

@@ -2,6 +2,34 @@ from pydantic import BaseModel, EmailStr, Field
 from typing import List, Optional, Literal
 from decimal import Decimal
 
+from datetime import datetime
+
+class CustomerNotificationOut(BaseModel):
+    id: int
+    title: str
+    message: str
+    notif_type: str
+    priority: str
+    is_read: bool
+    is_dismissed: bool
+    is_sticky: bool
+    action_url: Optional[str] = None
+    reference_type: Optional[str] = None
+    reference_id: Optional[int] = None
+    expires_at: Optional[datetime] = None
+    created_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
+class CustomerNotificationDismiss(BaseModel):
+    is_dismissed: bool = True
+
+
+class CustomerNotificationRead(BaseModel):
+    is_read: bool = True
+
 class WalletSetPin(BaseModel):
     user_id: int
     pin: str = Field(min_length=4, max_length=6)

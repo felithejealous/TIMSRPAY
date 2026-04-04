@@ -23,7 +23,7 @@ import os
 from backend.routers.announcement import router as announcements_router
 from fastapi.staticfiles import StaticFiles
 from backend.routers.admin import router as admin_router
-
+from backend.routers.notification import router as notification_router
 load_dotenv()
 
 app = FastAPI(title="TIMS-RPAY API")
@@ -67,6 +67,7 @@ app.include_router(inquiries_router)
 app.include_router(feedback_router)
 app.include_router(faq_router)
 app.include_router(activity_logs_router)
+app.include_router(notification_router)
 @app.get("/")
 def root():
     return {"message": "Backend is running"}
