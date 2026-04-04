@@ -610,87 +610,6 @@
             color: var(--text-main);
         }
 
-        @media (max-width: 1024px) {
-            .dashboard-wrapper {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-
-            .points-display {
-                width: 100%;
-                margin-left: 0;
-                text-align: left;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .dashboard-wrapper {
-                margin: 24px auto;
-                padding: 0 14px 28px;
-            }
-
-            .nav-links {
-                display: none;
-            }
-
-            .tier-banner,
-            .rewards-box,
-            .history-section {
-                padding: 20px;
-                border-radius: 22px;
-            }
-
-            .reward-item,
-            .ledger-item {
-                flex-wrap: wrap;
-            }
-
-            .btn-claim {
-                width: 100%;
-                min-width: unset;
-                margin-top: 8px;
-            }
-        }
-            /* --- ACCOUNT SIDE PANEL --- */
-        .panel-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(10px);
-            z-index: 2000;
-            opacity: 0;
-            visibility: hidden;
-            transition: 0.4s;
-        }
-
-        .panel-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-      .side-panel {
-            position: fixed;
-            top: 0;
-            right: -100%;
-            width: 100%;
-            max-width: 450px;
-            height: 100%;
-            background: var(--bg-main);
-            border-left: 1px solid var(--card-border);
-            box-shadow: -20px 0 50px rgba(0,0,0,0.5);
-            display: flex;
-            flex-direction: column;
-            transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            z-index: 2001;
-        }
-
-        .side-panel.active {
-            right: 0;
-        }
-
         .panel-overlay {
             position: fixed;
             top: 0;
@@ -791,6 +710,31 @@
             font-size: 24px;
             font-weight: 900;
             flex-shrink: 0;
+        }
+
+        .avatar-has-shell {
+            overflow: hidden;
+            position: relative;
+        }
+
+        .avatar-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .avatar-text {
+            display: inline-flex;
+            width: 100%;
+            height: 100%;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .avatar-circle.has-image {
+            background: transparent !important;
+            color: transparent !important;
         }
 
         .profile-details h3 {
@@ -905,6 +849,48 @@
 
         .acc-link-btn.danger:hover i {
             color: var(--danger);
+        }
+
+        @media (max-width: 1024px) {
+            .dashboard-wrapper {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .points-display {
+                width: 100%;
+                margin-left: 0;
+                text-align: left;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-wrapper {
+                margin: 24px auto;
+                padding: 0 14px 28px;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .tier-banner,
+            .rewards-box,
+            .history-section {
+                padding: 20px;
+                border-radius: 22px;
+            }
+
+            .reward-item,
+            .ledger-item {
+                flex-wrap: wrap;
+            }
+
+            .btn-claim {
+                width: 100%;
+                min-width: unset;
+                margin-top: 8px;
+            }
         }
 
         @media (max-width: 520px) {
@@ -1035,30 +1021,8 @@
             <div class="history-list-container" id="fullHistoryList"></div>
         </div>
     </div>
-    
-    <div class="side-panel" id="cartPanel">
-        <div class="panel-header">
-            <h2>Your Order</h2>
-            <button class="circle-btn" style="border:none;" onclick="closeAll()">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        </div>
 
-        <div class="cart-items" id="cartItemsList">
-            <p style="text-align:center; color:var(--text-muted); margin-top:50px;">Your cart is empty.</p>
-        </div>
-
-        <div class="checkout-section">
-            <div class="total-row">
-                <span>Total</span>
-                <span id="cartGrandTotal" style="color: var(--mango);">₱0.00</span>
-            </div>
-
-            <button class="btn-massive" id="btnGoCheckout" onclick="proceedToCheckout()" style="opacity:0.5; pointer-events:none;">
-                Proceed to Checkout
-            </button>
-        </div>
-    </div>
+    <div class="panel-overlay" id="mainOverlay" onclick="closeAllPanels()"></div>
 
     <div class="side-panel" id="accountPanel">
         <div class="panel-header">
@@ -1094,7 +1058,7 @@
                 <a href="dashaccsett.html" class="acc-link-btn">
                     <i class="fa-solid fa-gear"></i> Account Settings
                 </a>
-                 <a href="rewards.html" class="acc-link-btn">
+                <a href="rewards.html" class="acc-link-btn">
                     <i class="fa-solid fa-clock-rotate-left"></i> Rewards Transaction History
                 </a>
                 <a href="topup.html" class="acc-link-btn">
@@ -1106,15 +1070,22 @@
             </div>
         </div>
     </div>
-    
+
     <script src="js/api.js"></script>
     <script src="js/authGuard.js"></script>
     <script src="js/logout.js"></script>
     <script src="js/sidepanel-fetching.js"></script>
     <script src="js/theme-sync.js"></script>
-    
     <script src="js/account-panel.js"></script>
     <script src="js/rewards.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            if (typeof loadSharedAccountPanel === "function") {
+                await loadSharedAccountPanel();
+            }
+        });
+    </script>
 </body>
 </html>

@@ -12,7 +12,8 @@ import re
 import smtplib
 import string
 from email.message import EmailMessage
-
+from backend.models import Product
+from backend.schemas import RewardCreate, RewardUpdate
 from backend.security import get_current_user, require_roles
 from backend.database import SessionLocal
 from backend.models import (
@@ -26,6 +27,7 @@ from backend.models import (
     RewardManualOTP,
     CustomerProfile,
     Wallet,
+    Product,
 )
 
 router = APIRouter(prefix="/rewards", tags=["Rewards"])
@@ -592,7 +594,189 @@ def admin_customer_history(
         ],
     }
 
+# ============================================================
+# ADMIN REWARD CATALOG MANAGEMENT
+# ============================================================
+@router.get("/admin/catalog")
+def admin_list_reward_catalog(
+    active_only: bool = Query(default=False),
+    db: Session = Depends(get_db),
+    _: User = Depends(require_roles("admin", "staff", "cashier")),
+):
+    query = db.query(Reward)
 
+    if active_only:
+        query = query.filter(Reward.is_active == True)
+
+    rows = query.order_by(Reward.sort_order.asc(), Reward.id.asc()).all()
+
+    product_ids = [int(row.product_id) for row in rows if getattr(row, "product_id", None)]
+    product_map = {}
+
+    if product_ids:
+        product_rows = db.query(Product).filter(Product.id.in_(product_ids)).all()
+        product_map = {int(p.id): p for p in product_rows}
+
+    return {
+        "count": len(rows),
+        "data": [
+            {
+                "reward_id": row.id,
+                "name": row.name,
+                "description": row.description,
+                "image_url": row.image_url,
+                "points_required": int(row.points_required or 0),
+                "reward_type": row.reward_type,
+                "product_id": row.product_id,
+                "product_name": product_map.get(int(row.product_id)).name if row.product_id and product_map.get(int(row.product_id)) else None,
+                "size_label": row.size_label,
+                "is_active": bool(row.is_active),
+                "sort_order": int(row.sort_order or 0),
+            }
+            for row in rows
+        ],
+    }
+
+
+@router.post("/admin/catalog")
+def admin_create_reward_catalog(
+    payload: RewardCreate,
+    db: Session = Depends(get_db),
+    _: User = Depends(require_roles("admin")),
+):
+    name = (payload.name or "").strip()
+    if not name:
+        raise HTTPException(status_code=400, detail="Reward name is required")
+
+    product = None
+    if payload.product_id is not None:
+        product = db.query(Product).filter(Product.id == payload.product_id).first()
+        if not product:
+            raise HTTPException(status_code=404, detail="Selected product not found")
+
+    row = Reward(
+        name=name,
+        description=(payload.description or "").strip() or None,
+        image_url=(payload.image_url or "").strip() or None,
+        points_required=int(payload.points_required),
+        reward_type=(payload.reward_type or "free_drink").strip() or "free_drink",
+        product_id=payload.product_id,
+        size_label=(payload.size_label or "").strip() or None,
+        is_active=bool(payload.is_active),
+        sort_order=int(payload.sort_order or 0),
+    )
+
+    db.add(row)
+    db.commit()
+    db.refresh(row)
+
+    return {
+        "message": "Reward created successfully",
+        "reward_id": row.id,
+        "data": {
+            "reward_id": row.id,
+            "name": row.name,
+            "description": row.description,
+            "image_url": row.image_url,
+            "points_required": int(row.points_required or 0),
+            "reward_type": row.reward_type,
+            "product_id": row.product_id,
+            "product_name": product.name if product else None,
+            "size_label": row.size_label,
+            "is_active": bool(row.is_active),
+            "sort_order": int(row.sort_order or 0),
+        }
+    }
+
+
+@router.put("/admin/catalog/{reward_id}")
+@router.patch("/admin/catalog/{reward_id}")
+def admin_update_reward_catalog(
+    reward_id: int,
+    payload: RewardUpdate,
+    db: Session = Depends(get_db),
+    _: User = Depends(require_roles("admin")),
+):
+    row = db.query(Reward).filter(Reward.id == reward_id).first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Reward not found")
+
+    product = None
+
+    if payload.name is not None:
+        name = payload.name.strip()
+        if not name:
+            raise HTTPException(status_code=400, detail="Reward name cannot be empty")
+        row.name = name
+
+    if payload.description is not None:
+        row.description = payload.description.strip() or None
+
+    if payload.image_url is not None:
+        row.image_url = payload.image_url.strip() or None
+
+    if payload.points_required is not None:
+        row.points_required = int(payload.points_required)
+
+    if payload.reward_type is not None:
+        row.reward_type = (payload.reward_type or "").strip() or "free_drink"
+
+    if payload.product_id is not None:
+        product = db.query(Product).filter(Product.id == payload.product_id).first()
+        if not product:
+            raise HTTPException(status_code=404, detail="Selected product not found")
+        row.product_id = payload.product_id
+
+    if payload.size_label is not None:
+        row.size_label = payload.size_label.strip() or None
+
+    if payload.is_active is not None:
+        row.is_active = bool(payload.is_active)
+
+    if payload.sort_order is not None:
+        row.sort_order = int(payload.sort_order)
+
+    db.commit()
+    db.refresh(row)
+
+    if row.product_id and not product:
+        product = db.query(Product).filter(Product.id == row.product_id).first()
+
+    return {
+        "message": "Reward updated successfully",
+        "data": {
+            "reward_id": row.id,
+            "name": row.name,
+            "description": row.description,
+            "image_url": row.image_url,
+            "points_required": int(row.points_required or 0),
+            "reward_type": row.reward_type,
+            "product_id": row.product_id,
+            "product_name": product.name if product else None,
+            "size_label": row.size_label,
+            "is_active": bool(row.is_active),
+            "sort_order": int(row.sort_order or 0),
+        }
+    }
+@router.patch("/admin/catalog/{reward_id}/toggle")
+def admin_toggle_reward_catalog(
+    reward_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(require_roles("admin")),
+):
+    row = db.query(Reward).filter(Reward.id == reward_id).first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Reward not found")
+
+    row.is_active = not bool(row.is_active)
+    db.commit()
+    db.refresh(row)
+
+    return {
+        "message": "Reward status updated successfully",
+        "reward_id": row.id,
+        "is_active": bool(row.is_active),
+    }
 @router.get("/admin/claimable-orders")
 def admin_claimable_orders(
     q: Optional[str] = Query(default=None),
@@ -704,8 +888,6 @@ def get_my_reward_points(
     rw = db.query(RewardWallet).filter(RewardWallet.user_id == current_user.id).first()
     points = int(rw.total_points or 0) if rw else 0
     return {"user_id": current_user.id, "total_points": points}
-
-
 @router.get("/catalog")
 def get_reward_catalog(
     db: Session = Depends(get_db),
@@ -714,9 +896,12 @@ def get_reward_catalog(
     rw = _get_reward_wallet(db, current_user.id)
     points = int(rw.total_points or 0)
 
-    rewards = db.query(Reward).filter(
-        Reward.is_active == True
-    ).order_by(Reward.id.asc()).all()
+    rewards = (
+        db.query(Reward)
+        .filter(Reward.is_active == True)
+        .order_by(Reward.sort_order.asc(), Reward.id.asc())
+        .all()
+    )
 
     return {
         "total_points": points,
@@ -724,19 +909,17 @@ def get_reward_catalog(
             {
                 "reward_id": r.id,
                 "name": r.name,
-                "description": None,
-                "image_url": None,
+                "description": r.description,
+                "image_url": r.image_url,
                 "points_required": int(r.points_required or 0),
-                "reward_type": None,
-                "product_id": None,
-                "size_label": None,
+                "reward_type": r.reward_type,
+                "product_id": r.product_id,
+                "size_label": r.size_label,
                 "claimable": points >= int(r.points_required or 0),
             }
             for r in rewards
         ]
     }
-
-
 # ============================================================
 # CUSTOMER QR REDEMPTION
 # ============================================================

@@ -36,3 +36,37 @@ async function apiPost(path, body = {}, extraHeaders = {}) {
     const data = await res.json();
     return { res, data };
 }
+async function apiPut(path, body = {}, extraHeaders = {}) {
+    const res = await fetch(`${API_BASE_URL}${path}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+            ...getAuthHeaders(extraHeaders)
+        },
+        body: JSON.stringify(body)
+    });
+
+    const data = await res.json();
+    return { res, data };
+}async function apiPostForm(path, formData, extraHeaders = {}) {
+    const res = await fetch(`${API_BASE_URL}${path}`, {
+        method: "POST",
+        headers: {
+            ...getAuthHeaders(extraHeaders)
+        },
+        body: formData
+    });
+
+    const data = await res.json();
+    return { res, data };
+}
+
+async function apiDelete(path, extraHeaders = {}) {
+    const res = await fetch(`${API_BASE_URL}${path}`, {
+        method: "DELETE",
+        headers: getAuthHeaders(extraHeaders)
+    });
+
+    const data = await res.json();
+    return { res, data };
+}

@@ -639,7 +639,7 @@
             right: 0;
         }
 
-               .panel-overlay {
+        .panel-overlay {
             position: fixed;
             top: 0;
             left: 0;
@@ -728,22 +728,6 @@
             border: 1px solid var(--card-border);
             border-radius: 25px;
         }
-
-        .avatar-circle,
-        .sp-avatar {
-            width: 60px;
-            height: 60px;
-            min-width: 60px;
-            background: var(--mango);
-            color: #111;
-            border-radius: 50%;
-            display: grid;
-            place-items: center;
-            font-size: 24px;
-            font-weight: 900;
-            flex-shrink: 0;
-        }
-
         .profile-details,
         .sp-profile-info {
             min-width: 0;
@@ -1016,6 +1000,10 @@
             border-color: var(--mango);
             background: rgba(255,194,68,0.05);
         }
+        .avatar-has-shell { overflow: hidden; position: relative; }
+        .avatar-image { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .avatar-text { display: inline-flex; width: 100%; height: 100%; align-items: center; justify-content: center; }
+        .avatar-circle.has-image { background: transparent !important; color: transparent !important; }
 
         .balance-item i {
             font-size: 24px;
@@ -1258,53 +1246,61 @@
             </button>
         </div>
     </div>
+    <!-- Account Side Panel -->
+<div class="panel-overlay" id="mainOverlay" onclick="closeAllPanels()"></div>
 
-    <div class="side-panel" id="accountPanel">
-        <div class="panel-header">
-            <h2>Account Info</h2>
-            <button class="panel-close-btn" type="button" onclick="closeAllPanels()">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
+<div class="side-panel" id="accountPanel">
+    <div class="panel-header">
+        <h2>Account Info</h2>
+        <button class="panel-close-btn" type="button" onclick="closeAllPanels()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <div class="panel-body">
+        <div class="profile-card">
+            <div class="avatar-circle avatar-has-shell" id="panelAvatar">
+                <span class="avatar-text" id="panelUserInitials">--</span>
+                <img id="panelAvatarImage" class="avatar-image hidden">
+            </div>
+
+            <div class="profile-details">
+                <h3 id="panelUserName">Loading...</h3>
+                <p id="panelUserTier">MEMBER</p>
+            </div>
         </div>
 
-        <div class="panel-body">
-            <div class="profile-card">
-                <div class="avatar-circle" id="panelUserInitials">--</div>
-                <div class="profile-details">
-                    <h3 id="panelUserName">Loading...</h3>
-                    <p id="panelUserTier">MEMBER</p>
-                </div>
+        <div class="balance-grid">
+            <div class="balance-item">
+                <i class="fa-solid fa-star"></i>
+                <span id="panelRewardPoints">0</span>
+                <small>Reward Points</small>
             </div>
 
-            <div class="balance-grid">
-                <div class="balance-item">
-                    <i class="fa-solid fa-star"></i>
-                    <span id="panelRewardPoints">0</span>
-                    <small>Reward Points</small>
-                </div>
-                <div class="balance-item">
-                    <i class="fa-solid fa-wallet"></i>
-                    <span id="panelWalletBalance">₱0.00</span>
-                    <small>TIMS-RPAY Bal</small>
-                </div>
+            <div class="balance-item">
+                <i class="fa-solid fa-wallet"></i>
+                <span id="panelWalletBalance">₱0.00</span>
+                <small>TIMS-RPAY Bal</small>
             </div>
+        </div>
 
-            <div class="account-menu">
-                <a href="dashaccsett.html" class="acc-link-btn">
-                    <i class="fa-solid fa-gear"></i> Account Settings
-                </a>
-                 <a href="rewards.html" class="acc-link-btn">
-                    <i class="fa-solid fa-clock-rotate-left"></i> Rewards Transaction History
-                </a>
-                <a href="topup.html" class="acc-link-btn">
-                    <i class="fa-solid fa-plus-circle"></i> Top-Up Wallet
-                </a>
-                <a href="index.html" class="acc-link-btn danger">
-                    <i class="fa-solid fa-right-from-bracket"></i> Log Out
-                </a>
-            </div>
+        <div class="account-menu">
+            <a href="dashaccsett.html" class="acc-link-btn">
+                <i class="fa-solid fa-gear"></i> Account Settings
+            </a>
+
+            <a href="rewards.html" class="acc-link-btn">
+                <i class="fa-solid fa-clock-rotate-left"></i> Transaction History
+            </a>
+
+            <a href="topup.html" class="acc-link-btn">
+                <i class="fa-solid fa-plus-circle"></i> Top-Up Wallet
+            </a>
+
+            <a href="index.html" class="acc-link-btn danger">
+                <i class="fa-solid fa-right-from-bracket"></i> Log Out
+            </a>
         </div>
     </div>
+</div>
 
     <script src="js/api.js"></script>
     <script src="js/authGuard.js"></script>

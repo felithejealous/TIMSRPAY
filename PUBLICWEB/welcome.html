@@ -4,18 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script>
-        (function () { const t = localStorage.getItem("publicweb-theme") || "dark"; if (t === "light") document.documentElement.classList.add("light-mode"); })();
+        (function () {
+            const t = localStorage.getItem("publicweb-theme") || "dark";
+            if (t === "light") document.documentElement.classList.add("light-mode");
+        })();
     </script>
     <title>Dashboard Overview | Teo D' Mango Premium</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* --- DYNAMIC THEME VARIABLES --- */
         :root {
             --mango: #ffc244;
             --mango-dark: #d4a017;
             --strawberry: #ff4d6d;
-            
-            /* DARK MODE (Default) */
+
             --bg-main: #050505;
             --text-main: #ffffff;
             --text-muted: #888888;
@@ -27,9 +28,9 @@
             --icon-bg: rgba(255, 255, 255, 0.05);
             --glow-opacity: 0.15;
             --danger: #ff4d6d;
+            --input-bg: rgba(255,255,255,0.05);
         }
 
-        /* LIGHT MODE */
         .light-mode {
             --bg-main: #f4f5f7;
             --text-main: #1a1a1a;
@@ -40,58 +41,148 @@
             --shadow: 0 20px 50px rgba(0,0,0,0.04);
             --hover-bg: rgba(255, 255, 255, 1);
             --icon-bg: rgba(0, 0, 0, 0.03);
-            --glow-opacity: 0.4; 
+            --glow-opacity: 0.4;
+            --input-bg: rgba(0,0,0,0.03);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; scroll-behavior: smooth; }
-        
-        body { 
-            background-color: var(--bg-main); color: var(--text-main);
-            min-height: 100vh; transition: background-color 0.5s ease, color 0.5s ease;
-            overflow-x: hidden; position: relative;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            scroll-behavior: smooth;
         }
 
-        /* Glowing Orbs */
-        body::before, body::after { content: ''; position: fixed; border-radius: 50%; z-index: -1; transition: 0.5s ease; }
-        body::before { top: -10%; left: -5%; width: 600px; height: 600px; background: var(--mango); filter: blur(120px); opacity: var(--glow-opacity); }
-        body::after { bottom: -10%; right: -5%; width: 500px; height: 500px; background: var(--strawberry); filter: blur(150px); opacity: calc(var(--glow-opacity) - 0.05); }
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+            transition: background-color 0.5s ease, color 0.5s ease;
+            overflow-x: hidden;
+            position: relative;
+        }
 
-        /* --- NAVIGATION --- */
+        body::before,
+        body::after {
+            content: '';
+            position: fixed;
+            border-radius: 50%;
+            z-index: -1;
+            transition: 0.5s ease;
+        }
+
+        body::before {
+            top: -10%;
+            left: -5%;
+            width: 600px;
+            height: 600px;
+            background: var(--mango);
+            filter: blur(120px);
+            opacity: var(--glow-opacity);
+        }
+
+        body::after {
+            bottom: -10%;
+            right: -5%;
+            width: 500px;
+            height: 500px;
+            background: var(--strawberry);
+            filter: blur(150px);
+            opacity: calc(var(--glow-opacity) - 0.05);
+        }
+
         nav {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 20px 8%; background: var(--nav-bg);
-            backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
-            position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--card-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 8%;
+            background: var(--nav-bg);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid var(--card-border);
             transition: background 0.5s ease, border-color 0.5s ease;
         }
-        
-        .logo { display: flex; align-items: center; }
-        .logo img { 
-            height: 40px; object-fit: contain; 
+
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo img {
+            height: 40px;
+            object-fit: contain;
             filter: drop-shadow(0 0 2px rgba(255,255,255,0.8)) drop-shadow(0 0 5px var(--mango));
             transition: 0.3s ease;
         }
+
         .logo img:hover {
             filter: drop-shadow(0 0 4px rgba(255,255,255,1)) drop-shadow(0 0 10px var(--mango));
             transform: scale(1.05);
         }
 
-        .nav-links { display: flex; list-style: none; gap: 30px; align-items: center; }
-        .nav-links a { text-decoration: none; color: var(--text-muted); font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; }
-        .nav-links a:hover, .nav-links a.active { color: var(--text-main); }
-        
-        .btn-logout { border: 1.5px solid var(--text-main); padding: 8px 20px; border-radius: 50px; color: var(--text-main) !important; }
-        .btn-logout:hover { background: var(--text-main); color: var(--bg-main) !important; }
-
-        .nav-actions { display: flex; gap: 15px; align-items: center; }
-        .circle-btn {
-            background: var(--icon-bg); border: 1px solid var(--card-border);
-            color: var(--text-main); width: 40px; height: 40px; border-radius: 50%;
-            display: grid; place-items: center; cursor: pointer; transition: 0.3s; position: relative;
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+            align-items: center;
         }
-        .circle-btn:hover { background: var(--hover-bg); transform: scale(1.05); color: var(--mango); }
 
-        /* --- DASHBOARD GRID --- */
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.3s;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--text-main);
+        }
+
+        .btn-logout {
+            border: 1.5px solid var(--text-main);
+            padding: 8px 20px;
+            border-radius: 50px;
+            color: var(--text-main) !important;
+        }
+
+        .btn-logout:hover {
+            background: var(--text-main);
+            color: var(--bg-main) !important;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .circle-btn {
+            background: var(--icon-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+        }
+
+        .circle-btn:hover {
+            background: var(--hover-bg);
+            transform: scale(1.05);
+            color: var(--mango);
+        }
+
         .dashboard-wrapper {
             max-width: 1200px;
             margin: 40px auto 80px;
@@ -101,562 +192,1340 @@
             gap: 25px;
         }
 
-        .glass-bento {
-            background: var(--card-bg); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
-            border: 1px solid var(--card-border); border-radius: 35px;
-            padding: 40px; box-shadow: var(--shadow); transition: 0.3s ease;
+        .avatar-has-shell {
+            overflow: hidden;
+            position: relative;
         }
-        .glass-bento:hover { border-color: rgba(255, 194, 68, 0.3); transform: translateY(-5px); }
-        .bento-title { font-size: 18px; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 25px; display: flex; align-items: center; gap: 12px; color: var(--text-main);}
-        .bento-title i { color: var(--mango); font-size: 20px; }
 
-        /* 1. HERO SECTION */
+        .avatar-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .avatar-text {
+            display: inline-flex;
+            width: 100%;
+            height: 100%;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .avatar-circle.has-image {
+            background: transparent !important;
+            color: transparent !important;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .glass-bento {
+            background: var(--card-bg);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid var(--card-border);
+            border-radius: 35px;
+            padding: 40px;
+            box-shadow: var(--shadow);
+            transition: 0.3s ease;
+        }
+
+        .glass-bento:hover {
+            border-color: rgba(255, 194, 68, 0.3);
+            transform: translateY(-5px);
+        }
+
+        .bento-title {
+            font-size: 18px;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-main);
+        }
+
+        .bento-title i {
+            color: var(--mango);
+            font-size: 20px;
+        }
+
         .hero-bento {
             grid-column: span 8;
             background: linear-gradient(to top, rgba(5,5,5,0.9) 0%, rgba(5,5,5,0.2) 100%), url('https://images.unsplash.com/photo-1546173159-315724a31696?auto=format&fit=crop&q=80&w=1000') center/cover;
-            display: flex; flex-direction: column; justify-content: flex-end;
-            min-height: 300px; border-radius: 35px; padding: 40px; border: 1px solid var(--card-border);
-            box-shadow: var(--shadow); transition: 0.4s;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            min-height: 300px;
+            border-radius: 35px;
+            padding: 40px;
+            border: 1px solid var(--card-border);
+            box-shadow: var(--shadow);
+            transition: 0.4s;
         }
-        .hero-bento:hover { transform: translateY(-5px); box-shadow: 0 40px 80px rgba(0,0,0,0.6); }
-        .hero-bento h1 { font-size: 48px; font-weight: 900; color: #fff; letter-spacing: -2px; margin-bottom: 10px; line-height: 1.1; }
-        .hero-bento p { font-size: 16px; color: #ddd; font-weight: 600; margin-bottom: 25px; max-width: 80%; }
-        
-        .btn-massive { 
-            background: var(--mango); color: #111; border: none; padding: 15px 35px; 
-            border-radius: 50px; font-weight: 900; font-size: 13px; text-transform: uppercase; 
-            letter-spacing: 1px; cursor: pointer; transition: 0.3s; width: fit-content;
+
+        .hero-bento:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+        }
+
+        .hero-bento h1 {
+            font-size: 48px;
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: -2px;
+            margin-bottom: 10px;
+            line-height: 1.1;
+        }
+
+        .hero-bento p {
+            font-size: 16px;
+            color: #ddd;
+            font-weight: 600;
+            margin-bottom: 25px;
+            max-width: 80%;
+        }
+
+        .btn-massive {
+            background: var(--mango);
+            color: #111;
+            border: none;
+            padding: 15px 35px;
+            border-radius: 50px;
+            font-weight: 900;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: 0.3s;
+            width: fit-content;
             box-shadow: 0 15px 30px rgba(255,194,68,0.2);
         }
-        .btn-massive:hover { background: #fff; transform: translateY(-3px); box-shadow: 0 20px 40px rgba(255,255,255,0.2);}
 
-        /* 2. WALLET SECTION */
-        .wallet-bento { grid-column: span 4; display: flex; flex-direction: column; }
-        .wallet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .wallet-header span { font-size: 12px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
-        .wallet-balance { font-size: 42px; font-weight: 900; color: var(--text-main); letter-spacing: -2px; margin-bottom: 20px;}
+        .btn-massive:hover {
+            background: #fff;
+            transform: translateY(-3px);
+            box-shadow: 0 20px 40px rgba(255,255,255,0.2);
+        }
 
-        /* Premium Black Metal Card */
+        .wallet-bento {
+            grid-column: span 4;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .wallet-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .wallet-header span {
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .wallet-balance {
+            font-size: 42px;
+            font-weight: 900;
+            color: var(--text-main);
+            letter-spacing: -2px;
+            margin-bottom: 20px;
+        }
+
         .tims-card {
             background: linear-gradient(135deg, #1c1c1c 0%, #050505 100%);
-            border: 1px solid rgba(255, 194, 68, 0.2); border-radius: 20px;
-            padding: 25px; color: #fff; position: relative; overflow: hidden;
+            border: 1px solid rgba(255, 194, 68, 0.2);
+            border-radius: 20px;
+            padding: 25px;
+            color: #fff;
+            position: relative;
+            overflow: hidden;
             box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.1);
-            margin-bottom: 20px; flex: 1; display: flex; flex-direction: column; justify-content: space-between;
+            margin-bottom: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
+
         .tims-card::before {
-            content: ''; position: absolute; top: -50px; right: -50px; width: 150px; height: 150px;
-            background: radial-gradient(circle, var(--mango) 0%, transparent 60%); opacity: 0.15; filter: blur(30px);
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, var(--mango) 0%, transparent 60%);
+            opacity: 0.15;
+            filter: blur(30px);
         }
-        .card-brand { font-weight: 900; font-size: 14px; letter-spacing: 2px; text-align: right; }
-        .card-brand span { color: var(--mango); }
-        .card-chip { 
-            width: 40px; height: 30px; background: linear-gradient(135deg, #e6c27a, #d4a017); 
-            border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.5); margin: 15px 0;
-        }
-        .card-num { font-size: 20px; letter-spacing: 4px; font-family: 'Courier New', monospace; font-weight: 800; color: #f0f0f0; }
-        .card-name { font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #fff; margin-top: 10px;}
 
-        .wallet-actions { display: flex; gap: 10px; }
+        .card-brand {
+            font-weight: 900;
+            font-size: 14px;
+            letter-spacing: 2px;
+            text-align: right;
+        }
+
+        .card-brand span {
+            color: var(--mango);
+        }
+
+        .card-chip {
+            width: 40px;
+            height: 30px;
+            background: linear-gradient(135deg, #e6c27a, #d4a017);
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            margin: 15px 0;
+        }
+
+        .wallet-code-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-num {
+            font-size: 20px;
+            letter-spacing: 4px;
+            font-family: 'Courier New', monospace;
+            font-weight: 800;
+            color: #f0f0f0;
+        }
+
+        .wallet-eye-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #ddd;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            transition: 0.3s;
+            flex-shrink: 0;
+        }
+
+        .wallet-eye-btn:hover {
+            border-color: var(--mango);
+            color: var(--mango);
+            transform: scale(1.05);
+        }
+
+        .card-name {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #fff;
+            margin-top: 10px;
+        }
+
+        .wallet-actions {
+            display: flex;
+            gap: 10px;
+        }
+
         .wallet-btn {
-            flex: 1; padding: 15px; border-radius: 15px; background: var(--icon-bg);
-            border: 1px solid var(--card-border); color: var(--text-main);
-            font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;
-            cursor: pointer; transition: 0.3s;
+            flex: 1;
+            padding: 15px;
+            border-radius: 15px;
+            background: var(--icon-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            font-weight: 800;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: 0.3s;
         }
-        .wallet-btn:hover { background: var(--hover-bg); border-color: var(--mango); color: var(--mango); }
 
-        /* 3. LIVE ORDER STATUS */
-        .status-bento { grid-column: span 6; display: flex; flex-direction: column; justify-content: space-between;}
-        .status-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;}
-        .status-badge { background: rgba(255, 194, 68, 0.1); color: var(--mango); padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; border: 1px solid rgba(255, 194, 68, 0.3);}
-        
-        .queue-num { font-size: 48px; font-weight: 900; color: var(--text-main); margin-bottom: 20px; letter-spacing: -2px;}
-        .queue-num span { font-size: 14px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; display: block;}
-        
-        .progress-container { margin-top: auto; }
-        .progress-text { display: flex; justify-content: space-between; font-size: 13px; font-weight: 800; margin-bottom: 10px; color: var(--text-main);}
-        .progress-bar { height: 10px; background: var(--icon-bg); border-radius: 10px; overflow: hidden; border: 1px solid var(--card-border); }
-        .progress-fill { height: 100%; width: 60%; background: var(--mango); border-radius: 10px; box-shadow: 0 0 15px var(--mango); animation: pulse 2s infinite; }
-        
-        @keyframes pulse { 0% { opacity: 0.8; } 50% { opacity: 1; } 100% { opacity: 0.8; } }
-
-        /* 4. RECENT ORDERS */
-        .reorder-bento { grid-column: span 6; }
-        .reorder-list { display: flex; flex-direction: column; gap: 15px; }
-        .reorder-item {
-            background: var(--icon-bg); padding: 20px; border-radius: 20px;
-            border: 1px solid var(--card-border); display: flex; justify-content: space-between; align-items: center; transition: 0.3s; cursor: pointer;
+        .wallet-btn:hover {
+            background: var(--hover-bg);
+            border-color: var(--mango);
+            color: var(--mango);
         }
-        .reorder-item:hover { background: var(--hover-bg); border-color: var(--mango); transform: translateX(5px);}
-        .reorder-info h4 { font-size: 15px; font-weight: 800; color: var(--text-main); margin-bottom: 3px; }
-        .reorder-info p { font-size: 12px; color: var(--text-muted); font-weight: 600; }
-        .btn-small { background: var(--text-main); color: var(--bg-main); border: none; padding: 10px 20px; border-radius: 50px; font-weight: 900; font-size: 12px; cursor: pointer; transition: 0.3s;}
-        .reorder-item:hover .btn-small { background: var(--mango); color: #111;}
 
-        /* 5. BEST SELLERS (WITH IMAGES) */
-        .bs-header { grid-column: span 12; display: flex; align-items: center; gap: 15px; margin-top: 20px; margin-bottom: 10px;}
-        .bs-header h2 { font-size: 24px; font-weight: 900; color: var(--text-main); letter-spacing: -1px; }
-        .bs-header i { color: var(--danger); font-size: 20px; }
-
-        .bs-card {
-            grid-column: span 3; background: var(--card-bg); backdrop-filter: blur(20px);
-            border: 1px solid var(--card-border); border-radius: 30px; padding: 20px;
-            text-align: center; transition: 0.3s; cursor: pointer; display: flex; flex-direction: column;
-        }
-        .bs-card:hover { transform: translateY(-10px); border-color: var(--mango); box-shadow: var(--shadow); background: var(--hover-bg);}
-        
-        .bs-img-wrapper {
-            width: 100%; height: 160px; border-radius: 20px; overflow: hidden; 
-            margin-bottom: 15px; background: var(--icon-bg);
-        }
-        .bs-img-wrapper img {
-            width: 100%; height: 100%; object-fit: cover; transition: 0.5s ease;
-        }
-        .bs-card:hover .bs-img-wrapper img { transform: scale(1.1); }
-
-        .bs-card h4 { font-size: 16px; font-weight: 900; color: var(--text-main); margin-bottom: 5px; line-height: 1.2;}
-        .bs-card p { font-size: 14px; font-weight: 800; color: var(--text-muted); }
-
-        /* --- FOOTER --- */
-        footer { border-top: 1px solid var(--card-border); padding: 40px 20px; text-align: center; background: var(--nav-bg); backdrop-filter: blur(20px); margin-top: 40px;}
-        .footer-logo { font-weight: 900; font-size: 18px; color: var(--text-main); margin-bottom: 20px; letter-spacing: -1px;}
-        .footer-logo span { color: var(--mango); }
-        .footer-links { display: flex; justify-content: center; gap: 20px; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px;}
-        .footer-links a { color: var(--text-muted); text-decoration: none; transition: 0.3s; }
-        .footer-links a:hover { color: var(--mango); }
-        .social-icons { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px;}
-        .social-icons a { color: var(--text-muted); font-size: 18px; transition: 0.3s; }
-        .social-icons a:hover { color: var(--mango); transform: translateY(-3px); }
-
-        /* --- ACCOUNT SIDE PANEL (Slide-over) --- */
-        .panel-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6); backdrop-filter: blur(10px);
-            z-index: 2000; opacity: 0; visibility: hidden; transition: 0.4s;
-        }
-        .panel-overlay.active { opacity: 1; visibility: visible; }
-
-        .side-panel {
-            position: fixed; top: 0; right: -100%; width: 100%; max-width: 450px; height: 100%;
-            background: var(--bg-main); border-left: 1px solid var(--card-border);
-            box-shadow: -20px 0 50px rgba(0,0,0,0.5); display: flex; flex-direction: column;
-            transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1); z-index: 2001;
-            max-width: 420px;
-        }
-        .side-panel.active { right: 0; }
-        
-        .panel-header { padding: 22px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--card-border); }
-        .panel-header h2 { font-size: 20px; font-weight: 900; letter-spacing: -0.5px; color: var(--text-main);}
-        .panel-close-btn { background: transparent; border: none; font-size: 24px; color: var(--text-muted); cursor: pointer; transition: 0.3s; }
-        .panel-close-btn:hover { color: var(--text-main); transform: rotate(90deg);}
-
-        .panel-body { padding: 24px; display: flex; flex-direction: column; gap: 18px; flex: 1; overflow-y: auto; }
-        
-        .profile-card { display: flex; align-items: center; gap: 16px; padding: 20px; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 25px; }
-        .avatar-circle { width: 60px; height: 60px; background: var(--mango); color: #111; border-radius: 50%; display: grid; place-items: center; font-size: 24px; font-weight: 900; }
-        .profile-details h3 { font-size: 18px; font-weight: 900; margin-bottom: 3px; letter-spacing: -0.5px; color: var(--text-main);}
-        .profile-details p { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;}
-        
-        .balance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .balance-item { background: var(--icon-bg); border: 1px solid var(--card-border); padding: 22px 12px; border-radius: 18px; text-align: center; display: flex; flex-direction: column; gap: 8px; transition: 0.3s; }
-        .balance-item:hover { transform: translateY(-5px); border-color: var(--mango); background: rgba(255,194,68,0.05); }
-        .balance-item i { font-size: 22px; color: var(--mango); }
-        .balance-item span { font-size: 22px; font-weight: 900; letter-spacing: -1px; color: var(--text-main);line-height: 1.1; word-break: break-word; }
-        .balance-item small { font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; line-height: 1.3;}
-        
-        .account-menu { display: flex; flex-direction: column; gap: 10px; }
-        .acc-link-btn {
-            background: transparent; border: 1px solid var(--card-border); color: var(--text-main);
-            padding: 18px 20px; border-radius: 15px; font-size: 13px; font-weight: 800;
-            text-align: left; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 15px; text-decoration: none;
-        }
-        .acc-link-btn i { font-size: 16px; color: var(--text-muted); width: 20px; text-align: center; transition: 0.3s; }
-        .acc-link-btn:hover { background: var(--hover-bg); border-color: var(--text-main); transform: translateX(5px); }
-        .acc-link-btn:hover i { color: var(--mango); }
-        .acc-link-btn.danger:hover { background: rgba(255, 77, 109, 0.1); border-color: var(--danger); color: var(--danger); }
-        .acc-link-btn.danger:hover i { color: var(--danger); }
-
-        @media (max-width: 950px) {
-            .dashboard-wrapper { display: flex; flex-direction: column; padding: 20px; }
-            .nav-links { display: none; }
-            .bs-card { grid-column: span 6; } /* 2 per row on tablet/mobile */
-        }
-        @media (max-width: 500px) {
-            .bs-card { grid-column: span 12; } /* 1 per row on small phones */
+        .reorder-bento {
+            grid-column: span 6;
+            display: flex;
+            flex-direction: column;
+            min-height: 430px;
+            max-height: 430px;
         }
 
         .announcement-bento {
-    grid-column: span 6;
-}
+            grid-column: span 6;
+            display: flex;
+            flex-direction: column;
+            min-height: 430px;
+            max-height: 430px;
+        }
 
-.announcement-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 20px;
-}
+        .reorder-header,
+        .announcement-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
 
-.announcement-card {
-    background: var(--icon-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 20px;
-    padding: 20px;
-    transition: 0.3s;
-}
+        .order-filter {
+            background: var(--icon-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 800;
+            outline: none;
+            cursor: pointer;
+        }
 
-.announcement-card:hover {
-    border-color: var(--mango);
-    background: var(--hover-bg);
-}
-
-.announcement-title {
-    font-size: 16px;
-    font-weight: 900;
-    color: var(--text-main);
-    margin-bottom: 8px;
-}
-
-.announcement-meta {
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 10px;
-}
-
-.announcement-body {
-    font-size: 14px;
-    line-height: 1.6;
-    color: var(--text-main);
-}
-
-.announcement-empty {
-    background: var(--icon-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 20px;
-    padding: 20px;
-    color: var(--text-muted);
-    font-weight: 700;
-}
-.reorder-bento,
-.announcement-bento {
-    display: flex;
-    flex-direction: column;
-    min-height: 430px;
-    max-height: 430px;
-}
-
-.reorder-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-}
-
-.order-filter {
-    background: var(--icon-bg);
-    border: 1px solid var(--card-border);
-    color: var(--text-main);
-    padding: 10px 14px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 800;
-    outline: none;
-    cursor: pointer;
-}
-
-.reorder-list,
-#announcementPreview {
+    .reorder-list {
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
     padding-right: 6px;
     min-height: 0;
-}
-
-.reorder-list::-webkit-scrollbar,
-#announcementPreview::-webkit-scrollbar,
-.receipt-items::-webkit-scrollbar,
-.receipt-modal-body::-webkit-scrollbar {
-    width: 8px;
-}
-
-.reorder-list::-webkit-scrollbar-thumb,
-#announcementPreview::-webkit-scrollbar-thumb,
-.receipt-items::-webkit-scrollbar-thumb,
-.receipt-modal-body::-webkit-scrollbar-thumb {
-    background: var(--card-border);
-    border-radius: 999px;
-}
-
-.reorder-item {
+    display: flex;
     flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
+    gap: 16px;
+}
+
+        .reorder-list::-webkit-scrollbar,
+        #announcementPreview::-webkit-scrollbar,
+        .receipt-modal-body::-webkit-scrollbar,
+        .inquiry-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .reorder-list::-webkit-scrollbar-thumb,
+        #announcementPreview::-webkit-scrollbar-thumb,
+        .receipt-modal-body::-webkit-scrollbar-thumb,
+        .inquiry-container::-webkit-scrollbar-thumb {
+            background: var(--card-border);
+            border-radius: 999px;
+        }
+.reorder-item {
+    background: var(--icon-bg);
+    padding: 22px 22px 20px;
+    border-radius: 20px;
+    border: 1px solid var(--card-border);
+    transition: 0.3s;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
     cursor: default;
 }
+
+        .reorder-item:hover {
+            background: var(--hover-bg);
+            border-color: var(--mango);
+            transform: translateX(5px);
+        }
 
 .reorder-top {
     display: flex;
     justify-content: space-between;
-    gap: 12px;
+    gap: 18px;
     align-items: flex-start;
 }
-
 .reorder-bottom {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 10px;
+    gap: 14px;
     flex-wrap: wrap;
+    padding-top: 2px;
 }
-
+    .reorder-info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+}
+.reorder-info h4 {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--text-main);
+    margin-bottom: 0;
+    line-height: 1.35;
+}
+.reorder-info p {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 600;
+    line-height: 1.45;
+    margin: 0;
+}
 .order-meta {
     font-size: 11px;
     color: var(--text-muted);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;
+    line-height: 1.5;
 }
-
-.order-actions {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-
-.order-action-btn {
-    background: var(--icon-bg);
-    border: 1px solid var(--card-border);
-    color: var(--text-main);
-    padding: 10px 14px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.order-action-btn:hover {
-    border-color: var(--mango);
-    color: var(--mango);
-    background: var(--hover-bg);
-}
-
+.order-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;}
+.order-action-btn{width:100%;display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--icon-bg);border:1px solid var(--card-border);color:var(--text-main);padding:11px 16px;border-radius:12px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;cursor:pointer;transition:0.3s;min-height:40px;text-align:center;}
+@media (max-width:768px){.order-actions{grid-template-columns:1fr;}}
+        .order-action-btn:hover {
+            border-color: var(--mango);
+            color: var(--mango);
+            background: var(--hover-bg);
+        }
 .order-price-pill {
     background: var(--text-main);
     color: var(--bg-main);
     border: none;
-    padding: 10px 16px;
+    padding: 11px 18px;
     border-radius: 50px;
     font-weight: 900;
     font-size: 12px;
+    min-width: 96px;
+    text-align: center;
+    flex-shrink: 0;
 }
-.receipt-modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.8);
-    backdrop-filter: blur(8px);
-    z-index: 3000;
-    display: none;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-}
+@media (max-width: 768px) {
+    .reorder-item {
+        padding: 18px;
+        gap: 14px;
+    }
 
-.receipt-modal.show {
-    display: flex;
-}
+    .reorder-top {
+        flex-direction: column;
+        gap: 12px;
+    }
 
-.receipt-modal-content {
-    background: var(--bg-main);
-    width: 100%;
-    max-width: 640px;
-    border-radius: 24px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-    overflow: hidden;
+    .reorder-bottom {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .order-actions {
+        width: 100%;
+    }
+
+    .order-action-btn {
+        flex: 1;
+        text-align: center;
+    }
+
+    .order-price-pill {
+        align-self: flex-start;
+    }
+}
+        .announcement-card {
+            background: var(--icon-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 20px;
+            transition: 0.3s;
+        }
+
+        .announcement-card:hover {
+            border-color: var(--mango);
+            background: var(--hover-bg);
+        }
+
+        .announcement-title {
+            font-size: 16px;
+            font-weight: 900;
+            color: var(--text-main);
+            margin-bottom: 8px;
+        }
+
+        .announcement-meta {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .announcement-body {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-main);
+        }
+
+        .announcement-empty {
+            background: var(--icon-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 20px;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+        .announce-view-btn {
+    flex: unset;
+    padding: 10px 16px;
+    border-radius: 12px;
+    background: var(--icon-bg);
     border: 1px solid var(--card-border);
-    display: flex;
-    flex-direction: column;
-    max-height: 92vh;
-    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes slideUp {
-    from { transform: translateY(50px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-}
-
-.receipt-modal-header {
-    background: #111;
-    color: white;
-    padding: 1.35rem 1.5rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-}
-
-.receipt-modal-header h3 {
-    font-size: 22px;
-    font-weight: 900;
+    color: var(--text-main);
+    font-weight: 800;
+    font-size: 11px;
+    text-transform: uppercase;
     letter-spacing: 1px;
-    color: #fff;
-}
-
-.receipt-close-btn {
-    background: transparent;
-    border: none;
-    color: #fff;
-    font-size: 24px;
     cursor: pointer;
     transition: 0.3s;
+    min-width: auto;
 }
 
-.receipt-close-btn:hover {
-    color: var(--danger);
-    transform: rotate(90deg);
-}
-
-.receipt-modal-body {
-    padding: 1.5rem;
-    background: #fffdf5;
-    color: #111;
-    overflow-y: auto;
-    flex: 1;
-}
-
-.receipt-branding {
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-.receipt-branding .manifest-title {
-    text-transform: uppercase;
-    font-weight: 900;
-    font-size: 18px;
-    color: #111;
-}
-
-.receipt-branding .manifest-subtitle {
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: #666;
-}
-
-.receipt-divider {
-    border-bottom: 2px dashed #ccc;
-    margin: 16px 0;
-}
-
-.manifest-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.manifest-row {
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-    padding-bottom: 10px;
-    border-bottom: 1px dashed #ddd;
-    align-items: flex-start;
-}
-
-.manifest-row span:first-child {
-    font-size: 10px;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #666;
-    flex: 0 0 110px;
-}
-
-.manifest-row span:last-child {
-    font-size: 13px;
-    font-weight: 800;
-    color: #111;
-    text-align: right;
-    flex: 1;
-    word-break: break-word;
-}
-
-.reward-box {
-    background: rgba(255, 194, 68, 0.12);
-    border: 1px dashed #d4a017;
-    border-radius: 18px;
-    padding: 16px;
-    margin-top: 16px;
-}
-
-.reward-title {
-    font-size: 11px;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #b88700;
-    margin-bottom: 12px;
-}
-.bs-meta {
-    margin-top: 8px;
-    font-size: 12px;
-    font-weight: 700;
+.announce-view-btn:hover {
+    background: var(--hover-bg);
+    border-color: var(--mango);
     color: var(--mango);
 }
 
-.reward-row {
+.announcement-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.72);
+    backdrop-filter: blur(10px);
+    z-index: 5000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    opacity: 0;
+    visibility: hidden;
+    transition: 0.3s ease;
+}
+
+.announcement-modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.announcement-modal {
+    width: 100%;
+    max-width: 860px;
+    max-height: 88vh;
+    background: var(--bg-main);
+    border: 1px solid var(--card-border);
+    border-radius: 28px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transform: translateY(24px) scale(0.98);
+    transition: 0.3s ease;
+}
+
+.announcement-modal-overlay.active .announcement-modal {
+    transform: translateY(0) scale(1);
+}
+
+.announcement-modal-header {
     display: flex;
     justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 8px;
-    font-size: 12px;
+    align-items: center;
+    gap: 16px;
+    padding: 22px 24px;
+    border-bottom: 1px solid var(--card-border);
+    background: var(--bg-main);
 }
 
-.reward-row span:first-child {
-    color: #333;
-    font-weight: 700;
+.announcement-modal-title {
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-.reward-row span:last-child {
-    color: #111;
-    font-weight: 800;
-    text-align: right;
+.announcement-modal-title i {
+    color: var(--mango);
 }
 
-.text-green {
-    color: #059669 !important;
+.announcement-modal-close {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1px solid var(--card-border);
+    background: var(--icon-bg);
+    color: var(--text-main);
+    font-size: 18px;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: 0.3s ease;
+    flex-shrink: 0;
 }
 
-.text-red {
-    color: #dc2626 !important;
+.announcement-modal-close:hover {
+    background: var(--hover-bg);
+    border-color: var(--mango);
+    color: var(--mango);
+    transform: rotate(90deg) scale(1.05);
 }
 
-.text-yellow {
-    color: #b45309 !important;
+.announcement-modal-body {
+    padding: 24px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex: 1;
+}
+
+.announcement-modal-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.announcement-modal-body::-webkit-scrollbar,
+.announcement-modal-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.announcement-modal-body::-webkit-scrollbar-thumb,
+.announcement-modal-list::-webkit-scrollbar-thumb {
+    background: var(--card-border);
+    border-radius: 999px;
 }
 
 @media (max-width: 768px) {
-    .manifest-row {
-        flex-direction: column;
-        gap: 6px;
+    .announcement-modal {
+        max-height: 92vh;
+        border-radius: 22px;
     }
 
-    .manifest-row span:first-child,
-    .manifest-row span:last-child {
-        flex: unset;
-        text-align: left;
+    .announcement-modal-header {
+        padding: 18px 18px;
+    }
+
+    .announcement-modal-body {
+        padding: 18px;
+    }
+
+    .announcement-modal-title {
+        font-size: 18px;
+    }
+
+    .announce-view-btn {
+        padding: 9px 14px;
+        font-size: 10px;
     }
 }
+
+        .bs-header {
+            grid-column: span 12;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .bs-header h2 {
+            font-size: 24px;
+            font-weight: 900;
+            color: var(--text-main);
+            letter-spacing: -1px;
+        }
+
+        .bs-header i {
+            color: var(--danger);
+            font-size: 20px;
+        }
+
+        .bs-card {
+            grid-column: span 3;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            border-radius: 30px;
+            padding: 20px;
+            text-align: center;
+            transition: 0.3s;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .bs-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--mango);
+            box-shadow: var(--shadow);
+            background: var(--hover-bg);
+        }
+
+        .bs-img-wrapper {
+            width: 100%;
+            height: 160px;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            background: var(--icon-bg);
+        }
+
+        .bs-img-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: 0.5s ease;
+        }
+
+        .bs-card:hover .bs-img-wrapper img {
+            transform: scale(1.1);
+        }
+
+        .bs-card h4 {
+            font-size: 16px;
+            font-weight: 900;
+            color: var(--text-main);
+            margin-bottom: 5px;
+            line-height: 1.2;
+        }
+
+        .bs-card p {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--text-muted);
+        }
+
+        .bs-meta {
+            margin-top: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--mango);
+        }
+
+        .inquiry-section {
+            grid-column: span 12;
+        }
+
+        .inquiry-container {
+            margin-top: 22px;
+            max-height: 340px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 6px;
+        }
+
+        .support-reply-box {
+            margin-top: 12px;
+            padding: 14px;
+            border-radius: 16px;
+            background: rgba(255, 194, 68, 0.08);
+            border: 1px solid rgba(255, 194, 68, 0.18);
+        }
+
+        .support-reply-label {
+            font-size: 11px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--mango);
+            margin-bottom: 8px;
+        }
+
+        .support-reply-text {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .receipt-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            z-index: 3000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .receipt-modal.show {
+            display: flex;
+        }
+
+        .receipt-modal-content {
+            background: var(--bg-main);
+            width: 100%;
+            max-width: 640px;
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            overflow: hidden;
+            border: 1px solid var(--card-border);
+            display: flex;
+            flex-direction: column;
+            max-height: 92vh;
+            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .receipt-modal-header {
+            background: #111;
+            color: white;
+            padding: 1.35rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .receipt-modal-header h3 {
+            font-size: 22px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            color: #fff;
+        }
+
+        .receipt-close-btn {
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .receipt-close-btn:hover {
+            color: var(--danger);
+            transform: rotate(90deg);
+        }
+
+        .receipt-modal-body {
+            padding: 1.5rem;
+            background: #fffdf5;
+            color: #111;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .receipt-branding {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .receipt-branding .manifest-title {
+            text-transform: uppercase;
+            font-weight: 900;
+            font-size: 18px;
+            color: #111;
+        }
+
+        .receipt-branding .manifest-subtitle {
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #666;
+        }
+
+        .receipt-divider {
+            border-bottom: 2px dashed #ccc;
+            margin: 16px 0;
+        }
+
+        .manifest-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .manifest-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #ddd;
+            align-items: flex-start;
+        }
+
+        .manifest-row span:first-child {
+            font-size: 10px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #666;
+            flex: 0 0 110px;
+        }
+
+        .manifest-row span:last-child {
+            font-size: 13px;
+            font-weight: 800;
+            color: #111;
+            text-align: right;
+            flex: 1;
+            word-break: break-word;
+        }
+
+        .reward-box {
+            background: rgba(255, 194, 68, 0.12);
+            border: 1px dashed #d4a017;
+            border-radius: 18px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+
+        .reward-title {
+            font-size: 11px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #b88700;
+            margin-bottom: 12px;
+        }
+
+        .reward-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+
+        .reward-row span:first-child {
+            color: #333;
+            font-weight: 700;
+        }
+
+        .reward-row span:last-child {
+            color: #111;
+            font-weight: 800;
+            text-align: right;
+        }
+
+        .text-green { color: #059669 !important; }
+        .text-red { color: #dc2626 !important; }
+        .text-yellow { color: #b45309 !important; }
+
+        footer {
+            border-top: 1px solid var(--card-border);
+            padding: 40px 20px;
+            text-align: center;
+            background: var(--nav-bg);
+            backdrop-filter: blur(20px);
+            margin-top: 40px;
+        }
+
+        .footer-logo {
+            font-weight: 900;
+            font-size: 18px;
+            color: var(--text-main);
+            margin-bottom: 20px;
+            letter-spacing: -1px;
+        }
+
+        .footer-logo span {
+            color: var(--mango);
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: var(--mango);
+        }
+
+        .social-icons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .social-icons a {
+            color: var(--text-muted);
+            font-size: 18px;
+            transition: 0.3s;
+        }
+
+        .social-icons a:hover {
+            color: var(--mango);
+            transform: translateY(-3px);
+        }
+
+        .panel-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.4s;
+        }
+
+        .panel-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .side-panel {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 100%;
+            max-width: 420px;
+            height: 100%;
+            background: var(--bg-main);
+            border-left: 1px solid var(--card-border);
+            box-shadow: -20px 0 50px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 2001;
+        }
+
+        .side-panel.active {
+            right: 0;
+        }
+
+        .panel-header {
+            padding: 22px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .panel-header h2 {
+            font-size: 20px;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            color: var(--text-main);
+        }
+
+        .panel-close-btn {
+            background: transparent;
+            border: none;
+            font-size: 24px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .panel-close-btn:hover {
+            color: var(--text-main);
+            transform: rotate(90deg);
+        }
+
+        .panel-body {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .profile-card {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 25px;
+        }
+
+        .avatar-circle {
+            width: 60px;
+            height: 60px;
+            background: var(--mango);
+            color: #111;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            font-size: 24px;
+            font-weight: 900;
+        }
+
+        .profile-details h3 {
+            font-size: 18px;
+            font-weight: 900;
+            margin-bottom: 3px;
+            letter-spacing: -0.5px;
+            color: var(--text-main);
+        }
+
+        .profile-details p {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .balance-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .balance-item {
+            background: var(--icon-bg);
+            border: 1px solid var(--card-border);
+            padding: 22px 12px;
+            border-radius: 18px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: 0.3s;
+        }
+
+        .balance-item:hover {
+            transform: translateY(-5px);
+            border-color: var(--mango);
+            background: rgba(255,194,68,0.05);
+        }
+
+        .balance-item i {
+            font-size: 22px;
+            color: var(--mango);
+        }
+
+        .balance-item span {
+            font-size: 22px;
+            font-weight: 900;
+            letter-spacing: -1px;
+            color: var(--text-main);
+            line-height: 1.1;
+            word-break: break-word;
+        }
+
+        .balance-item small {
+            font-size: 10px;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            line-height: 1.3;
+        }
+
+        .account-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .acc-link-btn {
+            background: transparent;
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 18px 20px;
+            border-radius: 15px;
+            font-size: 13px;
+            font-weight: 800;
+            text-align: left;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-decoration: none;
+        }
+
+        .acc-link-btn i {
+            font-size: 16px;
+            color: var(--text-muted);
+            width: 20px;
+            text-align: center;
+            transition: 0.3s;
+        }
+
+        .acc-link-btn:hover {
+            background: var(--hover-bg);
+            border-color: var(--text-main);
+            transform: translateX(5px);
+        }
+
+        .acc-link-btn:hover i {
+            color: var(--mango);
+        }
+
+        .acc-link-btn.danger:hover {
+            background: rgba(255, 77, 109, 0.1);
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .acc-link-btn.danger:hover i {
+            color: var(--danger);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(10px);
+            z-index: 4000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: var(--bg-main);
+            color: var(--text-main);
+            width: 100%;
+            max-width: 720px;
+            border-radius: 28px;
+            border: 1px solid var(--card-border);
+            box-shadow: var(--shadow);
+            padding: 32px;
+            position: relative;
+            transform: translateY(30px) scale(0.98);
+            transition: 0.3s ease;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: translateY(0) scale(1);
+        }
+
+        .modal-content input,
+        .modal-content textarea {
+            width: 100%;
+            background: var(--input-bg);
+            color: var(--text-main);
+            border: 1px solid var(--card-border);
+            border-radius: 15px;
+            padding: 16px;
+            font-size: 15px;
+            outline: none;
+            transition: 0.3s ease;
+            font-weight: 600;
+        }
+
+        .modal-content input:focus,
+        .modal-content textarea:focus {
+            border-color: var(--mango);
+            background: var(--hover-bg);
+        }
+
+        .modal-close-btn {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            border: 1px solid var(--card-border);
+            background: var(--icon-bg);
+            color: var(--text-main);
+            font-size: 18px;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            transition: 0.3s ease;
+        }
+
+        .modal-close-btn:hover {
+            background: var(--hover-bg);
+            border-color: var(--mango);
+            color: var(--mango);
+            transform: rotate(90deg) scale(1.05);
+        }
+
+        @media (max-width: 950px) {
+            .dashboard-wrapper {
+                display: flex;
+                flex-direction: column;
+                padding: 20px;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .bs-card {
+                grid-column: span 6;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .manifest-row {
+                flex-direction: column;
+                gap: 6px;
+            }
+
+            .manifest-row span:first-child,
+            .manifest-row span:last-child {
+                flex: unset;
+                text-align: left;
+            }
+
+            .modal-content {
+                padding: 28px;
+                border-radius: 24px;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .bs-card {
+                grid-column: span 12;
+            }
+        }
+    #feedbackForm::-webkit-scrollbar{width:8px;}
+    #feedbackForm::-webkit-scrollbar-thumb{background:var(--card-border);border-radius:999px;}
+    .feedback-modal-content{max-width:720px;max-height:88vh;overflow:hidden;}
+    #feedbackForm{display:grid;gap:14px;max-height:70vh;overflow-y:auto;padding-right:6px;}
+    #feedbackForm select{width:100%;background:var(--input-bg);color:var(--text-main);border:1px solid var(--card-border);border-radius:15px;padding:16px;font-size:15px;outline:none;transition:0.3s ease;font-weight:600;}
+    #feedbackForm select:focus{border-color:var(--mango);background:var(--hover-bg);}
+    #feedbackForm::-webkit-scrollbar{width:8px;}
+    #feedbackForm::-webkit-scrollbar-thumb{background:var(--card-border);border-radius:999px;}
+    .leave-feedback-btn i{font-size:12px;}
+    .feedback-sent-btn{opacity:.7;cursor:not-allowed;}
+    .feedback-sent-btn:hover{background:var(--icon-bg);border-color:var(--card-border);color:var(--text-main);transform:none;}
+    @media (max-width:768px){.feedback-modal-content{max-height:92vh;}#feedbackForm{max-height:72vh;}}
+
     </style>
 </head>
 <body>
@@ -665,6 +1534,7 @@
         <a href="index.html" class="logo">
             <img src="logo.png" alt="Teo D' Mango">
         </a>
+
         <div class="nav-links">
             <a href="welcome.html" class="active">HOME</a>
             <a href="menu.html">MENU</a>
@@ -673,6 +1543,7 @@
             <a href="dashaccsett.html">SETTINGS</a>
             <a href="index.html" class="btn-logout">LOG OUT</a>
         </div>
+
         <div class="nav-actions">
             <button class="circle-btn" id="themeToggle" title="Toggle Light/Dark Mode">
                 <i class="fa-solid fa-sun"></i>
@@ -684,7 +1555,7 @@
     </nav>
 
     <main class="dashboard-wrapper">
-        
+
         <div class="hero-bento">
             <h1>Hi, <span class="user-name"></span>!</h1>
             <p>Ready for your daily mango fix? Skip the line and order ahead for a faster, premium experience.</p>
@@ -696,79 +1567,105 @@
                 <span>Current Balance</span>
                 <span style="font-size: 10px; color: #10b981;"><i class="fa-solid fa-circle-check"></i> Active</span>
             </div>
-            <div class="wallet-balance" id="walletBalance">₱0.00</div> <!-- changed it for js -->
+
+            <div class="wallet-balance" id="walletBalance">₱0.00</div>
 
             <div class="tims-card">
                 <div class="card-brand">TIMS <span>RPAY</span></div>
                 <div class="card-chip"></div>
-                <div class="card-number wallet-id" id="cardNumber">----</div> <!-- changed it for js -->
-                <div class="card-name user-name"></div> <!-- changed it for js -->
+
+                <div class="wallet-code-row">
+                    <div class="card-number wallet-id card-num" id="cardNumber">----</div>
+                    <button class="wallet-eye-btn" id="walletToggleBtn" type="button">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
+
+                <div class="card-name user-name"></div>
             </div>
 
-          <div class="wallet-actions">
-    <button class="wallet-btn" onclick="window.location.href='topup.html'">
-        <i class="fa-solid fa-plus"></i> Top Up
-    </button>
-</div>
+            <div class="wallet-actions">
+                <button class="wallet-btn" onclick="window.location.href='topup.html'">
+                    <i class="fa-solid fa-plus"></i> Top Up
+                </button>
+            </div>
         </div>
 
         <div class="glass-bento reorder-bento">
-    <div class="reorder-header">
-        <h2 class="bento-title"><i class="fa-solid fa-rotate-right"></i> Order History</h2>
-        <select id="orderHistoryFilter" class="order-filter">
-            <option value="30">Last 30 Days</option>
-            <option value="7">Last 7 Days</option>
-            <option value="paid">Paid Only</option>
-            <option value="completed">Completed Only</option>
-        </select>
-    </div>
-    <div class="reorder-list" id="reorderList"></div>
-</div>
-        
+            <div class="reorder-header">
+                <h2 class="bento-title"><i class="fa-solid fa-rotate-right"></i> Order History</h2>
+                <select id="orderHistoryFilter" class="order-filter">
+                    <option value="30">Last 30 Days</option>
+                    <option value="7">Last 7 Days</option>
+                    <option value="paid">Paid Only</option>
+                    <option value="completed">Completed Only</option>
+                </select>
+            </div>
+            <div class="reorder-list" id="reorderList"></div>
+        </div>
+
         <div class="glass-bento announcement-bento">
             <div class="announcement-header">
                 <h2 class="bento-title"><i class="fa-solid fa-bullhorn"></i> Announcements</h2>
-                <button class="wallet-btn" type="button" onclick="openAnnouncementModal()">View All</button>
+                <button class="announce-view-btn" type="button" onclick="openAnnouncementModal()">View All</button>
             </div>
-        
             <div id="announcementPreview">
                 <div class="announcement-empty">No announcements available.</div>
             </div>
         </div>
+
         <div class="bs-header">
-    <h2 id="bestSellerTitle">Best Sellers</h2>
-    <i class="fa-solid fa-fire"></i>
-</div>
+            <h2 id="bestSellerTitle">Best Sellers</h2>
+            <i class="fa-solid fa-fire"></i>
+        </div>
 
-<div id="bestSellerGrid" style="grid-column: span 12; display: contents;">
-    <div class="announcement-empty">Loading best sellers...</div>
-</div>
+        <div id="bestSellerGrid" style="grid-column: span 12; display: contents;">
+            <div class="announcement-empty">Loading best sellers...</div>
+        </div>
+
+        <div class="glass-bento inquiry-section">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap;">
+                <div>
+                    <h2 class="bento-title" style="margin-bottom:8px;">
+                        <i class="fa-solid fa-headset"></i> Support & Inquiries
+                    </h2>
+                    <p style="color: var(--text-muted); font-size: 14px; font-weight: 600; line-height: 1.6;">
+                        Need help with orders, rewards, wallet concerns, or account questions? Send us a message and review admin replies here.
+                    </p>
+                </div>
+                <button class="wallet-btn" type="button" onclick="openInquiryModal()">Send Inquiry</button>
+            </div>
+
+            <div id="myInquiryList" class="inquiry-container">
+                <div class="announcement-empty">Loading your inquiries...</div>
+            </div>
+        </div>
+
         <div class="receipt-modal" id="receiptModal">
-    <div class="receipt-modal-content">
-        <div class="receipt-modal-header">
-            <h3 id="receiptTitle">#TM-0000</h3>
-            <button class="receipt-close-btn" type="button" onclick="closeReceiptModal()">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        </div>
+            <div class="receipt-modal-content">
+                <div class="receipt-modal-header">
+                    <h3 id="receiptTitle">#TM-0000</h3>
+                    <button class="receipt-close-btn" type="button" onclick="closeReceiptModal()">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
 
-        <div class="receipt-modal-body">
-            <div class="receipt-branding">
-                <h4 class="manifest-title">Teo D' Mango</h4>
-                <p class="manifest-subtitle">Order Receipt</p>
+                <div class="receipt-modal-body">
+                    <div class="receipt-branding">
+                        <h4 class="manifest-title">Teo D' Mango</h4>
+                        <p class="manifest-subtitle">Order Receipt</p>
+                    </div>
+
+                    <div class="receipt-divider"></div>
+
+                    <div id="receiptContent" class="manifest-grid">
+                        <div class="announcement-empty">Loading receipt...</div>
+                    </div>
+
+                    <div id="receiptRewardSection"></div>
+                </div>
             </div>
-
-            <div class="receipt-divider"></div>
-
-            <div id="receiptContent" class="manifest-grid">
-                <div class="announcement-empty">Loading receipt...</div>
-            </div>
-
-            <div id="receiptRewardSection"></div>
         </div>
-    </div>
-</div>
-        
 
     </main>
 
@@ -788,7 +1685,6 @@
         <p style="font-size: 11px; color: var(--text-muted); font-weight: 700;">&copy; 2026 TIMS-RPAY | Teo D' Mango. All rights reserved.</p>
     </footer>
 
-    <!-- Account Side Panel -->
     <div class="panel-overlay" id="mainOverlay" onclick="closeAllPanels()"></div>
 
     <div class="side-panel" id="accountPanel">
@@ -796,53 +1692,207 @@
             <h2>Account Info</h2>
             <button class="panel-close-btn" type="button" onclick="closeAllPanels()"><i class="fa-solid fa-xmark"></i></button>
         </div>
-        
+
         <div class="panel-body">
             <div class="profile-card">
-                <div class="avatar-circle" id="panelUserInitials">--</div>
+                <div class="avatar-circle avatar-has-shell" id="panelAvatar">
+                    <span class="avatar-text" id="panelUserInitials">--</span>
+                    <img id="panelAvatarImage" class="avatar-image hidden">
+                </div>
+
                 <div class="profile-details">
                     <h3 id="panelUserName">Loading...</h3>
                     <p id="panelUserTier">MEMBER</p>
                 </div>
             </div>
-        
+
             <div class="balance-grid">
                 <div class="balance-item">
                     <i class="fa-solid fa-star"></i>
                     <span id="panelRewardPoints">0</span>
                     <small>Reward Points</small>
                 </div>
+
                 <div class="balance-item">
                     <i class="fa-solid fa-wallet"></i>
                     <span id="panelWalletBalance">₱0.00</span>
                     <small>TIMS-RPAY Bal</small>
                 </div>
             </div>
-        
+
             <div class="account-menu">
                 <a href="dashaccsett.html" class="acc-link-btn">
                     <i class="fa-solid fa-gear"></i> Account Settings
                 </a>
+
                 <a href="rewards.html" class="acc-link-btn">
                     <i class="fa-solid fa-clock-rotate-left"></i> Transaction History
                 </a>
+
                 <a href="topup.html" class="acc-link-btn">
                     <i class="fa-solid fa-plus-circle"></i> Top-Up Wallet
                 </a>
+
                 <a href="index.html" class="acc-link-btn danger">
                     <i class="fa-solid fa-right-from-bracket"></i> Log Out
                 </a>
             </div>
         </div>
+    </div>
 
-    <!-- JavaScript -->
-<script src="js/api.js"></script>
-<script src="js/authGuard.js"></script>
-<script src="js/welcome.js"></script>
-<script src="js/logout.js"></script>
-<script src="js/theme-sync.js"></script>
-<script src="js/sidepanel-fetching.js"></script>
-<script src="js/account-panel.js"></script>
+    <div class="modal-overlay" id="customerInquiryModal">
+        <div class="modal-content">
+            <button class="modal-close-btn" type="button" onclick="closeInquiryModal()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <h3 style="font-size: 32px; font-weight: 900; letter-spacing: -1px; margin-bottom: 10px; color: var(--mango);">
+                Send Inquiry
+            </h3>
+
+            <p style="color: var(--text-muted); line-height: 1.7; font-size: 14px; font-weight: 600; margin-bottom: 24px;">
+                Need help with your order, rewards, wallet, or account? Send us a message and we'll review it as soon as possible.
+            </p>
+
+            <form id="customerInquiryForm" style="display: grid; gap: 14px;">
+                <div>
+                    <label style="display:block; font-size:11px; font-weight:900; letter-spacing:1px; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px;">
+                        Subject
+                    </label>
+                    <input type="text" id="customerInquirySubject" placeholder="Enter subject">
+                </div>
+
+                <div>
+                    <label style="display:block; font-size:11px; font-weight:900; letter-spacing:1px; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px;">
+                        Message
+                    </label>
+                    <textarea id="customerInquiryMessage" rows="5" placeholder="Type your message here..." required></textarea>
+                </div>
+
+                <button type="submit" class="wallet-btn" style="max-width:220px;">
+                    Submit Inquiry
+                </button>
+
+                <div id="customerInquiryStatus" style="font-weight:700; font-size:13px;"></div>
+            </form>
+        </div>
+    </div>
+    <div class="announcement-modal-overlay" id="announcementModal">
+    <div class="announcement-modal">
+        <div class="announcement-modal-header">
+            <h3 class="announcement-modal-title">
+                <i class="fa-solid fa-bullhorn"></i>
+                All Announcements
+            </h3>
+            <button class="announcement-modal-close" type="button" onclick="closeAnnouncementModal()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="announcement-modal-body">
+            <div id="announcementList" class="announcement-modal-list">
+                <div class="announcement-empty">Loading announcements...</div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal-overlay" id="feedbackModal">
+    <div class="modal-content">
+
+        <button class="modal-close-btn" onclick="closeFeedbackModal()">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <h3 style="font-size:28px;font-weight:900;color:var(--mango);margin-bottom:10px;">
+            Leave Feedback
+        </h3>
+
+        <p style="color:var(--text-muted);font-size:14px;margin-bottom:20px;">
+            Share your experience with your order.
+        </p>
+
+        <form id="feedbackForm" style="display:grid;gap:14px;max-height:60vh;overflow-y:auto;padding-right:6px;">
+
+            <input type="hidden" id="feedbackOrderId">
+
+            <div>
+                <label
+                    style="font-size:11px;font-weight:900;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;display:block;">Product
+                    Name</label>
+                <input type="text" id="feedbackProductName" placeholder="Product name">
+            </div>
+
+            <div>
+                <label
+                    style="font-size:11px;font-weight:900;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;display:block;">Rating</label>
+
+                <select id="feedbackRating"
+                    style="width:100%;padding:14px;border-radius:12px;background:var(--input-bg);border:1px solid var(--card-border);color:var(--text-main);font-weight:700;">
+                    <option value="5">★★★★★ Excellent</option>
+                    <option value="4">★★★★☆ Good</option>
+                    <option value="3">★★★☆☆ Average</option>
+                    <option value="2">★★☆☆☆ Poor</option>
+                    <option value="1">★☆☆☆☆ Bad</option>
+                </select>
+            </div>
+
+            <div>
+                <label
+                    style="font-size:11px;font-weight:900;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;display:block;">Title</label>
+                <input type="text" id="feedbackTitle" placeholder="Short title">
+            </div>
+
+            <div>
+                <label
+                    style="font-size:11px;font-weight:900;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;display:block;">Comment</label>
+                <textarea id="feedbackComment" rows="5" placeholder="Write your feedback..." required></textarea>
+            </div>
+            <button type="submit" class="wallet-btn" style="max-width:220px;">
+                Submit Feedback
+            </button>
+
+            <div id="feedbackStatus" style="font-size:13px;font-weight:700;"></div>
+        </form>
+    </div>
+</div>
+<div class="modal-overlay" id="feedbackModal"><div class="modal-content feedback-modal-content"><button class="modal-close-btn" type="button" onclick="closeFeedbackModal()"><i class="fa-solid fa-xmark"></i></button><h3 style="font-size:32px;font-weight:900;letter-spacing:-1px;margin-bottom:10px;color:var(--mango);">Leave Feedback</h3><p style="color:var(--text-muted);line-height:1.7;font-size:14px;font-weight:600;margin-bottom:24px;">Share your experience for this order. Your feedback will be reviewed by admin before it appears publicly.</p><form id="feedbackForm" style="display:grid;gap:14px;max-height:70vh;overflow-y:auto;padding-right:6px;"><input type="hidden" id="feedbackOrderId"><input type="hidden" id="feedbackProductName"><div><label style="display:block;font-size:11px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Rating</label><select id="feedbackRating" required style="width:100%;background:var(--input-bg);color:var(--text-main);border:1px solid var(--card-border);border-radius:15px;padding:16px;font-size:15px;outline:none;transition:0.3s ease;font-weight:600;"><option value="5">5 Stars</option><option value="4">4 Stars</option><option value="3">3 Stars</option><option value="2">2 Stars</option><option value="1">1 Star</option></select></div><div><label style="display:block;font-size:11px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Title</label><input type="text" id="feedbackTitle" placeholder="Optional feedback title"></div><div><label style="display:block;font-size:11px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Comment</label><textarea id="feedbackComment" rows="5" placeholder="Tell us about your order..." required></textarea></div><button type="submit" class="wallet-btn" style="width:100%;">Submit Feedback</button><div id="feedbackStatus" style="font-weight:700;font-size:13px;min-height:20px;"></div></form></div></div>
+<div class="modal-overlay" id="feedbackModal">
+    <div class="modal-content feedback-modal-content"><button class="modal-close-btn" type="button"
+            onclick="closeFeedbackModal()"><i class="fa-solid fa-xmark"></i></button>
+        <h3 style="font-size:32px;font-weight:900;letter-spacing:-1px;margin-bottom:10px;color:var(--mango);">Leave
+            Feedback</h3>
+        <p style="color:var(--text-muted);line-height:1.7;font-size:14px;font-weight:600;margin-bottom:24px;">Share your
+            experience for this order. Your feedback will be reviewed by admin before it appears publicly.</p>
+        <form id="feedbackForm" style="display:grid;gap:14px;max-height:70vh;overflow-y:auto;padding-right:6px;"><input
+                type="hidden" id="feedbackOrderId"><input type="hidden" id="feedbackProductName">
+            <div><label
+                    style="display:block;font-size:11px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Rating</label><select
+                    id="feedbackRating" required
+                    style="width:100%;background:var(--input-bg);color:var(--text-main);border:1px solid var(--card-border);border-radius:15px;padding:16px;font-size:15px;outline:none;transition:0.3s ease;font-weight:600;">
+                    <option value="5">5 Stars</option>
+                    <option value="4">4 Stars</option>
+                    <option value="3">3 Stars</option>
+                    <option value="2">2 Stars</option>
+                    <option value="1">1 Star</option>
+                </select></div>
+            <div><label
+                    style="display:block;font-size:11px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Title</label><input
+                    type="text" id="feedbackTitle" placeholder="Optional feedback title"></div>
+            <div><label
+                    style="display:block;font-size:11px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Comment</label><textarea
+                    id="feedbackComment" rows="5" placeholder="Tell us about your order..." required></textarea></div>
+            <button type="submit" class="wallet-btn" style="width:100%;">Submit Feedback</button>
+            <div id="feedbackStatus" style="font-weight:700;font-size:13px;min-height:20px;"></div>
+        </form>
+    </div>
+</div>
+    <script src="js/api.js"></script>
+    <script src="js/authGuard.js"></script>
+    <script src="js/welcome.js"></script>
+    <script src="js/logout.js"></script>
+    <script src="js/theme-sync.js"></script>
+    <script src="js/sidepanel-fetching.js"></script>
+    <script src="js/account-panel.js"></script>
 
 </body>
 </html>

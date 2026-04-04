@@ -602,16 +602,11 @@
 
         .modal-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            inset: 0;
             background: rgba(0,0,0,0.6);
             backdrop-filter: blur(15px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
+            -webkit-backdrop-filter: blur(15px);
+            z-index: 3000;
             opacity: 0;
             visibility: hidden;
             transition: 0.4s;
@@ -620,6 +615,11 @@
         .modal-overlay.active {
             opacity: 1;
             visibility: visible;
+        }
+
+        .modal-overlay.active .center-modal {
+            transform: translateY(0) scale(1);
+            opacity: 1;
         }
 
         .center-modal {
@@ -631,10 +631,20 @@
             max-width: 420px;
             text-align: center;
             transform: translateY(30px) scale(0.95);
+            opacity: 0;
             transition: 0.4s;
             box-shadow: 0 40px 80px rgba(0,0,0,0.4);
             color: var(--text-main);
-            position: relative;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            z-index: 3001;
+            transform: translate(-50%, -45%) scale(0.95);
+        }
+
+        .modal-overlay.active .center-modal {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
         }
 
         .modal-icon {
@@ -780,11 +790,53 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         }
 
-        .store-qr-box img {
+        .store-qr-box img,
+        .store-qr-box canvas {
             width: 180px;
             height: 180px;
             display: block;
             border-radius: 10px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: #111;
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 10px;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 9999;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        #historyContainer {
+            max-height: 320px;
+            overflow-y: auto;
+            text-align: left;
+        }
+
+        .panel-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.4s;
+        }
+
+        .panel-overlay.active {
+            opacity: 1;
+            visibility: visible;
         }
 
         .side-panel {
@@ -792,7 +844,7 @@
             top: 0;
             right: -100%;
             width: 100%;
-            max-width: 450px;
+            max-width: 420px;
             height: 100%;
             background: var(--bg-main);
             border-left: 1px solid var(--card-border);
@@ -808,7 +860,7 @@
         }
 
         .panel-header {
-            padding: 30px;
+            padding: 22px 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -820,6 +872,7 @@
             font-weight: 900;
             letter-spacing: -0.5px;
             color: var(--text-main);
+            margin: 0;
         }
 
         .panel-close-btn {
@@ -837,25 +890,25 @@
         }
 
         .panel-body {
-            padding: 30px;
+            padding: 24px;
             display: flex;
             flex-direction: column;
-            gap: 30px;
+            gap: 18px;
             flex: 1;
             overflow-y: auto;
         }
 
-        .sp-profile {
+        .profile-card {
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 16px;
             padding: 20px;
             background: var(--card-bg);
             border: 1px solid var(--card-border);
             border-radius: 25px;
         }
 
-        .sp-avatar {
+        .avatar-circle {
             width: 60px;
             height: 60px;
             background: var(--mango);
@@ -865,9 +918,10 @@
             place-items: center;
             font-size: 24px;
             font-weight: 900;
+            flex-shrink: 0;
         }
 
-        .sp-profile-info h3 {
+        .profile-details h3 {
             font-size: 18px;
             font-weight: 900;
             margin-bottom: 3px;
@@ -875,7 +929,7 @@
             color: var(--text-main);
         }
 
-        .sp-profile-info p {
+        .profile-details p {
             font-size: 12px;
             font-weight: 600;
             color: var(--text-muted);
@@ -883,17 +937,17 @@
             letter-spacing: 1px;
         }
 
-        .sp-grid {
+        .balance-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
+            gap: 12px;
         }
 
-        .sp-stat-card {
+        .balance-item {
             background: var(--icon-bg);
             border: 1px solid var(--card-border);
-            padding: 25px 15px;
-            border-radius: 20px;
+            padding: 22px 12px;
+            border-radius: 18px;
             text-align: center;
             display: flex;
             flex-direction: column;
@@ -901,71 +955,35 @@
             transition: 0.3s;
         }
 
-        .sp-stat-card i {
-            font-size: 24px;
+        .balance-item:hover {
+            transform: translateY(-5px);
+            border-color: var(--mango);
+            background: rgba(255,194,68,0.05);
+        }
+
+        .balance-item i {
+            font-size: 22px;
             color: var(--mango);
         }
 
-        .sp-stat-card span {
+        .balance-item span {
             font-size: 22px;
             font-weight: 900;
             letter-spacing: -1px;
             color: var(--text-main);
+            line-height: 1.1;
+            word-break: break-word;
         }
 
-        .sp-stat-card small {
+        .balance-item small {
             font-size: 10px;
             font-weight: 800;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 1px;
+            line-height: 1.3;
         }
 
-        .sp-menu {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .sp-link {
-            background: transparent;
-            border: 1px solid var(--card-border);
-            color: var(--text-main);
-            padding: 18px 20px;
-            border-radius: 15px;
-            font-size: 13px;
-            font-weight: 800;
-            text-align: left;
-            cursor: pointer;
-            transition: 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            text-decoration: none;
-        }
-
-        .sp-link i {
-            font-size: 16px;
-            color: var(--text-muted);
-            width: 20px;
-            text-align: center;
-            transition: 0.3s;
-        }
-
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%) translateY(20px);
-            background: #111;
-            color: #fff;
-            padding: 12px 20px;
-            border-radius: 10px;
-            opacity: 0;
-            transition: all 0.3s ease;
-            z-index: 9999;
-        }
-        
         .account-menu {
             display: flex;
             flex-direction: column;
@@ -1017,27 +1035,29 @@
             color: var(--danger);
         }
 
-        @media (max-width: 520px) {
-            .side-panel {
-                max-width: 100%;
-                border-left: none;
-            }
-
-            .balance-grid {
-                grid-template-columns: 1fr;
-            }
+        .avatar-has-shell {
+            overflow: hidden;
+            position: relative;
         }
 
-
-        .toast.show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
+        .avatar-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
         }
 
-        #historyContainer {
-            max-height: 320px;
-            overflow-y: auto;
-            text-align: left;
+        .avatar-text {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        .avatar-circle.has-image {
+            background: transparent !important;
+            color: transparent !important;
         }
 
         @media (max-width: 950px) {
@@ -1057,6 +1077,7 @@
 
         @media (max-width: 520px) {
             .center-modal {
+                width: calc(100% - 24px);
                 padding: 40px 22px;
             }
 
@@ -1068,6 +1089,15 @@
 
             .forgot-pin-title {
                 font-size: 26px;
+            }
+
+            .side-panel {
+                max-width: 100%;
+                border-left: none;
+            }
+
+            .balance-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -1118,7 +1148,7 @@
                     <div class="card-holder-info">
                         <div>
                             <span class="holder-label">Cardholder</span>
-                            <span class="holder-name">Jane Doe</span>
+                            <span class="holder-name"></span>
                         </div>
                     </div>
                 </div>
@@ -1137,7 +1167,7 @@
                 <h2 class="bento-title"><i class="fa-solid fa-wallet"></i> Current Balance</h2>
 
                 <div>
-                    <div class="balance-amt" id="displayBalance"><span class="balance-currency">₱</span>0</div>
+                    <div class="balance-amt" id="displayBalance"><span class="balance-currency"></span></div>
                     <div class="balance-sub" id="lastUpdated">Updated just now</div>
                 </div>
 
@@ -1175,8 +1205,6 @@
             </div>
         </div>
     </main>
-
-    <div class="modal-overlay" id="mainOverlay" onclick="closeAll()"></div>
 
     <div class="modal-overlay" id="setPinModal">
         <div class="center-modal">
@@ -1255,7 +1283,7 @@
 
             <h2 class="modal-title">Top-Up History</h2>
 
-            <div style="display:flex;gap:10px;margin-bottom:20px;">
+            <div style="display:flex; gap:10px; margin-bottom:20px;">
                 <button class="btn btn-outline" onclick="loadHistory('today')">Today</button>
                 <button class="btn btn-outline" onclick="loadHistory('week')">1 Week</button>
                 <button class="btn btn-outline" onclick="loadHistory('month')">1 Month</button>
@@ -1276,12 +1304,7 @@
                 <h2 class="forgot-pin-title">Forgot PIN</h2>
                 <p class="modal-desc">Enter your account email to receive a wallet PIN reset code.</p>
 
-                <input
-                    type="email"
-                    id="forgotPinEmail"
-                    class="forgot-input"
-                    placeholder="Enter your email"
-                >
+                <input type="email" id="forgotPinEmail" class="forgot-input" placeholder="Enter your email">
 
                 <p id="forgotPinCooldownText" class="cooldown-text"></p>
 
@@ -1322,41 +1345,44 @@
         </div>
     </div>
 
+    <div class="panel-overlay" id="mainOverlay" onclick="closeAllPanels()"></div>
+
     <div class="side-panel" id="accountPanel">
         <div class="panel-header">
             <h2>Account Info</h2>
-            <button class="panel-close-btn" onclick="closeAll()"><i class="fa-solid fa-xmark"></i></button>
+            <button class="panel-close-btn" type="button" onclick="closeAllPanels()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
         </div>
 
         <div class="panel-body">
-            <div class="sp-profile">
-                <div class="sp-avatar" id="panelUserInitials">--</div>
-                <div class="sp-profile-info">
+            <div class="profile-card">
+                <div class="avatar-circle" id="panelUserInitials">--</div>
+                <div class="profile-details">
                     <h3 id="panelUserName">Loading...</h3>
                     <p id="panelUserTier">MEMBER</p>
                 </div>
             </div>
 
-            <div class="sp-grid">
-                <div class="sp-stat-card">
+            <div class="balance-grid">
+                <div class="balance-item">
                     <i class="fa-solid fa-star"></i>
                     <span id="panelRewardPoints">0</span>
-                    <small>REWARD POINTS</small>
+                    <small>Reward Points</small>
                 </div>
-
-                <div class="sp-stat-card">
+                <div class="balance-item">
                     <i class="fa-solid fa-wallet"></i>
                     <span id="panelWalletBalance">₱0.00</span>
-                    <small>TIMS-RPAY BALANCE</small>
+                    <small>TIMS-RPAY Bal</small>
                 </div>
             </div>
 
-               <div class="account-menu">
+            <div class="account-menu">
                 <a href="dashaccsett.html" class="acc-link-btn">
                     <i class="fa-solid fa-gear"></i> Account Settings
                 </a>
-                 <a href="rewards.html" class="acc-link-btn">
-                    <i class="fa-solid fa-clock-rotate-left"></i> Rewards Transaction History
+                <a href="rewards.html" class="acc-link-btn">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Transaction History
                 </a>
                 <a href="topup.html" class="acc-link-btn">
                     <i class="fa-solid fa-plus-circle"></i> Top-Up Wallet
@@ -1370,10 +1396,18 @@
 
     <script src="js/api.js"></script>
     <script src="js/authGuard.js"></script>
+    <script src="js/topup.js"></script>
     <script src="js/logout.js"></script>
     <script src="js/theme-sync.js"></script>
     <script src="js/sidepanel-fetching.js"></script>
     <script src="js/account-panel.js"></script>
-    <script src="js/topup.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            if (typeof loadSharedAccountPanel === "function") {
+                await loadSharedAccountPanel();
+            }
+        });
+    </script>
 </body>
 </html>

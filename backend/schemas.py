@@ -144,17 +144,19 @@ class InquiryCreate(BaseModel):
     email: EmailStr
     subject: Optional[str] = Field(default=None, max_length=200)
     message: str = Field(min_length=1, max_length=3000)
-
-
+class InquiryPublicCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=150)
+    email: EmailStr
+    subject: Optional[str] = Field(default=None, max_length=200)
+    message: str = Field(min_length=1, max_length=3000)
+class InquiryCustomerCreate(BaseModel):
+    subject: Optional[str] = Field(default=None, max_length=200)
+    message: str = Field(min_length=1, max_length=3000)
 class InquiryReply(BaseModel):
     admin_reply: str = Field(min_length=1, max_length=3000)
     status: Optional[Literal["pending", "replied", "closed"]] = "replied"
-
-
 class InquiryStatusUpdate(BaseModel):
     status: Literal["pending", "replied", "closed"]
-
-
 # =========================
 # PRODUCT FEEDBACK
 # =========================
@@ -199,3 +201,27 @@ class FAQUpdate(BaseModel):
     display_order: Optional[int] = Field(default=None, ge=0)
     is_active: Optional[bool] = None
     is_pinned: Optional[bool] = None
+# =========================
+# REWARD CATALOG MANAGEMENT
+# =========================
+class RewardCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=150)
+    description: Optional[str] = Field(default=None, max_length=5000)
+    image_url: Optional[str] = None
+    points_required: int = Field(ge=1)
+    reward_type: str = Field(default="free_drink", max_length=30)
+    product_id: Optional[int] = None
+    size_label: Optional[str] = Field(default=None, max_length=30)
+    is_active: bool = True
+    sort_order: int = Field(default=0, ge=0)
+
+class RewardUpdate(BaseModel):
+    name: Optional[str] = Field(default=None, min_length=1, max_length=150)
+    description: Optional[str] = Field(default=None, max_length=5000)
+    image_url: Optional[str] = None
+    points_required: Optional[int] = Field(default=None, ge=1)
+    reward_type: Optional[str] = Field(default=None, max_length=30)
+    product_id: Optional[int] = None
+    size_label: Optional[str] = Field(default=None, max_length=30)
+    is_active: Optional[bool] = None
+    sort_order: Optional[int] = Field(default=None, ge=0)

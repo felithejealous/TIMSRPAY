@@ -398,6 +398,8 @@ class CustomerProfile(Base):
 
     user_id = Column(Integer, ForeignKey("users.id"), primary_key=True, index=True)
     full_name = Column(String(150), nullable=False)
+    first_name = Column(String(100), nullable=True)
+    last_name = Column(String(100), nullable=True)
     phone = Column(String(50), nullable=True)
 
 
@@ -438,10 +440,12 @@ class PromoCodeRedemption(Base):
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     order_id = Column(Integer, ForeignKey("orders.id", ondelete="CASCADE"), nullable=False, unique=True)
     redeemed_at = Column(DateTime(timezone=False), server_default=func.now(), nullable=False)
-
 class Inquiry(Base):
     __tablename__ = "inquiries"
+
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
+
     name = Column(String(150), nullable=False)
     email = Column(String(150), nullable=False, index=True)
     subject = Column(String(200), nullable=True)

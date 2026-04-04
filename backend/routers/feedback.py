@@ -16,9 +16,16 @@ def get_db():
     finally:
         db.close()
 
-
 @router.post("/")
 def create_feedback(payload: ProductFeedbackCreate, db: Session = Depends(get_db)):
+    existing = db.query(ProductFeedback).filter(
+        ProductFeedback.order_id == payload.order_id,
+        ProductFeedback.user_id == payload.user_id,
+    ).first()
+
+    if existing:
+        raise HTTPException(status_code=400, detail="Feedback already submitted for this order")
+
     row = ProductFeedback(
         user_id=payload.user_id,
         order_id=payload.order_id,
@@ -41,7 +48,6 @@ def create_feedback(payload: ProductFeedbackCreate, db: Session = Depends(get_db
         "message": "Feedback submitted successfully",
         "feedback_id": row.id,
     }
-
 
 @router.get("/")
 def list_feedback(

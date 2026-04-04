@@ -20,13 +20,16 @@
             --mesh-color-2: rgba(252, 219, 5, 0.02);
             --logo-filter: brightness(0) invert(1);
             --sidebar-width: 240px;
-            --modal-overlay: rgba(0,0,0,0.88);
+            --modal-overlay: rgba(0, 0, 0, 0.88);
             --modal-card: #14110e;
-            --input-bg: rgba(255,255,255,0.05);
+            --input-bg: rgba(255, 255, 255, 0.05);
             --danger: #ef4444;
             --success: #22c55e;
             --warning: #f59e0b;
             --info: #3b82f6;
+            --scroll-track: rgba(255, 255, 255, 0.05);
+            --scroll-thumb: rgba(252, 219, 5, 0.28);
+            --scroll-thumb-hover: rgba(252, 219, 5, 0.48);
         }
 
         body.light-theme {
@@ -39,8 +42,11 @@
             --mesh-color-2: rgba(255, 140, 0, 0.05);
             --logo-filter: none;
             --modal-card: #ffffff;
-            --modal-overlay: rgba(0,0,0,0.45);
+            --modal-overlay: rgba(0, 0, 0, 0.45);
             --input-bg: #f4f4f5;
+            --scroll-track: rgba(0, 0, 0, 0.05);
+            --scroll-thumb: rgba(255, 140, 0, 0.28);
+            --scroll-thumb-hover: rgba(255, 140, 0, 0.45);
         }
 
         html.preload-light body {
@@ -53,8 +59,11 @@
             --mesh-color-2: rgba(255, 140, 0, 0.05);
             --logo-filter: none;
             --modal-card: #ffffff;
-            --modal-overlay: rgba(0,0,0,0.45);
+            --modal-overlay: rgba(0, 0, 0, 0.45);
             --input-bg: #f4f4f5;
+            --scroll-track: rgba(0, 0, 0, 0.05);
+            --scroll-thumb: rgba(255, 140, 0, 0.28);
+            --scroll-thumb-hover: rgba(255, 140, 0, 0.45);
         }
 
         * {
@@ -63,8 +72,6 @@
             padding: 0;
             transition: background 0.3s, color 0.3s, border 0.3s, transform 0.2s, box-shadow 0.3s;
         }
-
-        ::-webkit-scrollbar { width: 0px; background: transparent; }
 
         body {
             font-family: 'Inter', sans-serif;
@@ -178,7 +185,7 @@
             background: var(--mango-yellow);
             color: #120f0a;
             border: none;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
 
         .summary-grid {
@@ -242,7 +249,7 @@
             margin-bottom: 25px;
             padding: 20px;
             border-radius: 24px;
-            background: rgba(0,0,0,0.15);
+            background: rgba(0, 0, 0, 0.15);
             border: 1px solid var(--glass-border);
             align-items: end;
         }
@@ -289,15 +296,15 @@
         }
 
         .btn-secondary {
-            background: rgba(255,255,255,0.08);
+            background: rgba(255, 255, 255, 0.08);
             color: var(--text-main);
             border: 1px solid var(--glass-border);
         }
 
         .btn-danger {
-            background: rgba(239,68,68,0.12);
+            background: rgba(239, 68, 68, 0.12);
             color: var(--danger);
-            border: 1px solid rgba(239,68,68,0.25);
+            border: 1px solid rgba(239, 68, 68, 0.25);
         }
 
         .content-container {
@@ -306,6 +313,11 @@
             border: 1px solid var(--glass-border);
             padding: 25px;
             margin-bottom: 24px;
+            display: flex;
+            flex-direction: column;
+            min-height: 560px;
+            max-height: 560px;
+            overflow: hidden;
         }
 
         .section-title {
@@ -315,10 +327,14 @@
             letter-spacing: 1px;
             color: var(--mango-yellow);
             margin-bottom: 18px;
+            flex-shrink: 0;
         }
 
         .table-wrap {
-            overflow-x: auto;
+            flex: 1;
+            min-height: 0;
+            overflow: auto;
+            padding-right: 4px;
         }
 
         .data-table {
@@ -336,6 +352,16 @@
             border-bottom: 1px solid var(--glass-border);
             letter-spacing: 1px;
             white-space: nowrap;
+            position: sticky;
+            top: 0;
+            background: rgba(15, 12, 8, 0.92);
+            z-index: 2;
+            backdrop-filter: blur(10px);
+        }
+
+        body.light-theme .data-table th,
+        html.preload-light body .data-table th {
+            background: rgba(248, 249, 250, 0.95);
         }
 
         .data-table td {
@@ -347,6 +373,26 @@
 
         .data-table tr:last-child td {
             border-bottom: none;
+        }
+
+        .table-cell-scroll {
+            max-height: 84px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 6px;
+            word-break: break-word;
+        }
+
+        .table-cell-tight {
+            max-width: 260px;
+        }
+
+        .table-cell-medium {
+            max-width: 300px;
+        }
+
+        .table-cell-wide {
+            max-width: 340px;
         }
 
         .badge {
@@ -405,12 +451,14 @@
 
         .action-row {
             display: flex;
+            flex-direction: column;
             gap: 8px;
-            flex-wrap: wrap;
+            min-width: 130px;
         }
 
         .action-btn {
-            padding: 8px 12px;
+            width: 100%;
+            padding: 9px 12px;
             border-radius: 10px;
             font-size: 10px;
             font-weight: 900;
@@ -418,8 +466,9 @@
             letter-spacing: 1px;
             cursor: pointer;
             border: 1px solid var(--glass-border);
-            background: rgba(255,255,255,0.06);
+            background: rgba(255, 255, 255, 0.06);
             color: var(--text-main);
+            text-align: center;
         }
 
         .action-btn:hover {
@@ -480,24 +529,36 @@
         .modal-content {
             background: var(--modal-card);
             width: 100%;
-            max-width: 720px;
+            max-width: 760px;
             border-radius: 28px;
             padding: 30px;
             border: 1px solid var(--glass-border);
             max-height: 90vh;
             overflow-y: auto;
             position: relative;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.35);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.35);
         }
 
         .close-modal-btn {
             position: absolute;
-            top: 18px;
-            right: 22px;
-            font-size: 2rem;
+            top: 16px;
+            right: 18px;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            font-size: 1.35rem;
             color: var(--text-sub);
             cursor: pointer;
             line-height: 1;
+            border: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .close-modal-btn:hover {
+            color: var(--mango-yellow);
+            transform: rotate(90deg);
         }
 
         .modal-grid {
@@ -518,6 +579,53 @@
             border-radius: 16px;
             font-size: 13px;
             line-height: 1.6;
+        }
+
+        .modal-action-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .modal-action-row .btn-primary,
+        .modal-action-row .btn-secondary,
+        .modal-action-row .btn-danger {
+            min-width: 160px;
+        }
+
+        .table-wrap::-webkit-scrollbar,
+        .table-cell-scroll::-webkit-scrollbar,
+        .modal-content::-webkit-scrollbar,
+        .nav-menu::-webkit-scrollbar,
+        .main-content::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        .table-wrap::-webkit-scrollbar-track,
+        .table-cell-scroll::-webkit-scrollbar-track,
+        .modal-content::-webkit-scrollbar-track,
+        .nav-menu::-webkit-scrollbar-track,
+        .main-content::-webkit-scrollbar-track {
+            background: var(--scroll-track);
+            border-radius: 999px;
+        }
+
+        .table-wrap::-webkit-scrollbar-thumb,
+        .table-cell-scroll::-webkit-scrollbar-thumb,
+        .modal-content::-webkit-scrollbar-thumb,
+        .nav-menu::-webkit-scrollbar-thumb,
+        .main-content::-webkit-scrollbar-thumb {
+            background: var(--scroll-thumb);
+            border-radius: 999px;
+        }
+
+        .table-wrap::-webkit-scrollbar-thumb:hover,
+        .table-cell-scroll::-webkit-scrollbar-thumb:hover,
+        .modal-content::-webkit-scrollbar-thumb:hover,
+        .nav-menu::-webkit-scrollbar-thumb:hover,
+        .main-content::-webkit-scrollbar-thumb:hover {
+            background: var(--scroll-thumb-hover);
         }
 
         @media (max-width: 1100px) {
@@ -545,6 +653,15 @@
             .two-col {
                 grid-template-columns: 1fr;
             }
+
+            .content-container {
+                min-height: 500px;
+                max-height: 500px;
+            }
+
+            .action-row {
+                min-width: 110px;
+            }
         }
     </style>
 
@@ -558,7 +675,6 @@
     </script>
 </head>
 <body>
-
     <aside class="sidebar glass">
         <div class="logo-section"><img src="../images/logo.png" alt="Logo"></div>
         <nav class="nav-menu">
@@ -570,6 +686,7 @@
             <a href="menuman.html" class="nav-item"><i class="fa-solid fa-utensils"></i> Menu Manager</a>
             <a href="promo.html" class="nav-item"><i class="fa-solid fa-tags"></i> Promos</a>
             <a href="rewards.html" class="nav-item"><i class="fa-solid fa-gift"></i> Rewards</a>
+            <a href="reward-management.html" class="nav-item"><i class="fa-solid fa-trophy"></i> Reward Catalog</a>
             <a href="announce.html" class="nav-item"><i class="fa-solid fa-bell"></i> Announce</a>
             <a href="engagement.html" class="nav-item active"><i class="fa-solid fa-comments"></i> Engagement</a>
             <a href="attendance.html" class="nav-item"><i class="fa-solid fa-user-clock"></i> Employee Shift Logs</a>
@@ -647,6 +764,7 @@
                     <option value="featured">Featured</option>
                     <option value="hidden">Hidden</option>
                     <option value="active">Active</option>
+                    <option value="closed">Closed</option>
                 </select>
             </div>
             <div class="field-group">

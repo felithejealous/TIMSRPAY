@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Response, HTTPException, Request, Header, Form
+from fastapi import APIRouter, Depends, Response, HTTPException, Request, Header, Form, UploadFile, File
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta, timezone
 import hashlib
@@ -14,7 +14,8 @@ from pydantic import BaseModel, EmailStr, Field
 import requests
 from fastapi.responses import RedirectResponse
 from urllib.parse import urlencode
-
+from pathlib import Path
+from uuid import uuid4
 from backend.database import SessionLocal
 from backend.models import User, Wallet, RewardWallet, Role, PasswordResetToken, LoginRateLimit, CustomerProfile
 from backend.security import create_access_token, get_current_user
@@ -106,7 +107,18 @@ def _generate_unique_wallet_code(db: Session) -> str:
         if not existing:
             return code
 
+#===============
+#HELPER TO GENERATE SPILIT NAME
+#---------------------------
+def split_full_name(full_name: str):
+    full_name = (full_name or "").strip()
+    if not full_name:
+        return "", ""
 
+    parts = full_name.split()
+    first_name = parts[0]
+    last_name = " ".join(parts[1:]) if len(parts) > 1 else ""
+    return first_name, last_name
 # -----------------------
 # TIME HELPERS
 # -----------------------
@@ -120,8 +132,23 @@ def _as_utc(dt: datetime):
     if dt.tzinfo is None:
         return dt.replace(tzinfo=timezone.utc)
     return dt.astimezone(timezone.utc)
+#----------
+#-----HELPER
+#-----------------------
+def _ensure_upload_dir(path: str):
+    Path(path).mkdir(parents=True, exist_ok=True)
+def _safe_profile_picture_extension(filename: str, content_type: str = "") -> str:
+    filename = (filename or "").lower()
+    content_type = (content_type or "").lower()
 
+    if filename.endswith(".jpg") or filename.endswith(".jpeg") or content_type == "image/jpeg":
+        return ".jpg"
+    if filename.endswith(".png") or content_type == "image/png":
+        return ".png"
+    if filename.endswith(".webp") or content_type == "image/webp":
+        return ".webp"
 
+    raise HTTPException(status_code=400, detail="Only JPG, PNG, and WEBP images are allowed")
 # -----------------------
 # LOGIN RATE LIMIT
 # -----------------------
@@ -272,6 +299,9 @@ class ChangePasswordPayload(BaseModel):
     current_password: str
     new_password: str
     confirm_password: str
+class UpdateProfilePayload(BaseModel):
+    first_name: str
+    last_name: str
 
 # ============================================================
 # REGISTER
@@ -307,12 +337,14 @@ def register_user(full_name: str, email: str, password: str, db: Session = Depen
         wallet_code=_generate_unique_wallet_code(db),
     ))
     db.add(RewardWallet(user_id=user.id, total_points=0))
+    first_name, last_name = split_full_name(full_name)
     db.add(CustomerProfile(
         user_id=user.id,
-        full_name=full_name
+        full_name=full_name,
+        first_name=first_name,
+        last_name=last_name
     ))
     db.commit()
-
     return {
         "user_id": user.id,
         "message": "Account created successfully"
@@ -635,10 +667,13 @@ def google_callback(
 
         existing_profile = db.query(CustomerProfile).filter(CustomerProfile.user_id == user.id).first()
         if not existing_profile and full_name:
-            db.add(CustomerProfile(
-                user_id=user.id,
-                full_name=full_name
-            ))
+             first_name, last_name = split_full_name(full_name)
+             db.add(CustomerProfile(
+             user_id=user.id,
+            full_name=full_name,
+            first_name=first_name,
+            last_name=last_name
+    ))
     else:
         customer_role_id = _get_role_id(db, "customer")
         user = User(
@@ -659,9 +694,14 @@ def google_callback(
             wallet_code=_generate_unique_wallet_code(db),
         ))
         db.add(RewardWallet(user_id=user.id, total_points=0))
+        profile_name = full_name or email.split("@")[0]
+        first_name, last_name = split_full_name(profile_name)
+
         db.add(CustomerProfile(
             user_id=user.id,
-            full_name=full_name or email.split("@")[0]
+            full_name=profile_name,
+            first_name=first_name,
+            last_name=last_name
         ))
 
     db.commit()
@@ -697,20 +737,130 @@ def me(current_user: User = Depends(get_current_user), db: Session = Depends(get
         db.refresh(wallet)
 
     full_name = None
-    if customer_profile and getattr(customer_profile, "full_name", None):
-        full_name = customer_profile.full_name.strip()
+    first_name = None
+    last_name = None
+
+    if customer_profile:
+        full_name = (customer_profile.full_name or "").strip() or None
+        first_name = (getattr(customer_profile, "first_name", None) or "").strip() or None
+        last_name = (getattr(customer_profile, "last_name", None) or "").strip() or None
+
+    display_name = first_name or full_name or current_user.email
 
     return {
         "user_id": current_user.id,
         "email": current_user.email,
         "full_name": full_name,
+        "first_name": first_name,
+        "last_name": last_name,
+        "display_name": display_name,
         "role": getattr(current_user, "role_name", "customer"),
         "provider": getattr(current_user, "oauth_provider", None),
         "profile_picture": getattr(current_user, "profile_picture", None),
         "wallet_code": getattr(wallet, "wallet_code", None) if wallet else None,
+        "created_at": current_user.created_at,
     }
+#===============
+#===PROFILE
+#==============
+@router.put("/profile")
+def update_profile(
+    payload: UpdateProfilePayload,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    first_name = (payload.first_name or "").strip()
+    last_name = (payload.last_name or "").strip()
 
+    if not first_name:
+        raise HTTPException(status_code=400, detail="First name is required")
 
+    profile = db.query(CustomerProfile).filter(CustomerProfile.user_id == current_user.id).first()
+
+    if not profile:
+        profile = CustomerProfile(
+            user_id=current_user.id,
+            full_name=first_name if not last_name else f"{first_name} {last_name}",
+            first_name=first_name,
+            last_name=last_name,
+        )
+        db.add(profile)
+    else:
+        profile.first_name = first_name
+        profile.last_name = last_name
+        profile.full_name = first_name if not last_name else f"{first_name} {last_name}"
+
+    db.commit()
+
+    return {"message": "Profile updated successfully"}
+@router.post("/profile-picture")
+async def upload_profile_picture(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if not file:
+        raise HTTPException(status_code=400, detail="No file uploaded")
+
+    ext = _safe_profile_picture_extension(file.filename or "", file.content_type or "")
+    upload_dir = "uploads/profile_pictures"
+    _ensure_upload_dir(upload_dir)
+
+    content = await file.read()
+    if not content:
+        raise HTTPException(status_code=400, detail="Uploaded file is empty")
+
+    max_size = 5 * 1024 * 1024
+    if len(content) > max_size:
+        raise HTTPException(status_code=400, detail="Image must be 5MB or smaller")
+
+    filename = f"user_{current_user.id}_{uuid4().hex}{ext}"
+    filepath = os.path.join(upload_dir, filename)
+
+    with open(filepath, "wb") as f:
+        f.write(content)
+
+    old_path = (getattr(current_user, "profile_picture", None) or "").strip()
+
+    current_user.profile_picture = f"/uploads/profile_pictures/{filename}"
+    db.commit()
+    db.refresh(current_user)
+
+    if old_path.startswith("/uploads/profile_pictures/"):
+        old_file = old_path.lstrip("/")
+        if os.path.exists(old_file):
+            try:
+                os.remove(old_file)
+            except Exception:
+                pass
+
+    return {
+        "message": "Profile picture uploaded successfully",
+        "profile_picture": current_user.profile_picture,
+    }
+@router.delete("/profile-picture")
+def delete_profile_picture(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    old_path = (getattr(current_user, "profile_picture", None) or "").strip()
+
+    current_user.profile_picture = None
+    db.commit()
+    db.refresh(current_user)
+
+    if old_path.startswith("/uploads/profile_pictures/"):
+        old_file = old_path.lstrip("/")
+        if os.path.exists(old_file):
+            try:
+                os.remove(old_file)
+            except Exception:
+                pass
+
+    return {
+        "message": "Profile picture removed successfully",
+        "profile_picture": None,
+    }
 # ============================================================
 # BOOTSTRAP ADMIN
 # ============================================================

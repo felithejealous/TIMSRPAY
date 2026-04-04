@@ -1,293 +1,903 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <script>
-        (function () { const t = localStorage.getItem("publicweb-theme") || "dark"; if (t === "light") document.documentElement.classList.add("light-mode"); })();
-    </script>
+    <script>(function () { const t = localStorage.getItem("publicweb-theme") || "dark"; if (t === "light") document.documentElement.classList.add("light-mode"); })();</script>
     <title>Account Settings | Teo D' Mango Premium</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* --- DYNAMIC THEME VARIABLES --- */
         :root {
             --mango: #ffc244;
             --mango-dark: #d4a017;
             --strawberry: #ff4d6d;
-            
-            /* DARK MODE (Default) */
             --bg-main: #050505;
             --text-main: #ffffff;
             --text-muted: #888888;
             --card-bg: rgba(255, 255, 255, 0.03);
             --card-border: rgba(255, 255, 255, 0.08);
             --nav-bg: rgba(5, 5, 5, 0.7);
-            --shadow: 0 30px 60px rgba(0,0,0,0.5);
+            --shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
             --hover-bg: rgba(255, 255, 255, 0.06);
             --icon-bg: rgba(255, 255, 255, 0.05);
             --glow-opacity: 0.15;
             --danger: #ff4d6d;
+            --input-bg: rgba(255, 255, 255, 0.04);
         }
 
-        /* LIGHT MODE */
         .light-mode {
             --bg-main: #f4f5f7;
             --text-main: #1a1a1a;
             --text-muted: #666666;
-            --card-bg: rgba(255, 255, 255, 0.6);
-            --card-border: rgba(0, 0, 0, 0.05);
+            --card-bg: rgba(255, 255, 255, 0.65);
+            --card-border: rgba(0, 0, 0, 0.06);
             --nav-bg: rgba(244, 245, 247, 0.8);
-            --shadow: 0 20px 50px rgba(0,0,0,0.04);
+            --shadow: 0 20px 50px rgba(0, 0, 0, 0.04);
             --hover-bg: rgba(255, 255, 255, 1);
             --icon-bg: rgba(0, 0, 0, 0.03);
-            --glow-opacity: 0.4; 
+            --glow-opacity: 0.35;
+            --input-bg: rgba(0, 0, 0, 0.03);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; scroll-behavior: smooth; }
-        
-        body { 
-            background-color: var(--bg-main); color: var(--text-main);
-            min-height: 100vh; transition: background-color 0.5s ease, color 0.5s ease;
-            overflow-x: hidden; position: relative;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            scroll-behavior: smooth;
         }
 
-        /* Glowing Orbs */
-        body::before, body::after { content: ''; position: fixed; border-radius: 50%; z-index: -1; transition: 0.5s ease; }
-        body::before { top: -10%; left: -5%; width: 600px; height: 600px; background: var(--mango); filter: blur(120px); opacity: var(--glow-opacity); }
-        body::after { bottom: -10%; right: -5%; width: 500px; height: 500px; background: var(--strawberry); filter: blur(150px); opacity: calc(var(--glow-opacity) - 0.05); }
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+            transition: background-color 0.5s ease, color 0.5s ease;
+            overflow-x: hidden;
+            position: relative;
+        }
 
-        /* --- NAVIGATION --- */
+        body::before,
+        body::after {
+            content: '';
+            position: fixed;
+            border-radius: 50%;
+            z-index: -1;
+            transition: 0.5s ease;
+        }
+
+        body::before {
+            top: -10%;
+            left: -5%;
+            width: 600px;
+            height: 600px;
+            background: var(--mango);
+            filter: blur(120px);
+            opacity: var(--glow-opacity);
+        }
+
+        body::after {
+            bottom: -10%;
+            right: -5%;
+            width: 500px;
+            height: 500px;
+            background: var(--strawberry);
+            filter: blur(150px);
+            opacity: calc(var(--glow-opacity) - 0.05);
+        }
+
+        /* NAV */
         nav {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 20px 8%; background: var(--nav-bg);
-            backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
-            position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--card-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 8%;
+            background: var(--nav-bg);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid var(--card-border);
             transition: background 0.5s ease, border-color 0.5s ease;
         }
-        
-        .logo { display: flex; align-items: center; }
-        .logo img { 
-            height: 40px; object-fit: contain; 
-            filter: drop-shadow(0 0 2px rgba(255,255,255,0.8)) drop-shadow(0 0 5px var(--mango));
+
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo img {
+            height: 40px;
+            object-fit: contain;
+            filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.8)) drop-shadow(0 0 5px var(--mango));
             transition: 0.3s ease;
         }
+
         .logo img:hover {
-            filter: drop-shadow(0 0 4px rgba(255,255,255,1)) drop-shadow(0 0 10px var(--mango));
+            filter: drop-shadow(0 0 4px rgba(255, 255, 255, 1)) drop-shadow(0 0 10px var(--mango));
             transform: scale(1.05);
         }
 
-        .nav-links { display: flex; list-style: none; gap: 30px; align-items: center; }
-        .nav-links a { text-decoration: none; color: var(--text-muted); font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; }
-        .nav-links a:hover, .nav-links a.active { color: var(--text-main); }
-        
-        .btn-logout { border: 1.5px solid var(--text-main); padding: 8px 20px; border-radius: 50px; color: var(--text-main) !important; }
-        .btn-logout:hover { background: var(--text-main); color: var(--bg-main) !important; }
-
-        .nav-actions { display: flex; gap: 15px; align-items: center; }
-        .circle-btn {
-            background: var(--icon-bg); border: 1px solid var(--card-border);
-            color: var(--text-main); width: 40px; height: 40px; border-radius: 50%;
-            display: grid; place-items: center; cursor: pointer; transition: 0.3s; position: relative;
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+            align-items: center;
         }
-        .circle-btn:hover { background: var(--hover-bg); transform: scale(1.05); color: var(--mango); }
 
-        /* --- SETTINGS GRID LAYOUT --- */
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.3s;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--text-main);
+        }
+
+        .btn-logout {
+            border: 1.5px solid var(--text-main);
+            padding: 8px 20px;
+            border-radius: 50px;
+            color: var(--text-main) !important;
+        }
+
+        .btn-logout:hover {
+            background: var(--text-main);
+            color: var(--bg-main) !important;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .circle-btn {
+            background: var(--icon-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+        }
+
+        .circle-btn:hover {
+            background: var(--hover-bg);
+            transform: scale(1.05);
+            color: var(--mango);
+        }
+
+        /* LAYOUT */
         .settings-wrapper {
-            max-width: 1100px;
+            max-width: 1180px;
             margin: 40px auto 80px;
             padding: 0 20px;
             display: grid;
-            grid-template-columns: repeat(12, 1fr);
-            gap: 25px;
+            grid-template-columns: minmax(0, 1.6fr) minmax(320px, 0.9fr);
+            gap: 24px;
+            align-items: start;
         }
 
-        .page-header { grid-column: span 12; margin-bottom: 10px; }
-        .page-badge { 
-            display: inline-block; background: rgba(255, 194, 68, 0.1); color: var(--mango); 
-            padding: 8px 20px; border-radius: 50px; font-weight: 900; text-transform: uppercase; 
-            letter-spacing: 2px; font-size: 11px; margin-bottom: 15px; border: 1px solid rgba(255, 194, 68, 0.3);
+        .page-header {
+            grid-column: 1/-1;
+            margin-bottom: 4px;
         }
-        .page-header h1 { font-size: 42px; font-weight: 900; letter-spacing: -1.5px; }
 
-        /* --- GLASS BENTO BLOCKS --- */
+        .page-badge {
+            display: inline-block;
+            background: rgba(255, 194, 68, 0.1);
+            color: var(--mango);
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 11px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 194, 68, 0.3);
+        }
+
+        .page-header h1 {
+            font-size: clamp(2.3rem, 5vw, 3.4rem);
+            font-weight: 900;
+            letter-spacing: -1.7px;
+            line-height: 1.04;
+        }
+
+        .left-column,
+        .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* GLASS BENTO */
         .glass-bento {
-            background: var(--card-bg); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
-            border: 1px solid var(--card-border); border-radius: 35px;
-            padding: 40px; box-shadow: var(--shadow); transition: 0.3s ease;
-            position: relative; overflow: hidden;
+            background: var(--card-bg);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid var(--card-border);
+            border-radius: 32px;
+            padding: 32px;
+            box-shadow: var(--shadow);
+            transition: 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
 
-        /* 1. HERO PROFILE BOX (Span 8) */
+        .glass-bento:hover {
+            border-color: rgba(255, 194, 68, 0.22);
+        }
+
+        /* HERO BENTO — fixed: single card, horizontal layout */
         .hero-bento {
-            grid-column: span 8;
-            display: flex; align-items: flex-end; gap: 30px;
-            min-height: 250px;
-            background: linear-gradient(to top right, var(--card-bg), rgba(255,194,68,0.05));
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            min-height: 180px;
+            background: linear-gradient(135deg, var(--card-bg), rgba(255, 194, 68, 0.06));
+            flex-wrap: wrap;
         }
+
+        /* AVATAR */
         .avatar-massive {
-            width: 100px; height: 100px; background: var(--mango);
-            border-radius: 30px; display: grid; place-items: center;
-            font-size: 40px; font-weight: 900; color: #111;
-            box-shadow: 0 15px 30px rgba(255,194,68,0.3);
-            transform: rotate(-5deg); transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            width: 96px;
+            height: 96px;
+            background: var(--mango);
+            color: #111;
+            border-radius: 28px;
+            display: grid;
+            place-items: center;
+            font-size: 38px;
+            font-weight: 900;
+            box-shadow: 0 15px 30px rgba(255, 194, 68, 0.25);
+            transform: rotate(-4deg);
+            transition: 0.35s ease;
+            flex-shrink: 0;
+            overflow: hidden;
+            position: relative;
         }
-        .hero-bento:hover .avatar-massive { transform: rotate(0deg) scale(1.05); }
-        .hero-text h2 { font-size: 42px; font-weight: 900; letter-spacing: -1.5px; line-height: 1; margin-bottom: 8px; color: var(--text-main); }
-        .hero-text p { font-size: 13px; font-weight: 600; color: var(--text-muted); letter-spacing: 1.5px; text-transform: uppercase; }
 
-        /* 2. PREMIUM ID CARD (Span 4) */
+        .hero-bento:hover .avatar-massive {
+            transform: rotate(0deg) scale(1.04);
+        }
+
+        .avatar-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .avatar-text {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* AVATAR ACTIONS */
+        .settings-avatar-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 14px;
+            flex-shrink: 0;
+        }
+
+        .settings-avatar-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 6px;
+        }
+
+        .btn-avatar-action {
+            border: 1px solid var(--card-border);
+            background: var(--icon-bg);
+            color: var(--text-main);
+            border-radius: 14px;
+            padding: 10px 14px;
+            font-size: 11px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-avatar-action:hover {
+            border-color: var(--mango);
+            color: var(--mango);
+            background: var(--hover-bg);
+            transform: translateY(-1px);
+        }
+
+        .btn-avatar-remove:hover {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        /* HERO TEXT */
+        .hero-text {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 0;
+            flex: 1;
+        }
+
+        .hero-text h2 {
+            font-size: clamp(1.6rem, 3.2vw, 2.8rem);
+            font-weight: 900;
+            letter-spacing: -1.2px;
+            line-height: 1.05;
+            color: var(--text-main);
+            word-break: break-word;
+            overflow-wrap: anywhere;
+        }
+
+        .hero-text p {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-muted);
+            letter-spacing: 1.3px;
+            text-transform: uppercase;
+        }
+
+        /* ID CARD BENTO (points) */
         .id-card-bento {
-            grid-column: span 4;
-            display: flex; flex-direction: column; justify-content: space-between;
+            min-height: 180px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background: linear-gradient(135deg, rgba(255, 194, 68, 0.06), rgba(255, 77, 109, 0.04));
         }
-        .id-card-header { display: flex; justify-content: space-between; align-items: flex-start; }
-        .tier-title { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); font-weight: 800; margin-bottom: 5px;}
-        .tier-name { font-size: 24px; font-weight: 900; letter-spacing: -0.5px; color: var(--mango); }
-        
-        .points-wrap { margin-top: 30px; }
-        .points-wrap h2 { font-size: 48px; font-weight: 900; letter-spacing: -2px; line-height: 1; margin-bottom: 5px; color: var(--text-main);}
-        .points-wrap p { font-size: 12px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; }
 
-        /* 3. EDITORIAL SETTINGS FORM (Span 8) */
-        .settings-bento { grid-column: span 8; }
-        .settings-bento h3 { font-size: 22px; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 30px; display: flex; align-items: center; gap: 12px; color: var(--text-main);}
-        .settings-bento h3 i { color: var(--mango); }
+        .id-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+        }
 
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 40px;}
-        .form-group { position: relative; }
+        .tier-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+
+        .tier-name {
+            font-size: 24px;
+            font-weight: 900;
+            letter-spacing: -0.6px;
+            color: var(--mango);
+            line-height: 1.1;
+        }
+
+        .points-wrap {
+            margin-top: 24px;
+        }
+
+        .points-wrap h2 {
+            font-size: 54px;
+            font-weight: 900;
+            letter-spacing: -2px;
+            line-height: 1;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+
+        .points-wrap p {
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        /* SETTINGS FORM */
+        .settings-bento h3 {
+            font-size: 22px;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            margin-bottom: 22px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-main);
+        }
+
+        .settings-bento h3 i {
+            color: var(--mango);
+        }
+
+        .section-block+.section-block {
+            margin-top: 34px;
+            padding-top: 34px;
+            border-top: 1px solid var(--card-border);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+
+        .form-group {
+            position: relative;
+        }
+
+        .full-width {
+            grid-column: 1/-1;
+        }
+
         .form-group label {
-            display: block; font-size: 11px; font-weight: 800; color: var(--text-muted);
-            text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px;
+            display: block;
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.4px;
+            margin-bottom: 10px;
         }
+
+        .input-shell {
+            position: relative;
+        }
+
         .form-group input {
-            width: 100%; background: transparent; border: none;
-            border-bottom: 2px solid var(--card-border); padding: 8px 0;
-            font-size: 18px; font-weight: 800; color: var(--text-main);
-            outline: none; transition: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .form-group input:focus { border-bottom-color: var(--mango); }
-        .form-group input::placeholder { color: rgba(136, 136, 136, 0.5); font-weight: 700; }
-        .full-width { grid-column: span 2; }
-        
-        .form-divider { height: 1px; background: var(--card-border); margin: 40px 0; }
-
-        /* 4. ACTION PANEL (Span 4) */
-        .action-bento {
-            grid-column: span 4;
-            display: flex; flex-direction: column; gap: 25px;
-            background: transparent; border: none; box-shadow: none; padding: 0;
+            width: 100%;
+            border: 1px solid var(--card-border);
+            background: var(--input-bg);
+            color: var(--text-main);
+            border-radius: 18px;
+            padding: 16px 18px;
+            font-size: 15px;
+            font-weight: 700;
+            outline: none;
+            transition: 0.25s ease;
         }
 
-        .btn-massive { 
-            width: 100%; padding: 25px; background: var(--mango); color: #111; 
-            border: none; border-radius: 35px; font-size: 16px; font-weight: 900; 
-            text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: 0.3s; 
-            display: flex; flex-direction: column; align-items: center; gap: 10px;
-            box-shadow: 0 15px 30px rgba(255,194,68,0.2);
+        .form-group input:focus {
+            border-color: rgba(255, 194, 68, 0.55);
+            box-shadow: 0 0 0 4px rgba(255, 194, 68, 0.1);
         }
-        .btn-massive:hover { background: var(--text-main); color: var(--bg-main); transform: translateY(-5px); }
-        .btn-massive i { font-size: 28px; }
+
+        .form-group input::placeholder {
+            color: rgba(136, 136, 136, 0.75);
+            font-weight: 600;
+        }
+
+        .readonly-input {
+            opacity: 0.9;
+        }
+
+        .password-field input {
+            padding-right: 50px;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .toggle-password:hover {
+            color: var(--mango);
+        }
+
+        .helper-text {
+            margin-top: 10px;
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.5;
+            font-weight: 600;
+        }
+
+        /* RIGHT COLUMN CARDS */
+        .action-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 28px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+        }
+
+        .action-card h4 {
+            font-size: 18px;
+            font-weight: 900;
+            letter-spacing: -0.4px;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+
+        .action-card p {
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .action-highlight {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .action-highlight i {
+            width: 46px;
+            height: 46px;
+            display: grid;
+            place-items: center;
+            border-radius: 16px;
+            background: rgba(255, 194, 68, 0.1);
+            color: var(--mango);
+            font-size: 20px;
+            border: 1px solid rgba(255, 194, 68, 0.2);
+            flex-shrink: 0;
+        }
+
+        .btn-primary-compact {
+            width: 100%;
+            border: none;
+            border-radius: 18px;
+            padding: 16px 18px;
+            background: var(--mango);
+            color: #111;
+            font-size: 14px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 12px 24px rgba(255, 194, 68, 0.16);
+        }
+
+        .btn-primary-compact:hover {
+            transform: translateY(-2px);
+            background: #ffd06a;
+        }
 
         .danger-card {
-            background: rgba(255, 77, 109, 0.05); border-radius: 35px; padding: 35px;
-            border: 1px solid var(--danger); transition: 0.3s; text-align: center;
+            background: rgba(255, 77, 109, 0.05);
+            border: 1px solid rgba(255, 77, 109, 0.4);
         }
-        .danger-card h4 { color: var(--danger); font-size: 18px; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 10px; }
-        .danger-card p { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 25px; line-height: 1.5;}
-        
+
+        .danger-card h4 {
+            color: var(--danger);
+        }
+
         .btn-danger {
-            background: transparent; color: var(--danger); border: 2px solid var(--danger);
-            padding: 15px; border-radius: 50px; font-weight: 900; font-size: 11px;
-            text-transform: uppercase; letter-spacing: 1.5px; width: 100%; cursor: pointer; transition: 0.3s;
+            margin-top: 18px;
+            width: 100%;
+            background: transparent;
+            color: var(--danger);
+            border: 1.5px solid var(--danger);
+            padding: 14px 16px;
+            border-radius: 18px;
+            font-weight: 900;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1.3px;
+            cursor: pointer;
+            transition: 0.25s ease;
         }
-        .btn-danger:hover { background: var(--danger); color: #fff; }
 
+        .btn-danger:hover {
+            background: var(--danger);
+            color: #fff;
+        }
 
-        /* --- ACCOUNT SIDE PANEL (Slide-over) --- */
+        /* SIDE PANEL */
         .panel-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6); backdrop-filter: blur(10px);
-            z-index: 2000; opacity: 0; visibility: hidden; transition: 0.4s;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.4s;
         }
-        .panel-overlay.active { opacity: 1; visibility: visible; }
+
+        .panel-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
 
         .side-panel {
-            position: fixed; top: 0; right: -100%; width: 100%; max-width: 450px; height: 100%;
-            background: var(--bg-main); border-left: 1px solid var(--card-border);
-            box-shadow: -20px 0 50px rgba(0,0,0,0.5); display: flex; flex-direction: column;
-            transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1); z-index: 2001;
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 100%;
+            max-width: 450px;
+            height: 100%;
+            background: var(--bg-main);
+            border-left: 1px solid var(--card-border);
+            box-shadow: -20px 0 50px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 2001;
         }
-        .side-panel.active { right: 0; }
-        
-        .panel-header { padding: 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--card-border); }
-        .panel-header h2 { font-size: 20px; font-weight: 900; letter-spacing: -0.5px; color: var(--text-main);}
-        .panel-close-btn { 
-            background: transparent; border: none; font-size: 24px; color: var(--text-muted); 
-            cursor: pointer; transition: 0.3s; 
-        }
-        .panel-close-btn:hover { color: var(--text-main); transform: rotate(90deg);}
 
-        .panel-body { padding: 30px; display: flex; flex-direction: column; gap: 30px; flex: 1; overflow-y: auto; }
-        
-        /* Personal Info Profile Card */
-        .profile-card { 
-            display: flex; align-items: center; gap: 20px; padding: 20px; 
-            background: var(--card-bg); border: 1px solid var(--card-border); 
-            border-radius: 25px; 
+        .side-panel.active {
+            right: 0;
         }
-        .avatar-circle { 
-            width: 60px; height: 60px; background: var(--mango); color: #111; 
-            border-radius: 50%; display: grid; place-items: center; 
-            font-size: 24px; font-weight: 900; 
+
+        .panel-header {
+            padding: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--card-border);
         }
-        .profile-details h3 { font-size: 18px; font-weight: 900; margin-bottom: 3px; letter-spacing: -0.5px; color: var(--text-main);}
-        .profile-details p { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;}
-        
-        /* Balances Bento Grid */
-        .balance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .balance-item { 
-            background: var(--icon-bg); border: 1px solid var(--card-border); 
-            padding: 25px 15px; border-radius: 20px; text-align: center; 
-            display: flex; flex-direction: column; gap: 8px; transition: 0.3s;
+
+        .panel-header h2 {
+            font-size: 20px;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            color: var(--text-main);
         }
-        .balance-item:hover { transform: translateY(-5px); border-color: var(--mango); background: rgba(255,194,68,0.05); }
-        .balance-item i { font-size: 24px; color: var(--mango); }
-        .balance-item span { font-size: 22px; font-weight: 900; letter-spacing: -1px; color: var(--text-main); }
-        .balance-item small { font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;}
-        
-        /* Quick Action Links */
-        .account-menu { display: flex; flex-direction: column; gap: 10px; }
+
+        .panel-close-btn {
+            background: transparent;
+            border: none;
+            font-size: 24px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .panel-close-btn:hover {
+            color: var(--text-main);
+            transform: rotate(90deg);
+        }
+
+        .panel-body {
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .profile-card {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 25px;
+        }
+
+        .avatar-circle {
+            width: 60px;
+            height: 60px;
+            background: var(--mango);
+            color: #111;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            font-size: 24px;
+            font-weight: 900;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .avatar-circle.has-image {
+            background: transparent !important;
+            color: transparent !important;
+        }
+
+        .profile-details h3 {
+            font-size: 18px;
+            font-weight: 900;
+            margin-bottom: 3px;
+            letter-spacing: -0.5px;
+            color: var(--text-main);
+        }
+
+        .profile-details p {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .balance-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .balance-item {
+            background: var(--icon-bg);
+            border: 1px solid var(--card-border);
+            padding: 25px 15px;
+            border-radius: 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: 0.3s;
+        }
+
+        .balance-item:hover {
+            transform: translateY(-5px);
+            border-color: var(--mango);
+            background: rgba(255, 194, 68, 0.05);
+        }
+
+        .balance-item i {
+            font-size: 24px;
+            color: var(--mango);
+        }
+
+        .balance-item span {
+            font-size: 22px;
+            font-weight: 900;
+            letter-spacing: -1px;
+            color: var(--text-main);
+        }
+
+        .balance-item small {
+            font-size: 10px;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .account-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
         .acc-link-btn {
-            background: transparent; border: 1px solid var(--card-border); color: var(--text-main);
-            padding: 18px 20px; border-radius: 15px; font-size: 13px; font-weight: 800;
-            text-align: left; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 15px;
+            background: transparent;
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 18px 20px;
+            border-radius: 15px;
+            font-size: 13px;
+            font-weight: 800;
+            text-align: left;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 15px;
             text-decoration: none;
         }
-        .acc-link-btn i { font-size: 16px; color: var(--text-muted); width: 20px; text-align: center; transition: 0.3s; }
-        .acc-link-btn:hover { background: var(--hover-bg); border-color: var(--text-main); }
-        .acc-link-btn:hover i { color: var(--mango); }
-        
-        .acc-link-btn.danger:hover { background: rgba(255, 77, 109, 0.1); border-color: var(--danger); color: var(--danger); }
-        .acc-link-btn.danger:hover i { color: var(--danger); }
 
-        .password-field{ position: relative; }
-
-        .password-field input{ width: 100%; padding-right: 45px;}
-
-        .toggle-password{ position:absolute; right:0; top:38px; font-size:14px; color:var(--text-muted); cursor:pointer; transition:0.2s;}
-
-        .toggle-password:hover{ color:var(--mango);}
-
-        /* Responsive */
-        @media (max-width: 1024px) {
-            .settings-wrapper { display: flex; flex-direction: column; padding: 20px;}
-            .nav-links { display: none; }
-            .form-grid { grid-template-columns: 1fr; }
-            .full-width { grid-column: span 1; }
+        .acc-link-btn i {
+            font-size: 16px;
+            color: var(--text-muted);
+            width: 20px;
+            text-align: center;
+            transition: 0.3s;
         }
-        
+
+        .acc-link-btn:hover {
+            background: var(--hover-bg);
+            border-color: var(--text-main);
+        }
+
+        .acc-link-btn:hover i {
+            color: var(--mango);
+        }
+
+        .acc-link-btn.danger:hover {
+            background: rgba(255, 77, 109, 0.1);
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .acc-link-btn.danger:hover i {
+            color: var(--danger);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width:1080px) {
+            .settings-wrapper {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-links {
+                display: none;
+            }
+        }
+
+        @media (max-width:720px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .full-width {
+                grid-column: auto;
+            }
+
+            .hero-bento {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .settings-avatar-actions {
+                width: 100%;
+            }
+
+            .btn-avatar-action {
+                flex: 1;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width:520px) {
+            .settings-wrapper {
+                padding: 0 14px;
+                margin: 28px auto 60px;
+            }
+
+            .glass-bento,
+            .action-card {
+                padding: 24px;
+                border-radius: 24px;
+            }
+
+            .page-header h1 {
+                font-size: 2rem;
+            }
+
+            .balance-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
+
 <body>
 
     <nav>
@@ -313,139 +923,159 @@
     </nav>
 
     <div class="settings-wrapper">
-        
         <div class="page-header">
             <span class="page-badge">Profile & Security</span>
             <h1>Account Settings</h1>
         </div>
 
-        <div class="glass-bento hero-bento">
-            <div class="avatar-massive" id="settingsAvatar">--</div>
-            <div class="hero-text">
-                <h2 id="settingsFullName">Loading...</h2>
+        <div class="left-column">
+
+            <!-- HERO BENTO: single clean card -->
+            <div class="glass-bento hero-bento">
+                <div class="settings-avatar-wrap">
+                    <div class="avatar-massive" id="settingsAvatar">
+                        <span class="avatar-text">--</span>
+                    </div>
+                    <input type="file" id="settingsProfileUpload" accept="image/*" hidden>
+                    <div class="settings-avatar-actions">
+                        <button type="button" class="btn-avatar-action" id="changeProfilePhotoBtn">
+                            <i class="fa-solid fa-camera"></i> Change Photo
+                        </button>
+                        <button type="button" class="btn-avatar-action btn-avatar-remove" id="removeProfilePhotoBtn">
+                            <i class="fa-solid fa-trash"></i> Remove
+                        </button>
+                    </div>
+                </div>
+                <div class="hero-text">
+                    <h2 id="settingsFullName">Loading...</h2>
+                    <p>Customer Profile</p>
+                </div>
+            </div>
+
+            <!-- FORM BENTO -->
+            <div class="glass-bento settings-bento">
+                <form id="settingsForm">
+                    <div class="section-block">
+                        <h3><i class="fa-solid fa-address-card"></i> Identity</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="settingsFirstName">First Name</label>
+                                <div class="input-shell">
+                                    <input type="text" id="settingsFirstName" placeholder="Enter first name">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="settingsLastName">Last Name</label>
+                                <div class="input-shell">
+                                    <input type="text" id="settingsLastName" placeholder="Enter last name">
+                                </div>
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="settingsEmail">Email Address</label>
+                                <div class="input-shell">
+                                    <input type="email" id="settingsEmail" class="readonly-input" readonly>
+                                </div>
+                                <p class="helper-text">Email address is currently managed by your account registration
+                                    or Google sign-in.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-block">
+                        <h3><i class="fa-solid fa-shield-halved"></i> Security</h3>
+                        <div class="form-grid">
+                            <div class="form-group full-width password-field">
+                                <label for="settingsCurrentPassword">Current Password</label>
+                                <div class="input-shell">
+                                    <input type="password" id="settingsCurrentPassword"
+                                        placeholder="Enter current password">
+                                    <i class="fa-solid fa-eye toggle-password"></i>
+                                </div>
+                            </div>
+                            <div class="form-group full-width password-field">
+                                <label for="settingsNewPassword">New Password</label>
+                                <div class="input-shell">
+                                    <input type="password" id="settingsNewPassword" placeholder="Type new password...">
+                                    <i class="fa-solid fa-eye toggle-password"></i>
+                                </div>
+                                <p class="helper-text">Leave both password fields blank if you only want to update your
+                                    profile details.</p>
+                            </div>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
 
-        <div class="glass-bento id-card-bento">
-            <div class="id-card-header">
-                <div>
-                    <div class="tier-title">Current Status</div>
-                    <div class="tier-name" id="settingsTierName">Bronze Member</div>
+        <div class="right-column">
+            <div class="action-card">
+                <div class="action-highlight">
+                    <i class="fa-solid fa-check-double"></i>
+                    <div>
+                        <h4>Save Changes</h4>
+                        <p>Update your profile details and password securely.</p>
+                    </div>
                 </div>
-                <i id="settingsTierIcon" class="fa-solid fa-medal" style="font-size: 24px; color: var(--mango);"></i>
+                <button class="btn-primary-compact" type="button"
+                    onclick="document.getElementById('settingsForm').requestSubmit();">
+                    <i class="fa-solid fa-floppy-disk"></i> Commit Changes
+                </button>
             </div>
-            <div class="points-wrap">
-                <h2 id="settingsPoints">0</h2>
-                <p>Available Points</p>
-            </div>
-        </div>
 
-        <div class="glass-bento settings-bento">
-            <form id="settingsForm" onsubmit="event.preventDefault(); alert('Profile Updated Successfully!');">
-        
-                <h3><i class="fa-solid fa-address-card"></i> Identity</h3>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>First Name</label>
-                        <input type="text" id="settingsFirstName" value="">
-                    </div>
-                    <div class="form-group">
-                        <label>Last Name</label>
-                        <input type="text" id="settingsLastName" value="">
-                    </div>
-                    <div class="form-group full-width">
-                        <label>Email Address</label>
-                        <input type="email" id="settingsEmail" value="">
-                    </div>
-                </div>
-        
-                <div class="form-divider"></div>
-        
-                <h3><i class="fa-solid fa-shield-halved"></i> Security</h3>
-                <div class="form-grid">
-                    <div class="form-group full-width">
-                        <label>Current Password</label>
-                        <input type="password" id="settingsCurrentPassword" placeholder="••••••••">
-                        <i class="fa-solid fa-eye toggle-password"></i>
-                    </div>
-        
-                    <div class="form-group full-width">
-                        <label>New Password</label>
-                        <input type="password" id="settingsNewPassword" placeholder="Type new password...">
-                        <i class="fa-solid fa-eye toggle-password"></i>
-                    </div>
-                </div>
-            </form>
-        </div>
-        
-        <div class="action-bento">
-            <button class="btn-massive" type="button" onclick="document.getElementById('settingsForm').requestSubmit();">
-                <i class="fa-solid fa-check-double"></i>
-                Commit Changes
-            </button>
-        
-            <div class="danger-card">
+            <div class="action-card danger-card">
                 <h4>Danger Zone</h4>
-                <p id="dangerZoneText"></p>
-        
-                <button type="button" class="btn-danger" onclick="confirm('Are you absolutely sure? This cannot be undone.');">
+                <p id="dangerZoneText">Deleting your account is permanent and cannot be undone.</p>
+                <button type="button" class="btn-danger"
+                    onclick="confirm('Are you absolutely sure? This cannot be undone.');">
                     Delete Account
                 </button>
             </div>
         </div>
-            
+    </div>
+
+    <!-- Account Side Panel -->
     <div class="panel-overlay" id="mainOverlay" onclick="closeAllPanels()"></div>
 
     <div class="side-panel" id="accountPanel">
         <div class="panel-header">
             <h2>Account Info</h2>
-            <button class="panel-close-btn" onclick="closeAllPanels()">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
+            <button class="panel-close-btn" type="button" onclick="closeAllPanels()"><i
+                    class="fa-solid fa-xmark"></i></button>
         </div>
-        
         <div class="panel-body">
-            
             <div class="profile-card">
-                <div class="avatar-circle" id="panelAvatar">--</div>
+                <div class="avatar-circle" id="panelAvatar">
+                    <span class="avatar-text" id="panelUserInitials">--</span>
+                    <img id="panelAvatarImage" class="avatar-image" style="display:none;">
+                </div>
                 <div class="profile-details">
-                    <h3 id="panelFullName">Loading...</h3>
-                    <p id="panelTier">Member</p>
+                    <h3 id="panelUserName">Loading...</h3>
+                    <p id="panelUserTier">MEMBER</p>
                 </div>
             </div>
-            
             <div class="balance-grid">
                 <div class="balance-item">
                     <i class="fa-solid fa-star"></i>
-                    <span id="panelPoints">0</span>
+                    <span id="panelRewardPoints">0</span>
                     <small>Reward Points</small>
                 </div>
                 <div class="balance-item">
                     <i class="fa-solid fa-wallet"></i>
-                    <span id="panelWallet">₱0.00</span>
-                    <small>TIMS-RPAY Bal</small>
+                    <span id="panelWalletBalance">₱0.00</span>
+                    <small>TEOPAY Bal</small>
                 </div>
             </div>
-
             <div class="account-menu">
-                <a href="dashaccsett.html" class="acc-link-btn">
-                    <i class="fa-solid fa-gear"></i> Account Settings
-                </a>
-                 <a href="rewards.html" class="acc-link-btn">
-                    <i class="fa-solid fa-clock-rotate-left"></i> Rewards Transaction History
-                </a>
-                <a href="topup.html" class="acc-link-btn">
-                    <i class="fa-solid fa-plus-circle"></i> Top-Up Wallet
-                </a>
-                <a href="index.html" class="acc-link-btn danger">
-                    <i class="fa-solid fa-right-from-bracket"></i> Log Out
-                </a>
+                <a href="dashaccsett.html" class="acc-link-btn"><i class="fa-solid fa-gear"></i> Account Settings</a>
+                <a href="rewards.html" class="acc-link-btn"><i class="fa-solid fa-clock-rotate-left"></i> Transaction
+                    History</a>
+                <a href="topup.html" class="acc-link-btn"><i class="fa-solid fa-plus-circle"></i> Top-Up Wallet</a>
+                <a href="index.html" class="acc-link-btn danger"><i class="fa-solid fa-right-from-bracket"></i> Log
+                    Out</a>
             </div>
-
         </div>
     </div>
 
-    <!-- Custom JS  -->
     <script src="js/api.js"></script>
     <script src="js/authGuard.js"></script>
     <script src="js/logout.js"></script>
@@ -454,4 +1084,5 @@
     <script src="js/account-panel.js"></script>
     <script src="js/settings.js"></script>
 </body>
+
 </html>

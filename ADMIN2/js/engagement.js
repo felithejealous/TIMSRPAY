@@ -34,6 +34,14 @@ function safeArray(value) {
     return Array.isArray(value) ? value : [];
 }
 
+function renderScrollableText(text, widthClass = "table-cell-medium") {
+    return `
+        <div class="${widthClass}">
+            <div class="mini-text table-cell-scroll">${escapeHtml(text || "-")}</div>
+        </div>
+    `;
+}
+
 async function fetchJSON(url, options = {}) {
     const response = await fetch(url, {
         credentials: "include",
@@ -93,10 +101,12 @@ function showToast(message) {
 }
 
 function normalizeInquiryStatus(item) {
+    if (Boolean(item?.is_visible) === false) return "hidden";
+
     const raw = String(item?.status || "").toLowerCase();
 
     if (raw === "replied" || raw === "resolved") return "replied";
-    if (raw === "hidden" || raw === "closed") return "hidden";
+    if (raw === "closed") return "closed";
     return "pending";
 }
 
@@ -122,6 +132,7 @@ function badgeHtml(type, text) {
 
 function getInquiryBadge(status) {
     if (status === "replied") return badgeHtml("badge-replied", "Replied");
+    if (status === "closed") return badgeHtml("badge-hidden", "Closed");
     if (status === "hidden") return badgeHtml("badge-hidden", "Hidden");
     return badgeHtml("badge-pending", "Pending");
 }
@@ -145,6 +156,10 @@ function getPinnedBadge(item) {
     return Boolean(item?.is_pinned)
         ? badgeHtml("badge-featured", "Pinned")
         : `<span class="mini-text">No</span>`;
+}
+
+function renderActionButtons(buttons = []) {
+    return `<div class="action-row">${buttons.join("")}</div>`;
 }
 
 function setActiveTab(tabId, triggerBtn = null) {
@@ -308,12 +323,7 @@ function filterFeedback(items, featuredOnly = false) {
         const searchMatch = !search || searchable.includes(search);
 
         const normalized = normalizeFeedbackApproval(item);
-        let statusMatch = true;
-
-        if (status !== "all") {
-            statusMatch = normalized === status;
-        }
-
+        const statusMatch = status === "all" || normalized === status;
         const featuredMatch = !featuredOnly || Boolean(item?.is_featured);
 
         return searchMatch && statusMatch && featuredMatch;
@@ -372,18 +382,16 @@ function renderInquiries() {
             <tr>
                 <td><div class="font-bold">${escapeHtml(item.name || "-")}</div></td>
                 <td><div class="mini-text">${escapeHtml(item.email || "-")}</div></td>
-                <td><div class="font-bold">${escapeHtml(item.subject || "-")}</div></td>
-                <td><div class="mini-text" style="max-width:260px;">${escapeHtml(item.message || "-")}</div></td>
+                <td>${renderScrollableText(item.subject || "-", "table-cell-tight")}</td>
+                <td>${renderScrollableText(item.message || "-", "table-cell-medium")}</td>
                 <td>${getInquiryBadge(status)}</td>
                 <td><div class="mini-text">${escapeHtml(formatDateTime(item.created_at))}</div></td>
                 <td>
-                    <div class="action-row">
-                        <button class="action-btn primary" onclick="openInquiryModal(${Number(item.id)})">View</button>
-                        <button class="action-btn success" onclick="openInquiryModal(${Number(item.id)})">Reply</button>
-                        <button class="action-btn danger" onclick="toggleInquiryVisibility(${Number(item.id)}, ${Boolean(item.is_visible)})">
-                            ${Boolean(item.is_visible) ? "Hide" : "Show"}
-                        </button>
-                    </div>
+                    ${renderActionButtons([
+                        `<button class="action-btn primary" onclick="openInquiryModal(${Number(item.id)})">View</button>`,
+                        `<button class="action-btn success" onclick="openInquiryModal(${Number(item.id)})">Reply</button>`,
+                        `<button class="action-btn danger" onclick="toggleInquiryVisibility(${Number(item.id)}, ${Boolean(item.is_visible)})">${Boolean(item.is_visible) ? "Hide" : "Show"}</button>`
+                    ])}
                 </td>
             </tr>
         `;
@@ -406,20 +414,16 @@ function renderFeedback() {
             <td><div class="font-bold">${escapeHtml(item.customer_name || "-")}</div></td>
             <td><div class="mini-text">${escapeHtml(item.product_name || "-")}</div></td>
             <td><span class="stars">${escapeHtml(getStars(item.rating))}</span></td>
-            <td><div class="font-bold">${escapeHtml(item.title || "-")}</div></td>
-            <td><div class="mini-text" style="max-width:280px;">${escapeHtml(item.comment || "-")}</div></td>
+            <td>${renderScrollableText(item.title || "-", "table-cell-tight")}</td>
+            <td>${renderScrollableText(item.comment || "-", "table-cell-medium")}</td>
             <td>${getFeedbackApprovalBadge({ ...item, is_featured: false })}</td>
             <td>${Boolean(item.is_featured) ? badgeHtml("badge-featured", "Featured") : `<span class="mini-text">No</span>`}</td>
             <td>
-                <div class="action-row">
-                    <button class="action-btn primary" onclick="openFeedbackModal(${Number(item.id)})">View</button>
-                    <button class="action-btn success" onclick="toggleFeedbackApproval(${Number(item.id)}, ${Boolean(item.is_approved)})">
-                        ${Boolean(item.is_approved) ? "Unapprove" : "Approve"}
-                    </button>
-                    <button class="action-btn warning" onclick="toggleFeedbackFeatured(${Number(item.id)}, ${Boolean(item.is_featured)})">
-                        ${Boolean(item.is_featured) ? "Unfeature" : "Feature"}
-                    </button>
-                </div>
+                ${renderActionButtons([
+                    `<button class="action-btn primary" onclick="openFeedbackModal(${Number(item.id)})">View</button>`,
+                    `<button class="action-btn success" onclick="toggleFeedbackApproval(${Number(item.id)}, ${Boolean(item.is_approved)})">${Boolean(item.is_approved) ? "Unapprove" : "Approve"}</button>`,
+                    `<button class="action-btn warning" onclick="toggleFeedbackFeatured(${Number(item.id)}, ${Boolean(item.is_featured)})">${Boolean(item.is_featured) ? "Unfeature" : "Feature"}</button>`
+                ])}
             </td>
         </tr>
     `).join("");
@@ -439,21 +443,17 @@ function renderFaq() {
     body.innerHTML = rows.map(item => `
         <tr>
             <td>${Number(item.display_order || 0)}</td>
-            <td><div class="font-bold" style="max-width:300px;">${escapeHtml(item.question || "-")}</div></td>
-            <td><div class="mini-text" style="max-width:340px;">${escapeHtml(item.answer || "-")}</div></td>
+            <td>${renderScrollableText(item.question || "-", "table-cell-medium")}</td>
+            <td>${renderScrollableText(item.answer || "-", "table-cell-wide")}</td>
             <td>${getPinnedBadge(item)}</td>
             <td>${getFaqStatusBadge(item)}</td>
             <td><div class="mini-text">${escapeHtml(formatDateTime(item.updated_at || item.created_at))}</div></td>
             <td>
-                <div class="action-row">
-                    <button class="action-btn primary" onclick="openFaqModal(${Number(item.id)})">Edit</button>
-                    <button class="action-btn warning" onclick="toggleFaqPinned(${Number(item.id)}, ${Boolean(item.is_pinned)})">
-                        ${Boolean(item.is_pinned) ? "Unpin" : "Pin"}
-                    </button>
-                    <button class="action-btn danger" onclick="toggleFaqActive(${Number(item.id)}, ${Boolean(item.is_active)})">
-                        ${Boolean(item.is_active) ? "Disable" : "Enable"}
-                    </button>
-                </div>
+                ${renderActionButtons([
+                    `<button class="action-btn primary" onclick="openFaqModal(${Number(item.id)})">Edit</button>`,
+                    `<button class="action-btn warning" onclick="toggleFaqPinned(${Number(item.id)}, ${Boolean(item.is_pinned)})">${Boolean(item.is_pinned) ? "Unpin" : "Pin"}</button>`,
+                    `<button class="action-btn danger" onclick="toggleFaqActive(${Number(item.id)}, ${Boolean(item.is_active)})">${Boolean(item.is_active) ? "Disable" : "Enable"}</button>`
+                ])}
             </td>
         </tr>
     `).join("");
@@ -477,15 +477,15 @@ function renderFeatured() {
             <td><span class="stars">${escapeHtml(getStars(item.rating))}</span></td>
             <td>
                 <div class="font-bold">${escapeHtml(item.title || "-")}</div>
-                <div class="mini-text" style="max-width:300px;">${escapeHtml(item.comment || "-")}</div>
+                ${renderScrollableText(item.comment || "-", "table-cell-medium")}
             </td>
             <td>${Boolean(item.is_visible) ? badgeHtml("badge-approved", "Visible") : badgeHtml("badge-hidden", "Hidden")}</td>
             <td><div class="mini-text">${escapeHtml(formatDateTime(item.created_at))}</div></td>
             <td>
-                <div class="action-row">
-                    <button class="action-btn primary" onclick="openFeedbackModal(${Number(item.id)})">View</button>
-                    <button class="action-btn danger" onclick="toggleFeedbackFeatured(${Number(item.id)}, true)">Remove</button>
-                </div>
+                ${renderActionButtons([
+                    `<button class="action-btn primary" onclick="openFeedbackModal(${Number(item.id)})">View</button>`,
+                    `<button class="action-btn danger" onclick="toggleFeedbackFeatured(${Number(item.id)}, true)">Remove</button>`
+                ])}
             </td>
         </tr>
     `).join("");
@@ -540,6 +540,9 @@ function openInquiryModal(id) {
 
     currentInquiryId = item.id;
 
+    const normalizedStatus = normalizeInquiryStatus(item);
+    const visibilityText = Boolean(item.is_visible) ? "Visible to customer" : "Hidden from customer";
+
     openEngagementModal("Inquiry Details", `
         <div class="two-col">
             <div class="field-group">
@@ -549,6 +552,17 @@ function openInquiryModal(id) {
             <div class="field-group">
                 <label>Email</label>
                 <input type="text" value="${escapeHtml(item.email || "")}" readonly>
+            </div>
+        </div>
+
+        <div class="two-col">
+            <div class="field-group">
+                <label>Status</label>
+                <input type="text" value="${escapeHtml(normalizedStatus.toUpperCase())}" readonly>
+            </div>
+            <div class="field-group">
+                <label>Visibility</label>
+                <input type="text" value="${escapeHtml(visibilityText)}" readonly>
             </div>
         </div>
 
@@ -573,7 +587,7 @@ function openInquiryModal(id) {
             <textarea rows="4" id="inquiryReplyInput" placeholder="Type your reply here...">${escapeHtml(item.admin_reply || "")}</textarea>
         </div>
 
-        <div class="action-row">
+        <div class="modal-action-row">
             <button class="btn-primary" onclick="submitInquiryReply()">Send Reply</button>
             <button class="btn-danger" onclick="toggleInquiryVisibility(${Number(item.id)}, ${Boolean(item.is_visible)})">
                 ${Boolean(item.is_visible) ? "Hide Inquiry" : "Show Inquiry"}
@@ -621,7 +635,7 @@ function openFeedbackModal(id) {
             <textarea rows="4" id="feedbackReplyInput" placeholder="Optional reply to feedback...">${escapeHtml(item.admin_reply || "")}</textarea>
         </div>
 
-        <div class="action-row">
+        <div class="modal-action-row">
             <button class="btn-primary" onclick="saveFeedbackReply()">Save Reply</button>
             <button class="btn-secondary" onclick="toggleFeedbackApproval(${Number(item.id)}, ${Boolean(item.is_approved)})">
                 ${Boolean(item.is_approved) ? "Unapprove" : "Approve Review"}
@@ -641,7 +655,7 @@ function openFaqModal(id = null) {
         <div class="two-col">
             <div class="field-group">
                 <label>Display Order</label>
-                <input type="number" id="faqOrderInput" value="0" min="0" step="1">
+                <input type="number" id="faqOrderInput" value="${Number(item?.display_order || 0)}" min="0" step="1">
             </div>
             <div class="field-group">
                 <label>Status</label>
@@ -670,7 +684,7 @@ function openFaqModal(id = null) {
             </select>
         </div>
 
-        <div class="action-row">
+        <div class="modal-action-row">
             <button class="btn-primary" onclick="saveFaq()">${item ? "Save Changes" : "Create FAQ"}</button>
             ${item ? `<button class="btn-danger" onclick="deleteFaq(${Number(item.id)})">Delete FAQ</button>` : ""}
         </div>
@@ -709,15 +723,16 @@ async function submitInquiryReply() {
         showToast(error.message || "Failed to reply to inquiry.");
     }
 }
+
 async function toggleInquiryVisibility(id, isVisible) {
     try {
-        await fetchJSON(`${API_URL}/inquiries/${id}/status`, {
+        await fetchJSON(`${API_URL}/inquiries/${id}/visibility`, {
             method: "PATCH",
             headers: {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                status: isVisible ? "hidden" : "pending"
+                is_visible: !Boolean(isVisible)
             })
         });
 
@@ -729,6 +744,7 @@ async function toggleInquiryVisibility(id, isVisible) {
         showToast(error.message || "Failed to update inquiry visibility.");
     }
 }
+
 /* =========================
    ACTIONS - FEEDBACK
 ========================= */
@@ -950,7 +966,7 @@ function bindCreateButton() {
 }
 
 function bindModalOverlay() {
-    $("engagementModal")?.addEventListener("click", (event) => {
+    $("engagementModal")?.addEventListener("click", event => {
         if (event.target.id === "engagementModal") {
             closeEngagementModal();
         }

@@ -3,7 +3,11 @@ let tray = JSON.parse(localStorage.getItem("teo_tray")) || [];
 let products = [];
 
 const PRODUCT_IMAGE_MAP = {
-    "classic mango": "../Images/mangga.png",
+    "classic teo d' mango": "../Images/mangga.png",
+    "classic teo d mango": "../Images/mangga.png",
+    "classic mango bliss": "../Images/mangga.png",
+    "teo d' mango": "../Images/mangga.png",
+    "teo d mango": "../Images/mangga.png",
     "strawberry": "../Images/strawberry.png",
     "ube overload": "../Images/ube.png",
     "ube": "../Images/ube.png",
@@ -30,7 +34,7 @@ function normalizeName(value) {
 
 function getProductImage(product) {
     const normalizedName = normalizeName(product.name);
-    return PRODUCT_IMAGE_MAP[normalizedName] || "../Images/mangga.png";
+    return PRODUCT_IMAGE_MAP[normalizedName] || "../Images/new banner teo.png";
 }
 
 async function fetchJSON(url, options = {}) {
@@ -62,8 +66,8 @@ async function loadMenuProducts() {
         name: item.name || "Unnamed Product",
         price: Number(item.price || 0),
         desc: item.category_name
-            ? `${item.category_name} mango drink selection.`
-            : "Fresh mango drink selection.",
+            ? `${item.category_name} Selection.`
+            : "Freshly prepared and ready for your next craving.",
         img: getProductImage(item),
         category_name: item.category_name || null,
         points_per_unit: Number(item.points_per_unit || 0),

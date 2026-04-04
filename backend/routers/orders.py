@@ -3,7 +3,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from datetime import datetime, timezone, timedelta
 import hashlib
 import hmac
-
+from backend.models import ProductFeedback
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session, aliased
@@ -273,6 +273,15 @@ def list_my_orders(
     result = []
 
     for order in rows:
+        feedback_exists = (
+            db.query(ProductFeedback.id)
+                .filter(
+                    ProductFeedback.order_id == order.id,
+                    ProductFeedback.user_id == current_user.id
+                )
+                .first()
+                is not None
+        )
         item_rows = (
             db.query(OrderItem, Product)
             .join(Product, Product.id == OrderItem.product_id)
@@ -300,6 +309,7 @@ def list_my_orders(
             "total_amount": float(order.total_amount or 0),
             "earned_points": int(getattr(order, "earned_points", 0) or 0),
             "points_synced": bool(getattr(order, "points_synced", False)),
+            "has_feedback": feedback_exists,
         })
 
     return result
