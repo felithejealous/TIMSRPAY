@@ -52,6 +52,38 @@ function prettifyText(value) {
     return clean.charAt(0).toUpperCase() + clean.slice(1);
 }
 
+function normalizePromoCode(value) {
+    return String(value || "").trim().toUpperCase();
+}
+
+function hasPromoLock() {
+    return !!(
+        normalizePromoCode(checkoutData?.promo_code || "") &&
+        Number(checkoutData?.promo_locked_user_id || 0) > 0
+    );
+}
+
+function getLockedCustomerUserId() {
+    return Number(checkoutData?.promo_locked_user_id || checkoutData?.user_id || 0) || null;
+}
+
+function getLockedCustomerEmail() {
+    return String(
+        checkoutData?.promo_locked_email ||
+        checkoutData?.linked_customer_email ||
+        ""
+    ).trim();
+}
+
+function getLockedCustomerName() {
+    return String(
+        checkoutData?.promo_locked_name ||
+        checkoutData?.linked_customer_name ||
+        checkoutData?.customer_name ||
+        ""
+    ).trim();
+}
+
 function getAPIURL() {
     if (!window.API_URL) {
         throw new Error("API_URL is not defined. Make sure authGuard.js loads first.");
@@ -105,23 +137,6 @@ function getOrderIdFromURL() {
     return orderId ? Number(orderId) : null;
 }
 
-function clearWalletInputs() {
-    if (walletIdentifierInput) walletIdentifierInput.value = "";
-    if (walletPinInput) walletPinInput.value = "";
-}
-
-function getTotalItemQuantity() {
-    if (Array.isArray(checkoutData?.local_cart) && checkoutData.local_cart.length) {
-        return checkoutData.local_cart.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
-    }
-
-    if (Array.isArray(receiptData?.items) && receiptData.items.length) {
-        return receiptData.items.reduce((sum, item) => sum + Number(item.qty || 0), 0);
-    }
-
-    return 0;
-}
-
 function normalizeMoneyInput(value) {
     const numeric = Number(value);
     if (!Number.isFinite(numeric) || numeric < 0) return 0;
@@ -136,6 +151,78 @@ function syncCashInputFromTendered() {
 function syncTenderedFromCashInput() {
     if (!cashReceivedInput) return;
     tendered = normalizeMoneyInput(cashReceivedInput.value);
+}
+
+function clearWalletInputs() {
+    if (!walletIdentifierInput || !walletPinInput) return;
+
+    if (hasPromoLock()) {
+        walletIdentifierInput.value = getLockedCustomerEmail();
+        walletIdentifierInput.readOnly = true;
+    } else {
+        walletIdentifierInput.value = "";
+        walletIdentifierInput.readOnly = false;
+    }
+
+    walletPinInput.value = "";
+}
+
+function showReceiptNote(message = "") {
+    if (!message) {
+        receiptNoteBox.style.display = "none";
+        receiptNoteBox.textContent = "";
+        return;
+    }
+
+    receiptNoteBox.style.display = "block";
+    receiptNoteBox.textContent = message;
+}
+
+async function resolveWalletLookup(identifier) {
+    const query = String(identifier || "").trim();
+    if (!query) {
+        throw new Error("Enter wallet code or email.");
+    }
+
+    const result = await fetchJSON(
+        `${getAPIURL()}/wallet/lookup?q=${encodeURIComponent(query)}&limit=20`
+    );
+
+    const rows = Array.isArray(result?.data) ? result.data : [];
+    if (!rows.length) {
+        throw new Error("Wallet account not found.");
+    }
+
+    const lower = query.toLowerCase();
+    const exactEmail = rows.find(item => String(item.email || "").trim().toLowerCase() === lower);
+    const exactCode = rows.find(item => String(item.wallet_code || "").trim().toUpperCase() === query.toUpperCase());
+
+    return exactEmail || exactCode || rows[0];
+}
+
+async function validatePromoLockedWallet() {
+    if (!hasPromoLock()) return;
+
+    const identifier = String(walletIdentifierInput?.value || "").trim();
+    const lockedUserId = getLockedCustomerUserId();
+    const lockedEmail = getLockedCustomerEmail();
+    const lockedName = getLockedCustomerName();
+
+    if (!identifier) {
+        throw new Error("Promo-linked order requires the linked customer TeoPay account.");
+    }
+
+    const walletOwner = await resolveWalletLookup(identifier);
+
+    if (Number(walletOwner.user_id) !== Number(lockedUserId)) {
+        throw new Error(
+            `Promo-linked order mismatch. Use the TeoPay account of ${lockedName || lockedEmail || "the linked customer"} only.`
+        );
+    }
+
+    if (walletIdentifierInput) {
+        walletIdentifierInput.value = lockedEmail || identifier;
+    }
 }
 
 /* =========================
@@ -171,7 +258,11 @@ function loadCheckoutData() {
         checkoutData = {
             order_id: urlOrderId,
             customer_name: "Walk-in Customer",
-            local_cart: []
+            local_cart: [],
+            promo_code: null,
+            promo_locked_user_id: null,
+            promo_locked_email: null,
+            promo_locked_name: null
         };
         return;
     }
@@ -199,6 +290,18 @@ async function loadReceipt() {
 /* =========================
    RENDER
 ========================= */
+function getTotalItemQuantity() {
+    if (Array.isArray(checkoutData?.local_cart) && checkoutData.local_cart.length) {
+        return checkoutData.local_cart.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+    }
+
+    if (Array.isArray(receiptData?.items) && receiptData.items.length) {
+        return receiptData.items.reduce((sum, item) => sum + Number(item.qty || 0), 0);
+    }
+
+    return 0;
+}
+
 function renderSummary() {
     const resolvedCustomerName =
         receiptData?.customer_name ||
@@ -291,7 +394,7 @@ function renderReceipt() {
     } else if (localCart.length) {
         localCart.forEach(item => {
             const qty = Number(item.quantity || 1);
-            const lineTotal = Number(item.display_price || 0) * qty;
+            const lineTotal = Number(item.display_price || 0);
 
             lines.push(`
                 <div class="receipt-row">
@@ -359,17 +462,29 @@ function updatePaymentUI() {
     } else if (cashReceivedInput) {
         cashReceivedInput.value = "";
     }
-}
 
-function showReceiptNote(message = "") {
-    if (!message) {
-        receiptNoteBox.style.display = "none";
-        receiptNoteBox.textContent = "";
-        return;
+    if (currentMethod === "wallet") {
+        if (hasPromoLock()) {
+            const lockedName = getLockedCustomerName();
+            const lockedEmail = getLockedCustomerEmail();
+
+            if (walletIdentifierInput) {
+                walletIdentifierInput.value = lockedEmail;
+                walletIdentifierInput.readOnly = true;
+            }
+
+            showReceiptNote(
+                `Promo-linked order: use only ${lockedName || lockedEmail}'s TeoPay account for payment.`
+            );
+        } else {
+            if (walletIdentifierInput) {
+                walletIdentifierInput.readOnly = false;
+            }
+            showReceiptNote("");
+        }
+    } else {
+        showReceiptNote("");
     }
-
-    receiptNoteBox.style.display = "block";
-    receiptNoteBox.textContent = message;
 }
 
 /* =========================
@@ -395,7 +510,6 @@ function setMethod(method) {
         syncCashInputFromTendered();
     }
 
-    showReceiptNote("");
     updatePaymentUI();
 }
 
@@ -468,6 +582,8 @@ async function payCurrentOrderByWallet() {
     if (!pin) {
         throw new Error("Enter wallet PIN.");
     }
+
+    await validatePromoLockedWallet();
 
     const isEmail = identifier.includes("@");
 
@@ -546,6 +662,11 @@ function setupActions() {
     voidBtn?.addEventListener("click", voidTransaction);
 }
 
+function setupMethodCards() {
+    methodCashCard?.addEventListener("click", () => setMethod("cash"));
+    methodWalletCard?.addEventListener("click", () => setMethod("wallet"));
+}
+
 /* =========================
    INIT
 ========================= */
@@ -556,8 +677,8 @@ async function initPaymentStaffPage() {
         setupCashButtons();
         setupActions();
 
-        clearWalletInputs();
         loadCheckoutData();
+        clearWalletInputs();
         await loadReceipt();
 
         renderSummary();
@@ -569,11 +690,6 @@ async function initPaymentStaffPage() {
         alert(error.message || "Failed to load checkout page.");
         window.location.href = "menustaff.html";
     }
-}
-
-function setupMethodCards() {
-    methodCashCard?.addEventListener("click", () => setMethod("cash"));
-    methodWalletCard?.addEventListener("click", () => setMethod("wallet"));
 }
 
 document.addEventListener("DOMContentLoaded", initPaymentStaffPage);

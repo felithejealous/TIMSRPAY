@@ -1,69 +1,274 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Receipt - Teo D' Mango</title>
     <style>
         * {
-            margin: 0; padding: 0; box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
         @keyframes gradientMove {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
         }
 
         body {
-            height: 100vh; height: 100dvh;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             background: linear-gradient(-45deg, #ffb703, #ff8c00, #fffdf5, #ffd000);
             background-size: 400% 400%;
             animation: gradientMove 15s ease infinite;
-            overflow: hidden; padding: 20px;
+            overflow: hidden;
+            padding: 20px;
         }
 
         .main-container {
-            display: flex; flex-direction: column; align-items: center;
-            width: 100%; max-width: 420px; height: 100%; justify-content: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 430px;
+            height: 100%;
+            justify-content: center;
         }
 
         .receipt {
-            width: 100%; background: #ffffff; border-radius: 24px;
-            padding: 30px 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            max-height: 80vh; overflow-y: auto; scrollbar-width: none;
+            width: 100%;
+            background: #fffdf7;
+            border-radius: 28px;
+            padding: 30px 24px;
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.12);
+            max-height: 82vh;
+            overflow-y: auto;
+            scrollbar-width: none;
+            border: 1px solid rgba(0, 0, 0, 0.05);
         }
-        .receipt::-webkit-scrollbar { display: none; }
 
-        .receipt-order-number { text-align: center; margin-bottom: 20px; }
-        .receipt-order-number p { font-size: 11px; text-transform: uppercase; color: #888; letter-spacing: 2px; font-weight: 700; }
-        .receipt-order-number h1 { font-size: 28px; font-weight: 900; color: #ff6600; margin-top: 4px; }
-
-        .receipt-header { text-align: center; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 15px; }
-        .receipt-header h2 { font-size: 18px; font-weight: 800; color: #222; }
-
-        .receipt-info, .receipt-totals, .receipt-items { font-size: 13px; color: #333; }
-        .receipt-info div, .receipt-totals div { display: flex; justify-content: space-between; margin-bottom: 8px; }
-
-        .receipt-items { border-top: 1px solid #eee; border-bottom: 1px solid #eee; padding: 15px 0; margin: 15px 0; }
-        .item-group { margin-bottom: 15px; }
-        .item-row { display: flex; justify-content: space-between; font-weight: 700; font-size: 14px; color: #000; }
-        .detail-row { font-size: 12px; color: #666; padding-left: 22px; margin-top: 2px; font-style: italic; }
-        .addon-row { display: flex; justify-content: space-between; font-size: 12px; color: #777; padding-left: 22px; margin-top: 2px; }
-
-        .receipt-totals { margin-top: 10px; }
-        .totals-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
-        .vat-detail { color: #888; font-size: 12px; }
-
-        .highlight-box {
-            background: #fff9e6; border-radius: 12px; padding: 12px;
-            margin: 15px 0; border: 1px solid #ffeeba;
+        .receipt::-webkit-scrollbar {
             display: none;
         }
-        .highlight-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-        .points-text { color: #b8860b; font-weight: 800; font-size: 14px; }
+
+        .receipt-order-number {
+            text-align: center;
+            margin-bottom: 18px;
+        }
+
+        .receipt-order-number p {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #7c7c7c;
+            letter-spacing: 2px;
+            font-weight: 800;
+        }
+
+        .receipt-order-number h1 {
+            font-size: 30px;
+            font-weight: 900;
+            color: #ff6600;
+            margin-top: 6px;
+            line-height: 1.1;
+            word-break: break-word;
+        }
+
+        .receipt-header {
+            text-align: center;
+            border-bottom: 1px dashed #d8d8d8;
+            padding-bottom: 16px;
+            margin-bottom: 16px;
+        }
+
+        .receipt-header h2 {
+            font-size: 18px;
+            font-weight: 900;
+            color: #1f2937;
+            letter-spacing: 0.5px;
+        }
+
+        .receipt-header p {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 4px;
+            font-weight: 600;
+        }
+
+        .receipt-meta {
+            margin-bottom: 14px;
+        }
+
+        .meta-row,
+        .totals-row,
+        .payment-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 14px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #1f2937;
+        }
+
+        .meta-row span:first-child,
+        .totals-row span:first-child,
+        .payment-row span:first-child {
+            color: #4b5563;
+        }
+
+        .meta-row b,
+        .meta-row span:last-child,
+        .totals-row span:last-child,
+        .payment-row span:last-child {
+            font-weight: 800;
+            text-align: right;
+            color: #111827;
+        }
+
+        .receipt-items {
+            border-top: 1px dashed #d8d8d8;
+            border-bottom: 1px dashed #d8d8d8;
+            padding: 16px 0;
+            margin: 16px 0;
+        }
+
+        .item-group {
+            margin-bottom: 14px;
+        }
+
+        .item-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 14px;
+            font-weight: 800;
+            font-size: 14px;
+            color: #111827;
+        }
+
+        .item-row span:last-child {
+            white-space: nowrap;
+        }
+
+        .detail-row {
+            font-size: 12px;
+            color: #6b7280;
+            padding-left: 16px;
+            margin-top: 4px;
+            line-height: 1.5;
+        }
+
+        .addon-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 14px;
+            font-size: 12px;
+            color: #6b7280;
+            padding-left: 16px;
+            margin-top: 4px;
+        }
+
+        .addon-row span:last-child {
+            white-space: nowrap;
+        }
+
+        .receipt-totals {
+            margin-top: 10px;
+        }
+
+        .vat-detail {
+            color: #6b7280;
+            font-size: 12px;
+        }
+
+        .discount-row {
+            color: #b91c1c;
+        }
+
+        .receipt-divider-strong {
+            border-top: 2px solid #111827;
+            margin: 12px 0 10px;
+        }
+
+        .grand-total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 14px;
+            font-weight: 900;
+            font-size: 18px;
+            color: #111827;
+        }
+
+        .secondary-box {
+            background: #fff7e6;
+            border-radius: 14px;
+            padding: 14px;
+            margin-top: 16px;
+            border: 1px solid #f8d792;
+            display: none;
+        }
+
+        .secondary-box .box-title {
+            font-size: 10px;
+            font-weight: 900;
+            color: #9a6700;
+            text-transform: uppercase;
+            letter-spacing: 1.4px;
+            margin-bottom: 8px;
+        }
+
+        .highlight-box {
+            background: #fff7e6;
+            border-radius: 14px;
+            padding: 14px;
+            margin: 16px 0 0;
+            border: 1px solid #f8d792;
+            display: none;
+        }
+
+        .highlight-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 6px;
+        }
+
+        .highlight-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .highlight-label {
+            font-size: 12px;
+            color: #7c5a00;
+            font-weight: 700;
+        }
+
+        .points-text {
+            color: #9a6700;
+            font-weight: 900;
+            font-size: 14px;
+        }
 
         .claim-box {
             background: #f8fafc;
@@ -74,66 +279,158 @@
             display: none;
         }
 
-        .receipt-footer { text-align: center; font-size: 11px; margin-top: 25px; color: #bbb; }
+        .claim-box div {
+            font-size: 12px;
+            color: #374151;
+            line-height: 1.55;
+        }
 
-        .action-container { width: 100%; margin-top: 20px; }
+        .receipt-footer {
+            text-align: center;
+            font-size: 11px;
+            margin-top: 22px;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+
+        .receipt-footer p+p {
+            margin-top: 4px;
+        }
+
+        .action-container {
+            width: 100%;
+            margin-top: 20px;
+        }
+
         .receipt-btn {
-            width: 100%; padding: 18px; font-size: 16px; font-weight: 800;
-            background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(15px);
-            border: 2px solid rgba(255, 255, 255, 0.4); border-radius: 20px;
-            color: #2d1e18; cursor: pointer; text-transform: uppercase; transition: 0.3s;
+            width: 100%;
+            padding: 18px;
+            font-size: 16px;
+            font-weight: 900;
+            background: rgba(255, 255, 255, 0.28);
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(255, 255, 255, 0.45);
+            border-radius: 20px;
+            color: #2d1e18;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: 0.3s;
+            letter-spacing: 0.6px;
+        }
+
+        .receipt-btn:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.38);
         }
 
         .modal-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.5);
-            display: none; align-items: center; justify-content: center; z-index: 6000;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 6000;
             padding: 20px;
         }
+
         .modal-card {
-            background: white; width: 100%; max-width: 320px;
-            border-radius: 20px; padding: 25px; text-align: center;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+            background: white;
+            width: 100%;
+            max-width: 320px;
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
         }
-        .modal-card h3 { color: #ff8c00; font-size: 18px; margin-bottom: 10px; font-weight: 900; }
-        .modal-card p { color: #555; font-size: 14px; line-height: 1.5; margin-bottom: 20px; }
-        .modal-btn-group { display: flex; gap: 10px; }
+
+        .modal-card h3 {
+            color: #ff8c00;
+            font-size: 18px;
+            margin-bottom: 10px;
+            font-weight: 900;
+        }
+
+        .modal-card p {
+            color: #555;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .modal-btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
         .modal-btn {
-            flex: 1; padding: 12px; border-radius: 10px; border: none;
-            font-weight: 700; cursor: pointer; font-size: 13px;
+            flex: 1;
+            padding: 12px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 13px;
         }
-        .modal-btn-confirm { background: #ff8c00; color: white; }
+
+        .modal-btn-confirm {
+            background: #ff8c00;
+            color: white;
+        }
 
         #successOverlay {
-            display: none; position: fixed; inset: 0;
+            display: none;
+            position: fixed;
+            inset: 0;
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(25px) saturate(180%);
             -webkit-backdrop-filter: blur(25px) saturate(180%);
             z-index: 9000;
-            flex-direction: column; align-items: center; justify-content: center;
-            opacity: 0; transition: opacity 0.5s ease;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.5s ease;
         }
 
         .glass-card {
             background: rgba(255, 255, 255, 0.7);
             border: 1px solid rgba(255, 255, 255, 0.4);
-            padding: 40px; border-radius: 40px; text-align: center;
+            padding: 40px;
+            border-radius: 40px;
+            text-align: center;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
-            transform: scale(0.8); transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform: scale(0.8);
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         .check-icon {
-            width: 80px; height: 80px; background: #22c55e;
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            color: white; font-size: 40px; margin: 0 auto 20px;
+            width: 80px;
+            height: 80px;
+            background: #22c55e;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 40px;
+            margin: 0 auto 20px;
             box-shadow: 0 0 20px rgba(34, 197, 94, 0.4);
         }
 
         .success-text {
-            font-size: 24px; font-weight: 900; color: #1a1a1a;
-            letter-spacing: 1px; margin-bottom: 5px;
+            font-size: 24px;
+            font-weight: 900;
+            color: #1a1a1a;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
         }
 
-        .success-sub { color: #666; font-size: 14px; font-weight: 500; }
+        .success-sub {
+            color: #666;
+            font-size: 14px;
+            font-weight: 500;
+        }
 
         .loading-text {
             font-size: 15px;
@@ -141,8 +438,33 @@
             text-align: center;
             padding: 20px 0;
         }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 14px;
+            }
+
+            .receipt {
+                padding: 24px 18px;
+                border-radius: 22px;
+            }
+
+            .receipt-order-number h1 {
+                font-size: 26px;
+            }
+
+            .item-row,
+            .grand-total-row {
+                font-size: 15px;
+            }
+
+            .receipt-btn {
+                padding: 16px;
+            }
+        }
     </style>
 </head>
+
 <body>
 
     <div id="customModal" class="modal-overlay">
@@ -172,14 +494,17 @@
 
             <div class="receipt-header">
                 <h2>TEO D' MANGO</h2>
-                <p style="font-size:12px; color:#666;">Official Kiosk Receipt</p>
+                <p>Official Kiosk Receipt</p>
             </div>
 
-            <div class="receipt-info">
-                <div><span>Order Type</span><b id="orderType">--</b></div>
-                <div><span>Date & Time</span><span id="dateTime">--/--/---- --:--</span></div>
-                <div><span>Payment Mode</span><b id="paymentMethod">--</b></div>
-                <div><span>Status</span><b id="orderStatus">--</b></div>
+            <div class="receipt-meta">
+                <div class="meta-row"><span>Order ID</span><b id="orderId">--</b></div>
+                <div class="meta-row"><span>Raw ID</span><span id="receiptRawId">--</span></div>
+                <div class="meta-row"><span>Customer</span><span id="receiptCustomerName">--</span></div>
+                <div class="meta-row"><span>Order Type</span><b id="orderType">--</b></div>
+                <div class="meta-row"><span>Date & Time</span><span id="dateTime">--/--/---- --:--</span></div>
+                <div class="meta-row"><span>Payment Mode</span><b id="paymentMethod">--</b></div>
+                <div class="meta-row"><span>Status</span><b id="orderStatus">--</b></div>
             </div>
 
             <div class="receipt-items" id="receiptItems">
@@ -190,30 +515,43 @@
                 <div class="totals-row"><span>Subtotal</span><span id="subtotalAmount">₱0.00</span></div>
                 <div class="totals-row vat-detail"><span>VATable Sales</span><span id="vatableSales">₱0.00</span></div>
                 <div class="totals-row vat-detail"><span>VAT Amount (12%)</span><span id="vatAmount">₱0.00</span></div>
-                <div class="totals-row" id="discountRow" style="display:none;"><span>Discount</span><span id="discountAmount">₱0.00</span></div>
+                <div class="totals-row discount-row" id="discountRow" style="display:none;"><span>Discount</span><span
+                        id="discountAmount">- ₱0.00</span></div>
+                <div class="totals-row" id="promoCodeRow" style="display:none;"><span>Promo Code</span><span
+                        id="promoCodeText">--</span></div>
 
-                <div style="font-weight:800; font-size:18px; margin-top:10px; border-top:2px solid #000; padding-top:10px; display:flex; justify-content:space-between;">
+                <div class="receipt-divider-strong"></div>
+
+                <div class="grand-total-row">
                     <span>TOTAL</span>
                     <span id="totalAmount">₱0.00</span>
                 </div>
             </div>
 
+            <div class="secondary-box" id="paymentBreakdownBox">
+                <div class="box-title">Payment Summary</div>
+                <div class="payment-row" id="receivedRow" style="display:none;"><span>Amount Received</span><span
+                        id="amountReceivedText">₱0.00</span></div>
+                <div class="payment-row" id="changeRow" style="display:none;"><span>Change</span><span
+                        id="changeAmountText">₱0.00</span></div>
+            </div>
+
             <div class="highlight-box" id="rewardsBox">
                 <div class="highlight-row">
-                    <span style="font-size:12px; font-weight:700;">REWARD POINTS</span>
+                    <span class="highlight-label">Rewards / Points</span>
                     <span class="points-text"><span id="earnedPoints">0</span> PTS</span>
                 </div>
                 <div class="highlight-row">
-                    <span style="font-size:12px;">Points Status</span>
-                    <span id="pointsStatusText" style="font-weight:700;">--</span>
+                    <span class="highlight-label">Points Status</span>
+                    <span id="pointsStatusText" style="font-weight:800; color:#7c5a00;">--</span>
                 </div>
                 <div class="claim-box" id="claimBox">
-                    <div style="font-size:12px; color:#444; line-height:1.5;" id="claimMessage">--</div>
+                    <div id="claimMessage">--</div>
                 </div>
             </div>
 
             <div class="receipt-footer">
-                <p>Order ID: <span id="orderId">--</span></p>
+                <p>Thank you for choosing Teo D' Mango!</p>
                 <p>Have a Mango-nificent day!</p>
             </div>
         </div>
@@ -225,4 +563,5 @@
 
     <script src="../js/kiosk-receipt.js"></script>
 </body>
+
 </html>

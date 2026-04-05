@@ -216,13 +216,15 @@ def _resolve_wallet_for_topup(
     _ensure_wallet_code(db, wallet)
     return user, wallet
 
+
 # -----------------------
 # RESET TOKEN HASH
 # -----------------------
 TOKEN_ITERS = 120_000
-PIN_RESET_TTL_SECONDS = 15*60
+PIN_RESET_TTL_SECONDS = 15 * 60
 PIN_RESET_COOLDOWN_SECONDS = 60
 PIN_RESET_MAX_ATTEMPTS = 5
+
 
 def _utcnow():
     return datetime.now(timezone.utc)
@@ -261,6 +263,7 @@ def _verify_token(token_str: str, stored: str) -> bool:
     except Exception:
         return False
 
+
 def _get_latest_pin_reset_token(db: Session, user_id: int):
     return (
         db.query(WalletPinResetToken)
@@ -290,6 +293,8 @@ def _ensure_new_pin_is_not_same_as_current(wallet: Wallet, new_pin: str):
             status_code=400,
             detail="New PIN must be different from your current PIN"
         )
+
+
 def _send_email(to_email: str, subject: str, body: str):
     enabled = (os.getenv("SMTP_ENABLED", "false").lower() == "true")
     if not enabled:
@@ -328,6 +333,8 @@ class WalletForgotPinConfirm(BaseModel):
     email: str
     code: str = Field(min_length=6, max_length=6)
     new_pin: str = Field(min_length=4, max_length=6)
+
+
 # -----------------------
 # SET PIN (SELF ONLY)
 # -----------------------
@@ -355,6 +362,8 @@ def set_pin(
         "user_id": current_user.id,
         "wallet_code": getattr(wallet, "wallet_code", None),
     }
+
+
 # -----------------------
 # VERIFY PIN (SELF ONLY)
 # -----------------------
@@ -377,9 +386,8 @@ def verify_my_pin(
         "wallet_id": wallet.id,
         "wallet_code": getattr(wallet, "wallet_code", None),
     }
-#---------------
-#_-------------VERIFY PIN
-#---------
+
+
 # -----------------------
 # PIN STATUS (SELF ONLY)
 # -----------------------
@@ -394,6 +402,7 @@ def get_pin_status(
     return {
         "has_pin": bool(getattr(wallet, "pin_hash", None))
     }
+
 
 # -----------------------
 # FORGOT PIN REQUEST (SELF ONLY)
@@ -464,6 +473,8 @@ def forgot_pin_request(
         "message": "Wallet PIN reset code sent successfully",
         "cooldown_seconds": PIN_RESET_COOLDOWN_SECONDS
     }
+
+
 # -----------------------
 # FORGOT PIN CONFIRM (SELF ONLY)
 # -----------------------
@@ -549,6 +560,8 @@ def forgot_pin_confirm(
         "user_id": current_user.id,
         "wallet_code": getattr(wallet, "wallet_code", None),
     }
+
+
 # -----------------------
 # LOOKUP WALLET USERS (STAFF/CASHIER/ADMIN)
 # search by wallet_code or email or full_name
@@ -605,6 +618,41 @@ def lookup_wallet_users(
 
 
 # -----------------------
+# GET SINGLE WALLET USER (STAFF/CASHIER/ADMIN)
+# secure detail fetch by user_id only
+# -----------------------
+@router.get("/member/{user_id}")
+def get_wallet_member_by_user_id(
+    user_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(require_roles("staff", "cashier", "admin")),
+):
+    user = db.query(User).filter(User.id == int(user_id)).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    wallet = db.query(Wallet).filter(Wallet.user_id == user.id).first()
+    if not wallet:
+        raise HTTPException(status_code=404, detail="Wallet not found")
+
+    customer_profile = db.query(CustomerProfile).filter(CustomerProfile.user_id == user.id).first()
+
+    if not (getattr(wallet, "wallet_code", None) or "").strip():
+        wallet.wallet_code = _generate_unique_wallet_code(db)
+        db.commit()
+        db.refresh(wallet)
+
+    return {
+        "user_id": user.id,
+        "email": user.email,
+        "full_name": customer_profile.full_name if customer_profile else None,
+        "wallet_code": getattr(wallet, "wallet_code", None),
+        "balance": float(wallet.balance or 0),
+        "is_active": bool(getattr(user, "is_active", True)),
+    }
+
+
+# -----------------------
 # TOP-UP (CASHIER/ADMIN ONLY)
 # accepts user_id OR email OR wallet_code
 # -----------------------
@@ -612,7 +660,7 @@ def lookup_wallet_users(
 def top_up(
     payload: WalletTopUp,
     db: Session = Depends(get_db),
-    _: User = Depends(require_roles("cashier", "admin","staff")),
+    _: User = Depends(require_roles("cashier", "admin", "staff")),
     idempotency_key: str = Header(default=None, alias="Idempotency-Key"),
 ):
     try:
@@ -692,6 +740,8 @@ def top_up(
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Top-up failed: {str(e)}")
+
+
 # -----------------------
 # BACKFILL WALLET CODES (ADMIN ONLY)
 # for old wallets with null/empty wallet_code
@@ -832,9 +882,7 @@ def get_my_wallet_balance(
         "balance": bal,
     }
 
-#-------------------------
-#-----HISTORY OF TRANSACTIONS (SELF ONLY)------
-#-------------------------
+
 # -----------------------
 # WALLET HISTORY (SELF ONLY)
 # -----------------------

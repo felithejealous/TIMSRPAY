@@ -184,7 +184,7 @@ async function loadMonthlyBestSellers() {
       const price = Number(item.price || 0).toFixed(2);
 
       return `
-        <div class="bs-card" onclick="window.location.href='menu.html'">
+        <div class="bs-card" onclick="window.location.href='menu.html?product=${item.product_id}'">
           <div class="bs-img-wrapper">
             <img src="${imageSrc}" alt="${productName}">
           </div>

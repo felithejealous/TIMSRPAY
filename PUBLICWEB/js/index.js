@@ -739,6 +739,203 @@ window.addEventListener("scroll", function () {
   if (fade) fade.style.opacity = 1 - scroll / 600;
   if (img) img.style.transform = `translateY(${scroll * 0.2}px)`;
 });
+function resolvePromoImage(imageUrl) {
+  const clean = String(imageUrl || "").trim();
+  if (!clean) return "";
+  if (clean.startsWith("http://") || clean.startsWith("https://")) return clean;
+  if (clean.startsWith("/")) return `${API_BASE}${clean}`;
+  return clean;
+}
+function buildPromoRedirectUrl(code = "") {
+  const cleanCode = String(code || "").trim();
+
+  if (cleanCode) {
+    return `login.html?promo=${encodeURIComponent(cleanCode)}&redirect=menu.html`;
+  }
+
+  return `login.html?redirect=menu.html`;
+}
+
+function getPromoButtonLabel() {
+  return "Log In to Use Promo";
+}
+function formatPromoDate(value) {
+  if (!value) return null;
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toLocaleDateString("en-PH", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+function updatePromoDots() {
+  const viewport = document.getElementById("promoBannerViewport");
+  const slides = document.querySelectorAll(".promo-banner-slide");
+  const dots = document.querySelectorAll(".promo-banner-dot");
+
+  if (!viewport || !slides.length || !dots.length) return;
+
+  const slideWidth = slides[0].offsetWidth + 18;
+  const activeIndex = Math.round(viewport.scrollLeft / slideWidth);
+
+  dots.forEach((dot, index) => {
+    dot.classList.toggle("active", index === activeIndex);
+  });
+}
+
+function scrollPromoBanner(direction = 1) {
+  const viewport = document.getElementById("promoBannerViewport");
+  if (!viewport) return;
+
+  const amount = viewport.clientWidth + 18;
+  viewport.scrollBy({
+    left: direction * amount,
+    behavior: "smooth",
+  });
+}
+
+function bindPromoBannerControls(count) {
+  const prevBtn = document.getElementById("promoBannerPrevBtn");
+  const nextBtn = document.getElementById("promoBannerNextBtn");
+  const viewport = document.getElementById("promoBannerViewport");
+  const dots = document.querySelectorAll(".promo-banner-dot");
+
+  if (prevBtn) {
+    prevBtn.onclick = () => scrollPromoBanner(-1);
+  }
+
+  if (nextBtn) {
+    nextBtn.onclick = () => scrollPromoBanner(1);
+  }
+
+  if (viewport) {
+    viewport.addEventListener("scroll", updatePromoDots, { passive: true });
+  }
+
+  dots.forEach((dot, index) => {
+    dot.addEventListener("click", () => {
+      if (!viewport) return;
+      viewport.scrollTo({
+        left: index * viewport.clientWidth,
+        behavior: "smooth",
+      });
+    });
+  });
+
+  if (count > 0) updatePromoDots();
+}
+
+async function loadPublicPromos() {
+  const bannerTrack = document.getElementById("promoBannerTrack");
+  const bannerDots = document.getElementById("promoBannerDots");
+  const codeList = document.getElementById("promoCodeList");
+
+  if (!bannerTrack || !bannerDots || !codeList) return;
+
+  try {
+    bannerTrack.innerHTML = `<div class="loading-card" style="min-width:100%;">Loading promos...</div>`;
+    bannerDots.innerHTML = "";
+    codeList.innerHTML = `<div class="loading-card">Loading promo codes...</div>`;
+
+    const res = await fetch(`${API_BASE}/promo/public/featured`);
+    const data = await res.json();
+
+    if (!res.ok) {
+      bannerTrack.innerHTML = `<div class="empty-card" style="min-width:100%;">Failed to load promo banners.</div>`;
+      codeList.innerHTML = `<div class="empty-card">Failed to load promo codes.</div>`;
+      return;
+    }
+
+    const banners = Array.isArray(data.banners) ? data.banners : [];
+    const codes = Array.isArray(data.codes) ? data.codes : [];
+
+    if (!banners.length) {
+      bannerTrack.innerHTML = `
+        <div class="promo-banner-slide">
+          <div class="promo-banner-content">
+            <div class="promo-banner-label"><i class="fa-solid fa-bullhorn"></i> No Active Banner</div>
+            <h4>Fresh promos are coming soon.</h4>
+            <p>Please check back later for the latest campaign banners and featured offers.</p>
+          </div>
+        </div>
+      `;
+      bannerDots.innerHTML = `<span class="promo-banner-dot active"></span>`;
+    } else {
+      bannerTrack.innerHTML = banners.map((item) => {
+        const title = escapeHtml(item.title || "Featured Promo");
+        const imageSrc = resolvePromoImage(item.image_url);
+        const bannerPromoCode = codes[0]?.code || "";
+return `
+  <div class="promo-banner-slide">
+    ${imageSrc ? `<img src="${imageSrc}" alt="${title}">` : ``}
+    <div class="promo-banner-content">
+      <div class="promo-banner-label">
+        <i class="fa-solid fa-bolt"></i> Promo Banner
+      </div>
+
+      <h4>${title}</h4>
+
+      <p>
+        Discover today’s featured campaign and special promotional highlights from Teo D' Mango.
+      </p>
+      <a href="${buildPromoRedirectUrl(bannerPromoCode)}" class="promo-banner-link">
+        ${getPromoButtonLabel()}
+    </a>
+    </div>
+  </div>
+`;
+      }).join("");
+
+      bannerDots.innerHTML = banners.map((_, index) => {
+        return `<span class="promo-banner-dot ${index === 0 ? "active" : ""}"></span>`;
+      }).join("");
+    }
+
+    if (!codes.length) {
+      codeList.innerHTML = `<div class="empty-card">No active promo codes available right now.</div>`;
+    } else {
+      codeList.innerHTML = codes.map((item) => {
+        const title = escapeHtml(item.title || item.code || "Promo Code");
+        const description = escapeHtml(
+          item.description || "Use this promo code during checkout to enjoy special savings."
+        );
+        const code = escapeHtml(item.code || "PROMO");
+        const valueLabel = escapeHtml(item.value_label || "");
+        const minOrder = Number(item.min_order_amount || 0).toFixed(2);
+        const validUntil = formatPromoDate(item.valid_until);
+return `
+  <div class="promo-code-card-item">
+    <div class="promo-code-top">
+      <div>
+        <div class="promo-code-title">${title}</div>
+        <div class="promo-code-value">${valueLabel}</div>
+      </div>
+      <a href="${buildPromoRedirectUrl(code)}" class="promo-code-chip" style="text-decoration:none;">
+        ${code}
+      </a>
+    </div>
+
+    <div class="promo-code-desc">${description}</div>
+
+    <div class="promo-code-meta">
+      <span>Min. Order ₱${minOrder}</span>
+      ${item.per_user_limit ? `<span>${escapeHtml(String(item.per_user_limit))} Per User</span>` : ``}
+      ${validUntil ? `<span>Until ${escapeHtml(validUntil)}</span>` : `<span>Limited Time</span>`}
+    </div>
+  </div>
+`;
+      }).join("");
+    }
+
+    bindPromoBannerControls(banners.length || 1);
+  } catch (error) {
+    console.error("Failed to load public promos:", error);
+    bannerTrack.innerHTML = `<div class="empty-card" style="min-width:100%;">Failed to load promo banners.</div>`;
+    codeList.innerHTML = `<div class="empty-card">Failed to load promo codes.</div>`;
+  }
+}
 
 document.addEventListener("mousemove", (e) => {
   const img = document.getElementById("hero-img");
@@ -760,6 +957,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     loadPublicFaq(),
     loadPublicAnnouncements(),
     loadPublicFeedback(),
+    loadPublicPromos(),
   ]);
 });
 

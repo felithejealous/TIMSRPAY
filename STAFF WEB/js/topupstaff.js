@@ -37,9 +37,10 @@ function formatMoney(value) {
 }
 
 function maskWalletCode(code) {
-    const raw = String(code || "").trim();
+    const raw = String(code || "").trim().toUpperCase();
     if (!raw) return "-";
-    return raw;
+    if (raw.length <= 3) return raw;
+    return `${raw.slice(0, 3)}***`;
 }
 
 function formatTimeOnly(value) {
@@ -56,20 +57,38 @@ function formatTimeOnly(value) {
 function showMessage(message) {
     alert(message);
 }
-function getQueryMember() {
-    const params = new URLSearchParams(window.location.search);
 
+function getQueryMemberUserId() {
+    const params = new URLSearchParams(window.location.search);
     const userId = params.get("user_id");
+
     if (!userId) return null;
 
-    return {
-        user_id: Number(userId),
-        full_name: params.get("full_name") || "",
-        email: params.get("email") || "",
-        wallet_code: params.get("wallet_code") || "",
-        balance: Number(params.get("balance") || 0),
-        is_active: String(params.get("is_active")) === "true"
-    };
+    const parsed = Number(userId);
+    if (!Number.isFinite(parsed) || parsed <= 0) return null;
+
+    return parsed;
+}
+
+function sanitizeMemberURL(userId) {
+    if (!userId) return;
+    const cleanUrl = `${window.location.pathname}?user_id=${encodeURIComponent(String(userId))}`;
+    window.history.replaceState({}, "", cleanUrl);
+}
+
+async function fetchMemberByUserId(userId) {
+    const response = await fetch(`${getAPIURL()}/wallet/member/${encodeURIComponent(userId)}`, {
+        method: "GET",
+        credentials: "include"
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+        throw new Error(result.detail || `Failed to load wallet member: ${response.status}`);
+    }
+
+    return result;
 }
 
 function loadSelectedMember(member) {
@@ -96,8 +115,10 @@ function loadSelectedMember(member) {
         memberStatusText.style.color = member?.is_active ? "var(--success)" : "var(--danger)";
     }
 
-    if (memberSearchInput && member) {
-        memberSearchInput.value = member.full_name || member.email || member.wallet_code || "";
+    if (memberSearchInput) {
+        memberSearchInput.value = member
+            ? (member.full_name || member.email || member.wallet_code || "")
+            : "";
     }
 }
 
@@ -130,12 +151,7 @@ async function quickSearchAndRedirect() {
         if (rows.length === 1) {
             const user = rows[0];
             const params = new URLSearchParams({
-                user_id: String(user.user_id || ""),
-                full_name: String(user.full_name || ""),
-                email: String(user.email || ""),
-                wallet_code: String(user.wallet_code || ""),
-                balance: String(user.balance || 0),
-                is_active: String(Boolean(user.is_active))
+                user_id: String(user.user_id || "")
             });
 
             window.location.href = `topupstaff.html?${params.toString()}`;
@@ -157,8 +173,8 @@ function setAmount(val) {
 
 function setMethod(el, method) {
     selectedPaymentMethod = method;
-    document.querySelectorAll('#methods .option-chip').forEach(chip => chip.classList.remove('active'));
-    el?.classList.add('active');
+    document.querySelectorAll("#methods .option-chip").forEach(chip => chip.classList.remove("active"));
+    el?.classList.add("active");
 }
 
 function getSessionLogKey() {
@@ -298,13 +314,15 @@ function setupActions() {
     });
 }
 
-function initTopupStaffPage() {
+async function initTopupStaffPage() {
     try {
-        
         setupActions();
 
-        const member = getQueryMember();
-        if (member) {
+        const userId = getQueryMemberUserId();
+
+        if (userId) {
+            sanitizeMemberURL(userId);
+            const member = await fetchMemberByUserId(userId);
             loadSelectedMember(member);
         } else {
             loadSelectedMember(null);
@@ -314,6 +332,8 @@ function initTopupStaffPage() {
         renderSessionHistory();
     } catch (error) {
         console.error("topupstaff init error:", error);
+        showMessage(error.message || "Failed to load member data.");
+        loadSelectedMember(null);
     }
 }
 

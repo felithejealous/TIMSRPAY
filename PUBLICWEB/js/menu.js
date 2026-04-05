@@ -1,5 +1,7 @@
 const MENU_STORAGE_KEY = "public_menu_cart";
 const CHECKOUT_DRAFT_KEY = "public_online_order_draft";
+const APPLIED_PROMO_STORAGE_KEY = "public_applied_promo";
+const PROMO_QUERY_PARAM = "promo";
 
 const SIZE_OPTIONS = {
   small: { label: "Small", addPrice: 0 },
@@ -36,6 +38,7 @@ let allProducts = [];
 let currentProduct = null;
 let cart = [];
 let qty = 1;
+let appliedPromo = null;
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -103,6 +106,159 @@ function getSelectedAddOns() {
   );
 }
 
+function getCartSubtotal() {
+  return Number(
+    cart.reduce((sum, item) => sum + Number(item.total || 0), 0).toFixed(2),
+  );
+}
+
+function parseDateSafe(value) {
+  if (!value) return null;
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function isPromoDateValid(promo) {
+  const now = new Date();
+  const validFrom = parseDateSafe(promo?.valid_from);
+  const validUntil = parseDateSafe(promo?.valid_until);
+
+  if (validFrom && now < validFrom) return false;
+  if (validUntil && now > validUntil) return false;
+  return true;
+}
+
+function calculatePromoDiscount(subtotal, promo) {
+  const safeSubtotal = Number(subtotal || 0);
+  if (!promo || safeSubtotal <= 0) return 0;
+
+  const discountType = String(promo.discount_type || "").toLowerCase();
+  const discountValue = Number(promo.discount_value || 0);
+
+  let discount = 0;
+
+  if (discountType === "percent") {
+    discount = safeSubtotal * (discountValue / 100);
+  } else if (discountType === "fixed") {
+    discount = discountValue;
+  }
+
+  if (discount > safeSubtotal) discount = safeSubtotal;
+
+  return Number(discount.toFixed(2));
+}
+
+function getFinalTotal() {
+  const subtotal = getCartSubtotal();
+  const discount = calculatePromoDiscount(subtotal, appliedPromo);
+  return Number((subtotal - discount).toFixed(2));
+}
+
+function saveAppliedPromo() {
+  if (!appliedPromo) {
+    localStorage.removeItem(APPLIED_PROMO_STORAGE_KEY);
+    return;
+  }
+
+  localStorage.setItem(APPLIED_PROMO_STORAGE_KEY, JSON.stringify(appliedPromo));
+}
+
+function loadAppliedPromo() {
+  try {
+    const saved = JSON.parse(
+      localStorage.getItem(APPLIED_PROMO_STORAGE_KEY) || "null",
+    );
+    appliedPromo = saved && typeof saved === "object" ? saved : null;
+  } catch {
+    appliedPromo = null;
+  }
+}
+
+function setPromoStatus(message = "", type = "neutral") {
+  const statusEl = document.getElementById("promoStatus");
+  if (!statusEl) return;
+
+  statusEl.textContent = message;
+
+  if (type === "success") {
+    statusEl.style.color = "#10b981";
+  } else if (type === "error") {
+    statusEl.style.color = "#ff4d6d";
+  } else {
+    statusEl.style.color = "var(--text-muted)";
+  }
+}
+
+function updatePromoUI() {
+  const input = document.getElementById("promoCodeInput");
+  const badge = document.getElementById("appliedPromoBadge");
+  const discountRow = document.getElementById("promoDiscountRow");
+  const discountAmount = document.getElementById("promoDiscountAmount");
+  const subtotalAmount = document.getElementById("cartSubtotalAmount");
+  const grandTotalEl = document.getElementById("cartGrandTotal");
+
+  const subtotal = getCartSubtotal();
+  const discount = calculatePromoDiscount(subtotal, appliedPromo);
+  const finalTotal = Number((subtotal - discount).toFixed(2));
+
+  if (subtotalAmount) subtotalAmount.textContent = formatPeso(subtotal);
+  if (grandTotalEl) grandTotalEl.textContent = formatPeso(finalTotal);
+
+  if (discount > 0 && appliedPromo) {
+    if (discountRow) discountRow.style.display = "flex";
+    if (discountAmount) discountAmount.textContent = `- ${formatPeso(discount)}`;
+
+    if (badge) {
+      badge.textContent = appliedPromo.code || "PROMO";
+      badge.classList.remove("hidden");
+    }
+
+    if (input && appliedPromo.code) {
+      input.value = String(appliedPromo.code).toUpperCase();
+    }
+  } else {
+    if (discountRow) discountRow.style.display = "none";
+    if (discountAmount) discountAmount.textContent = "- ₱0.00";
+
+    if (badge) {
+      badge.textContent = "";
+      badge.classList.add("hidden");
+    }
+  }
+
+  saveAppliedPromo();
+  syncCheckoutDraft();
+}
+
+function clearAppliedPromo({ clearInput = false, silent = false } = {}) {
+  appliedPromo = null;
+  saveAppliedPromo();
+  updatePromoUI();
+
+  if (clearInput) {
+    const input = document.getElementById("promoCodeInput");
+    if (input) input.value = "";
+  }
+
+  if (!silent) {
+    setPromoStatus("Promo removed.", "neutral");
+  }
+}
+
+function getPromoCodeFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  return String(params.get(PROMO_QUERY_PARAM) || "")
+    .trim()
+    .toUpperCase();
+}
+
+function cleanPromoQueryFromUrl() {
+  const url = new URL(window.location.href);
+  if (!url.searchParams.has(PROMO_QUERY_PARAM)) return;
+  url.searchParams.delete(PROMO_QUERY_PARAM);
+  window.history.replaceState({}, "", url.toString());
+}
+
 function saveCart() {
   localStorage.setItem(MENU_STORAGE_KEY, JSON.stringify(cart));
   syncCheckoutDraft();
@@ -118,6 +274,10 @@ function loadCart() {
 }
 
 function syncCheckoutDraft() {
+  const subtotal = getCartSubtotal();
+  const discount = calculatePromoDiscount(subtotal, appliedPromo);
+  const finalTotal = Number((subtotal - discount).toFixed(2));
+
   const payload = {
     order_type: "online",
     items: cart.map((item) => ({
@@ -127,9 +287,20 @@ function syncCheckoutDraft() {
       add_ons: Array.isArray(item.add_on_ids) ? item.add_on_ids : [],
       notes: item.notes || null,
     })),
-    subtotal_preview: Number(
-      cart.reduce((sum, item) => sum + Number(item.total || 0), 0).toFixed(2),
-    ),
+    promo_code: appliedPromo?.code || null,
+    promo_meta: appliedPromo
+      ? {
+          promo_id: Number(appliedPromo.promo_id || 0),
+          code: appliedPromo.code || null,
+          title: appliedPromo.title || null,
+          discount_type: appliedPromo.discount_type || null,
+          discount_value: Number(appliedPromo.discount_value || 0),
+          min_order_amount: Number(appliedPromo.min_order_amount || 0),
+        }
+      : null,
+    subtotal_preview: subtotal,
+    discount_preview: discount,
+    total_preview: finalTotal,
   };
 
   localStorage.setItem(CHECKOUT_DRAFT_KEY, JSON.stringify(payload));
@@ -220,7 +391,7 @@ function renderProducts(products) {
       const safeDescription = getSafeDescription(product.description);
 
       return `
-            <div class="product-card" data-category="${escapeHtml(categorySlug)}" data-title="${escapeHtml((product.name || "").toLowerCase())}" onclick="openProductById(${Number(product.product_id)})">
+            <div class="product-card" data-product-id="${Number(product.product_id)}" data-category="${escapeHtml(categorySlug)}" data-title="${escapeHtml((product.name || "").toLowerCase())}" onclick="openProductById(${Number(product.product_id)})">
                 <img src="${escapeHtml(image)}" alt="${escapeHtml(product.name)}" class="product-img">
                 <div class="product-info">
                     <h3>${escapeHtml(product.name)}</h3>
@@ -424,23 +595,24 @@ function addToCartExecute() {
     addOnsTotal;
   const total = unitPrice * qty;
 
- cart.push({
-  cart_item_id: `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-  product_id: Number(currentProduct.product_id),
-  title: currentProduct.name,
-  image_url: getProductImage(currentProduct),
-  base_price: Number(currentProduct.price || 0),
-  points_per_unit: Number(currentProduct.points_per_unit || 0),
-  size: sizeValue,
-  size_label: sizeMeta.label,
-  size_price: Number(sizeMeta.addPrice || 0),
-  add_ons: selectedAddOns,
-  add_on_ids: selectedAddOns.map((item) => Number(item.add_on_id)),
-  notes,
-  qty: Number(qty),
-  unit_price: Number(unitPrice.toFixed(2)),
-  total: Number(total.toFixed(2)),
-});
+  cart.push({
+    cart_item_id: `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+    product_id: Number(currentProduct.product_id),
+    title: currentProduct.name,
+    image_url: getProductImage(currentProduct),
+    base_price: Number(currentProduct.price || 0),
+    points_per_unit: Number(currentProduct.points_per_unit || 0),
+    size: sizeValue,
+    size_label: sizeMeta.label,
+    size_price: Number(sizeMeta.addPrice || 0),
+    add_ons: selectedAddOns,
+    add_on_ids: selectedAddOns.map((item) => Number(item.add_on_id)),
+    notes,
+    qty: Number(qty),
+    unit_price: Number(unitPrice.toFixed(2)),
+    total: Number(total.toFixed(2)),
+  });
+
   saveCart();
   updateCartBadge();
   renderCart();
@@ -466,6 +638,12 @@ function renderCart() {
   if (!cart.length) {
     list.innerHTML = `<p style="text-align:center; color:var(--text-muted); margin-top:50px;">Your cart is empty.</p>`;
     grandTotalEl.textContent = "₱0.00";
+
+    if (appliedPromo) {
+      clearAppliedPromo({ silent: true });
+    } else {
+      updatePromoUI();
+    }
     return;
   }
 
@@ -505,6 +683,129 @@ function renderCart() {
     .join("");
 
   grandTotalEl.textContent = formatPeso(grandTotal);
+
+  if (
+    appliedPromo &&
+    Number(appliedPromo.min_order_amount || 0) > getCartSubtotal()
+  ) {
+    const needed = Number(appliedPromo.min_order_amount || 0).toFixed(2);
+    clearAppliedPromo({ silent: true });
+    setPromoStatus(
+      `Promo removed. Minimum order for this code is ₱${needed}.`,
+      "error",
+    );
+  } else {
+    updatePromoUI();
+  }
+}
+
+async function applyPromoCode(autoCode = "") {
+  const input = document.getElementById("promoCodeInput");
+  const applyBtn = document.getElementById("applyPromoBtn");
+
+  const code = String(autoCode || input?.value || "")
+    .trim()
+    .toUpperCase();
+
+  if (!code) {
+    clearAppliedPromo({ clearInput: false, silent: true });
+    setPromoStatus("Enter a promo code first.", "error");
+    return;
+  }
+
+  const subtotal = getCartSubtotal();
+  if (subtotal <= 0) {
+    setPromoStatus("Add at least one item before applying a promo code.", "error");
+    return;
+  }
+
+  try {
+    if (applyBtn) applyBtn.disabled = true;
+    setPromoStatus("Checking promo code...", "neutral");
+
+    const { res, data } = await apiGet("/promo/available/me");
+
+    if (!res.ok) {
+      throw new Error(data?.detail || "Failed to fetch available promos.");
+    }
+
+    const promos = Array.isArray(data?.data) ? data.data : [];
+    const match = promos.find(
+      (item) => String(item.code || "").trim().toUpperCase() === code,
+    );
+
+    if (!match) {
+      clearAppliedPromo({ silent: true });
+      setPromoStatus("Promo code not found or not available for your account.", "error");
+      return;
+    }
+
+    if (!Boolean(match.is_active)) {
+      clearAppliedPromo({ silent: true });
+      setPromoStatus("This promo code is currently inactive.", "error");
+      return;
+    }
+
+    if (Boolean(match.already_used_by_me)) {
+      clearAppliedPromo({ silent: true });
+      setPromoStatus("You already used this promo code.", "error");
+      return;
+    }
+
+    if (!isPromoDateValid(match)) {
+      clearAppliedPromo({ silent: true });
+      setPromoStatus("This promo code is expired or not yet active.", "error");
+      return;
+    }
+
+    const minOrderAmount = Number(match.min_order_amount || 0);
+    if (subtotal < minOrderAmount) {
+      clearAppliedPromo({ silent: true });
+      setPromoStatus(
+        `Minimum order for this promo is ${formatPeso(minOrderAmount)}.`,
+        "error",
+      );
+      return;
+    }
+
+    appliedPromo = {
+      promo_id: Number(match.promo_id || 0),
+      title: match.title || match.code || "Promo",
+      description: match.description || "",
+      code: String(match.code || "").toUpperCase(),
+      discount_type: match.discount_type || "",
+      discount_value: Number(match.discount_value || 0),
+      value_label: match.value_label || "",
+      min_order_amount: minOrderAmount,
+      usage_limit: match.usage_limit,
+      usage_count: Number(match.usage_count || 0),
+      per_user_limit: match.per_user_limit,
+      valid_from: match.valid_from || null,
+      valid_until: match.valid_until || null,
+      created_at: match.created_at || null,
+    };
+
+    saveAppliedPromo();
+    updatePromoUI();
+
+    const discount = calculatePromoDiscount(subtotal, appliedPromo);
+    setPromoStatus(
+      `${appliedPromo.code} applied successfully. You saved ${formatPeso(discount)}.`,
+      "success",
+    );
+
+    if (input) input.value = appliedPromo.code;
+    cleanPromoQueryFromUrl();
+  } catch (error) {
+    console.error("applyPromoCode error:", error);
+    clearAppliedPromo({ silent: true });
+    setPromoStatus(
+      error?.message || "Failed to validate promo code.",
+      "error",
+    );
+  } finally {
+    if (applyBtn) applyBtn.disabled = false;
+  }
 }
 
 function openCart() {
@@ -538,6 +839,40 @@ function closeAllPanels() {
   document.body.style.overflow = "auto";
 }
 
+function bindPromoInputEvents() {
+  const input = document.getElementById("promoCodeInput");
+  if (!input) return;
+
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      applyPromoCode();
+    }
+  });
+
+  input.addEventListener("input", () => {
+    input.value = input.value.toUpperCase();
+  });
+}
+
+async function initPromoState() {
+  loadAppliedPromo();
+  updatePromoUI();
+
+  const input = document.getElementById("promoCodeInput");
+  const codeFromUrl = getPromoCodeFromUrl();
+  const storedCode = appliedPromo?.code || "";
+
+  const initialCode = codeFromUrl || storedCode;
+
+  if (input && initialCode) {
+    input.value = initialCode.toUpperCase();
+    await applyPromoCode(initialCode);
+  } else {
+    updatePromoUI();
+  }
+}
+
 async function initMenuPage() {
   const isAuthed = await checkCustomerAuth();
   if (!isAuthed) return;
@@ -545,8 +880,10 @@ async function initMenuPage() {
   loadCart();
   updateCartBadge();
   renderCart();
-  syncCheckoutDraft();
+  bindPromoInputEvents();
+  await initPromoState();
   await loadMenuProducts();
+  focusProductFromUrl();
 }
 
 window.searchMenu = searchMenu;
@@ -560,5 +897,76 @@ window.closeAll = closeAll;
 window.closeAllPanels = closeAllPanels;
 window.proceedToCheckout = proceedToCheckout;
 window.removeCartItem = removeCartItem;
+window.applyPromoCode = applyPromoCode;
+function getProductIdFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const raw = params.get("product");
+  const id = Number(raw);
+  return Number.isFinite(id) && id > 0 ? id : null;
+}
 
-document.addEventListener("DOMContentLoaded", initMenuPage);
+function focusProductFromUrl() {
+  const productId = getProductIdFromUrl();
+  if (!productId) return;
+
+  const product = allProducts.find(
+    (item) => Number(item.product_id) === Number(productId)
+  );
+  if (!product) return;
+
+  const card = document.querySelector(
+    `.product-card[data-product-id="${productId}"]`
+  );
+
+  if (card) {
+    card.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+
+    card.style.boxShadow = "0 0 0 3px #ffc244";
+
+    setTimeout(() => {
+      card.style.boxShadow = "";
+    }, 1800);
+  }
+
+  setTimeout(() => {
+    openProductById(productId);
+  }, 450);
+}
+document.addEventListener("DOMContentLoaded", async () => {
+  await initMenuPage();
+  const params = new URLSearchParams(window.location.search);
+  const productId = params.get("product");
+
+  if (productId) {
+    const pid = Number(productId);
+
+    const target = document.querySelector(
+      `.product-card[onclick*="${pid}"]`
+    );
+
+    if (target) {
+      setTimeout(() => {
+        target.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+
+        // optional highlight
+        target.style.boxShadow = "0 0 0 3px #ffc244";
+
+        setTimeout(() => {
+          target.style.boxShadow = "";
+        }, 2000);
+
+      }, 400);
+    }
+
+    // optional: auto open modal
+    setTimeout(() => {
+      openProductById(pid);
+    }, 600);
+  }
+});

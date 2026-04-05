@@ -418,3 +418,83 @@ def delete_banner(
     db.commit()
 
     return {"message": "Banner deleted"}
+@router.get("/public/banners")
+def list_public_banners(
+    db: Session = Depends(get_db),
+):
+    rows = (
+        db.query(PromoBanner)
+        .filter(PromoBanner.is_active == True)
+        .order_by(PromoBanner.id.desc())
+        .all()
+    )
+
+    return {
+        "count": len(rows),
+        "data": [_serialize_banner(row) for row in rows],
+    }
+
+
+@router.get("/public/codes")
+def list_public_promo_codes(
+    db: Session = Depends(get_db),
+):
+    now = datetime.now()
+
+    rows = (
+        db.query(PromoCode)
+        .filter(PromoCode.is_active == True)
+        .order_by(PromoCode.id.desc())
+        .all()
+    )
+
+    filtered = []
+    for row in rows:
+        if row.valid_from and row.valid_from > now:
+            continue
+        if row.valid_until and row.valid_until < now:
+            continue
+        if row.usage_limit is not None and int(row.usage_count or 0) >= int(row.usage_limit or 0):
+            continue
+        filtered.append(row)
+
+    return {
+        "count": len(filtered),
+        "data": [_serialize_code(row) for row in filtered],
+    }
+
+
+@router.get("/public/featured")
+def get_public_featured_promos(
+    db: Session = Depends(get_db),
+):
+    now = datetime.now()
+
+    banners = (
+        db.query(PromoBanner)
+        .filter(PromoBanner.is_active == True)
+        .order_by(PromoBanner.id.desc())
+        .all()
+    )
+
+    codes = (
+        db.query(PromoCode)
+        .filter(PromoCode.is_active == True)
+        .order_by(PromoCode.id.desc())
+        .all()
+    )
+
+    filtered_codes = []
+    for row in codes:
+        if row.valid_from and row.valid_from > now:
+            continue
+        if row.valid_until and row.valid_until < now:
+            continue
+        if row.usage_limit is not None and int(row.usage_count or 0) >= int(row.usage_limit or 0):
+            continue
+        filtered_codes.append(row)
+
+    return {
+        "banners": [_serialize_banner(row) for row in banners],
+        "codes": [_serialize_code(row) for row in filtered_codes],
+    }

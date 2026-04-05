@@ -1109,6 +1109,10 @@
                 align-items: stretch;
             }
         }
+        .hidden {
+    display: none !important;
+}
+
     </style>
 </head>
 <body>
@@ -1235,17 +1239,17 @@
             <p style="text-align:center; color:var(--text-muted); margin-top:50px;">Your cart is empty.</p>
         </div>
 
-        <div class="checkout-section">
-            <div class="total-row">
-                <span>Total</span>
-                <span id="cartGrandTotal" style="color: var(--mango);">₱0.00</span>
-            </div>
-
-            <button class="btn-massive" id="btnGoCheckout" onclick="proceedToCheckout()" style="opacity:0.5; pointer-events:none;">
-                Proceed to Checkout
-            </button>
-        </div>
+<div class="checkout-section">
+    <div class="total-row">
+        <span>Total</span>
+        <span id="cartGrandTotal" style="color: var(--mango);">₱0.00</span>
     </div>
+
+    <button class="btn-massive" id="btnGoCheckout" onclick="proceedToCheckout()"
+        style="opacity:0.5; pointer-events:none;">
+        Proceed to Checkout
+    </button>
+</div>
     <!-- Account Side Panel -->
 <div class="panel-overlay" id="mainOverlay" onclick="closeAllPanels()"></div>
 

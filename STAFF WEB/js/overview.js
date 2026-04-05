@@ -58,7 +58,12 @@ async function fetchJSON(url, options = {}) {
 
     return data;
 }
-
+function maskWalletCode(code) {
+    const raw = String(code || "").trim().toUpperCase();
+    if (!raw) return "-";
+    if (raw.length <= 3) return raw;
+    return `${raw.slice(0, 3)}***`;
+}
 function escapeHTML(value) {
     return String(value ?? "")
         .replaceAll("&", "&amp;")
@@ -447,7 +452,7 @@ async function handlePointsLookup() {
 
         const fullName = data.full_name || "No name";
         const email = data.email || "No email";
-        const walletCode = data.wallet_code || "No wallet code";
+        const walletCode = maskWalletCode(data.wallet_code);
         const rewardPoints = data.reward_points ?? 0;
         const walletBalance = Number(data.wallet_balance ?? 0).toFixed(2);
         const userId = data.user_id ?? "-";

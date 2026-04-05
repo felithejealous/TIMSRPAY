@@ -89,7 +89,12 @@ def _sync_all_product_availability(db: Session):
     from backend.routers.products import sync_all_product_availability
     sync_all_product_availability(db, commit=False)
 
+def order_requires_locked_wallet_match(order: Order) -> bool:
+    order_type = (getattr(order, "order_type", "") or "").strip().lower()
+    promo_code_id = getattr(order, "promo_code_id", None)
+    promo_code_text = (getattr(order, "promo_code_text", None) or "").strip()
 
+    return order_type == "cashier" and bool(promo_code_id or promo_code_text)
 class OrderItemPayload(BaseModel):
     product_id: int
     quantity: int = Field(gt=0)
@@ -1067,6 +1072,13 @@ def _create_order_core(
 
     if payment_method == "wallet":
         wallet = verify_wallet_by_identifier_pin(db, wallet_code, wallet_email, wallet_pin)
+
+        if promo_row and user_id and int(wallet.user_id) != int(user_id):
+            raise HTTPException(
+                status_code=400,
+                detail="Promo-linked cashier order must be paid using the same linked customer TeoPay account"
+            )
+
         pay_with_wallet(db, wallet.user_id, order.id, final_total)
         order.status = "paid"
 
@@ -1074,12 +1086,12 @@ def _create_order_core(
             order.user_id = int(wallet.user_id)
             user_id = int(wallet.user_id)
 
-        # Always resolve the final customer name from the real wallet owner
-        order.customer_name = resolve_customer_name(
-            db=db,
-            user_id=int(wallet.user_id),
-            explicit_customer_name=customer_name,
-        )
+        if not getattr(order, "customer_name", None) or not order.user_id:
+            order.customer_name = resolve_customer_name(
+                db=db,
+                user_id=int(wallet.user_id),
+                explicit_customer_name=customer_name,
+            )
 
         earned_points = 0
         for it in items:
@@ -1707,7 +1719,7 @@ def pay_wallet_order(
     order_id: int,
     payload: WalletPayPayload,
     db: Session = Depends(get_db),
-   current_staff: User = Depends(require_roles("cashier", "staff", "admin")),
+    current_staff: User = Depends(require_roles("cashier", "staff", "admin")),
 ):
     try:
         order = db.query(Order).filter(Order.id == order_id).first()
@@ -1733,6 +1745,19 @@ def pay_wallet_order(
             pin=payload.wallet_pin,
         )
 
+        if order_requires_locked_wallet_match(order):
+            if not order.user_id:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Promo-linked cashier order has no linked customer account"
+                )
+
+            if int(wallet.user_id) != int(order.user_id):
+                raise HTTPException(
+                    status_code=400,
+                    detail="Promo-linked cashier order must be paid using the same linked customer TeoPay account"
+                )
+
         pay_with_wallet(
             db=db,
             user_id=int(wallet.user_id),
@@ -1751,7 +1776,7 @@ def pay_wallet_order(
             order.user_id = int(wallet.user_id)
 
         if not getattr(order, "customer_name", None):
-            order.customer_name = resolve_customer_name(db, user_id=int(wallet.user_id))
+            order.customer_name = resolve_customer_name(db, user_id=int(order.user_id))
 
         earned_points = 0
         rows = (
@@ -1789,6 +1814,7 @@ def pay_wallet_order(
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")
+
 def get_order_refund_summary(db: Session, order_id: int) -> Dict[str, object]:
     refund_txs = (
         db.query(WalletTransaction)

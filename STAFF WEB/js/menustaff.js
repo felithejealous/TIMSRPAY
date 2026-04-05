@@ -19,12 +19,15 @@ let addons = [];
 let sizeAddons = [];
 let inventoryItems = [];
 let recipeMap = new Map();
+
 let linkedCustomer = null;
 let customerLookupDebounce = null;
+
 let currentItem = null;
 let selectedAddons = [];
 let selectedSize = "small";
 let selectedQuantity = 1;
+
 let cart = [];
 let total = 0;
 
@@ -47,7 +50,7 @@ async function fetchJSON(url, options = {}) {
     let data = null;
     try {
         data = await response.json();
-    } catch (error) {
+    } catch {
         data = null;
     }
 
@@ -70,62 +73,87 @@ function escapeHTML(value) {
 function formatPeso(value) {
     return `₱${Number(value || 0).toFixed(2)}`;
 }
+
+function normalizeCategoryName(value) {
+    return String(value || "Menu Item").trim();
+}
+
+function normalizeSizeName(value) {
+    return String(value || "").trim().toLowerCase();
+}
+
+function prettifySize(value) {
+    const clean = normalizeSizeName(value);
+    if (!clean) return "Small";
+    return clean.charAt(0).toUpperCase() + clean.slice(1);
+}
+
+function clampQuantity(value) {
+    const qty = Number(value);
+    if (!Number.isFinite(qty) || qty < 1) return 1;
+    return Math.floor(qty);
+}
+
+function normalizePromoCode(value) {
+    return String(value || "").trim().toUpperCase();
+}
+
+function hasPromoInput() {
+    return !!normalizePromoCode(promoCodeInput?.value || "");
+}
+
 function setCustomerLookupStatus(message = "", type = "") {
     if (!customerLookupStatus) return;
 
     customerLookupStatus.textContent = message || "";
-
-    if (!message) {
-        customerLookupStatus.style.color = "";
-        return;
-    }
+    customerLookupStatus.style.color = "";
 
     if (type === "success") {
         customerLookupStatus.style.color = "#10b981";
     } else if (type === "error") {
         customerLookupStatus.style.color = "#ef4444";
-    } else {
-        customerLookupStatus.style.color = "";
+    } else if (type === "warning") {
+        customerLookupStatus.style.color = "#f59e0b";
     }
 }
 
-async function resolveCustomerAccount(queryText) {
-    const query = String(queryText || "").trim();
+function updateLinkedCustomerUX() {
+    const promoCode = normalizePromoCode(promoCodeInput?.value || "");
 
-    if (!query) {
-        linkedCustomer = null;
-        setCustomerLookupStatus("");
-        return null;
+    if (promoCode && !linkedCustomer) {
+        setCustomerLookupStatus(
+            "Promo code entered. Link the correct TIMSRPAY customer account first.",
+            "warning"
+        );
+        return;
     }
 
-    const result = await fetchJSON(
-        `${getAPIURL()}/users?q=${encodeURIComponent(query)}&limit=10&include_balances=true`
-    );
-
-    const rows = Array.isArray(result?.data) ? result.data : [];
-
-    const customers = rows.filter(item => (item.role_name || "").toLowerCase() === "customer");
-
-    if (!customers.length) {
-        linkedCustomer = null;
-        setCustomerLookupStatus("No matching customer account found.", "error");
-        return null;
+    if (linkedCustomer) {
+        const displayName = linkedCustomer.full_name || linkedCustomer.email || `User #${linkedCustomer.user_id}`;
+        const extra = linkedCustomer.wallet_code ? ` • Wallet: ${maskWalletCode(linkedCustomer.wallet_code)}` : "";
+        const promoLabel = promoCode ? ` • Promo owner locked` : "";
+        setCustomerLookupStatus(
+            `Linked to ${displayName}${extra}${promoLabel}`,
+            "success"
+        );
+        return;
     }
 
-    const exactEmailMatch = customers.find(item =>
-        String(item.email || "").trim().toLowerCase() === query.toLowerCase()
-    );
+    setCustomerLookupStatus("");
+}
 
-    const selected = exactEmailMatch || customers[0];
-    linkedCustomer = selected;
+function setSelectedQuantity(value) {
+    selectedQuantity = clampQuantity(value);
 
-    const displayName = selected.full_name || selected.email || `User #${selected.user_id}`;
-    setCustomerLookupStatus(
-        `Linked to ${displayName} (User ID #${selected.user_id})`,
-        "success"
-    );
+    if (quantityInput) {
+        quantityInput.value = String(selectedQuantity);
+    }
 
-    return selected;
+    if (currentItem) {
+        updateSelectedItemDisplay();
+    }
+
+    renderProducts(products);
 }
 
 function getProductImageByName(name) {
@@ -154,37 +182,6 @@ function showAddonMessage(message) {
 function showSizeMessage(message) {
     if (!sizeOptions) return;
     sizeOptions.innerHTML = `<div class="option-chip disabled">${escapeHTML(message)}</div>`;
-}
-
-function normalizeCategoryName(value) {
-    return String(value || "Menu Item").trim();
-}
-
-function normalizeSizeName(value) {
-    return String(value || "").trim().toLowerCase();
-}
-
-function prettifySize(value) {
-    const clean = normalizeSizeName(value);
-    if (!clean) return "Small";
-    return clean.charAt(0).toUpperCase() + clean.slice(1);
-}
-
-function clampQuantity(value) {
-    const qty = Number(value);
-    if (!Number.isFinite(qty) || qty < 1) return 1;
-    return Math.floor(qty);
-}
-
-function setSelectedQuantity(value) {
-    selectedQuantity = clampQuantity(value);
-    if (quantityInput) {
-        quantityInput.value = String(selectedQuantity);
-    }
-    if (currentItem) {
-        updateSelectedItemDisplay();
-    }
-    renderProducts(products);
 }
 
 function findInventoryByName(name) {
@@ -217,6 +214,26 @@ function cartSignature(productId, size, addonIds) {
     const cleanAddons = [...addonIds].map(Number).sort((a, b) => a - b).join(",");
     return `${Number(productId)}|${normalizeSizeName(size)}|${cleanAddons}`;
 }
+
+function getCartItemUnitPrice(item) {
+    return Number(item.unit_price || 0);
+}
+
+function recomputeCartItemDisplayPrice(item) {
+    item.display_price = Number((getCartItemUnitPrice(item) * Number(item.quantity || 1)).toFixed(2));
+}
+
+function syncCustomerNameFromLinkedAccount() {
+    if (!customerNameInput) return;
+    if (customerNameInput.value?.trim()) return;
+    if (!linkedCustomer) return;
+
+    const displayName = linkedCustomer.full_name || linkedCustomer.email || "";
+    if (displayName) {
+        customerNameInput.value = displayName;
+    }
+}
+
 /* =========================
    LOGOUT
 ========================= */
@@ -330,6 +347,118 @@ async function loadProductRecipes() {
             }
         })
     );
+}
+
+/* =========================
+   CUSTOMER LOOKUP
+========================= */
+async function resolveCustomerAccount(queryText) {
+    const query = String(queryText || "").trim();
+
+    if (!query) {
+        linkedCustomer = null;
+        updateLinkedCustomerUX();
+        return null;
+    }
+
+    const result = await fetchJSON(
+        `${getAPIURL()}/wallet/lookup?q=${encodeURIComponent(query)}&limit=20`
+    );
+
+    const rows = Array.isArray(result?.data) ? result.data : [];
+
+    if (!rows.length) {
+        linkedCustomer = null;
+        setCustomerLookupStatus("No matching TIMSRPAY customer account found.", "error");
+        return null;
+    }
+
+    const lowerQuery = query.toLowerCase();
+
+    const exactEmailMatch = rows.find(item =>
+        String(item.email || "").trim().toLowerCase() === lowerQuery
+    );
+
+    const exactWalletMatch = rows.find(item =>
+        String(item.wallet_code || "").trim().toUpperCase() === query.toUpperCase()
+    );
+
+    const exactNameMatch = rows.find(item =>
+        String(item.full_name || "").trim().toLowerCase() === lowerQuery
+    );
+
+    const selected = exactEmailMatch || exactWalletMatch || exactNameMatch || rows[0];
+
+    linkedCustomer = {
+        user_id: selected.user_id,
+        email: selected.email,
+        full_name: selected.full_name,
+        wallet_code: selected.wallet_code,
+        balance: selected.balance,
+        is_active: selected.is_active
+    };
+
+    syncCustomerNameFromLinkedAccount();
+    updateLinkedCustomerUX();
+
+    return linkedCustomer;
+}
+
+function setupCustomerLookup() {
+    if (!customerAccountInput) return;
+
+    customerAccountInput.addEventListener("input", () => {
+        clearTimeout(customerLookupDebounce);
+
+        const value = customerAccountInput.value || "";
+
+        customerLookupDebounce = setTimeout(async () => {
+            const trimmed = String(value).trim();
+
+            if (!trimmed) {
+                linkedCustomer = null;
+                updateLinkedCustomerUX();
+                return;
+            }
+
+            try {
+                await resolveCustomerAccount(trimmed);
+            } catch (error) {
+                console.error("Customer lookup failed:", error);
+                linkedCustomer = null;
+                setCustomerLookupStatus(error.message || "Customer lookup failed.", "error");
+            }
+        }, 300);
+    });
+
+    customerAccountInput.addEventListener("blur", async () => {
+        const trimmed = String(customerAccountInput.value || "").trim();
+        if (!trimmed) return;
+
+        try {
+            await resolveCustomerAccount(trimmed);
+        } catch (error) {
+            console.error("Customer lookup blur failed:", error);
+        }
+    });
+}
+
+function setupPromoWatcher() {
+    if (!promoCodeInput) return;
+
+    promoCodeInput.addEventListener("input", () => {
+        const promoCode = normalizePromoCode(promoCodeInput.value);
+        promoCodeInput.value = promoCode;
+
+        updateLinkedCustomerUX();
+
+        if (promoCode && !linkedCustomer) {
+            setCustomerLookupStatus(
+                "Promo code entered. Link the correct TIMSRPAY customer account first.",
+                "warning"
+            );
+        }
+    });
 }
 
 /* =========================
@@ -459,6 +588,7 @@ function renderSizeOptions(items = []) {
     sizeOptions.innerHTML = items.map(item => {
         const cleanName = normalizeSizeName(item.name);
         const isActive = cleanName === normalizeSizeName(selectedSize);
+
         return `
             <div class="option-chip ${isActive ? "active" : ""}" data-size="${escapeHTML(cleanName)}">
                 ${escapeHTML(prettifySize(cleanName))}
@@ -476,11 +606,11 @@ function renderSizeOptions(items = []) {
             });
 
             chip.classList.add("active");
-
             renderProducts(products);
 
             if (currentItem) {
                 const stockState = getProductStockState(currentItem, selectedSize, selectedQuantity);
+
                 if (!stockState.available) {
                     currentItem = null;
                     selectedItemDisplay.innerHTML = `<i class="fa-solid fa-circle-info"></i> Select an item from the menu`;
@@ -517,7 +647,12 @@ function renderAddOns(items = []) {
         });
     });
 }
-
+function maskWalletCode(walletCode) {
+    const clean = String(walletCode || "").trim().toUpperCase();
+    if (!clean) return "";
+    if (clean.length <= 3) return clean;
+    return `${clean.slice(0, 3)}***`;
+}
 function updateSelectedItemDisplay() {
     if (!currentItem || !selectedItemDisplay) return;
 
@@ -539,6 +674,7 @@ function updateSelectedItemDisplay() {
 ========================= */
 function selectItem(product) {
     const stockState = getProductStockState(product, selectedSize, selectedQuantity);
+
     if (!stockState.available) {
         alert(`${product.name} is currently out of stock for ${prettifySize(selectedSize)}.`);
         return;
@@ -593,18 +729,16 @@ function resetSelection() {
         card.classList.remove("active");
     });
 
-    addonOptions.querySelectorAll(".option-chip").forEach(chip => {
+    addonOptions?.querySelectorAll(".option-chip").forEach(chip => {
         chip.classList.remove("active");
     });
 
-    if (sizeOptions) {
-        sizeOptions.querySelectorAll(".option-chip").forEach(chip => {
-            chip.classList.remove("active");
-            if ((chip.dataset.size || "") === "small") {
-                chip.classList.add("active");
-            }
-        });
-    }
+    sizeOptions?.querySelectorAll(".option-chip").forEach(chip => {
+        chip.classList.remove("active");
+        if ((chip.dataset.size || "") === "small") {
+            chip.classList.add("active");
+        }
+    });
 
     renderProducts(products);
 }
@@ -641,6 +775,7 @@ function addToCart() {
 
     const qty = clampQuantity(selectedQuantity);
     const stockState = getProductStockState(currentItem, selectedSize, qty);
+
     if (!stockState.available) {
         alert(`${currentItem.name} is currently out of stock for ${prettifySize(selectedSize)}.`);
         return;
@@ -659,22 +794,20 @@ function addToCart() {
 
     if (existingIndex >= 0) {
         cart[existingIndex].quantity += qty;
-        cart[existingIndex].display_price = Number(cart[existingIndex].unit_price || 0) * Number(cart[existingIndex].quantity || 0);
+        recomputeCartItemDisplayPrice(cart[existingIndex]);
     } else {
-        const cartItem = {
+        cart.push({
             signature,
             product_id: Number(currentItem.product_id),
             quantity: qty,
             size: selectedSize || "small",
             add_ons: addOnIds,
-            unit_price: unitPrice,
+            unit_price: Number(unitPrice.toFixed(2)),
             display_name: currentItem.name,
-            display_price: lineTotal,
+            display_price: Number(lineTotal.toFixed(2)),
             display_addons: selectedAddons.map(addon => addon.name),
             display_size: prettifySize(selectedSize)
-        };
-
-        cart.push(cartItem);
+        });
     }
 
     updateCartUI();
@@ -683,6 +816,31 @@ function addToCart() {
 
 function removeCartItem(index) {
     cart.splice(index, 1);
+    updateCartUI();
+}
+
+function updateCartItemQuantity(index, delta) {
+    const item = cart[index];
+    if (!item) return;
+
+    const nextQty = clampQuantity(Number(item.quantity || 1) + Number(delta || 0));
+
+    if (nextQty < 1) {
+        removeCartItem(index);
+        return;
+    }
+
+    item.quantity = nextQty;
+    recomputeCartItemDisplayPrice(item);
+    updateCartUI();
+}
+
+function setCartItemQuantity(index, value) {
+    const item = cart[index];
+    if (!item) return;
+
+    item.quantity = clampQuantity(value);
+    recomputeCartItemDisplayPrice(item);
     updateCartUI();
 }
 
@@ -700,14 +858,20 @@ function updateCartUI() {
     cartList.innerHTML = cart.map((item, index) => `
         <div class="cart-item">
             <div>
-                <div class="cart-item-name">${escapeHTML(item.display_name)} x${escapeHTML(item.quantity)}</div>
+                <div class="cart-item-name">${escapeHTML(item.display_name)}</div>
                 <div class="cart-item-meta">
                     Size: ${escapeHTML(item.display_size || "Small")}<br>
                     Add-ons: ${escapeHTML(item.display_addons.length ? item.display_addons.join(", ") : "No Add-ons")}
                 </div>
+
+                <div style="display:flex; align-items:center; gap:8px; margin-top:10px;">
+                    <button type="button" class="cart-qty-btn" data-action="minus" data-index="${index}">-</button>
+                    <input type="number" class="cart-qty-input" data-index="${index}" min="1" step="1" value="${escapeHTML(item.quantity)}" style="width:70px; text-align:center;">
+                    <button type="button" class="cart-qty-btn" data-action="plus" data-index="${index}">+</button>
+                </div>
             </div>
 
-            <div style="display:flex; align-items:flex-start;">
+            <div style="display:flex; align-items:flex-start; gap:10px;">
                 <div class="cart-item-price">${escapeHTML(formatPeso(item.display_price))}</div>
                 <i class="fa-solid fa-xmark cart-delete" data-remove-index="${index}"></i>
             </div>
@@ -722,17 +886,37 @@ function updateCartUI() {
             removeCartItem(index);
         });
     });
+
+    cartList.querySelectorAll(".cart-qty-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const index = Number(btn.dataset.index);
+            const action = btn.dataset.action;
+            updateCartItemQuantity(index, action === "plus" ? 1 : -1);
+        });
+    });
+
+    cartList.querySelectorAll(".cart-qty-input").forEach(input => {
+        input.addEventListener("input", () => {
+            const index = Number(input.dataset.index);
+            setCartItemQuantity(index, input.value);
+        });
+
+        input.addEventListener("blur", () => {
+            const index = Number(input.dataset.index);
+            setCartItemQuantity(index, input.value);
+        });
+    });
 }
 
 /* =========================
    CHECKOUT
 ========================= */
 function buildCashierOrderPayload() {
-    const customerName = customerNameInput?.value?.trim() || "Walk-in Customer";
-    const promoCode = promoCodeInput?.value?.trim() || null;
+    const promoCode = normalizePromoCode(promoCodeInput?.value || "");
+    const customerName = customerNameInput?.value?.trim() || linkedCustomer?.full_name || "Walk-in Customer";
 
     if (promoCode && !linkedCustomer?.user_id) {
-        throw new Error("Promo requires a linked customer account. Enter the customer's account email first.");
+        throw new Error("Promo requires a linked TIMSRPAY customer account.");
     }
 
     return {
@@ -740,7 +924,7 @@ function buildCashierOrderPayload() {
         user_id: linkedCustomer?.user_id || null,
         payment_method: "cash",
         order_type: "cashier",
-        promo_code: promoCode,
+        promo_code: promoCode || null,
         items: cart.map(item => ({
             product_id: Number(item.product_id),
             quantity: Number(item.quantity || 1),
@@ -776,7 +960,11 @@ async function proceedToPayment() {
             user_id: payload.user_id,
             linked_customer_email: linkedCustomer?.email || null,
             linked_customer_name: linkedCustomer?.full_name || null,
+            linked_customer_wallet_code: linkedCustomer?.wallet_code || null,
             promo_code: payload.promo_code,
+            promo_locked_user_id: payload.promo_code ? linkedCustomer?.user_id || null : null,
+            promo_locked_email: payload.promo_code ? linkedCustomer?.email || null : null,
+            promo_locked_name: payload.promo_code ? linkedCustomer?.full_name || null : null,
             local_cart: cart,
             total_amount: result.total_amount,
             discount_amount: result.discount_amount || 0,
@@ -800,41 +988,9 @@ async function proceedToPayment() {
 /* =========================
    BUTTONS
 ========================= */
-function setupCustomerLookup() {
-    if (!customerAccountInput) return;
-
-    customerAccountInput.addEventListener("input", () => {
-        clearTimeout(customerLookupDebounce);
-
-        const value = customerAccountInput.value || "";
-
-        customerLookupDebounce = setTimeout(async () => {
-            const trimmed = String(value).trim();
-
-            if (!trimmed) {
-                linkedCustomer = null;
-                setCustomerLookupStatus("");
-                return;
-            }
-
-            try {
-                await resolveCustomerAccount(trimmed);
-            } catch (error) {
-                console.error("Customer lookup failed:", error);
-                linkedCustomer = null;
-                setCustomerLookupStatus(error.message || "Customer lookup failed.", "error");
-            }
-        }, 300);
-    });
-}
 function setupButtons() {
-    if (addToCartBtn) {
-        addToCartBtn.addEventListener("click", addToCart);
-    }
-
-    if (checkoutBtn) {
-        checkoutBtn.addEventListener("click", proceedToPayment);
-    }
+    addToCartBtn?.addEventListener("click", addToCart);
+    checkoutBtn?.addEventListener("click", proceedToPayment);
 }
 
 /* =========================
@@ -842,11 +998,12 @@ function setupButtons() {
 ========================= */
 async function initMenuStaffPage() {
     try {
-       
         setupLogout();
         setupButtons();
         setupQuantityControls();
         setupCustomerLookup();
+        setupPromoWatcher();
+
         updateCartUI();
         setSelectedQuantity(1);
 
@@ -858,6 +1015,7 @@ async function initMenuStaffPage() {
 
         await loadProductRecipes();
         renderProducts(products);
+        updateLinkedCustomerUX();
     } catch (error) {
         console.error("initMenuStaffPage error:", error);
         showMenuMessage(`JS Error: ${error.message}`);
