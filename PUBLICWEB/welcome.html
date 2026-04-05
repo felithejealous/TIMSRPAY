@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -23,12 +24,12 @@
             --card-bg: rgba(255, 255, 255, 0.03);
             --card-border: rgba(255, 255, 255, 0.08);
             --nav-bg: rgba(5, 5, 5, 0.7);
-            --shadow: 0 30px 60px rgba(0,0,0,0.5);
+            --shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
             --hover-bg: rgba(255, 255, 255, 0.06);
             --icon-bg: rgba(255, 255, 255, 0.05);
             --glow-opacity: 0.15;
             --danger: #ff4d6d;
-            --input-bg: rgba(255,255,255,0.05);
+            --input-bg: rgba(255, 255, 255, 0.05);
         }
 
         .light-mode {
@@ -38,11 +39,11 @@
             --card-bg: rgba(255, 255, 255, 0.6);
             --card-border: rgba(0, 0, 0, 0.05);
             --nav-bg: rgba(244, 245, 247, 0.8);
-            --shadow: 0 20px 50px rgba(0,0,0,0.04);
+            --shadow: 0 20px 50px rgba(0, 0, 0, 0.04);
             --hover-bg: rgba(255, 255, 255, 1);
             --icon-bg: rgba(0, 0, 0, 0.03);
             --glow-opacity: 0.4;
-            --input-bg: rgba(0,0,0,0.03);
+            --input-bg: rgba(0, 0, 0, 0.03);
         }
 
         * {
@@ -114,12 +115,12 @@
         .logo img {
             height: 40px;
             object-fit: contain;
-            filter: drop-shadow(0 0 2px rgba(255,255,255,0.8)) drop-shadow(0 0 5px var(--mango));
+            filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.8)) drop-shadow(0 0 5px var(--mango));
             transition: 0.3s ease;
         }
 
         .logo img:hover {
-            filter: drop-shadow(0 0 4px rgba(255,255,255,1)) drop-shadow(0 0 10px var(--mango));
+            filter: drop-shadow(0 0 4px rgba(255, 255, 255, 1)) drop-shadow(0 0 10px var(--mango));
             transform: scale(1.05);
         }
 
@@ -128,6 +129,7 @@
             list-style: none;
             gap: 30px;
             align-items: center;
+            transition: 0.3s ease;
         }
 
         .nav-links a {
@@ -150,6 +152,7 @@
             padding: 8px 20px;
             border-radius: 50px;
             color: var(--text-main) !important;
+            transition: 0.3s ease;
         }
 
         .btn-logout:hover {
@@ -255,7 +258,7 @@
 
         .hero-bento {
             grid-column: span 8;
-            background: linear-gradient(to top, rgba(5,5,5,0.9) 0%, rgba(5,5,5,0.2) 100%), url('https://images.unsplash.com/photo-1546173159-315724a31696?auto=format&fit=crop&q=80&w=1000') center/cover;
+            background: linear-gradient(to top, rgba(5, 5, 5, 0.9) 0%, rgba(5, 5, 5, 0.2) 100%), url('https://images.unsplash.com/photo-1546173159-315724a31696?auto=format&fit=crop&q=80&w=1000') center/cover;
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
@@ -269,7 +272,7 @@
 
         .hero-bento:hover {
             transform: translateY(-5px);
-            box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.6);
         }
 
         .hero-bento h1 {
@@ -279,6 +282,7 @@
             letter-spacing: -2px;
             margin-bottom: 10px;
             line-height: 1.1;
+            transition: 0.3s ease;
         }
 
         .hero-bento p {
@@ -302,13 +306,13 @@
             cursor: pointer;
             transition: 0.3s;
             width: fit-content;
-            box-shadow: 0 15px 30px rgba(255,194,68,0.2);
+            box-shadow: 0 15px 30px rgba(255, 194, 68, 0.2);
         }
 
         .btn-massive:hover {
             background: #fff;
             transform: translateY(-3px);
-            box-shadow: 0 20px 40px rgba(255,255,255,0.2);
+            box-shadow: 0 20px 40px rgba(255, 255, 255, 0.2);
         }
 
         .wallet-bento {
@@ -348,12 +352,13 @@
             color: #fff;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1);
             margin-bottom: 20px;
             flex: 1;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            transition: 0.3s ease;
         }
 
         .tims-card::before {
@@ -384,7 +389,7 @@
             height: 30px;
             background: linear-gradient(135deg, #e6c27a, #d4a017);
             border-radius: 6px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
             margin: 15px 0;
         }
 
@@ -403,8 +408,8 @@
         }
 
         .wallet-eye-btn {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.15);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
             color: #ddd;
             width: 34px;
             height: 34px;
@@ -495,16 +500,16 @@
             cursor: pointer;
         }
 
-    .reorder-list {
-    flex: 1;
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding-right: 6px;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
+        .reorder-list {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 6px;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
 
         .reorder-list::-webkit-scrollbar,
         #announcementPreview::-webkit-scrollbar,
@@ -520,17 +525,18 @@
             background: var(--card-border);
             border-radius: 999px;
         }
-.reorder-item {
-    background: var(--icon-bg);
-    padding: 22px 22px 20px;
-    border-radius: 20px;
-    border: 1px solid var(--card-border);
-    transition: 0.3s;
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-    cursor: default;
-}
+
+        .reorder-item {
+            background: var(--icon-bg);
+            padding: 22px 22px 20px;
+            border-radius: 20px;
+            border: 1px solid var(--card-border);
+            transition: 0.3s;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            cursor: default;
+        }
 
         .reorder-item:hover {
             background: var(--hover-bg);
@@ -538,98 +544,139 @@
             transform: translateX(5px);
         }
 
-.reorder-top {
-    display: flex;
-    justify-content: space-between;
-    gap: 18px;
-    align-items: flex-start;
-}
-.reorder-bottom {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 14px;
-    flex-wrap: wrap;
-    padding-top: 2px;
-}
-    .reorder-info {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    flex: 1;
-    min-width: 0;
-}
-.reorder-info h4 {
-    font-size: 15px;
-    font-weight: 800;
-    color: var(--text-main);
-    margin-bottom: 0;
-    line-height: 1.35;
-}
-.reorder-info p {
-    font-size: 12px;
-    color: var(--text-muted);
-    font-weight: 600;
-    line-height: 1.45;
-    margin: 0;
-}
-.order-meta {
-    font-size: 11px;
-    color: var(--text-muted);
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    line-height: 1.5;
-}
-.order-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;}
-.order-action-btn{width:100%;display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--icon-bg);border:1px solid var(--card-border);color:var(--text-main);padding:11px 16px;border-radius:12px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;cursor:pointer;transition:0.3s;min-height:40px;text-align:center;}
-@media (max-width:768px){.order-actions{grid-template-columns:1fr;}}
+        .reorder-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 18px;
+            align-items: flex-start;
+        }
+
+        .reorder-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            padding-top: 2px;
+        }
+
+        .reorder-info {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .reorder-info h4 {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 0;
+            line-height: 1.35;
+        }
+
+        .reorder-info p {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 600;
+            line-height: 1.45;
+            margin: 0;
+        }
+
+        .order-meta {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            line-height: 1.5;
+        }
+
+        .order-actions {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            width: 100%;
+        }
+
+        .order-action-btn {
+            width: 100%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: var(--icon-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 11px 16px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: 0.3s;
+            min-height: 40px;
+            text-align: center;
+        }
+
+        @media (max-width:768px) {
+            .order-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+
         .order-action-btn:hover {
             border-color: var(--mango);
             color: var(--mango);
             background: var(--hover-bg);
+            transform: translateY(-2px);
         }
-.order-price-pill {
-    background: var(--text-main);
-    color: var(--bg-main);
-    border: none;
-    padding: 11px 18px;
-    border-radius: 50px;
-    font-weight: 900;
-    font-size: 12px;
-    min-width: 96px;
-    text-align: center;
-    flex-shrink: 0;
-}
-@media (max-width: 768px) {
-    .reorder-item {
-        padding: 18px;
-        gap: 14px;
-    }
 
-    .reorder-top {
-        flex-direction: column;
-        gap: 12px;
-    }
+        .order-price-pill {
+            background: var(--text-main);
+            color: var(--bg-main);
+            border: none;
+            padding: 11px 18px;
+            border-radius: 50px;
+            font-weight: 900;
+            font-size: 12px;
+            min-width: 96px;
+            text-align: center;
+            flex-shrink: 0;
+        }
 
-    .reorder-bottom {
-        flex-direction: column;
-        align-items: stretch;
-    }
+        @media (max-width: 768px) {
+            .reorder-item {
+                padding: 18px;
+                gap: 14px;
+            }
 
-    .order-actions {
-        width: 100%;
-    }
+            .reorder-top {
+                flex-direction: column;
+                gap: 12px;
+            }
 
-    .order-action-btn {
-        flex: 1;
-        text-align: center;
-    }
+            .reorder-bottom {
+                flex-direction: column;
+                align-items: stretch;
+            }
 
-    .order-price-pill {
-        align-self: flex-start;
-    }
-}
+            .order-actions {
+                width: 100%;
+            }
+
+            .order-action-btn {
+                flex: 1;
+                text-align: center;
+            }
+
+            .order-price-pill {
+                align-self: flex-start;
+            }
+        }
+
         .announcement-card {
             background: var(--icon-bg);
             border: 1px solid var(--card-border);
@@ -641,6 +688,7 @@
         .announcement-card:hover {
             border-color: var(--mango);
             background: var(--hover-bg);
+            transform: translateY(-3px);
         }
 
         .announcement-title {
@@ -673,160 +721,161 @@
             color: var(--text-muted);
             font-weight: 700;
         }
+
         .announce-view-btn {
-    flex: unset;
-    padding: 10px 16px;
-    border-radius: 12px;
-    background: var(--icon-bg);
-    border: 1px solid var(--card-border);
-    color: var(--text-main);
-    font-weight: 800;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    cursor: pointer;
-    transition: 0.3s;
-    min-width: auto;
-}
+            flex: unset;
+            padding: 10px 16px;
+            border-radius: 12px;
+            background: var(--icon-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            font-weight: 800;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: 0.3s;
+            min-width: auto;
+        }
 
-.announce-view-btn:hover {
-    background: var(--hover-bg);
-    border-color: var(--mango);
-    color: var(--mango);
-}
+        .announce-view-btn:hover {
+            background: var(--hover-bg);
+            border-color: var(--mango);
+            color: var(--mango);
+        }
 
-.announcement-modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.72);
-    backdrop-filter: blur(10px);
-    z-index: 5000;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-    opacity: 0;
-    visibility: hidden;
-    transition: 0.3s ease;
-}
+        .announcement-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.72);
+            backdrop-filter: blur(10px);
+            z-index: 5000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.3s ease;
+        }
 
-.announcement-modal-overlay.active {
-    opacity: 1;
-    visibility: visible;
-}
+        .announcement-modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
 
-.announcement-modal {
-    width: 100%;
-    max-width: 860px;
-    max-height: 88vh;
-    background: var(--bg-main);
-    border: 1px solid var(--card-border);
-    border-radius: 28px;
-    box-shadow: var(--shadow);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    transform: translateY(24px) scale(0.98);
-    transition: 0.3s ease;
-}
+        .announcement-modal {
+            width: 100%;
+            max-width: 860px;
+            max-height: 88vh;
+            background: var(--bg-main);
+            border: 1px solid var(--card-border);
+            border-radius: 28px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transform: translateY(24px) scale(0.98);
+            transition: 0.3s ease;
+        }
 
-.announcement-modal-overlay.active .announcement-modal {
-    transform: translateY(0) scale(1);
-}
+        .announcement-modal-overlay.active .announcement-modal {
+            transform: translateY(0) scale(1);
+        }
 
-.announcement-modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    padding: 22px 24px;
-    border-bottom: 1px solid var(--card-border);
-    background: var(--bg-main);
-}
+        .announcement-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            padding: 22px 24px;
+            border-bottom: 1px solid var(--card-border);
+            background: var(--bg-main);
+        }
 
-.announcement-modal-title {
-    font-size: 22px;
-    font-weight: 900;
-    letter-spacing: -0.5px;
-    color: var(--text-main);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
+        .announcement-modal-title {
+            font-size: 22px;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-.announcement-modal-title i {
-    color: var(--mango);
-}
+        .announcement-modal-title i {
+            color: var(--mango);
+        }
 
-.announcement-modal-close {
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    border: 1px solid var(--card-border);
-    background: var(--icon-bg);
-    color: var(--text-main);
-    font-size: 18px;
-    display: grid;
-    place-items: center;
-    cursor: pointer;
-    transition: 0.3s ease;
-    flex-shrink: 0;
-}
+        .announcement-modal-close {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            border: 1px solid var(--card-border);
+            background: var(--icon-bg);
+            color: var(--text-main);
+            font-size: 18px;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            transition: 0.3s ease;
+            flex-shrink: 0;
+        }
 
-.announcement-modal-close:hover {
-    background: var(--hover-bg);
-    border-color: var(--mango);
-    color: var(--mango);
-    transform: rotate(90deg) scale(1.05);
-}
+        .announcement-modal-close:hover {
+            background: var(--hover-bg);
+            border-color: var(--mango);
+            color: var(--mango);
+            transform: rotate(90deg) scale(1.05);
+        }
 
-.announcement-modal-body {
-    padding: 24px;
-    overflow-y: auto;
-    overflow-x: hidden;
-    flex: 1;
-}
+        .announcement-modal-body {
+            padding: 24px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            flex: 1;
+        }
 
-.announcement-modal-list {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
+        .announcement-modal-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
 
-.announcement-modal-body::-webkit-scrollbar,
-.announcement-modal-list::-webkit-scrollbar {
-    width: 8px;
-}
+        .announcement-modal-body::-webkit-scrollbar,
+        .announcement-modal-list::-webkit-scrollbar {
+            width: 8px;
+        }
 
-.announcement-modal-body::-webkit-scrollbar-thumb,
-.announcement-modal-list::-webkit-scrollbar-thumb {
-    background: var(--card-border);
-    border-radius: 999px;
-}
+        .announcement-modal-body::-webkit-scrollbar-thumb,
+        .announcement-modal-list::-webkit-scrollbar-thumb {
+            background: var(--card-border);
+            border-radius: 999px;
+        }
 
-@media (max-width: 768px) {
-    .announcement-modal {
-        max-height: 92vh;
-        border-radius: 22px;
-    }
+        @media (max-width: 768px) {
+            .announcement-modal {
+                max-height: 92vh;
+                border-radius: 22px;
+            }
 
-    .announcement-modal-header {
-        padding: 18px 18px;
-    }
+            .announcement-modal-header {
+                padding: 18px 18px;
+            }
 
-    .announcement-modal-body {
-        padding: 18px;
-    }
+            .announcement-modal-body {
+                padding: 18px;
+            }
 
-    .announcement-modal-title {
-        font-size: 18px;
-    }
+            .announcement-modal-title {
+                font-size: 18px;
+            }
 
-    .announce-view-btn {
-        padding: 9px 14px;
-        font-size: 10px;
-    }
-}
+            .announce-view-btn {
+                padding: 9px 14px;
+                font-size: 10px;
+            }
+        }
 
         .bs-header {
             grid-column: span 12;
@@ -950,13 +999,14 @@
         .receipt-modal {
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0, 0, 0, 0.8);
             backdrop-filter: blur(8px);
             z-index: 3000;
             display: none;
             justify-content: center;
             align-items: center;
             padding: 20px;
+            transition: 0.3s ease;
         }
 
         .receipt-modal.show {
@@ -968,7 +1018,7 @@
             width: 100%;
             max-width: 640px;
             border-radius: 24px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
             overflow: hidden;
             border: 1px solid var(--card-border);
             display: flex;
@@ -978,8 +1028,15 @@
         }
 
         @keyframes slideUp {
-            from { transform: translateY(50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
 
         .receipt-modal-header {
@@ -1115,9 +1172,17 @@
             text-align: right;
         }
 
-        .text-green { color: #059669 !important; }
-        .text-red { color: #dc2626 !important; }
-        .text-yellow { color: #b45309 !important; }
+        .text-green {
+            color: #059669 !important;
+        }
+
+        .text-red {
+            color: #dc2626 !important;
+        }
+
+        .text-yellow {
+            color: #b45309 !important;
+        }
 
         footer {
             border-top: 1px solid var(--card-border);
@@ -1185,7 +1250,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.6);
+            background: rgba(0, 0, 0, 0.6);
             backdrop-filter: blur(10px);
             z-index: 2000;
             opacity: 0;
@@ -1207,7 +1272,7 @@
             height: 100%;
             background: var(--bg-main);
             border-left: 1px solid var(--card-border);
-            box-shadow: -20px 0 50px rgba(0,0,0,0.5);
+            box-shadow: -20px 0 50px rgba(0, 0, 0, 0.5);
             display: flex;
             flex-direction: column;
             transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1315,7 +1380,7 @@
         .balance-item:hover {
             transform: translateY(-5px);
             border-color: var(--mango);
-            background: rgba(255,194,68,0.05);
+            background: rgba(255, 194, 68, 0.05);
         }
 
         .balance-item i {
@@ -1395,7 +1460,7 @@
         .modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.75);
+            background: rgba(0, 0, 0, 0.75);
             backdrop-filter: blur(10px);
             z-index: 4000;
             display: flex;
@@ -1481,10 +1546,6 @@
                 padding: 20px;
             }
 
-            .nav-links {
-                display: none;
-            }
-
             .bs-card {
                 grid-column: span 6;
             }
@@ -1513,368 +1574,519 @@
                 grid-column: span 12;
             }
         }
-    .notif-badge {
-    position: absolute;
-    top: -4px;
-    right: -2px;
-    min-width: 18px;
-    height: 18px;
-    padding: 0 5px;
-    border-radius: 999px;
-    background: var(--danger);
-    color: #fff;
-    font-size: 10px;
-    font-weight: 900;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid var(--bg-main);
-    line-height: 1;
-}
-.floating-sticky-notif {
-    position: fixed;
-    top: 88px;
-    right: 22px;
-    width: min(340px, calc(100vw - 24px));
-    padding: 16px 16px 14px;
-    border-radius: 18px;
-    background: rgba(10, 10, 10, 0.86);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
-    z-index: 2105;
-}
 
-.light-mode .floating-sticky-notif {
-    background: rgba(255, 255, 255, 0.82);
-    border: 1px solid rgba(0, 0, 0, 0.08);
-}
+        .notif-badge {
+            position: absolute;
+            top: -4px;
+            right: -2px;
+            min-width: 18px;
+            height: 18px;
+            padding: 0 5px;
+            border-radius: 999px;
+            background: var(--danger);
+            color: #fff;
+            font-size: 10px;
+            font-weight: 900;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--bg-main);
+            line-height: 1;
+        }
 
-.floating-sticky-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 10px;
-}
+        .floating-sticky-notif {
+            position: fixed;
+            top: 88px;
+            right: 22px;
+            width: min(340px, calc(100vw - 24px));
+            padding: 16px 16px 14px;
+            border-radius: 18px;
+            background: rgba(10, 10, 10, 0.86);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
+            z-index: 2105;
+            transition: 0.3s ease;
+        }
 
-.floating-sticky-type {
-    font-size: 10px;
-    font-weight: 900;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    color: var(--mango);
-}
+        .light-mode .floating-sticky-notif {
+            background: rgba(255, 255, 255, 0.82);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
 
-.floating-sticky-close {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    border: 1px solid var(--card-border);
-    background: var(--icon-bg);
-    color: var(--text-main);
-    cursor: pointer;
-    display: grid;
-    place-items: center;
-    transition: 0.3s ease;
-    flex-shrink: 0;
-}
+        .floating-sticky-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
 
-.floating-sticky-close:hover {
-    color: var(--mango);
-    border-color: var(--mango);
-    transform: scale(1.05);
-}
+        .floating-sticky-type {
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--mango);
+        }
 
-.floating-sticky-title {
-    font-size: 15px;
-    font-weight: 900;
-    color: var(--text-main);
-    margin-bottom: 6px;
-    line-height: 1.35;
-}
+        .floating-sticky-close {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 1px solid var(--card-border);
+            background: var(--icon-bg);
+            color: var(--text-main);
+            cursor: pointer;
+            display: grid;
+            place-items: center;
+            transition: 0.3s ease;
+            flex-shrink: 0;
+        }
 
-.floating-sticky-message {
-    font-size: 13px;
-    line-height: 1.55;
-    color: var(--text-main);
-    opacity: 0.92;
-}
-@media (max-width: 768px) {
-    .floating-sticky-notif {
-        top: 78px;
-        right: 12px;
-        left: 12px;
-        width: auto;
-    }
-}
-.notification-item {
-    background: var(--icon-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 18px;
-    padding: 18px;
-    transition: 0.3s;
-}
+        .floating-sticky-close:hover {
+            color: var(--mango);
+            border-color: var(--mango);
+            transform: scale(1.05);
+        }
 
-.notification-item:hover {
-    background: var(--hover-bg);
-    border-color: var(--mango);
-}
+        .floating-sticky-title {
+            font-size: 15px;
+            font-weight: 900;
+            color: var(--text-main);
+            margin-bottom: 6px;
+            line-height: 1.35;
+        }
 
-.notification-item.unread {
-    border-color: rgba(255, 194, 68, 0.35);
-    box-shadow: inset 0 0 0 1px rgba(255, 194, 68, 0.08);
-}
+        .floating-sticky-message {
+            font-size: 13px;
+            line-height: 1.55;
+            color: var(--text-main);
+            opacity: 0.92;
+        }
 
-.notification-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 12px;
-    margin-bottom: 10px;
-}
+        @media (max-width: 768px) {
+            .floating-sticky-notif {
+                top: 78px;
+                right: 12px;
+                left: 12px;
+                width: auto;
+            }
+        }
 
-.notification-title {
-    font-size: 15px;
-    font-weight: 900;
-    color: var(--text-main);
-    line-height: 1.35;
-}
+        .notification-item {
+            background: var(--icon-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 18px;
+            padding: 18px;
+            transition: 0.3s;
+        }
 
-.notification-meta {
-    font-size: 11px;
-    color: var(--text-muted);
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    white-space: nowrap;
-}
+        .notification-item:hover {
+            background: var(--hover-bg);
+            border-color: var(--mango);
+            transform: translateX(5px);
+        }
 
-.notification-message {
-    font-size: 14px;
-    line-height: 1.6;
-    color: var(--text-main);
-    margin-bottom: 12px;
-}
+        .notification-item.unread {
+            border-color: rgba(255, 194, 68, 0.35);
+            box-shadow: inset 0 0 0 1px rgba(255, 194, 68, 0.08);
+        }
 
-    #feedbackForm::-webkit-scrollbar{width:8px;}
-    #feedbackForm::-webkit-scrollbar-thumb{background:var(--card-border);border-radius:999px;}
-    .feedback-modal-content{max-width:720px;max-height:88vh;overflow:hidden;}
-    #feedbackForm{display:grid;gap:14px;max-height:70vh;overflow-y:auto;padding-right:6px;}
-    #feedbackForm select{width:100%;background:var(--input-bg);color:var(--text-main);border:1px solid var(--card-border);border-radius:15px;padding:16px;font-size:15px;outline:none;transition:0.3s ease;font-weight:600;}
-    #feedbackForm select:focus{border-color:var(--mango);background:var(--hover-bg);}
-    #feedbackForm::-webkit-scrollbar{width:8px;}
-    #feedbackForm::-webkit-scrollbar-thumb{background:var(--card-border);border-radius:999px;}
-    .leave-feedback-btn i{font-size:12px;}
-    .feedback-sent-btn{opacity:.7;cursor:not-allowed;}
-    .feedback-sent-btn:hover{background:var(--icon-bg);border-color:var(--card-border);color:var(--text-main);transform:none;}
-    @media (max-width:768px){.feedback-modal-content{max-height:92vh;}#feedbackForm{max-height:72vh;}}
-    #notificationHistoryList::-webkit-scrollbar {
-    width: 8px;
-}
-.footer-links a {
-    cursor: pointer;
-}
+        .notification-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
 
-.info-modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.78);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    z-index: 6000;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-    opacity: 0;
-    visibility: hidden;
-    transition: 0.3s ease;
-}
+        .notification-title {
+            font-size: 15px;
+            font-weight: 900;
+            color: var(--text-main);
+            line-height: 1.35;
+        }
 
-.info-modal-overlay.active {
-    opacity: 1;
-    visibility: visible;
-}
+        .notification-meta {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
 
-.info-modal {
-    width: 100%;
-    max-width: 760px;
-    max-height: 88vh;
-    background: var(--bg-main);
-    border: 1px solid var(--card-border);
-    border-radius: 28px;
-    box-shadow: var(--shadow);
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    transform: translateY(24px) scale(0.98);
-    transition: 0.3s ease;
-}
+        .notification-message {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-main);
+            margin-bottom: 12px;
+        }
 
-.info-modal-overlay.active .info-modal {
-    transform: translateY(0) scale(1);
-}
+        #feedbackForm::-webkit-scrollbar {
+            width: 8px;
+        }
 
-.info-modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    padding: 22px 24px;
-    border-bottom: 1px solid var(--card-border);
-    background: var(--bg-main);
-}
+        #feedbackForm::-webkit-scrollbar-thumb {
+            background: var(--card-border);
+            border-radius: 999px;
+        }
 
-.info-modal-title-wrap {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    min-width: 0;
-}
+        .feedback-modal-content {
+            max-width: 720px;
+            max-height: 88vh;
+            overflow: hidden;
+        }
 
-.info-modal-icon {
-    width: 42px;
-    height: 42px;
-    border-radius: 14px;
-    display: grid;
-    place-items: center;
-    background: rgba(255, 194, 68, 0.12);
-    color: var(--mango);
-    border: 1px solid rgba(255, 194, 68, 0.18);
-    flex-shrink: 0;
-}
+        #feedbackForm {
+            display: grid;
+            gap: 14px;
+            max-height: 70vh;
+            overflow-y: auto;
+            padding-right: 6px;
+        }
 
-.info-modal-title {
-    font-size: 22px;
-    font-weight: 900;
-    letter-spacing: -0.5px;
-    color: var(--text-main);
-    line-height: 1.2;
-}
+        #feedbackForm select {
+            width: 100%;
+            background: var(--input-bg);
+            color: var(--text-main);
+            border: 1px solid var(--card-border);
+            border-radius: 15px;
+            padding: 16px;
+            font-size: 15px;
+            outline: none;
+            transition: 0.3s ease;
+            font-weight: 600;
+        }
 
-.info-modal-close {
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    border: 1px solid var(--card-border);
-    background: var(--icon-bg);
-    color: var(--text-main);
-    font-size: 18px;
-    display: grid;
-    place-items: center;
-    cursor: pointer;
-    transition: 0.3s ease;
-    flex-shrink: 0;
-}
+        #feedbackForm select:focus {
+            border-color: var(--mango);
+            background: var(--hover-bg);
+        }
 
-.info-modal-close:hover {
-    background: var(--hover-bg);
-    border-color: var(--mango);
-    color: var(--mango);
-    transform: rotate(90deg) scale(1.05);
-}
+        #feedbackForm::-webkit-scrollbar {
+            width: 8px;
+        }
 
-.info-modal-body {
-    padding: 24px;
-    overflow-y: auto;
-    overflow-x: hidden;
-    flex: 1;
-}
+        #feedbackForm::-webkit-scrollbar-thumb {
+            background: var(--card-border);
+            border-radius: 999px;
+        }
 
-.info-modal-body::-webkit-scrollbar {
-    width: 8px;
-}
+        .leave-feedback-btn i {
+            font-size: 12px;
+        }
 
-.info-modal-body::-webkit-scrollbar-thumb {
-    background: var(--card-border);
-    border-radius: 999px;
-}
+        .feedback-sent-btn {
+            opacity: .7;
+            cursor: not-allowed;
+        }
 
-.info-section {
-    background: var(--icon-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 20px;
-    padding: 18px 18px;
-}
+        .feedback-sent-btn:hover {
+            background: var(--icon-bg);
+            border-color: var(--card-border);
+            color: var(--text-main);
+            transform: none;
+        }
 
-.info-section + .info-section {
-    margin-top: 16px;
-}
+        @media (max-width:768px) {
+            .feedback-modal-content {
+                max-height: 92vh;
+            }
 
-.info-section-title {
-    font-size: 12px;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 1.4px;
-    color: var(--mango);
-    margin-bottom: 10px;
-}
+            #feedbackForm {
+                max-height: 72vh;
+            }
+        }
 
-.info-section p,
-.info-section li {
-    font-size: 14px;
-    line-height: 1.75;
-    color: var(--text-main);
-    font-weight: 600;
-}
+        #notificationHistoryList::-webkit-scrollbar {
+            width: 8px;
+        }
 
-.info-section ul {
-    padding-left: 18px;
-}
+        .footer-links a {
+            cursor: pointer;
+        }
 
-.info-section li + li {
-    margin-top: 8px;
-}
+        .info-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.78);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 6000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.3s ease;
+        }
 
-.info-note {
-    font-size: 12px;
-    color: var(--text-muted);
-    font-weight: 700;
-    line-height: 1.6;
-    margin-top: 16px;
-}
+        .info-modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
 
-@media (max-width: 768px) {
-    .info-modal {
-        max-height: 92vh;
-        border-radius: 22px;
-    }
+        .info-modal {
+            width: 100%;
+            max-width: 760px;
+            max-height: 88vh;
+            background: var(--bg-main);
+            border: 1px solid var(--card-border);
+            border-radius: 28px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transform: translateY(24px) scale(0.98);
+            transition: 0.3s ease;
+        }
 
-    .info-modal-header {
-        padding: 18px;
-    }
+        .info-modal-overlay.active .info-modal {
+            transform: translateY(0) scale(1);
+        }
 
-    .info-modal-body {
-        padding: 18px;
-    }
+        .info-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            padding: 22px 24px;
+            border-bottom: 1px solid var(--card-border);
+            background: var(--bg-main);
+        }
 
-    .info-modal-title {
-        font-size: 18px;
-    }
-}
+        .info-modal-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+        }
 
+        .info-modal-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 14px;
+            display: grid;
+            place-items: center;
+            background: rgba(255, 194, 68, 0.12);
+            color: var(--mango);
+            border: 1px solid rgba(255, 194, 68, 0.18);
+            flex-shrink: 0;
+        }
+
+        .info-modal-title {
+            font-size: 22px;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            color: var(--text-main);
+            line-height: 1.2;
+        }
+
+        .info-modal-close {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            border: 1px solid var(--card-border);
+            background: var(--icon-bg);
+            color: var(--text-main);
+            font-size: 18px;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            transition: 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .info-modal-close:hover {
+            background: var(--hover-bg);
+            border-color: var(--mango);
+            color: var(--mango);
+            transform: rotate(90deg) scale(1.05);
+        }
+
+        .info-modal-body {
+            padding: 24px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            flex: 1;
+        }
+
+        .info-modal-body::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .info-modal-body::-webkit-scrollbar-thumb {
+            background: var(--card-border);
+            border-radius: 999px;
+        }
+
+        .info-section {
+            background: var(--icon-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 18px 18px;
+        }
+
+        .info-section+.info-section {
+            margin-top: 16px;
+        }
+
+        .info-section-title {
+            font-size: 12px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1.4px;
+            color: var(--mango);
+            margin-bottom: 10px;
+        }
+
+        .info-section p,
+        .info-section li {
+            font-size: 14px;
+            line-height: 1.75;
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .info-section ul {
+            padding-left: 18px;
+        }
+
+        .info-section li+li {
+            margin-top: 8px;
+        }
+
+        .info-note {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 700;
+            line-height: 1.6;
+            margin-top: 16px;
+        }
+
+        /* HAMBURGER BTN CSS */
+        .hamburger-btn {
+            display: none;
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-size: 24px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .hamburger-btn:hover {
+            color: var(--mango);
+            transform: scale(1.1);
+        }
+
+        .nav-brand-wrap {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 1001;
+        }
+
+        /* MOBILE RESPONSIVE HAMBURGER & LAYOUTS */
+        @media (max-width: 950px) {
+            .nav-links {
+                display: flex;
+                /* Override display: none from original to allow slide-in */
+                position: fixed;
+                top: 0;
+                left: -100%;
+                width: 250px;
+                height: 100vh;
+                background: var(--bg-main);
+                backdrop-filter: blur(35px);
+                -webkit-backdrop-filter: blur(35px);
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 100px 30px 40px;
+                gap: 25px;
+                border-right: 1px solid var(--card-border);
+                box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+                transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+                z-index: 999;
+            }
+
+            .nav-links.active {
+                left: 0;
+            }
+
+            .nav-links a {
+                font-size: 14px;
+                width: 100%;
+                padding-bottom: 10px;
+                border-bottom: 1px solid var(--card-border);
+            }
+
+            .btn-logout {
+                border: none !important;
+                padding: 0 !important;
+                color: var(--danger) !important;
+                margin-top: 20px;
+            }
+
+            .btn-logout:hover {
+                background: transparent !important;
+                color: var(--danger) !important;
+                transform: translateX(5px);
+            }
+
+            .hamburger-btn {
+                display: grid;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .info-modal {
+                max-height: 92vh;
+                border-radius: 22px;
+            }
+
+            .info-modal-header {
+                padding: 18px;
+            }
+
+            .info-modal-body {
+                padding: 18px;
+            }
+
+            .info-modal-title {
+                font-size: 18px;
+            }
+        }
     </style>
 </head>
+
 <body>
-<div id="stickyNotificationCard" class="floating-sticky-notif hidden">
-    <div class="floating-sticky-top">
-        <div class="floating-sticky-type" id="stickyNotifType">IMPORTANT</div>
-        <button type="button" class="floating-sticky-close" onclick="dismissStickyNotification()">
-            <i class="fa-solid fa-xmark"></i>
-        </button>
+    <div id="stickyNotificationCard" class="floating-sticky-notif hidden">
+        <div class="floating-sticky-top">
+            <div class="floating-sticky-type" id="stickyNotifType">IMPORTANT</div>
+            <button type="button" class="floating-sticky-close" onclick="dismissStickyNotification()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="floating-sticky-title" id="stickyNotifTitle">Notification Title</div>
+        <div class="floating-sticky-message" id="stickyNotifMessage">Notification message goes here.</div>
     </div>
-
-    <div class="floating-sticky-title" id="stickyNotifTitle">Notification Title</div>
-    <div class="floating-sticky-message" id="stickyNotifMessage">Notification message goes here.</div>
-</div>
     <nav>
-        <a href="index.html" class="logo">
-            <img src="logo.png" alt="Teo D' Mango">
-        </a>
+        <div class="nav-brand-wrap">
+            <button class="hamburger-btn" id="mobileMenuToggle" title="Open Menu">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <a href="index.html" class="logo">
+                <img src="logo.png" alt="Teo D' Mango">
+            </a>
+        </div>
 
-        <div class="nav-links">
+        <div class="nav-links" id="navMenu">
             <a href="welcome.html" class="active">HOME</a>
             <a href="menu.html">MENU</a>
             <a href="rewards.html">REWARDS</a>
@@ -1883,29 +2095,30 @@
             <a href="index.html" class="btn-logout">LOG OUT</a>
         </div>
 
-    <div class="nav-actions">
-        <button class="circle-btn" id="themeToggle" title="Toggle Light/Dark Mode">
-            <i class="fa-solid fa-sun"></i>
-        </button>
-    
-        <button class="circle-btn" id="notifBellBtn" type="button" title="Notifications" onclick="scrollToNotifications()">
-            <i class="fa-solid fa-bell"></i>
-            <span id="notifUnreadBadge" class="notif-badge hidden">0</span>
-        </button>
-    
-        <button class="circle-btn" onclick="openAccountPanel()" title="Account Info">
-            <i class="fa-solid fa-user"></i>
-        </button>
-    </div>
+        <div class="nav-actions">
+            <button class="circle-btn" id="themeToggle" title="Toggle Light/Dark Mode">
+                <i class="fa-solid fa-sun"></i>
+            </button>
+
+            <button class="circle-btn" id="notifBellBtn" type="button" title="Notifications"
+                onclick="scrollToNotifications()">
+                <i class="fa-solid fa-bell"></i>
+                <span id="notifUnreadBadge" class="notif-badge hidden">0</span>
+            </button>
+
+            <button class="circle-btn" onclick="openAccountPanel()" title="Account Info">
+                <i class="fa-solid fa-user"></i>
+            </button>
+        </div>
     </nav>
 
     <main class="dashboard-wrapper">
 
-<div class="hero-bento">
-    <h1>Hi, <span class="user-name"></span>!</h1>
-    <p>Ready for your daily mango fix? Skip the line and order ahead for a faster, premium experience.</p>
-    <button class="btn-massive" onclick="window.location.href='menu.html'">Start New Order</button>
-</div>
+        <div class="hero-bento">
+            <h1>Hi, <span class="user-name"></span>!</h1>
+            <p>Ready for your daily mango fix? Skip the line and order ahead for a faster, premium experience.</p>
+            <button class="btn-massive" onclick="window.location.href='menu.html'">Start New Order</button>
+        </div>
         <div class="glass-bento wallet-bento">
             <div class="wallet-header">
                 <span>Current Balance</span>
@@ -1967,11 +2180,11 @@
                     Last 30 Days
                 </span>
             </div>
-        
-        <div id="notificationHistoryList"
-            style="margin-top:20px;display:flex;flex-direction:column;gap:14px;max-height:420px;overflow-y:auto;overflow-x:hidden;padding-right:6px;">
+
+            <div id="notificationHistoryList"
+                style="margin-top:20px;display:flex;flex-direction:column;gap:14px;max-height:420px;overflow-y:auto;overflow-x:hidden;padding-right:6px;">
+            </div>
         </div>
-</div>
         <div class="bs-header">
             <h2 id="bestSellerTitle">Best Sellers</h2>
             <i class="fa-solid fa-fire"></i>
@@ -1988,7 +2201,8 @@
                         <i class="fa-solid fa-headset"></i> Support & Inquiries
                     </h2>
                     <p style="color: var(--text-muted); font-size: 14px; font-weight: 600; line-height: 1.6;">
-                        Need help with orders, rewards, wallet concerns, or account questions? Send us a message and review admin replies here.
+                        Need help with orders, rewards, wallet concerns, or account questions? Send us a message and
+                        review admin replies here.
                     </p>
                 </div>
                 <button class="wallet-btn" type="button" onclick="openInquiryModal()">Send Inquiry</button>
@@ -2028,14 +2242,14 @@
     </main>
     <footer>
         <div class="footer-logo">Teo D' <span>Mango</span></div>
-    
+
         <div class="footer-links">
             <a href="javascript:void(0)" id="footerAboutLink">About Us</a>
             <a href="javascript:void(0)" id="footerPrivacyLink">Privacy Policy</a>
             <a href="javascript:void(0)" id="footerTermsLink">Terms of Service</a>
             <a href="javascript:void(0)" id="footerSupportLink">Support</a>
         </div>
-    
+
         <div class="social-icons">
             <a href="https://www.facebook.com/teo.d.mango" target="_blank" rel="noopener noreferrer">
                 <i class="fa-brands fa-facebook"></i>
@@ -2047,7 +2261,7 @@
                 <i class="fa-brands fa-tiktok"></i>
             </a>
         </div>
-    
+
         <p style="font-size: 11px; color: var(--text-muted); font-weight: 700;">
             &copy; 2026 TIMS-RPAY | Teo D' Mango. All rights reserved.
         </p>
@@ -2058,7 +2272,8 @@
     <div class="side-panel" id="accountPanel">
         <div class="panel-header">
             <h2>Account Info</h2>
-            <button class="panel-close-btn" type="button" onclick="closeAllPanels()"><i class="fa-solid fa-xmark"></i></button>
+            <button class="panel-close-btn" type="button" onclick="closeAllPanels()"><i
+                    class="fa-solid fa-xmark"></i></button>
         </div>
 
         <div class="panel-body">
@@ -2114,27 +2329,33 @@
                 <i class="fa-solid fa-xmark"></i>
             </button>
 
-            <h3 style="font-size: 32px; font-weight: 900; letter-spacing: -1px; margin-bottom: 10px; color: var(--mango);">
+            <h3
+                style="font-size: 32px; font-weight: 900; letter-spacing: -1px; margin-bottom: 10px; color: var(--mango);">
                 Send Inquiry
             </h3>
 
-            <p style="color: var(--text-muted); line-height: 1.7; font-size: 14px; font-weight: 600; margin-bottom: 24px;">
-                Need help with your order, rewards, wallet, or account? Send us a message and we'll review it as soon as possible.
+            <p
+                style="color: var(--text-muted); line-height: 1.7; font-size: 14px; font-weight: 600; margin-bottom: 24px;">
+                Need help with your order, rewards, wallet, or account? Send us a message and we'll review it as soon as
+                possible.
             </p>
 
             <form id="customerInquiryForm" style="display: grid; gap: 14px;">
                 <div>
-                    <label style="display:block; font-size:11px; font-weight:900; letter-spacing:1px; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px;">
+                    <label
+                        style="display:block; font-size:11px; font-weight:900; letter-spacing:1px; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px;">
                         Subject
                     </label>
                     <input type="text" id="customerInquirySubject" placeholder="Enter subject">
                 </div>
 
                 <div>
-                    <label style="display:block; font-size:11px; font-weight:900; letter-spacing:1px; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px;">
+                    <label
+                        style="display:block; font-size:11px; font-weight:900; letter-spacing:1px; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px;">
                         Message
                     </label>
-                    <textarea id="customerInquiryMessage" rows="5" placeholder="Type your message here..." required></textarea>
+                    <textarea id="customerInquiryMessage" rows="5" placeholder="Type your message here..."
+                        required></textarea>
                 </div>
 
                 <button type="submit" class="wallet-btn" style="max-width:220px;">
@@ -2146,137 +2367,168 @@
         </div>
     </div>
     <div class="announcement-modal-overlay" id="announcementModal">
-    <div class="announcement-modal">
-        <div class="announcement-modal-header">
-            <h3 class="announcement-modal-title">
-                <i class="fa-solid fa-bullhorn"></i>
-                All Announcements
-            </h3>
-            <button class="announcement-modal-close" type="button" onclick="closeAnnouncementModal()">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        </div>
-
-        <div class="announcement-modal-body">
-            <div id="announcementList" class="announcement-modal-list">
-                <div class="announcement-empty">Loading announcements...</div>
-            </div>
-        </div>
-    </div>
-</div>
-<div class="modal-overlay" id="feedbackModal">
-    <div class="modal-content">
-
-        <button class="modal-close-btn" onclick="closeFeedbackModal()">
-            <i class="fa-solid fa-xmark"></i>
-        </button>
-
-        <h3 style="font-size:28px;font-weight:900;color:var(--mango);margin-bottom:10px;">
-            Leave Feedback
-        </h3>
-
-        <p style="color:var(--text-muted);font-size:14px;margin-bottom:20px;">
-            Share your experience with your order.
-        </p>
-
-        <form id="feedbackForm" style="display:grid;gap:14px;max-height:60vh;overflow-y:auto;padding-right:6px;">
-
-            <input type="hidden" id="feedbackOrderId">
-
-            <div>
-                <label
-                    style="font-size:11px;font-weight:900;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;display:block;">Product
-                    Name</label>
-                <input type="text" id="feedbackProductName" placeholder="Product name">
+        <div class="announcement-modal">
+            <div class="announcement-modal-header">
+                <h3 class="announcement-modal-title">
+                    <i class="fa-solid fa-bullhorn"></i>
+                    All Announcements
+                </h3>
+                <button class="announcement-modal-close" type="button" onclick="closeAnnouncementModal()">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
             </div>
 
-            <div>
-                <label
-                    style="font-size:11px;font-weight:900;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;display:block;">Rating</label>
-
-                <select id="feedbackRating"
-                    style="width:100%;padding:14px;border-radius:12px;background:var(--input-bg);border:1px solid var(--card-border);color:var(--text-main);font-weight:700;">
-                    <option value="5">★★★★★ Excellent</option>
-                    <option value="4">★★★★☆ Good</option>
-                    <option value="3">★★★☆☆ Average</option>
-                    <option value="2">★★☆☆☆ Poor</option>
-                    <option value="1">★☆☆☆☆ Bad</option>
-                </select>
-            </div>
-
-            <div>
-                <label
-                    style="font-size:11px;font-weight:900;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;display:block;">Title</label>
-                <input type="text" id="feedbackTitle" placeholder="Short title">
-            </div>
-
-            <div>
-                <label
-                    style="font-size:11px;font-weight:900;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;display:block;">Comment</label>
-                <textarea id="feedbackComment" rows="5" placeholder="Write your feedback..." required></textarea>
-            </div>
-            <button type="submit" class="wallet-btn" style="max-width:220px;">
-                Submit Feedback
-            </button>
-
-            <div id="feedbackStatus" style="font-size:13px;font-weight:700;"></div>
-        </form>
-    </div>
-</div>
-<div class="modal-overlay" id="feedbackModal"><div class="modal-content feedback-modal-content"><button class="modal-close-btn" type="button" onclick="closeFeedbackModal()"><i class="fa-solid fa-xmark"></i></button><h3 style="font-size:32px;font-weight:900;letter-spacing:-1px;margin-bottom:10px;color:var(--mango);">Leave Feedback</h3><p style="color:var(--text-muted);line-height:1.7;font-size:14px;font-weight:600;margin-bottom:24px;">Share your experience for this order. Your feedback will be reviewed by admin before it appears publicly.</p><form id="feedbackForm" style="display:grid;gap:14px;max-height:70vh;overflow-y:auto;padding-right:6px;"><input type="hidden" id="feedbackOrderId"><input type="hidden" id="feedbackProductName"><div><label style="display:block;font-size:11px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Rating</label><select id="feedbackRating" required style="width:100%;background:var(--input-bg);color:var(--text-main);border:1px solid var(--card-border);border-radius:15px;padding:16px;font-size:15px;outline:none;transition:0.3s ease;font-weight:600;"><option value="5">5 Stars</option><option value="4">4 Stars</option><option value="3">3 Stars</option><option value="2">2 Stars</option><option value="1">1 Star</option></select></div><div><label style="display:block;font-size:11px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Title</label><input type="text" id="feedbackTitle" placeholder="Optional feedback title"></div><div><label style="display:block;font-size:11px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Comment</label><textarea id="feedbackComment" rows="5" placeholder="Tell us about your order..." required></textarea></div><button type="submit" class="wallet-btn" style="width:100%;">Submit Feedback</button><div id="feedbackStatus" style="font-weight:700;font-size:13px;min-height:20px;"></div></form></div></div>
-<div class="modal-overlay" id="feedbackModal">
-    <div class="modal-content feedback-modal-content"><button class="modal-close-btn" type="button"
-            onclick="closeFeedbackModal()"><i class="fa-solid fa-xmark"></i></button>
-        <h3 style="font-size:32px;font-weight:900;letter-spacing:-1px;margin-bottom:10px;color:var(--mango);">Leave
-            Feedback</h3>
-        <p style="color:var(--text-muted);line-height:1.7;font-size:14px;font-weight:600;margin-bottom:24px;">Share your
-            experience for this order. Your feedback will be reviewed by admin before it appears publicly.</p>
-        <form id="feedbackForm" style="display:grid;gap:14px;max-height:70vh;overflow-y:auto;padding-right:6px;"><input
-                type="hidden" id="feedbackOrderId"><input type="hidden" id="feedbackProductName">
-            <div><label
-                    style="display:block;font-size:11px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Rating</label><select
-                    id="feedbackRating" required
-                    style="width:100%;background:var(--input-bg);color:var(--text-main);border:1px solid var(--card-border);border-radius:15px;padding:16px;font-size:15px;outline:none;transition:0.3s ease;font-weight:600;">
-                    <option value="5">5 Stars</option>
-                    <option value="4">4 Stars</option>
-                    <option value="3">3 Stars</option>
-                    <option value="2">2 Stars</option>
-                    <option value="1">1 Star</option>
-                </select></div>
-            <div><label
-                    style="display:block;font-size:11px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Title</label><input
-                    type="text" id="feedbackTitle" placeholder="Optional feedback title"></div>
-            <div><label
-                    style="display:block;font-size:11px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Comment</label><textarea
-                    id="feedbackComment" rows="5" placeholder="Tell us about your order..." required></textarea></div>
-            <button type="submit" class="wallet-btn" style="width:100%;">Submit Feedback</button>
-            <div id="feedbackStatus" style="font-weight:700;font-size:13px;min-height:20px;"></div>
-        </form>
-    </div>
-</div>
-<div class="info-modal-overlay" id="footerInfoModal">
-    <div class="info-modal">
-        <div class="info-modal-header">
-            <div class="info-modal-title-wrap">
-                <div class="info-modal-icon" id="footerInfoModalIcon">
-                    <i class="fa-solid fa-circle-info"></i>
+            <div class="announcement-modal-body">
+                <div id="announcementList" class="announcement-modal-list">
+                    <div class="announcement-empty">Loading announcements...</div>
                 </div>
-                <div class="info-modal-title" id="footerInfoModalTitle">Information</div>
-            </div>
-
-            <button class="info-modal-close" type="button" id="footerInfoModalClose">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        </div>
-
-        <div class="info-modal-body" id="footerInfoModalBody">
-            <div class="info-section">
-                <div class="info-section-title">Loading</div>
-                <p>Please wait...</p>
             </div>
         </div>
     </div>
-</div>
+    <div class="modal-overlay" id="feedbackModal">
+        <div class="modal-content">
+
+            <button class="modal-close-btn" onclick="closeFeedbackModal()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <h3 style="font-size:28px;font-weight:900;color:var(--mango);margin-bottom:10px;">
+                Leave Feedback
+            </h3>
+
+            <p style="color:var(--text-muted);font-size:14px;margin-bottom:20px;">
+                Share your experience with your order.
+            </p>
+
+            <form id="feedbackForm" style="display:grid;gap:14px;max-height:60vh;overflow-y:auto;padding-right:6px;">
+
+                <input type="hidden" id="feedbackOrderId">
+
+                <div>
+                    <label
+                        style="font-size:11px;font-weight:900;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;display:block;">Product
+                        Name</label>
+                    <input type="text" id="feedbackProductName" placeholder="Product name">
+                </div>
+
+                <div>
+                    <label
+                        style="font-size:11px;font-weight:900;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;display:block;">Rating</label>
+
+                    <select id="feedbackRating"
+                        style="width:100%;padding:14px;border-radius:12px;background:var(--input-bg);border:1px solid var(--card-border);color:var(--text-main);font-weight:700;">
+                        <option value="5">★★★★★ Excellent</option>
+                        <option value="4">★★★★☆ Good</option>
+                        <option value="3">★★★☆☆ Average</option>
+                        <option value="2">★★☆☆☆ Poor</option>
+                        <option value="1">★☆☆☆☆ Bad</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label
+                        style="font-size:11px;font-weight:900;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;display:block;">Title</label>
+                    <input type="text" id="feedbackTitle" placeholder="Short title">
+                </div>
+
+                <div>
+                    <label
+                        style="font-size:11px;font-weight:900;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;display:block;">Comment</label>
+                    <textarea id="feedbackComment" rows="5" placeholder="Write your feedback..." required></textarea>
+                </div>
+                <button type="submit" class="wallet-btn" style="max-width:220px;">
+                    Submit Feedback
+                </button>
+
+                <div id="feedbackStatus" style="font-size:13px;font-weight:700;"></div>
+            </form>
+        </div>
+    </div>
+    <div class="modal-overlay" id="feedbackModal">
+        <div class="modal-content feedback-modal-content"><button class="modal-close-btn" type="button"
+                onclick="closeFeedbackModal()"><i class="fa-solid fa-xmark"></i></button>
+            <h3 style="font-size:32px;font-weight:900;letter-spacing:-1px;margin-bottom:10px;color:var(--mango);">Leave
+                Feedback</h3>
+            <p style="color:var(--text-muted);line-height:1.7;font-size:14px;font-weight:600;margin-bottom:24px;">Share
+                your experience for this order. Your feedback will be reviewed by admin before it appears publicly.</p>
+            <form id="feedbackForm" style="display:grid;gap:14px;max-height:70vh;overflow-y:auto;padding-right:6px;">
+                <input type="hidden" id="feedbackOrderId"><input type="hidden" id="feedbackProductName">
+                <div><label
+                        style="display:block;font-size:11px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Rating</label><select
+                        id="feedbackRating" required
+                        style="width:100%;background:var(--input-bg);color:var(--text-main);border:1px solid var(--card-border);border-radius:15px;padding:16px;font-size:15px;outline:none;transition:0.3s ease;font-weight:600;">
+                        <option value="5">5 Stars</option>
+                        <option value="4">4 Stars</option>
+                        <option value="3">3 Stars</option>
+                        <option value="2">2 Stars</option>
+                        <option value="1">1 Star</option>
+                    </select></div>
+                <div><label
+                        style="display:block;font-size:11px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Title</label><input
+                        type="text" id="feedbackTitle" placeholder="Optional feedback title"></div>
+                <div><label
+                        style="display:block;font-size:11px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Comment</label><textarea
+                        id="feedbackComment" rows="5" placeholder="Tell us about your order..." required></textarea>
+                </div><button type="submit" class="wallet-btn" style="width:100%;">Submit Feedback</button>
+                <div id="feedbackStatus" style="font-weight:700;font-size:13px;min-height:20px;"></div>
+            </form>
+        </div>
+    </div>
+    <div class="modal-overlay" id="feedbackModal">
+        <div class="modal-content feedback-modal-content"><button class="modal-close-btn" type="button"
+                onclick="closeFeedbackModal()"><i class="fa-solid fa-xmark"></i></button>
+            <h3 style="font-size:32px;font-weight:900;letter-spacing:-1px;margin-bottom:10px;color:var(--mango);">Leave
+                Feedback</h3>
+            <p style="color:var(--text-muted);line-height:1.7;font-size:14px;font-weight:600;margin-bottom:24px;">Share
+                your
+                experience for this order. Your feedback will be reviewed by admin before it appears publicly.</p>
+            <form id="feedbackForm" style="display:grid;gap:14px;max-height:70vh;overflow-y:auto;padding-right:6px;">
+                <input type="hidden" id="feedbackOrderId"><input type="hidden" id="feedbackProductName">
+                <div><label
+                        style="display:block;font-size:11px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Rating</label><select
+                        id="feedbackRating" required
+                        style="width:100%;background:var(--input-bg);color:var(--text-main);border:1px solid var(--card-border);border-radius:15px;padding:16px;font-size:15px;outline:none;transition:0.3s ease;font-weight:600;">
+                        <option value="5">5 Stars</option>
+                        <option value="4">4 Stars</option>
+                        <option value="3">3 Stars</option>
+                        <option value="2">2 Stars</option>
+                        <option value="1">1 Star</option>
+                    </select></div>
+                <div><label
+                        style="display:block;font-size:11px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Title</label><input
+                        type="text" id="feedbackTitle" placeholder="Optional feedback title"></div>
+                <div><label
+                        style="display:block;font-size:11px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Comment</label><textarea
+                        id="feedbackComment" rows="5" placeholder="Tell us about your order..." required></textarea>
+                </div>
+                <button type="submit" class="wallet-btn" style="width:100%;">Submit Feedback</button>
+                <div id="feedbackStatus" style="font-weight:700;font-size:13px;min-height:20px;"></div>
+            </form>
+        </div>
+    </div>
+    <div class="info-modal-overlay" id="footerInfoModal">
+        <div class="info-modal">
+            <div class="info-modal-header">
+                <div class="info-modal-title-wrap">
+                    <div class="info-modal-icon" id="footerInfoModalIcon">
+                        <i class="fa-solid fa-circle-info"></i>
+                    </div>
+                    <div class="info-modal-title" id="footerInfoModalTitle">Information</div>
+                </div>
+
+                <button class="info-modal-close" type="button" id="footerInfoModalClose">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="info-modal-body" id="footerInfoModalBody">
+                <div class="info-section">
+                    <div class="info-section-title">Loading</div>
+                    <p>Please wait...</p>
+                </div>
+            </div>
+        </div>
+    </div>
     <script src="js/api.js"></script>
     <script src="js/authGuard.js"></script>
     <script src="js/welcome.js"></script>
@@ -2285,5 +2537,35 @@
     <script src="js/sidepanel-fetching.js"></script>
     <script src="js/account-panel.js"></script>
 
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const mobileBtn = document.getElementById("mobileMenuToggle");
+            if (mobileBtn) {
+                const navMenu = document.getElementById("navMenu");
+                const icon = mobileBtn.querySelector("i");
+                const navLinks = navMenu.querySelectorAll("a");
+
+                mobileBtn.addEventListener("click", () => {
+                    navMenu.classList.toggle("active");
+                    if (navMenu.classList.contains("active")) {
+                        icon.classList.remove("fa-bars");
+                        icon.classList.add("fa-xmark");
+                    } else {
+                        icon.classList.remove("fa-xmark");
+                        icon.classList.add("fa-bars");
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.addEventListener("click", () => {
+                        navMenu.classList.remove("active");
+                        icon.classList.remove("fa-xmark");
+                        icon.classList.add("fa-bars");
+                    });
+                });
+            }
+        });
+    </script>
 </body>
+
 </html>

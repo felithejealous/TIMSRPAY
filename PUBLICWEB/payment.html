@@ -68,6 +68,7 @@
             border-radius: 50%;
             z-index: -1;
             transition: .5s ease;
+            pointer-events: none;
         }
 
         body::before {
@@ -102,6 +103,14 @@
             top: 0;
             z-index: 1000;
             border-bottom: 1px solid var(--card-border);
+            transition: all 0.4s ease;
+        }
+
+        .nav-brand-wrap {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 1001;
         }
 
         .logo {
@@ -121,11 +130,28 @@
             transform: scale(1.05);
         }
 
+        /* HAMBURGER BTN CSS */
+        .hamburger-btn {
+            display: none;
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-size: 24px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .hamburger-btn:hover {
+            color: var(--mango);
+            transform: scale(1.1);
+        }
+
         .nav-links {
             display: flex;
             list-style: none;
             gap: 30px;
             align-items: center;
+            transition: all 0.4s ease;
         }
 
         .nav-links a {
@@ -148,6 +174,7 @@
             padding: 8px 20px;
             border-radius: 50px;
             color: var(--text-main) !important;
+            transition: 0.3s ease;
         }
 
         .btn-logout:hover {
@@ -159,6 +186,7 @@
             display: flex;
             gap: 15px;
             align-items: center;
+            z-index: 1001;
         }
 
         .circle-btn {
@@ -180,13 +208,15 @@
             color: var(--mango);
         }
 
+        /* CHECKOUT LAYOUT */
         .checkout-wrapper {
-            max-width: 1100px;
+            max-width: 1200px;
             margin: 40px auto 80px;
             padding: 0 20px;
             display: grid;
             grid-template-columns: repeat(12, 1fr);
             gap: 30px;
+            transition: all 0.4s ease;
         }
 
         .main-col {
@@ -198,6 +228,8 @@
 
         .side-col {
             grid-column: span 4;
+            display: flex;
+            flex-direction: column;
         }
 
         .page-header {
@@ -220,7 +252,7 @@
         }
 
         .page-header h1 {
-            font-size: 42px;
+            font-size: clamp(32px, 5vw, 42px);
             font-weight: 900;
             letter-spacing: -1.5px;
         }
@@ -233,6 +265,10 @@
             padding: 40px;
             box-shadow: var(--shadow);
             transition: .3s ease;
+        }
+
+        .glass-bento:hover {
+            border-color: rgba(255, 194, 68, 0.3);
         }
 
         .bento-title {
@@ -259,8 +295,9 @@
             justify-content: space-between;
             align-items: flex-start;
             padding: 25px 0;
-            border-bottom: 1px solid var(--card-border);
+            border-bottom: 1px dashed var(--card-border);
             gap: 20px;
+            transition: 0.3s;
         }
 
         .order-item:last-child {
@@ -327,6 +364,7 @@
         .qty-edit button:hover {
             background: var(--mango);
             color: #111;
+            transform: scale(1.1);
         }
 
         .qty-edit span {
@@ -353,6 +391,7 @@
         .btn-remove:hover {
             background: rgba(255, 77, 109, .1);
             color: var(--danger);
+            transform: rotate(90deg);
         }
 
         .btn-add-more {
@@ -403,6 +442,7 @@
             color: var(--text-main);
         }
 
+        /* PAYMENT METHODS */
         .method-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -434,6 +474,7 @@
             border-color: var(--mango);
             background: rgba(255, 194, 68, .1);
             color: var(--mango);
+            box-shadow: 0 10px 20px rgba(255, 194, 68, 0.1);
         }
 
         .method-item i {
@@ -532,12 +573,18 @@
             padding: 15px;
         }
 
+        /* PROMO SECTION */
         .promo-box {
             background: var(--bg-main);
             border: 1px solid var(--card-border);
             border-radius: 24px;
             padding: 18px;
             margin: 18px 0 0;
+            transition: 0.3s ease;
+        }
+
+        .promo-box:hover {
+            border-color: rgba(255, 194, 68, 0.3);
         }
 
         .promo-box-head {
@@ -642,7 +689,7 @@
         }
 
         .promo-status.success {
-            color: #10b981;
+            color: var(--success);
         }
 
         .promo-status.error {
@@ -676,9 +723,11 @@
             transform: translateY(-1px);
         }
 
+        /* SUMMARY CARD */
         .sticky-card {
             position: sticky;
             top: 100px;
+            align-self: start;
         }
 
         .summary-row {
@@ -696,6 +745,7 @@
             color: var(--text-main);
             font-weight: 800;
             font-size: 16px;
+            transition: 0.3s ease;
         }
 
         .summary-row.points-earned {
@@ -704,10 +754,15 @@
             padding: 15px;
             border-radius: 15px;
             border: 1px dashed var(--mango);
+            transition: 0.3s ease;
+        }
+
+        .summary-row.points-earned:hover {
+            transform: scale(1.02);
         }
 
         .summary-row.discount-row span:last-child {
-            color: #10b981;
+            color: var(--success);
         }
 
         .total-divider {
@@ -727,7 +782,7 @@
         }
 
         .grand-total {
-            font-size: 48px;
+            font-size: clamp(36px, 4vw, 48px);
             font-weight: 900;
             color: var(--text-main);
             letter-spacing: -2px;
@@ -769,8 +824,10 @@
             color: var(--text-muted);
             font-weight: 700;
             line-height: 1.5;
+            text-align: center;
         }
 
+        /* RECEIPT MODAL */
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -963,9 +1020,56 @@
             }
         }
 
-        @media (max-width:950px) {
+        /* =========================================
+           RESPONSIVE MOBILE FIXES & HAMBURGER MENU
+           ========================================= */
+        @media (max-width: 950px) {
+            .hamburger-btn {
+                display: grid;
+            }
+
             .nav-links {
-                display: none;
+                position: fixed;
+                top: 0;
+                left: -100%;
+                /* Hidden on left */
+                width: 250px;
+                height: 100vh;
+                background: var(--bg-main);
+                backdrop-filter: blur(35px);
+                -webkit-backdrop-filter: blur(35px);
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 100px 30px 40px;
+                gap: 25px;
+                border-right: 1px solid var(--card-border);
+                box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+                transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+                z-index: 999;
+            }
+
+            .nav-links.active {
+                left: 0;
+            }
+
+            .nav-links a {
+                font-size: 14px;
+                width: 100%;
+                padding-bottom: 10px;
+                border-bottom: 1px solid var(--card-border);
+            }
+
+            .btn-logout {
+                border: none !important;
+                padding: 0 !important;
+                color: var(--danger) !important;
+                margin-top: 20px;
+            }
+
+            .btn-logout:hover {
+                background: transparent !important;
+                color: var(--danger) !important;
+                transform: translateX(5px);
             }
 
             .checkout-wrapper {
@@ -984,15 +1088,39 @@
                 gap: 10px;
             }
         }
+
+        @media (max-width: 600px) {
+            .glass-bento {
+                padding: 25px;
+            }
+
+            .method-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .promo-input-row {
+                flex-direction: column;
+            }
+
+            .promo-apply-btn {
+                padding: 16px;
+            }
+        }
     </style>
 </head>
 
 <body>
     <nav>
-        <a href="index.html" class="logo">
-            <img src="logo.png" alt="Teo D' Mango">
-        </a>
-        <div class="nav-links">
+        <div class="nav-brand-wrap">
+            <button class="hamburger-btn" id="mobileMenuToggle" title="Open Menu">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <a href="index.html" class="logo">
+                <img src="logo.png" alt="Teo D' Mango">
+            </a>
+        </div>
+
+        <div class="nav-links" id="navMenu">
             <a href="welcome.html">Home</a>
             <a href="menu.html">Menu</a>
             <a href="rewards.html">Rewards</a>
@@ -1000,6 +1128,7 @@
             <a href="dashaccsett.html">Settings</a>
             <a href="index.html" class="btn-logout">Log Out</a>
         </div>
+
         <div class="nav-actions">
             <button class="circle-btn" id="themeToggle" title="Toggle Light/Dark Mode">
                 <i class="fa-solid fa-sun"></i>
@@ -1174,5 +1303,36 @@
     <script src="js/authGuard.js"></script>
     <script src="js/logout.js"></script>
     <script src="js/payment.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const mobileBtn = document.getElementById("mobileMenuToggle");
+            if (mobileBtn) {
+                const navMenu = document.getElementById("navMenu");
+                const icon = mobileBtn.querySelector("i");
+                const navLinks = navMenu.querySelectorAll("a");
+
+                mobileBtn.addEventListener("click", () => {
+                    navMenu.classList.toggle("active");
+                    if (navMenu.classList.contains("active")) {
+                        icon.classList.remove("fa-bars");
+                        icon.classList.add("fa-xmark");
+                    } else {
+                        icon.classList.remove("fa-xmark");
+                        icon.classList.add("fa-bars");
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.addEventListener("click", () => {
+                        navMenu.classList.remove("active");
+                        icon.classList.remove("fa-xmark");
+                        icon.classList.add("fa-bars");
+                    });
+                });
+            }
+        });
+    </script>
 </body>
+
 </html>
