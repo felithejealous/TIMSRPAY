@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Teo D' Mango - Tablet Kiosk</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --mango-deep: #ff8c00;
+            --mango-bright: #ffb703;
+            --mango-pale: #fcdb05;
+            --text-dark: #2d1e18;
+            --glass-card: rgba(255, 255, 255, 0.45);
+        }
+
+        /* Essential Kiosk Resets */
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100dvh; /* Dynamic viewport height for tablet browsers */
+            width: 100%;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between; /* Spreads content: Top, Center, Bottom */
+            padding: 6vh 0; /* Uniform padding for top/bottom breathing room */
+        }
+
+        /* --- ANIMATED JUICE BACKGROUND --- */
+        .mango-juice-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-size: 200% 200%;
+            background-image: 
+                radial-gradient(at 50% 50%, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.1) 80%), 
+                radial-gradient(at 10% 10%, var(--mango-deep) 0, transparent 55%), 
+                radial-gradient(at 90% 90%, var(--mango-bright) 0, transparent 55%),
+                radial-gradient(at 90% 10%, var(--mango-pale) 0, transparent 45%),
+                radial-gradient(at 10% 90%, var(--mango-deep) 0, transparent 45%);
+            animation: juiceFlow 15s infinite alternate ease-in-out;
+        }
+
+        @keyframes juiceFlow {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 100% 100%; }
+        }
+
+        /* --- HEADER SECTION --- */
+        .header-area {
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .tagline {
+            color: var(--mango-deep);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            font-size: 0.75rem;
+            margin-top: 10px;
+            opacity: 0.8;
+        }
+
+        /* --- CHOICE SECTION (CENTERED) --- */
+        .order-options {
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            width: 90%;
+            max-width: 650px; /* Kept compact for tablet ergonomics */
+        }
+
+        .option-card {
+            flex: 1;
+            aspect-ratio: 1 / 1; 
+            background: var(--glass-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1.5px solid rgba(255, 255, 255, 0.6);
+            border-radius: 30px; /* Square-y soft corners */
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+            outline: none;
+        }
+
+        .icon-box svg {
+            width: 80px; 
+            height: 80px;
+            color: var(--mango-deep);
+        }
+
+        .option-label {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            text-transform: uppercase;
+        }
+
+        /* Selected State */
+        .option-card.selected {
+            background: rgba(255, 255, 255, 0.95);
+            border-color: var(--mango-deep);
+            transform: scale(1.05);
+            box-shadow: 0 20px 40px rgba(255, 140, 0, 0.15);
+        }
+
+        /* --- FOOTER SECTION --- */
+        .footer-area {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        .footer-btn {
+            background: var(--text-dark);
+            color: white;
+            border: none;
+            padding: 20px 80px;
+            border-radius: 100px;
+            font-size: 1rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            cursor: pointer;
+            opacity: 0.1;
+            transition: all 0.4s ease;
+            pointer-events: none;
+        }
+
+        .footer-btn.active {
+            opacity: 1;
+            pointer-events: auto;
+            background: var(--mango-deep);
+            box-shadow: 0 12px 25px rgba(255, 140, 0, 0.3);
+        }
+
+        /* Adjustments for smaller tablets */
+        @media (max-height: 700px) {
+            .order-options { max-width: 500px; }
+            .icon-box svg { width: 60px; height: 60px; }
+            .option-label { font-size: 1.1rem; }
+            h1 { font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="mango-juice-bg"></div>
+
+    <div class="header-area">
+        <h1>How would you like to<br>enjoy your order?</h1>
+        <div class="tagline">Your experience, your choice</div>
+    </div>
+
+    <div class="order-options">
+        <button class="option-card" data-type="Dine-in">
+            <div class="icon-box">
+                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 30C20 25 25 22 30 22H70C75 22 80 25 80 30V35H20V30Z" stroke="currentColor" stroke-width="6"/>
+                    <path d="M25 35L32 85H68L75 35" stroke="currentColor" stroke-width="6" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <span class="option-label">Dine-in</span>
+        </button>
+
+        <button class="option-card" data-type="To-go">
+            <div class="icon-box">
+                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="20" y="25" width="60" height="55" rx="6" stroke="currentColor" stroke-width="6"/>
+                    <path d="M35 25V20C35 15 65 15 65 20V25" stroke="currentColor" stroke-width="6"/>
+                </svg>
+            </div>
+            <span class="option-label">To-go</span>
+        </button>
+    </div>
+
+    <div class="footer-area">
+        <button class="footer-btn" id="nextBtn">Continue</button>
+    </div>
+    <script src="../config.js"></script>
+
+    <script>
+        const optionCards = document.querySelectorAll('.option-card');
+        const nextBtn = document.getElementById('nextBtn');
+        let selectedType = null;
+
+        optionCards.forEach(card => {
+            card.addEventListener('click', () => {
+                optionCards.forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+                
+                selectedType = card.getAttribute('data-type');
+                
+                nextBtn.classList.add('active');
+                nextBtn.innerText = "Order " + selectedType;
+            });
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (selectedType) {
+                localStorage.setItem('orderType', selectedType);
+                // Simple feedback before transition
+                nextBtn.style.transform = "scale(0.95)";
+                setTimeout(() => {
+                    window.location.href = '../html/menu.html';
+                }, 150);
+            }
+        });
+    </script>
+
+</body>
+</html>

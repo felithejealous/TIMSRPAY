@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teo D' Mango | Announce</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        :root {
+            --mango-yellow: #fcdb05;
+            --mango-orange: #ff8c00;
+            --mango-dark: #0f0c08;
+            --text-main: #ffffff;
+            --text-sub: #a1a1aa;
+            --glass-bg: rgba(255, 255, 255, 0.015);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --mesh-color-1: rgba(252, 219, 5, 0.05);
+            --mesh-color-2: rgba(252, 219, 5, 0.02);
+            --logo-filter: brightness(0) invert(1);
+            --sidebar-width: 240px;
+            --modal-overlay: rgba(0, 0, 0, 0.92);
+            --modal-card: #14110e;
+        }
+
+        body.light-theme {
+            --mango-dark: #f8f9fa;
+            --text-main: #1a1a1a;
+            --text-sub: #4a4a4a;
+            --glass-bg: rgba(255, 255, 255, 0.8);
+            --glass-border: rgba(0, 0, 0, 0.1);
+            --mesh-color-1: rgba(252, 219, 5, 0.15);
+            --mesh-color-2: rgba(255, 140, 0, 0.05);
+            --logo-filter: none;
+            --modal-card: #ffffff;
+            --modal-overlay: rgba(0, 0, 0, 0.4);
+        }
+        html.preload-light body {
+    --mango-dark: #f8f9fa;
+    --text-main: #1a1a1a;
+    --text-sub: #4a4a4a;
+    --glass-bg: rgba(255, 255, 255, 0.8);
+    --glass-border: rgba(0, 0, 0, 0.1);
+    --mesh-color-1: rgba(252, 219, 5, 0.15);
+    --mesh-color-2: rgba(255, 140, 0, 0.05);
+    --logo-filter: none;
+    --modal-card: #ffffff;
+    --modal-overlay: rgba(0,0,0,0.4);
+}
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            transition: background 0.3s, color 0.3s, border 0.3s, transform 0.2s;
+        }
+
+        ::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--mango-dark);
+            background-image:
+                radial-gradient(at 0% 0%, var(--mesh-color-1) 0px, transparent 40%),
+                radial-gradient(at 100% 100%, var(--mesh-color-2) 0px, transparent 40%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--glass-bg);
+            backdrop-filter: blur(25px);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            border-right: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        .logo-section {
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .logo-section img {
+            width: 120px;
+            filter: var(--logo-filter);
+        }
+
+        .nav-menu {
+            flex: 1;
+            padding: 10px 15px;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 18px;
+            margin-bottom: 6px;
+            border-radius: 12px;
+            color: var(--text-sub);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: var(--mango-yellow);
+            color: #120f0a !important;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(252, 219, 5, 0.2);
+        }
+
+        .logout-btn {
+            padding: 12px 18px;
+            margin: 15px;
+            border-radius: 12px;
+            color: #ef4444;
+            font-weight: 700;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            font-size: 0.85rem;
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            height: 100vh;
+        }
+
+        .header-card {
+            padding: 25px 40px;
+            border-radius: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            gap: 20px;
+        }
+
+        .theme-toggle-circle {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            background: var(--mango-yellow);
+            color: #120f0a;
+            border: none;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .feed-container {
+            max-width: 860px;
+            margin: 0 auto;
+        }
+
+        .post-card {
+            padding: 30px;
+            border-radius: 28px;
+            border: 1px solid var(--glass-border);
+            margin-bottom: 25px;
+            transition: 0.3s;
+        }
+
+        .pinned-post {
+            border: 2px solid var(--mango-yellow);
+            box-shadow: 0 0 20px rgba(252, 219, 5, 0.1);
+        }
+
+        .post-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: var(--mango-yellow);
+            color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .post-title {
+            font-weight: 900;
+            font-size: 1.3rem;
+            color: var(--text-main);
+            text-transform: uppercase;
+            letter-spacing: -0.5px;
+            line-height: 1.25;
+        }
+
+        .post-body {
+            margin-top: 18px;
+            font-size: 0.95rem;
+            line-height: 1.8;
+            opacity: 0.85;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .status-badge {
+            font-size: 0.6rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-left: 10px;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .badge-published {
+            background: rgba(34, 197, 94, 0.15);
+            color: #22c55e;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+
+        .badge-draft {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-sub);
+        }
+
+        .badge-scheduled {
+            background: rgba(252, 219, 5, 0.15);
+            color: var(--mango-yellow);
+        }
+
+        .badge-archived {
+            background: rgba(239, 68, 68, 0.12);
+            color: #f87171;
+        }
+
+        .post-image {
+            width: 100%;
+            max-height: 400px;
+            object-fit: cover;
+            border-radius: 20px;
+            margin: 20px 0;
+            border: 1px solid var(--glass-border);
+            display: block;
+        }
+
+        .meta-line {
+            font-size: 0.65rem;
+            font-family: monospace;
+            opacity: 0.55;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 6px;
+            line-height: 1.6;
+        }
+
+        .btn-main {
+            background: var(--mango-yellow);
+            color: #000;
+            padding: 12px 24px;
+            border-radius: 16px;
+            font-weight: 900;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            transition: 0.3s;
+            box-shadow: 0 4px 15px rgba(252, 219, 5, 0.2);
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-main:hover {
+            transform: scale(1.03);
+        }
+
+        .btn-action {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-sub);
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-action:hover {
+            background: var(--mango-yellow);
+            color: #000;
+        }
+
+        .btn-delete:hover {
+            background: #ef4444;
+            color: #fff;
+        }
+
+        .btn-disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: var(--modal-overlay);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(15px);
+            padding: 20px;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--modal-card);
+            width: 100%;
+            max-width: 640px;
+            padding: 40px;
+            border-radius: 32px;
+            border: 1px solid var(--glass-border);
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            border: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .modal-close:hover {
+            background: var(--mango-yellow);
+            color: #000;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--mango-orange);
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            outline: none;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+
+        body.light-theme .form-group input,
+        body.light-theme .form-group textarea,
+        body.light-theme .form-group select {
+            background: #f1f3f5;
+            color: #000;
+            border: 1px solid #dee2e6;
+        }
+
+        .empty-state {
+            text-align: center;
+            opacity: 0.65;
+            padding: 60px 20px;
+            border-radius: 24px;
+        }
+
+        .preview-image {
+            width: 100%;
+            max-height: 250px;
+            object-fit: cover;
+            border-radius: 18px;
+            border: 1px solid var(--glass-border);
+            margin-top: -6px;
+            margin-bottom: 18px;
+            display: none;
+        }
+
+        #toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--mango-yellow);
+            color: #000;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-weight: 900;
+            text-transform: uppercase;
+            font-size: 10px;
+            letter-spacing: 1px;
+            transition: 0.5s;
+            z-index: 2000;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        #toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        @media (max-width: 900px) {
+            .main-content {
+                padding: 24px;
+            }
+
+            .header-card {
+                padding: 20px 24px;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .modal-content {
+                padding: 28px 22px;
+            }
+
+            .post-card {
+                padding: 22px;
+            }
+        }
+    </style>
+    <script>
+(function () {
+    const savedTheme = localStorage.getItem("admin-theme");
+    if (savedTheme === "light") {
+        document.documentElement.classList.add("preload-light");
+    }
+})();
+</script>
+</head>
+<body>
+
+    <aside class="sidebar glass">
+        <div class="logo-section"><img src="../images/logo.png" alt="Logo"></div>
+        <nav class="nav-menu">
+            <a href="dashboard.html" class="nav-item"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+            <a href="orders.html" class="nav-item"><i class="fa-solid fa-receipt"></i> Orders</a>
+            <a href="accounts.html" class="nav-item"><i class="fa-solid fa-user-gear"></i> Accounts</a>
+            <a href="wallet.html" class="nav-item"><i class="fa-solid fa-wallet"></i> Wallets</a>
+            <a href="inventory.html" class="nav-item"><i class="fa-solid fa-boxes-stacked"></i> Inventory</a>
+            <a href="menuman.html" class="nav-item"><i class="fa-solid fa-utensils"></i> Menu Manager</a>
+            <a href="promo.html" class="nav-item"><i class="fa-solid fa-tags"></i> Promos</a>
+            <a href="rewards.html" class="nav-item"><i class="fa-solid fa-gift"></i> Rewards</a>
+            <a href="reward-management.html" class="nav-item"><i class="fa-solid fa-trophy"></i> Reward Catalog</a>
+            <a href="announce.html" class="nav-item active"><i class="fa-solid fa-bell"></i> Announce</a>
+            <a href="engagement.html" class="nav-item"><i class="fa-solid fa-comments"></i> Engagement</a>
+            <a href="attendance.html" class="nav-item "><i class="fa-solid fa-user-clock"></i> Employee Shift Logs</a>
+            <a href="payments.html" class="nav-item"><i class="fa-solid fa-file-arrow-down"></i> Reports</a>
+            <a href="settings.html" class="nav-item"><i class="fa-solid fa-cog"></i> Settings</a>
+        </nav>
+        <a href="#" class="logout-btn" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Log Out</a>
+    </aside>
+
+    <main class="main-content">
+        <header class="header-card glass">
+            <div>
+                <h1 class="text-2xl font-black uppercase tracking-tighter" style="color: var(--mango-yellow);">Announcements</h1>
+                <p class="text-xs font-mono opacity-60">Customer Broadcast Feed</p>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <button class="btn-main" type="button" onclick="openModal()">
+                    <i class="fas fa-plus mr-2"></i> New Post
+                </button>
+                <button class="theme-toggle-circle" type="button">
+                    <i class="fa-solid fa-sun" id="themeIcon"></i>
+                </button>
+            </div>
+        </header>
+
+        <div class="feed-container" id="feedBody">
+            <div class="empty-state glass">Loading announcements...</div>
+        </div>
+    </main>
+
+    <div class="modal" id="announceModal">
+        <div class="modal-content glass">
+            <button type="button" class="modal-close" onclick="closeModal()" aria-label="Close modal">
+                <i class="fas fa-xmark"></i>
+            </button>
+
+            <h2 class="text-xl font-black uppercase text-yellow-400 mb-8" id="modalTitle">Broadcast Message</h2>
+
+            <form id="announceForm">
+                <input type="hidden" id="announcementId">
+
+                <div class="form-group">
+                    <label for="annTitle">Headline Title</label>
+                    <input type="text" id="annTitle" required placeholder="e.g. New Seasonal Flavor!">
+                </div>
+
+                <div class="form-group">
+                    <label for="annContent">Content Body</label>
+                    <textarea id="annContent" rows="5" required placeholder="Details about the announcement..."></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-group">
+                        <label for="annImage">Featured Image</label>
+                        <input type="file" id="annImage" accept="image/*">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="annStatus">Status</label>
+                        <select id="annStatus">
+                            <option value="draft">Draft</option>
+                            <option value="published">Published</option>
+                            <option value="archived">Archived</option>
+                        </select>
+                    </div>
+                </div>
+
+                <img id="imagePreview" class="preview-image" alt="Preview">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-group">
+                        <label for="annSchedule">Schedule Publish</label>
+                        <input type="datetime-local" id="annSchedule">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="annExpire">Expire At</label>
+                        <input type="datetime-local" id="annExpire">
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3 mb-5">
+                    <input type="checkbox" id="annPinned" style="width:18px; height:18px;">
+                    <label for="annPinned" class="text-sm font-semibold cursor-pointer" style="color: var(--text-main); margin:0;">
+                        Pin this announcement
+                    </label>
+                </div>
+
+                <div class="flex justify-between items-center mt-6">
+                    <button type="button" class="btn-action" onclick="closeModal()">Discard</button>
+                    <button type="submit" class="btn-main" id="submitBtn">Deploy Post</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast">Saved</div>
+
+    <script src="../config.js"></script>
+    <script src="../js/authGuard.js"></script>
+    <script src="../js/logout.js"></script>
+    <script src="../js/admin-theme-sync.js"></script>
+    <script src="../js/announce.js"></script>
+</body>
+</html>

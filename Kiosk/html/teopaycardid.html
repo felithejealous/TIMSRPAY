@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Teo D' Mango - TeoPay Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --mango-deep: #ff8c00;
+            --mango-bright: #ffb703;
+            --text-dark: #2d1e18;
+            --glass-base: rgba(255, 255, 255, 0.45); 
+            --glass-border: rgba(255, 255, 255, 0.6);
+            --glass-blur: blur(25px);
+            --error-red: #ef4444;
+            --success-green: #22c55e;
+        }
+
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.05); }
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @keyframes checkPop {
+            0% { transform: scale(0); opacity: 0; }
+            70% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+
+        .shake { animation: shake 0.3s ease-in-out; }
+
+        * {
+            margin: 0; padding: 0; box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        body {
+            height: 100vh; width: 100vw; overflow: hidden;
+            display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(-45deg, #ffb703, #ff8c00, #fffdf5, #ffd000);
+            background-size: 400% 400%;
+            animation: gradientMove 15s ease infinite;
+        }
+
+        .ui-phase { display: none; flex-direction: column; align-items: center; gap: 20px; width: 100%; }
+        .active-phase { display: flex; }
+
+        .back-btn {
+            position: fixed; top: 1.5rem; left: 1.5rem;
+            background: var(--glass-base); border: 1.5px solid var(--glass-border);
+            width: 3rem; height: 3rem; border-radius: 1rem;
+            display: flex; align-items: center; justify-content: center;
+            z-index: 100; backdrop-filter: var(--glass-blur); color: var(--text-dark);
+            cursor: pointer;
+        }
+
+        .container { width: 95%; max-width: 900px; text-align: center; z-index: 10; transition: 0.4s; }
+        h1 { font-size: 2rem; font-weight: 800; color: var(--text-dark); text-transform: uppercase; letter-spacing: 4px; margin-bottom: 30px; }
+
+        .glass-panel {
+            background: var(--glass-base); backdrop-filter: var(--glass-blur);
+            padding: 2.5rem 2rem; border-radius: 40px; border: 2px solid var(--glass-border);
+            width: 100%; max-width: 550px; margin: 0 auto;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+        }
+
+        .main-input {
+            width: 100%; padding: 15px; border-radius: 15px; border: 2px solid rgba(255,255,255,0.5);
+            font-size: 1.8rem; text-align: center; font-weight: 800;
+            background: rgba(255,255,255,0.3); color: var(--text-dark); outline: none;
+        }
+
+        .pin-display { display: flex; gap: 15px; justify-content: center; margin-bottom: 10px; }
+        .pin-dot { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--mango-deep); transition: 0.2s; }
+        .pin-dot.filled { background: var(--mango-deep); transform: scale(1.2); }
+
+        .verifying-content { display: none; flex-direction: column; align-items: center; gap: 20px; }
+        .loader-ring {
+            width: 80px; height: 80px; border: 8px solid rgba(255,255,255,0.3);
+            border-top: 8px solid var(--mango-deep); border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        .success-content { display: none; flex-direction: column; align-items: center; gap: 20px; }
+        .check-icon {
+            width: 80px; height: 80px; background: var(--success-green); 
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 3rem; animation: checkPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .status-text { font-weight: 800; color: var(--text-dark); letter-spacing: 2px; animation: pulse 1.5s infinite; text-transform: uppercase; }
+        .authorized-text { font-weight: 800; color: var(--text-dark); letter-spacing: 2px; font-size: 1.5rem; text-transform: uppercase; }
+
+        .login-choices { display: flex; gap: 20px; justify-content: center; }
+        .option-card {
+            background: var(--glass-base); backdrop-filter: var(--glass-blur);
+            border: 2px solid var(--glass-border); border-radius: 40px;
+            width: 250px; padding: 40px 20px; cursor: pointer; transition: 0.3s;
+            display: flex; flex-direction: column; align-items: center; color: var(--text-dark);
+        }
+        .icon-box { width: 60px; height: 60px; margin-bottom: 15px; color: var(--mango-deep); }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4); backdrop-filter: blur(8px);
+            display: none; align-items: center; justify-content: center; z-index: 2000;
+        }
+        .modal-card {
+            background: var(--glass-base); border: 2px solid var(--glass-border);
+            padding: 2.5rem; border-radius: 35px; width: 85%; max-width: 380px;
+            text-align: center; backdrop-filter: var(--glass-blur);
+        }
+        .modal-btn {
+            background: var(--text-dark); color: white; border: none; 
+            padding: 15px 40px; border-radius: 18px; font-weight: 800;
+            width: 100%; margin-top: 20px; cursor: pointer;
+        }
+
+        .keyboard-container {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(30px);
+            padding: 20px 15px 30px; display: none; flex-direction: column; gap: 8px;
+            border-top: 2px solid rgba(255,255,255,0.5); z-index: 1000;
+        }
+        .kb-row { display: flex; justify-content: center; gap: 6px; margin-bottom: 4px; }
+        .key {
+            background: rgba(255, 255, 255, 0.7); flex: 1; height: 52px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 12px; font-weight: 800; font-size: 1.1rem; cursor: pointer;
+            box-shadow: 0 3px 0 rgba(0,0,0,0.05);
+        }
+        .key:active { transform: translateY(2px); box-shadow: none; background: white; }
+        .key.action { background: #e2e2e2; }
+        .key.done { background: var(--text-dark); color: white; opacity: 0.3; pointer-events: none; }
+        .key.done.ready { opacity: 1; pointer-events: auto; }
+
+        body.kb-active .container { transform: translateY(-120px); }
+    </style>
+</head>
+<body>
+
+    <button class="back-btn" id="backBtn">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+
+    <div class="container" id="mainContainer">
+        <h1 id="pageTitle">Choose Login</h1>
+
+        <div class="ui-phase active-phase" id="selectionPhase">
+            <div class="login-choices">
+                <div class="option-card" id="emailLoginCard">
+                    <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+                    <span style="font-weight:800">EMAIL ADDRESS</span>
+                </div>
+                <div class="option-card" id="cardLoginCard">
+                    <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
+                    <span style="font-weight:800">WALLET CODE</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="ui-phase" id="inputPhase">
+            <div class="glass-panel">
+                <input type="text" class="main-input" id="loginInput" placeholder="..." readonly>
+                <p id="inputHint" style="margin-top:15px; color:#5d4037; font-weight:600;"></p>
+            </div>
+        </div>
+
+        <div class="ui-phase" id="pinPhase">
+            <div class="glass-panel" id="pinContainer">
+                <div class="pin-display" id="pinDisplay">
+                    <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+                    <div class="pin-dot"></div>
+                </div>
+                <p style="margin-top:15px; color:#5d4037; font-weight:600;">ENTER YOUR PIN</p>
+            </div>
+        </div>
+
+        <div class="verifying-content" id="verifyingPhase">
+            <div class="loader-ring"></div>
+            <p class="status-text">VERIFYING ACCOUNT...</p>
+        </div>
+
+        <div class="success-content" id="authorizedPhase">
+            <div class="check-icon">✓</div>
+            <p class="authorized-text">PAYMENT AUTHORIZED</p>
+            <p style="color:#5d4037; font-weight:600; font-size: 0.9rem;">Accessing your receipt...</p>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="errorModal">
+        <div class="modal-card">
+            <div style="color:var(--error-red); font-size:3.5rem; margin-bottom:15px;">⚠</div>
+            <h2 style="font-weight:800; margin-bottom:10px;" id="errorTitle">Payment Error</h2>
+            <p style="color:#5d4037; font-size:0.95rem; line-height:1.4;" id="errorMessage">Something went wrong. Please try again.</p>
+            <button class="modal-btn" id="errorOkBtn">TRY AGAIN</button>
+        </div>
+    </div>
+
+    <div class="keyboard-container" id="keyboard">
+        <div id="keyboardLayout"></div>
+    </div>
+
+    <script src="../config.js"></script>
+    <script src="../js/kiosk-teopay.js"></script>
+</body>
+</html>

@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Account Settings | Teo D' Mango Staff</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --mango: #ffc244;
+            --mango-dark: #d4a017;
+            --strawberry: #ff4d6d;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            
+            --bg-main: #050505;
+            --text-main: #ffffff;
+            --text-muted: #888888;
+            --card-bg: rgba(30, 30, 30, 0.4);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --sidebar-bg: rgba(10, 10, 10, 0.95);
+            --shadow: 0 15px 40px rgba(0,0,0,0.5);
+            --hover-bg: rgba(255, 255, 255, 0.06);
+            --icon-bg: rgba(255, 255, 255, 0.05);
+            --glow-opacity: 0.15;
+            --input-bg: rgba(0,0,0,0.3);
+        }
+
+        body.light-mode {
+            --bg-main: #f4f5f7;
+            --text-main: #1a1a1a;
+            --text-muted: #666666;
+            --card-bg: rgba(255, 255, 255, 0.7);
+            --card-border: rgba(0, 0, 0, 0.05);
+            --sidebar-bg: rgba(255, 255, 255, 0.9);
+            --shadow: 0 10px 30px rgba(0,0,0,0.05);
+            --hover-bg: rgba(255, 255, 255, 1);
+            --icon-bg: rgba(0, 0, 0, 0.03);
+            --glow-opacity: 0.3; 
+            --input-bg: #ffffff;
+        }
+  html.preload-light body {
+    --bg-main: #f4f5f7;
+    --text-main: #1a1a1a;
+    --text-muted: #666666;
+    --card-bg: rgba(255, 255, 255, 0.7);
+    --card-border: rgba(0, 0, 0, 0.05);
+    --sidebar-bg: rgba(255, 255, 255, 0.9);
+    --shadow: 0 10px 30px rgba(0,0,0,0.05);
+    --hover-bg: rgba(255, 255, 255, 1);
+    --icon-bg: rgba(0, 0, 0, 0.03);
+    --glow-opacity: 0.3;
+    --input-bg: rgba(0, 0, 0, 0.03);
+}
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            scroll-behavior: smooth;
+        }
+        
+        body { 
+            background-color: var(--bg-main);
+            color: var(--text-main); 
+            display: flex;
+            min-height: 100vh;
+            transition: 0.4s ease;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before,
+        body::after {
+            content: '';
+            position: fixed;
+            border-radius: 50%;
+            z-index: -1;
+            pointer-events: none;
+            transition: 0.5s ease;
+        }
+
+        body::before {
+            top: -10%;
+            left: -5%;
+            width: 500px;
+            height: 500px;
+            background: var(--mango);
+            filter: blur(120px);
+            opacity: var(--glow-opacity);
+        }
+
+        body::after {
+            bottom: -10%;
+            right: -5%;
+            width: 400px;
+            height: 400px;
+            background: var(--strawberry);
+            filter: blur(150px);
+            opacity: calc(var(--glow-opacity) - 0.05);
+        }
+
+        aside {
+            width: 260px;
+            background: var(--sidebar-bg);
+            height: 100vh;
+            position: fixed;
+            border-right: 1px solid var(--card-border);
+            padding: 2rem 1.2rem;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            backdrop-filter: blur(20px);
+            transition: all 0.4s ease;
+        }
+
+        .sidebar-logo {
+            padding: 10px 5px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .sidebar-logo img {
+            max-width: 100%;
+            height: auto;
+            max-height: 50px;
+            display: block;
+            margin: 0 auto;
+            filter: drop-shadow(0 0 5px var(--mango));
+        }
+        
+        nav {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: var(--text-muted);
+            padding: 1rem 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-weight: 700;
+            font-size: 13px;
+            border-radius: 14px;
+            margin-bottom: 0.5rem;
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        nav a:hover {
+            color: var(--text-main);
+            background: var(--icon-bg);
+            transform: translateX(5px);
+        }
+
+        nav li.active a {
+            background: var(--mango);
+            color: #111;
+            box-shadow: 0 8px 20px rgba(245, 158, 11, 0.2);
+            transform: translateX(0);
+        }
+
+        nav a i {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+
+        main {
+            margin-left: 260px;
+            flex: 1;
+            padding: 2.5rem 3.5rem;
+            transition: all 0.4s ease;
+            width: calc(100% - 260px);
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 2.5rem;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .header-title h1 {
+            font-size: clamp(2rem, 4vw, 2.5rem);
+            font-weight: 900;
+            letter-spacing: -1px;
+            line-height: 1;
+            margin-bottom: 5px;
+            color: var(--text-main);
+        }
+
+        .header-title p {
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .theme-btn {
+            background: var(--icon-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.3s;
+            display: grid;
+            place-items: center;
+            font-size: 16px;
+        }
+
+        .theme-btn:hover {
+            background: var(--mango);
+            color: #111;
+            transform: rotate(15deg);
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.4fr;
+            gap: 2.5rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 2.5rem;
+            box-shadow: var(--shadow);
+            height: fit-content;
+            border: 1px solid var(--card-border);
+            transition: 0.3s;
+        }
+
+        .card:hover {
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .card h3 {
+            margin-bottom: 1.8rem;
+            font-size: 18px;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-main);
+        }
+
+        .profile-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .avatar-wrap {
+            width: 108px;
+            height: 108px;
+            margin: 0 auto 1.2rem;
+            position: relative;
+        }
+
+        .avatar-box,
+        .avatar-image {
+            width: 108px;
+            height: 108px;
+            border-radius: 30px;
+            box-shadow: 0 15px 30px rgba(245, 158, 11, 0.3);
+            transition: 0.3s;
+        }
+
+        .avatar-box {
+            background: var(--mango);
+            display: grid;
+            place-items: center;
+            font-size: 32px;
+            font-weight: 900;
+            color: #111;
+            transform: rotate(-5deg);
+        }
+
+        .avatar-image {
+            display: none;
+            object-fit: cover;
+            border: 2px solid rgba(255, 194, 68, 0.35);
+            transform: rotate(-5deg);
+        }
+
+        .card:hover .avatar-box,
+        .card:hover .avatar-image {
+            transform: rotate(0deg) scale(1.05);
+        }
+
+        .avatar-actions-note {
+            margin-top: 10px;
+            font-size: 11px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group select { 
+            width: 100%;
+            padding: 14px 18px;
+            border: 1px solid var(--card-border);
+            border-radius: 14px; 
+            outline: none;
+            transition: 0.3s;
+            font-size: 14px;
+            font-weight: 700;
+            background: var(--input-bg);
+            color: var(--text-main);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: var(--mango);
+            box-shadow: 0 0 0 4px rgba(255, 194, 68, 0.1);
+        }
+
+        .form-group input:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .btn-save { 
+            width: 100%;
+            padding: 1.2rem;
+            background: var(--mango);
+            color: #111;
+            border: none; 
+            border-radius: 16px;
+            font-weight: 900;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-save:hover {
+            background: var(--text-main);
+            color: var(--bg-main);
+            transform: translateY(-3px);
+        }
+
+        .btn-save:disabled,
+        .btn-danger-outline:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-danger-outline {
+            width: 100%;
+            padding: 1.2rem;
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+            border-radius: 16px;
+            font-weight: 900;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-danger-outline:hover {
+            background: var(--danger);
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.2rem 0;
+            border-bottom: 1px dashed var(--card-border);
+            gap: 16px;
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        .summary-label {
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .summary-value {
+            font-weight: 900;
+            color: var(--text-main);
+            font-size: 14px;
+            text-align: right;
+        }
+
+        .badge-info,
+        .badge-success,
+        .badge-warning {
+            padding: 6px 12px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .badge-info {
+            background: rgba(59, 130, 246, 0.15);
+            color: var(--info);
+            border: 1px solid var(--info);
+        }
+
+        .badge-success {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--warning);
+            border: 1px solid var(--warning);
+        }
+
+        .helper-note {
+            margin-top: 12px;
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.6;
+            border: 1px solid var(--card-border);
+            background: rgba(255,255,255,0.03);
+            padding: 14px 16px;
+            border-radius: 16px;
+        }
+
+        @media screen and (max-width: 1100px) {
+            aside {
+                width: 90px;
+                padding: 2rem 0.5rem;
+            }
+
+            aside span,
+            .sidebar-logo img {
+                display: none;
+            }
+
+            nav a {
+                justify-content: center;
+                padding: 1.2rem;
+            }
+
+            nav a i {
+                font-size: 20px;
+            }
+
+            main {
+                margin-left: 90px;
+                width: calc(100% - 90px);
+                padding: 2rem;
+            }
+
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media screen and (max-width: 768px) {
+            aside {
+                width: 100%;
+                height: 70px;
+                position: fixed;
+                bottom: 0;
+                top: auto;
+                flex-direction: row;
+                border-right: none;
+                border-top: 1px solid var(--card-border);
+                padding: 0;
+                backdrop-filter: blur(30px);
+            }
+
+            nav {
+                width: 100%;
+            }
+
+            nav ul {
+                display: flex;
+                justify-content: space-around;
+                align-items: center;
+                height: 100%;
+            }
+
+            nav li {
+                margin-bottom: 0;
+            }
+
+            nav a {
+                flex-direction: column;
+                gap: 4px;
+                font-size: 0.65rem;
+                padding: 8px;
+                border-radius: 0;
+            }
+
+            nav li.active a {
+                background: none;
+                color: var(--mango);
+                box-shadow: none;
+                transform: translateY(-3px);
+            }
+            
+            main {
+                margin-left: 0;
+                width: 100%;
+                margin-bottom: 70px;
+                padding: 1.5rem;
+            }
+
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .card {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+    <script>
+(function () {
+    const savedTheme = localStorage.getItem("staff-theme");
+    if (savedTheme === "light") {
+        document.documentElement.classList.add("preload-light");
+    } else {
+        document.documentElement.classList.remove("preload-light");
+    }
+})();
+</script>
+</head>
+<body>
+
+    <aside>
+        <div class="sidebar-logo"><img src="logo.png" alt="Teo D' Mango"></div>
+        <nav>
+            <ul>
+                <li><a href="overview.html"><i class="fa-solid fa-chart-line"></i> <span>Overview</span></a></li>
+                <li><a href="orderstaffs.html"><i class="fa-solid fa-bell-concierge"></i> <span>Orders</span></a></li>
+                <li><a href="menustaff.html"><i class="fa-solid fa-receipt"></i> <span>Menu</span></a></li>
+                <li><a href="inventory.html"><i class="fa-solid fa-boxes-stacked"></i> <span>Inventory</span></a></li>
+                <li><a href="dashboardstaff.html"><i class="fa-solid fa-user-clock"></i> <span>Attendance</span></a></li>
+                <li><a href="walletstaff.html"><i class="fa-solid fa-credit-card"></i> <span>RPAY</span></a></li>
+                <li><a href="rewardsstaff.html"><i class="fa-solid fa-gift"></i> <span>Rewards</span></a></li>
+                <li class="active"><a href="dashaccsettstaff.html"><i class="fa-solid fa-gear"></i> <span>Settings</span></a></li>
+                <li style="margin-top: auto;"><a href="index.html" style="color: var(--danger);"><i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main>
+        <header>
+            <div class="header-title">
+                <h1>Account Settings</h1>
+                <p>Manage your profile and security preferences.</p>
+            </div>
+            <div class="header-actions">
+                <button class="theme-btn" id="themeToggle" title="Toggle Light/Dark Mode">
+                    <i class="fa-solid fa-sun"></i>
+                </button>
+            </div>
+        </header>
+
+        <div class="settings-grid">
+            <div class="left-col">
+                <div class="card">
+                    <div class="profile-header">
+                        <div class="avatar-wrap">
+                            <img id="avatarImage" class="avatar-image" alt="Profile Picture">
+                            <div class="avatar-box" id="avatarBox">--</div>
+                        </div>
+                        <h2 id="profileNameHeading" style="font-weight: 900; font-size: 24px; color: var(--text-main); margin-bottom: 5px;">Loading...</h2>
+                        <p id="roleDisplay" style="color: var(--mango); font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: 2px;">Loading Role</p>
+                        <p class="avatar-actions-note">Add a profile picture URL for a more personalized account card.</p>
+                    </div>
+
+                    <h3 style="border-bottom: 1px solid var(--card-border); padding-bottom: 15px; margin-bottom: 20px;">
+                        <i class="fa-solid fa-user-pen" style="color: var(--mango);"></i> Personal Details
+                    </h3>
+
+                    <form id="profileForm">
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" id="fullNameInput" value="">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Employee ID</label>
+                            <input type="text" id="staffCodeInput" value="" disabled title="Employee ID / Staff Code">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Email Address</label>
+                            <input type="email" id="emailInput" value="">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Profile Picture URL</label>
+                            <input type="text" id="profilePictureInput" placeholder="https://example.com/photo.jpg">
+                        </div>
+                        
+                        <button type="submit" class="btn-save" id="updateProfileBtn" style="margin-top: 30px;">
+                            <i class="fa-solid fa-floppy-disk"></i> Update Profile
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="right-col">
+                <div class="card">
+                    <h3 style="border-bottom: 1px solid var(--card-border); padding-bottom: 15px; margin-bottom: 15px;">
+                        <i class="fa-solid fa-chart-pie" style="color: var(--success);"></i> Performance Overview
+                    </h3>
+
+                    <div class="summary-item">
+                        <div class="summary-label">Account Status</div>
+                        <div class="summary-value"><span class="badge-success" id="accountStatusBadge">ACTIVE</span></div>
+                    </div>
+
+                    <div class="summary-item">
+                        <div class="summary-label">Position</div>
+                        <div class="summary-value" id="positionSummary">-</div>
+                    </div>
+
+                    <div class="summary-item">
+                        <div class="summary-label">System Access Level</div>
+                        <div class="summary-value"><span class="badge-info" id="accessBadge">STAFF</span></div>
+                    </div>
+
+                    <div class="summary-item">
+                        <div class="summary-label">Account Email</div>
+                        <div class="summary-value" id="summaryEmail">-</div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 2.5rem;">
+                    <h3 style="border-bottom: 1px solid var(--card-border); padding-bottom: 15px; margin-bottom: 20px;">
+                        <i class="fa-solid fa-shield-check" style="color: var(--danger);"></i> Login & Security
+                    </h3>
+
+                    <form id="passwordForm">
+                        <div class="form-group">
+                            <label>Current Password</label>
+                            <input type="password" id="currentPasswordInput" placeholder="Enter current password">
+                        </div>
+
+                        <div class="form-group">
+                            <label>New Password</label>
+                            <input type="password" id="newPasswordInput" placeholder="Enter new password">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Confirm Password</label>
+                            <input type="password" id="confirmPasswordInput" placeholder="Confirm new password">
+                        </div>
+
+                        <div class="helper-note">
+                            Staff and cashier accounts can update their own password. Admin can still reset passwords separately from the admin side when needed.
+                        </div>
+
+                        <button type="submit" class="btn-danger-outline" id="changePasswordBtn" style="margin-top: 30px;">
+                            <i class="fa-solid fa-lock"></i> Secure Account
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script src="config.js"></script>
+    <script src="js/authGuard.js"></script>
+    <script src="js/logoutstaff.js"></script>
+    <script src="js/themesync.js"></script>
+    <script src="js/dashaccsettstaff.js"></script>
+</body>
+</html>

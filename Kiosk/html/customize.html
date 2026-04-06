@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Teo D' Mango - Kiosk Customize</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --mango-deep: #ff8c00;
+            --mango-bright: #ffb703;
+            --text-dark: #2d1e18;
+            --glass-base: rgba(255, 255, 255, 0.45); 
+            --glass-border: rgba(255, 255, 255, 0.6);
+            --glass-blur: blur(40px);
+        }
+
+        @keyframes gradientFlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        * {
+            margin: 0; padding: 0; box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        body {
+            height: 100vh; width: 100vw; overflow: hidden;
+            display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(-45deg, #ffb703, #ff8c00, #fffdf5, #ffd000);
+            background-size: 400% 400%;
+            animation: gradientFlow 15s ease infinite;
+        }
+
+        .unified-card {
+            width: 88%; 
+            max-width: 850px;
+            height: 90vh;
+            background: var(--glass-base);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 2px solid var(--glass-border);
+            border-radius: 40px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.12);
+            overflow: hidden;
+            transition: transform 0.4s ease, filter 0.4s ease;
+        }
+
+        body.is-typing .unified-card {
+            transform: scale(0.95);
+            filter: blur(10px);
+            pointer-events: none;
+        }
+
+        .hero-header {
+            padding: 30px 40px 10px;
+            text-align: center;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .hero-img-wrap {
+            width: 150px; height: 150px;
+            margin: 0 auto 15px;
+            background: #fff;
+            border-radius: 30px;
+            overflow: hidden; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .hero-img-wrap img { 
+            width: 100%; height: 100%; 
+            object-fit: cover; transform: scale(1.1);
+        }
+
+        .hero-header h2 { font-size: 1.8rem; font-weight: 800; color: var(--text-dark); text-transform: uppercase; }
+        .hero-header p { font-size: 0.9rem; color: #5d4037; opacity: 0.6; margin-top: 4px; }
+
+        .options-area {
+            flex: 1;
+            padding: 0 50px 20px;
+            overflow-y: auto;
+            scrollbar-width: none;
+        }
+        .options-area::-webkit-scrollbar { display: none; }
+
+        .section-label {
+            font-weight: 800; font-size: 0.8rem; color: var(--text-dark);
+            margin: 20px 0 10px; display: block; text-transform: uppercase;
+            letter-spacing: 1.2px; opacity: 0.4;
+        }
+
+        .pill-group { display: flex; gap: 10px; }
+        .pill-btn {
+            flex: 1; padding: 14px; border-radius: 15px;
+            border: 1.5px solid rgba(255,255,255,0.5); background: rgba(255,255,255,0.7);
+            cursor: pointer; font-weight: 700; transition: 0.2s;
+            display: flex; flex-direction: column; align-items: center;
+            font-size: 0.9rem;
+        }
+        .pill-btn.active { background: var(--mango-deep); border-color: var(--mango-deep); color: white; }
+        
+        .addon-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .check-pill {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 14px 18px; background: rgba(255,255,255,0.7); border-radius: 15px;
+            border: 1.5px solid rgba(255,255,255,0.5); cursor: pointer; font-weight: 700; font-size: 0.85rem;
+        }
+        .check-pill.active { border-color: var(--mango-deep); color: var(--mango-deep); background: #fff; }
+        .check-pill input { display: none; }
+
+        .notes-field {
+            width: 100%; padding: 16px 20px; border-radius: 15px;
+            border: 1.5px solid rgba(255,255,255,0.5); background: rgba(255,255,255,0.7);
+            font-size: 0.95rem; color: var(--text-dark); outline: none;
+            cursor: pointer;
+        }
+
+        .note-focus-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.2);
+            backdrop-filter: blur(15px);
+            display: none; flex-direction: column; align-items: center;
+            padding-top: 10vh; z-index: 200;
+        }
+        .note-focus-overlay.active { display: flex; }
+
+        .floating-input-card {
+            width: 80%; max-width: 600px;
+            background: white; padding: 25px;
+            border-radius: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        .floating-input-card h3 { margin-bottom: 15px; color: var(--text-dark); }
+        .floating-input-card input {
+            width: 100%; padding: 20px; border: 2px solid var(--mango-deep);
+            border-radius: 15px; font-size: 1.2rem; font-weight: 600;
+            background: #fff9f0; outline: none;
+        }
+
+        .qty-row {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-top: 20px; padding: 15px 0; border-top: 1px solid rgba(0,0,0,0.06);
+        }
+        .qty-stepper { display: flex; align-items: center; gap: 8px; background: white; padding: 6px; border-radius: 100px; }
+        .step-btn {
+            width: 42px; height: 42px; background: var(--mango-deep);
+            color: white; border: none; border-radius: 50%;
+            font-size: 1.4rem; font-weight: 800; cursor: pointer;
+        }
+        .qty-val { width: 50px; text-align: center; font-weight: 800; font-size: 1.4rem; color: var(--text-dark); }
+
+        .unified-footer {
+            background: var(--text-dark); padding: 15px 40px;
+            display: flex; align-items: center; justify-content: space-between;
+            border-radius: 0 0 40px 40px;
+        }
+        .footer-total h2 { color: white; font-size: 2rem; font-weight: 900; }
+        .footer-total p { color: rgba(255,255,255,0.4); font-size: 0.65rem; text-transform: uppercase; font-weight: 800; }
+        
+        .action-group { display: flex; gap: 12px; }
+        .btn { padding: 16px 30px; border-radius: 100px; font-weight: 800; text-transform: uppercase; cursor: pointer; border: none; font-size: 0.8rem; }
+        .btn-back { background: rgba(255,255,255,0.12); color: white; }
+        .btn-confirm { background: var(--mango-deep); color: white; }
+
+        .keyboard-overlay {
+            position: fixed; bottom: -100%; left: 0; width: 100%;
+            background: #cbd5e0; padding: 10px; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 300; display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px;
+        }
+        .keyboard-overlay.show { bottom: 0; }
+        .key {
+            background: white; padding: 18px 0; border-radius: 8px;
+            text-align: center; font-weight: 700; cursor: pointer; font-size: 1.2rem;
+            box-shadow: 0 3px 0 #a0aec0;
+        }
+        .key:active { transform: translateY(2px); box-shadow: none; }
+        .key.wide { grid-column: span 1.5; background: #718096; color: white; }
+        .key.space { grid-column: span 5; }
+        .key.close { background: var(--mango-deep); color: white; grid-column: span 2; }
+    </style>
+</head>
+<body>
+
+    <div class="unified-card" id="mainCard">
+        <div class="hero-header">
+            <div class="hero-img-wrap">
+                <img id="productImg" src="" alt="Drink">
+            </div>
+            <h2 id="productTitle">Loading...</h2>
+            <p id="productDesc">Tailor your mango experience below.</p>
+        </div>
+
+        <div class="options-area" id="scrollArea">
+            <span class="section-label">Select Size</span>
+            <div class="pill-group" id="sizeGroup">
+                <button class="pill-btn active" data-val="Small" data-price="0">Small<span class="price-addon">Base</span></button>
+                <button class="pill-btn" data-val="Medium" data-price="10">Medium<span class="price-addon">+₱10</span></button>
+                <button class="pill-btn" data-val="Large" data-price="20">Large<span class="price-addon">+₱20</span></button>
+            </div>
+
+            <span class="section-label">Add-ons</span>
+            <div class="addon-grid" id="addonsGroup"></div>
+
+            <span class="section-label">Special Notes</span>
+            <input type="text" class="notes-field" id="orderNotes" placeholder="Tap to add a note..." readonly>
+
+            <div class="qty-row">
+                <span class="section-label" style="margin:0">Quantity</span>
+                <div class="qty-stepper">
+                    <button class="step-btn" id="qtyMinusBtn">-</button>
+                    <div class="qty-val" id="qtyDisplay">1</div>
+                    <button class="step-btn" id="qtyPlusBtn">+</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="unified-footer">
+            <div class="footer-total">
+                <p>Order Total</p>
+                <h2 id="totalDisplay">₱ 0.00</h2>
+            </div>
+            <div class="action-group">
+                <button class="btn btn-back" id="backBtn">Back</button>
+                <button class="btn btn-confirm" id="addToCartBtn">Add to Tray</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="note-focus-overlay" id="noteOverlay">
+        <div class="floating-input-card">
+            <h3>Special Instructions</h3>
+            <input type="text" id="floatingNotes" placeholder="Type here..." readonly>
+            <p style="margin-top: 15px; font-size: 0.8rem; color: #888;">Tap "DONE" on the keyboard to save</p>
+        </div>
+    </div>
+
+    <div class="keyboard-overlay" id="kb"></div>
+
+    <script src="../config.js"></script>
+    <script src="../js/kiosk-customize.js"></script>
+</body>
+</html>

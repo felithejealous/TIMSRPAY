@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script>
+        (function () {
+            const t = localStorage.getItem("publicweb-theme") || "dark";
+            if (t === "light") document.documentElement.classList.add("light-mode");
+        })();
+    </script>
+    <title>Rewards Ledger | Teo D' Mango Premium</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --mango: #ffc244;
+            --mango-dark: #d4a017;
+            --strawberry: #ff4d6d;
+            --bg-main: #050505;
+            --text-main: #ffffff;
+            --text-muted: #888888;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --nav-bg: rgba(5, 5, 5, 0.7);
+            --shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+            --hover-bg: rgba(255, 255, 255, 0.06);
+            --icon-bg: rgba(255, 255, 255, 0.05);
+            --glow-opacity: 0.15;
+            --danger: #ff4d6d;
+            --panel-bg: #000000;
+            --panel-border: #222222;
+        }
+
+        .light-mode {
+            --bg-main: #f4f5f7;
+            --text-main: #1a1a1a;
+            --text-muted: #666666;
+            --card-bg: rgba(255, 255, 255, 0.6);
+            --card-border: rgba(0, 0, 0, 0.05);
+            --nav-bg: rgba(244, 245, 247, 0.8);
+            --shadow: 0 20px 50px rgba(0, 0, 0, 0.04);
+            --hover-bg: rgba(255, 255, 255, 1);
+            --icon-bg: rgba(0, 0, 0, 0.03);
+            --glow-opacity: 0.4;
+            --panel-bg: #ffffff;
+            --panel-border: rgba(0, 0, 0, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+            transition: background-color 0.5s ease, color 0.5s ease;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before,
+        body::after {
+            content: '';
+            position: fixed;
+            border-radius: 50%;
+            z-index: -1;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        body::before {
+            top: -10%;
+            left: -5%;
+            width: 600px;
+            height: 600px;
+            background: var(--mango);
+            filter: blur(120px);
+            opacity: var(--glow-opacity);
+        }
+
+        body::after {
+            bottom: -10%;
+            right: -5%;
+            width: 500px;
+            height: 500px;
+            background: var(--strawberry);
+            filter: blur(150px);
+            opacity: calc(var(--glow-opacity) - 0.05);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 8%;
+            background: var(--nav-bg);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid var(--card-border);
+            transition: all 0.4s ease;
+        }
+
+        .nav-brand-wrap {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 1001;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .logo img {
+            height: 40px;
+            object-fit: contain;
+            filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.8)) drop-shadow(0 0 5px var(--mango));
+            transition: 0.3s ease;
+        }
+
+        .logo img:hover {
+            filter: drop-shadow(0 0 4px rgba(255, 255, 255, 1)) drop-shadow(0 0 10px var(--mango));
+            transform: scale(1.05);
+        }
+
+        /* HAMBURGER BTN CSS */
+        .hamburger-btn {
+            display: none;
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-size: 24px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .hamburger-btn:hover {
+            color: var(--mango);
+            transform: scale(1.1);
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+            align-items: center;
+            transition: all 0.4s ease;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.3s;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--text-main);
+        }
+
+        .btn-logout {
+            border: 1.5px solid var(--text-main);
+            padding: 8px 20px;
+            border-radius: 50px;
+            color: var(--text-main) !important;
+            text-decoration: none;
+            transition: 0.3s ease;
+        }
+
+        .btn-logout:hover {
+            background: var(--text-main);
+            color: var(--bg-main) !important;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            z-index: 1001;
+        }
+
+        .circle-btn {
+            background: var(--icon-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+        }
+
+        .circle-btn:hover {
+            background: var(--hover-bg);
+            transform: scale(1.05);
+            color: var(--mango);
+        }
+
+        .dashboard-wrapper {
+            max-width: 1200px;
+            width: min(100%, 1200px);
+            margin: 40px auto;
+            padding: 0 20px 40px;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: 24px;
+            align-items: start;
+            transition: all 0.4s ease;
+        }
+
+        .header-section {
+            grid-column: 1 / -1;
+            text-align: left;
+        }
+
+        .header-section h1 {
+            font-size: clamp(2rem, 5vw, 4rem);
+            line-height: 1.05;
+            font-weight: 900;
+            margin-bottom: 8px;
+        }
+
+        .header-section p {
+            font-size: clamp(0.95rem, 2vw, 1.1rem);
+            line-height: 1.4;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .tier-banner {
+            grid-column: 1 / -1;
+            width: 100%;
+            background: var(--card-bg);
+            backdrop-filter: blur(40px);
+            border: 1px solid var(--card-border);
+            border-radius: 30px;
+            padding: 28px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            box-shadow: var(--shadow);
+            transition: 0.3s ease;
+        }
+
+        .tier-banner:hover {
+            border-color: rgba(255, 194, 68, 0.3);
+            transform: translateY(-3px);
+        }
+
+        .points-status-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+
+        #memberStatus {
+            font-size: clamp(16px, 3vw, 20px);
+            font-weight: 900;
+            color: var(--mango);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .points-display {
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .points-display small {
+            color: var(--text-muted);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 700;
+            font-size: 11px;
+        }
+
+        .points-display span {
+            display: block;
+            font-size: clamp(2rem, 5vw, 4rem);
+            font-weight: 900;
+            line-height: 1;
+            color: var(--text-main);
+        }
+
+        .rewards-box,
+        .history-section {
+            width: 100%;
+            padding: 32px;
+            background: var(--card-bg);
+            backdrop-filter: blur(40px);
+            border: 1px solid var(--card-border);
+            border-radius: 30px;
+            box-shadow: var(--shadow);
+            transition: 0.3s ease;
+        }
+
+        .rewards-box:hover,
+        .history-section:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .section-title {
+            margin-bottom: 20px;
+        }
+
+        .section-title h3 {
+            font-size: 22px;
+            font-weight: 900;
+            color: var(--text-main);
+            letter-spacing: -0.5px;
+        }
+
+        .rewards-list,
+        .ledger-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .reward-item,
+        .ledger-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--card-border);
+            transition: 0.3s ease;
+        }
+
+        .reward-item:last-child,
+        .ledger-item:last-child {
+            border-bottom: none;
+        }
+
+        .reward-item:hover {
+            transform: translateX(5px);
+        }
+
+        .ledger-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            min-width: 0;
+            flex: 1;
+        }
+
+        .reward-img {
+            width: 78px;
+            height: 78px;
+            border-radius: 18px;
+            object-fit: cover;
+            flex-shrink: 0;
+            border: 1px solid var(--card-border);
+        }
+
+        .reward-info,
+        .ledger-details {
+            min-width: 0;
+        }
+
+        .reward-info h5,
+        .ledger-details h4 {
+            font-size: 18px;
+            line-height: 1.2;
+            word-break: break-word;
+            font-weight: 900;
+            color: var(--text-main);
+            margin-bottom: 4px;
+        }
+
+        .reward-info p,
+        .ledger-details p {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        .btn-claim {
+            flex-shrink: 0;
+            min-width: 120px;
+            background: transparent;
+            border: 2px solid var(--card-border);
+            padding: 12px 22px;
+            border-radius: 50px;
+            font-weight: 900;
+            font-size: 12px;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-main);
+        }
+
+        .btn-claim:hover:not(:disabled) {
+            background: var(--text-main);
+            color: var(--bg-main);
+            border-color: var(--text-main);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 194, 68, 0.2);
+        }
+
+        .btn-claim:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .reward-item.locked {
+            opacity: 0.55;
+            filter: grayscale(1);
+        }
+
+        .history-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .filter-btn {
+            background: transparent;
+            color: var(--text-muted);
+            border: none;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .filter-btn:hover {
+            color: var(--mango);
+            transform: translateX(3px);
+        }
+
+        .empty-history {
+            border: 1px dashed var(--card-border);
+            border-radius: 16px;
+            padding: 24px 18px;
+            text-align: center;
+            color: var(--text-muted);
+            background: var(--icon-bg);
+        }
+
+        .empty-history i {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: var(--mango);
+            display: block;
+            opacity: 0.8;
+        }
+
+        .empty-history h4 {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 6px;
+        }
+
+        .empty-history p {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        /* Modals & Overlays */
+        .modal-overlay,
+        .panel-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            z-index: 4000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.4s;
+            padding: 20px;
+        }
+
+        .modal-overlay.active,
+        .panel-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* FIX FOR FULL HISTORY MODAL SQUISHING */
+        .premium-modal {
+            background: var(--bg-main);
+            border: 1px solid var(--card-border);
+            padding: 40px;
+            border-radius: 35px;
+            text-align: center;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.3);
+            position: relative;
+            transform: translateY(30px) scale(0.95);
+            transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .modal-overlay.active .premium-modal {
+            transform: translateY(0) scale(1);
+        }
+
+        .history-modal {
+            max-width: 600px;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            max-height: 85vh;
+            padding: 30px;
+        }
+
+        .history-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 20px;
+            flex-shrink: 0;
+        }
+
+        /* ADDED FLEX-SHRINK 0 */
+        .history-modal-header h2 {
+            font-size: 24px;
+            font-weight: 900;
+            margin: 0;
+        }
+
+        .history-filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+            scrollbar-width: none;
+            flex-shrink: 0;
+        }
+
+        /* ADDED FLEX-SHRINK 0 */
+        .history-filters::-webkit-scrollbar {
+            display: none;
+        }
+
+        .history-tab {
+            background: var(--icon-bg);
+            color: var(--text-muted);
+            border: 1px solid var(--card-border);
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.3s;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        /* ADDED FLEX-SHRINK 0 */
+        .history-tab.active {
+            background: var(--mango);
+            color: #111;
+            border-color: var(--mango);
+        }
+
+        .history-tab:hover:not(.active) {
+            border-color: var(--text-main);
+            color: var(--text-main);
+        }
+
+        /* THE ACTUAL FIX FOR SCROLLING */
+        .history-list-container {
+            overflow-y: auto;
+            padding-right: 10px;
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .history-list-container::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .history-list-container::-webkit-scrollbar-thumb {
+            background: var(--mango);
+            border-radius: 10px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Redeem Specific */
+        .redeem-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.4s ease;
+            padding: 20px;
+        }
+
+        .redeem-modal:not(.hidden) {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .redeem-modal-content {
+            width: 100%;
+            max-width: 420px;
+            background: var(--bg-main);
+            color: var(--text-main);
+            padding: 30px;
+            border-radius: 35px;
+            text-align: center;
+            position: relative;
+            border: 1px solid var(--card-border);
+            box-shadow: var(--shadow);
+            transform: scale(0.9);
+            transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .redeem-modal:not(.hidden) .redeem-modal-content {
+            transform: scale(1);
+        }
+
+        .redeem-modal-content h2 {
+            color: var(--text-main);
+            font-size: 24px;
+            font-weight: 900;
+            margin-bottom: 6px;
+            letter-spacing: -0.5px;
+        }
+
+        #redeemRewardName {
+            color: var(--mango);
+            font-weight: 800;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .redeem-instructions p {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+
+        /* Unified Close Button for Modals */
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--icon-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            font-size: 22px;
+            cursor: pointer;
+            display: grid;
+            place-items: center;
+            transition: 0.3s;
+            flex-shrink: 0;
+        }
+
+        .close-modal:hover {
+            background: var(--hover-bg);
+            color: var(--danger);
+            border-color: var(--danger);
+            transform: rotate(90deg);
+        }
+
+        .qr-wrapper {
+            margin: 20px 0;
+            background: #fff;
+            padding: 15px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        #redeemQrCanvas {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .manual-code-box,
+        .expiry-box {
+            background: var(--icon-bg);
+            border: 1px solid var(--card-border);
+            padding: 15px;
+            border-radius: 15px;
+            margin-top: 12px;
+        }
+
+        .manual-code-box small,
+        .expiry-box small {
+            color: var(--text-muted);
+            display: block;
+            margin-bottom: 4px;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .manual-code-box strong,
+        .expiry-box strong {
+            color: var(--text-main);
+            font-size: 16px;
+            font-family: monospace;
+            letter-spacing: 2px;
+        }
+
+        /* Side Panel (Account) */
+        .side-panel {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 100%;
+            max-width: 420px;
+            height: 100%;
+            background: var(--bg-main);
+            border-left: 1px solid var(--card-border);
+            box-shadow: -20px 0 50px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 5001;
+        }
+
+        .side-panel.active {
+            right: 0;
+        }
+
+        .panel-header {
+            padding: 22px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .panel-title,
+        .panel-header h2 {
+            font-size: 20px;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            color: var(--text-main);
+            margin: 0;
+        }
+
+        .panel-close-btn {
+            background: transparent;
+            border: none;
+            font-size: 24px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: 0.3s;
+            display: grid;
+            place-items: center;
+        }
+
+        .panel-close-btn:hover {
+            color: var(--danger);
+            transform: rotate(90deg);
+        }
+
+        .panel-body {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .panel-body::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .panel-body::-webkit-scrollbar-thumb {
+            background: var(--mango);
+            border-radius: 10px;
+        }
+
+        .profile-card {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 25px;
+            transition: 0.3s;
+        }
+
+        .profile-details {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .profile-details h3 {
+            font-size: 18px;
+            font-weight: 900;
+            margin: 0 0 3px;
+            letter-spacing: -0.5px;
+            color: var(--text-main);
+            line-height: 1.2;
+            word-break: break-word;
+        }
+
+        .profile-details p {
+            margin: 0;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            line-height: 1.2;
+        }
+
+        /* AVATAR FIX (Makes the profile picture a perfect circle) */
+        .avatar-circle {
+            width: 60px;
+            height: 60px;
+            background: var(--mango);
+            color: #111;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            font-size: 24px;
+            font-weight: 900;
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .avatar-has-shell {
+            background: transparent;
+        }
+
+        .avatar-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            border-radius: 50%;
+        }
+
+        .avatar-text {
+            display: inline-flex;
+            width: 100%;
+            height: 100%;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            inset: 0;
+        }
+
+        .avatar-circle.has-image .avatar-text {
+            display: none;
+        }
+
+        .balance-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .balance-item {
+            background: var(--icon-bg);
+            border: 1px solid var(--card-border);
+            padding: 22px 12px;
+            border-radius: 18px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: 0.3s;
+        }
+
+        .balance-item:hover {
+            transform: translateY(-5px);
+            border-color: var(--mango);
+            background: rgba(255, 194, 68, 0.05);
+        }
+
+        .balance-item i {
+            font-size: 22px;
+            color: var(--mango);
+        }
+
+        .balance-item span {
+            font-size: 22px;
+            font-weight: 900;
+            letter-spacing: -1px;
+            color: var(--text-main);
+            line-height: 1.1;
+            word-break: break-word;
+        }
+
+        .balance-item small {
+            font-size: 10px;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            line-height: 1.3;
+        }
+
+        .account-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .acc-link-btn {
+            background: transparent;
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 18px 20px;
+            border-radius: 15px;
+            font-size: 13px;
+            font-weight: 800;
+            text-align: left;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-decoration: none;
+        }
+
+        .acc-link-btn i {
+            font-size: 16px;
+            color: var(--text-muted);
+            width: 20px;
+            min-width: 20px;
+            text-align: center;
+            transition: 0.3s;
+        }
+
+        .acc-link-btn:hover {
+            background: var(--hover-bg);
+            border-color: var(--text-main);
+            transform: translateX(5px);
+        }
+
+        .acc-link-btn:hover i {
+            color: var(--mango);
+        }
+
+        .acc-link-btn.danger:hover {
+            background: rgba(255, 77, 109, 0.1);
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .acc-link-btn.danger:hover i {
+            color: var(--danger);
+        }
+
+        /* =========================================
+           RESPONSIVE MOBILE FIXES & HAMBURGER MENU
+           ========================================= */
+        @media (max-width: 1024px) {
+            .dashboard-wrapper {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .points-display {
+                width: 100%;
+                margin-left: 0;
+                text-align: left;
+                margin-top: 15px;
+            }
+
+            .tier-banner {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        @media (max-width: 950px) {
+            .hamburger-btn {
+                display: grid;
+            }
+
+            .nav-links {
+                position: fixed;
+                top: 0;
+                left: -100%;
+                width: 250px;
+                height: 100vh;
+                background: var(--bg-main);
+                backdrop-filter: blur(35px);
+                -webkit-backdrop-filter: blur(35px);
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 100px 30px 40px;
+                gap: 25px;
+                border-right: 1px solid var(--card-border);
+                box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+                transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+                z-index: 999;
+            }
+
+            .nav-links.active {
+                left: 0;
+            }
+
+            .nav-links a {
+                font-size: 14px;
+                width: 100%;
+                padding-bottom: 10px;
+                border-bottom: 1px solid var(--card-border);
+            }
+
+            .btn-logout {
+                border: none !important;
+                padding: 0 !important;
+                color: var(--danger) !important;
+                margin-top: 20px;
+            }
+
+            .btn-logout:hover {
+                background: transparent !important;
+                color: var(--danger) !important;
+                transform: translateX(5px);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-wrapper {
+                margin: 24px auto;
+                padding: 0 14px 28px;
+            }
+
+            .tier-banner,
+            .rewards-box,
+            .history-section {
+                padding: 20px;
+                border-radius: 22px;
+            }
+
+            .reward-item,
+            .ledger-item {
+                flex-wrap: wrap;
+            }
+
+            .btn-claim {
+                width: 100%;
+                min-width: unset;
+                margin-top: 8px;
+                text-align: center;
+            }
+
+            .history-modal {
+                padding: 20px;
+                width: 95%;
+                max-height: 90vh;
+            }
+        }
+
+        @media (max-width: 520px) {
+            .side-panel {
+                max-width: 100%;
+                border-left: none;
+            }
+
+            .balance-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav>
+        <div class="nav-brand-wrap">
+            <button class="hamburger-btn" id="mobileMenuToggle" title="Open Menu">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <a href="index.html" class="logo">
+                <img src="logo.png" alt="Teo D' Mango">
+            </a>
+        </div>
+
+        <div class="nav-links" id="navMenu">
+            <a href="welcome.html">HOME</a>
+            <a href="menu.html">MENU</a>
+            <a href="rewards.html" class="active">REWARDS</a>
+            <a href="topup.html">TOP-UP TEOPAY</a>
+            <a href="dashaccsett.html">SETTINGS</a>
+            <a href="index.html" class="btn-logout">LOG OUT</a>
+        </div>
+
+        <div class="nav-actions">
+            <button class="circle-btn" id="themeToggle" title="Toggle Light/Dark Mode">
+                <i class="fa-solid fa-sun"></i>
+            </button>
+            <button class="circle-btn" onclick="openAccountPanel()" title="Account Info">
+                <i class="fa-solid fa-user"></i>
+            </button>
+        </div>
+    </nav>
+
+    <div class="dashboard-wrapper">
+        <div class="header-section">
+            <h1>Your Rewards Hub</h1>
+            <p>Track your points, perks, and exclusive rewards</p>
+        </div>
+
+        <div class="tier-banner">
+            <div class="tier-info">
+                <div class="points-status-label">Points Status</div>
+                <strong id="memberStatus">
+                    <i class="fa-solid fa-medal"></i> BRONZE MEMBER
+                </strong>
+            </div>
+
+            <div class="points-display">
+                <small>Total Points</small>
+                <span id="pointsBalance">0</span>
+            </div>
+        </div>
+
+        <div class="rewards-box">
+            <div class="section-title">
+                <h3>Available for Redemption</h3>
+            </div>
+
+            <div class="rewards-list" id="rewardsList">
+                <div class="empty-history">
+                    <i class="fa-solid fa-gift"></i>
+                    <h4>Loading rewards...</h4>
+                    <p>Please wait while we fetch your available rewards.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="history-section">
+            <div class="history-controls">
+                <div class="section-title" style="margin-bottom:0;">
+                    <h3>Recent Transactions</h3>
+                </div>
+
+                <button class="filter-btn" onclick="openFullHistory()">
+                    View All History <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+
+            <div class="ledger-list" id="recentHistoryList"></div>
+        </div>
+    </div>
+
+    <div id="redeemModal" class="redeem-modal hidden">
+        <div class="redeem-modal-content">
+            <button class="close-modal" onclick="closeRedeemModal()"><i class="fa-solid fa-xmark"></i></button>
+
+            <h2>REDEEM READY</h2>
+            <p id="redeemRewardName">Reward Name</p>
+
+            <div class="redeem-instructions">
+                <p>Show this QR or token to the staff to redeem your reward.</p>
+            </div>
+
+            <div class="qr-wrapper">
+                <canvas id="redeemQrCanvas"></canvas>
+            </div>
+
+            <div class="manual-code-box">
+                <small>Redeem Token</small>
+                <strong id="redeemToken">----</strong>
+            </div>
+
+            <div class="expiry-box">
+                <small>Valid Until</small>
+                <strong id="redeemExpiry">No Expiry</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="fullHistoryModal" onclick="closeAllPanels(event)">
+        <div class="premium-modal history-modal" onclick="event.stopPropagation()">
+            <div class="history-modal-header">
+                <h2>All Transactions</h2>
+                <button class="close-modal" style="position: static;" onclick="closeAllPanels(event)"><i
+                        class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="history-filters">
+                <button class="history-tab active" onclick="filterLedger('all', this)">All</button>
+                <button class="history-tab" onclick="filterLedger('earn', this)">Earned</button>
+                <button class="history-tab" onclick="filterLedger('spend', this)">Spent</button>
+            </div>
+
+            <div class="history-list-container" id="fullHistoryList"></div>
+        </div>
+    </div>
+
+    <div class="panel-overlay" id="mainOverlay" onclick="closeAllPanels()"></div>
+
+    <div class="side-panel" id="accountPanel">
+        <div class="panel-header">
+            <h2>Account Info</h2>
+            <button class="panel-close-btn" type="button" onclick="closeAllPanels()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="panel-body">
+            <div class="profile-card">
+                <div class="avatar-circle avatar-has-shell" id="panelAvatar">
+                    <span class="avatar-text" id="panelUserInitials">--</span>
+                    <img id="panelAvatarImage" class="avatar-image hidden">
+                </div>
+
+                <div class="profile-details">
+                    <h3 id="panelUserName">Loading...</h3>
+                    <p id="panelUserTier">MEMBER</p>
+                </div>
+            </div>
+
+            <div class="balance-grid">
+                <div class="balance-item">
+                    <i class="fa-solid fa-star"></i>
+                    <span id="panelRewardPoints">0</span>
+                    <small>Reward Points</small>
+                </div>
+                <div class="balance-item">
+                    <i class="fa-solid fa-wallet"></i>
+                    <span id="panelWalletBalance">₱0.00</span>
+                    <small>TIMS-RPAY Bal</small>
+                </div>
+            </div>
+
+            <div class="account-menu">
+                <a href="dashaccsett.html" class="acc-link-btn">
+                    <i class="fa-solid fa-gear"></i> Account Settings
+                </a>
+                <a href="rewards.html" class="acc-link-btn">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Rewards Transaction History
+                </a>
+                <a href="topup.html" class="acc-link-btn">
+                    <i class="fa-solid fa-plus-circle"></i> Top-Up Wallet
+                </a>
+                <a href="index.html" class="acc-link-btn danger">
+                    <i class="fa-solid fa-right-from-bracket"></i> Log Out
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/authGuard.js"></script>
+    <script src="js/logout.js"></script>
+    <script src="js/sidepanel-fetching.js"></script>
+    <script src="js/theme-sync.js"></script>
+    <script src="js/account-panel.js"></script>
+    <script src="js/rewards.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            if (typeof loadSharedAccountPanel === "function") {
+                await loadSharedAccountPanel();
+            }
+
+            // HAMBURGER TOGGLE LOGIC
+            const mobileBtn = document.getElementById("mobileMenuToggle");
+            if (mobileBtn) {
+                const navMenu = document.getElementById("navMenu");
+                const icon = mobileBtn.querySelector("i");
+                const navLinks = navMenu.querySelectorAll("a");
+
+                mobileBtn.addEventListener("click", () => {
+                    navMenu.classList.toggle("active");
+                    if (navMenu.classList.contains("active")) {
+                        icon.classList.remove("fa-bars");
+                        icon.classList.add("fa-xmark");
+                    } else {
+                        icon.classList.remove("fa-xmark");
+                        icon.classList.add("fa-bars");
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.addEventListener("click", () => {
+                        navMenu.classList.remove("active");
+                        icon.classList.remove("fa-xmark");
+                        icon.classList.add("fa-bars");
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

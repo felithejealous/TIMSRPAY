@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script>
+        (function () {
+            const t = localStorage.getItem("publicweb-theme") || "dark";
+            if (t === "light") document.documentElement.classList.add("light-mode");
+        })();
+    </script>
+    <title>Premium Menu | Teo D' Mango</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --mango: #ffc244;
+            --mango-dark: #d4a017;
+            --strawberry: #ff4d6d;
+            --bg-main: #050505;
+            --text-main: #ffffff;
+            --text-muted: #888888;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --nav-bg: rgba(5, 5, 5, 0.7);
+            --shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+            --hover-bg: rgba(255, 255, 255, 0.06);
+            --icon-bg: rgba(255, 255, 255, 0.05);
+            --glow-opacity: 0.15;
+            --danger: #ff4d6d;
+            --input-bg: rgba(255, 255, 255, 0.05);
+        }
+
+        .light-mode {
+            --bg-main: #f4f5f7;
+            --text-main: #1a1a1a;
+            --text-muted: #666666;
+            --card-bg: rgba(255, 255, 255, 0.6);
+            --card-border: rgba(0, 0, 0, 0.05);
+            --nav-bg: rgba(244, 245, 247, 0.8);
+            --shadow: 0 20px 50px rgba(0, 0, 0, 0.04);
+            --hover-bg: rgba(255, 255, 255, 1);
+            --icon-bg: rgba(0, 0, 0, 0.03);
+            --glow-opacity: 0.4;
+            --input-bg: rgba(0, 0, 0, 0.03);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+            transition: background-color 0.5s ease, color 0.5s ease;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before,
+        body::after {
+            content: '';
+            position: fixed;
+            border-radius: 50%;
+            z-index: -1;
+            transition: 0.5s ease;
+            pointer-events: none;
+        }
+
+        body::before {
+            top: -10%;
+            left: -5%;
+            width: 600px;
+            height: 600px;
+            background: var(--mango);
+            filter: blur(120px);
+            opacity: var(--glow-opacity);
+        }
+
+        body::after {
+            bottom: -10%;
+            right: -5%;
+            width: 500px;
+            height: 500px;
+            background: var(--strawberry);
+            filter: blur(150px);
+            opacity: calc(var(--glow-opacity) - 0.05);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 8%;
+            background: var(--nav-bg);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid var(--card-border);
+            transition: all 0.4s ease;
+        }
+
+        .nav-brand-wrap {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 1001;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo img {
+            height: 40px;
+            object-fit: contain;
+            filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.8)) drop-shadow(0 0 5px var(--mango));
+            transition: 0.3s ease;
+        }
+
+        .logo img:hover {
+            filter: drop-shadow(0 0 4px rgba(255, 255, 255, 1)) drop-shadow(0 0 10px var(--mango));
+            transform: scale(1.05);
+        }
+
+        .hamburger-btn {
+            display: none;
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-size: 24px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .hamburger-btn:hover {
+            color: var(--mango);
+            transform: scale(1.1);
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+            align-items: center;
+            transition: all 0.4s ease;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.3s;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--text-main);
+        }
+
+        .btn-logout {
+            border: 1.5px solid var(--text-main);
+            padding: 8px 20px;
+            border-radius: 50px;
+            color: var(--text-main) !important;
+            transition: 0.3s ease;
+        }
+
+        .btn-logout:hover {
+            background: var(--text-main);
+            color: var(--bg-main) !important;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            z-index: 1001;
+        }
+
+        .circle-btn {
+            background: var(--icon-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+        }
+
+        .circle-btn:hover {
+            background: var(--hover-bg);
+            transform: scale(1.05);
+            color: var(--mango);
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--strawberry);
+            color: #fff;
+            font-size: 10px;
+            font-weight: 900;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+        }
+
+        .menu-wrapper {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+            transition: all 0.4s ease;
+        }
+
+        .menu-header {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .menu-header h1 {
+            font-size: 42px;
+            font-weight: 900;
+            letter-spacing: -2px;
+            line-height: 1;
+            color: var(--text-main);
+            transition: 0.3s;
+        }
+
+        .controls-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            transition: all 0.3s ease;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 15px 20px 15px 45px;
+            border-radius: 50px;
+            background: var(--input-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            font-size: 14px;
+            font-weight: 600;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .search-box input:focus {
+            border-color: var(--mango);
+            background: var(--hover-bg);
+            box-shadow: 0 0 15px rgba(255, 194, 68, 0.1);
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .filter-chips {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+            scrollbar-width: none;
+        }
+
+        .filter-chips::-webkit-scrollbar {
+            display: none;
+        }
+
+        .chip {
+            background: var(--icon-bg);
+            color: var(--text-muted);
+            border: 1px solid var(--card-border);
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.3s;
+            white-space: nowrap;
+        }
+
+        .chip.active {
+            background: var(--text-main);
+            color: var(--bg-main);
+            border-color: var(--text-main);
+        }
+
+        .chip:hover:not(.active) {
+            border-color: var(--text-main);
+            color: var(--text-main);
+            transform: translateY(-2px);
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+            transition: all 0.4s ease;
+        }
+
+        .product-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            border-radius: 30px;
+            padding: 20px;
+            transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow);
+            border-color: rgba(255, 194, 68, 0.5);
+        }
+
+        .product-img {
+            width: 100%;
+            height: 250px;
+            border-radius: 20px;
+            object-fit: cover;
+            margin-bottom: 20px;
+            background: var(--icon-bg);
+            transition: 0.4s ease;
+        }
+
+        .product-card:hover .product-img {
+            transform: scale(1.03);
+        }
+
+        .product-info h3 {
+            font-size: 20px;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            margin-bottom: 5px;
+            color: var(--text-main);
+        }
+
+        .product-info p {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.4;
+            margin-bottom: 20px;
+            flex-grow: 1;
+            font-weight: 600;
+        }
+
+        .product-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--card-border);
+            padding-top: 15px;
+        }
+
+        .price {
+            font-size: 18px;
+            font-weight: 900;
+            color: var(--mango);
+        }
+
+        .add-btn {
+            background: var(--text-main);
+            color: var(--bg-main);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-weight: 900;
+            font-size: 12px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .product-card:hover .add-btn {
+            background: var(--mango);
+            color: #111;
+        }
+
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 50px 20px;
+            display: none;
+        }
+
+        .empty-state i {
+            font-size: 40px;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+        }
+
+        .empty-state h3 {
+            font-size: 20px;
+            font-weight: 900;
+            margin-bottom: 5px;
+            color: var(--text-main);
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .overlay,
+        .panel-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.4s;
+        }
+
+        .overlay.active,
+        .panel-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .center-modal {
+            background: var(--bg-main);
+            border: 1px solid var(--card-border);
+            border-radius: 35px;
+            width: 90%;
+            max-width: 450px;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -45%) scale(0.95);
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 2001;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5);
+            max-height: 90vh;
+            overflow-y: auto;
+            color: var(--text-main);
+        }
+
+        .center-modal.active {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .center-modal::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .center-modal::-webkit-scrollbar-thumb {
+            background: var(--mango);
+            border-radius: 10px;
+        }
+
+        .modal-hero {
+            width: 100%;
+            height: 200px;
+            background: var(--icon-bg);
+            border-radius: 35px 35px 0 0;
+            object-fit: cover;
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .modal-body h2 {
+            font-size: 28px;
+            font-weight: 900;
+            letter-spacing: -1px;
+            margin-bottom: 5px;
+            color: var(--text-main);
+        }
+
+        .modal-body>p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 25px;
+            line-height: 1.5;
+            font-weight: 600;
+        }
+
+        .config-section {
+            margin-bottom: 25px;
+        }
+
+        .config-title {
+            font-size: 12px;
+            font-weight: 900;
+            color: var(--text-main);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .selector-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .select-label {
+            display: block;
+            text-align: center;
+            padding: 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 800;
+            transition: 0.3s;
+        }
+
+        input[type="radio"]:checked+.select-label {
+            background: var(--mango);
+            border-color: var(--mango);
+            color: #111;
+            box-shadow: 0 5px 15px rgba(255, 194, 68, 0.2);
+        }
+
+        input[type="radio"],
+        input[type="checkbox"] {
+            display: none;
+        }
+
+        .addon-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .addon-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            border-radius: 15px;
+            border: 1px solid var(--card-border);
+            cursor: pointer;
+            transition: 0.3s;
+            background: var(--icon-bg);
+        }
+
+        .addon-item:hover {
+            background: var(--hover-bg);
+            border-color: var(--mango);
+        }
+
+        .addon-item span {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .addon-item small {
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--mango);
+        }
+
+        input[type="checkbox"]:checked+.addon-item {
+            border-color: var(--mango);
+            background: rgba(255, 194, 68, 0.05);
+        }
+
+        .modal-notes {
+            width: 100%;
+            min-height: 90px;
+            resize: vertical;
+            padding: 14px 16px;
+            border-radius: 18px;
+            background: var(--input-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            font-size: 13px;
+            font-weight: 600;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .modal-notes:focus {
+            border-color: var(--mango);
+            background: var(--hover-bg);
+        }
+
+        .qty-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-top: 1px solid var(--card-border);
+            margin-top: 10px;
+            gap: 16px;
+        }
+
+        .qty-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: var(--icon-bg);
+            padding: 5px;
+            border-radius: 50px;
+        }
+
+        .qty-btn {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            border: none;
+            background: var(--bg-main);
+            color: var(--text-main);
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: 0.3s;
+        }
+
+        .qty-btn:hover {
+            background: var(--hover-bg);
+            color: var(--mango);
+            transform: scale(1.1);
+        }
+
+        .qty-val {
+            font-size: 16px;
+            font-weight: 900;
+            width: 20px;
+            text-align: center;
+        }
+
+        .btn-massive {
+            width: 100%;
+            padding: 20px;
+            background: var(--text-main);
+            color: var(--bg-main);
+            border: none;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-massive:hover {
+            background: var(--mango);
+            color: #111;
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(255, 194, 68, 0.2);
+        }
+
+        /* Side Panels (Cart & Account) */
+        .side-panel {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 100%;
+            max-width: 450px;
+            height: 100%;
+            background: var(--bg-main);
+            border-left: 1px solid var(--card-border);
+            box-shadow: -20px 0 50px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 2001;
+        }
+
+        .side-panel.active {
+            right: 0;
+        }
+
+        .panel-header {
+            padding: 22px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .panel-header h2,
+        .panel-title {
+            font-size: 20px;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            color: var(--text-main);
+            margin: 0;
+        }
+
+        .panel-close-btn {
+            background: transparent;
+            border: none;
+            font-size: 24px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: 0.3s;
+            display: grid;
+            place-items: center;
+        }
+
+        .panel-close-btn:hover {
+            color: var(--danger);
+            transform: rotate(90deg);
+        }
+
+        .panel-body {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .profile-card,
+        .sp-profile {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 25px;
+            transition: 0.3s;
+        }
+
+        .profile-details,
+        .sp-profile-info {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .profile-details h3,
+        .sp-profile-info h3 {
+            font-size: 18px;
+            font-weight: 900;
+            margin: 0 0 3px;
+            letter-spacing: -0.5px;
+            color: var(--text-main);
+            line-height: 1.2;
+            word-break: break-word;
+        }
+
+        .profile-details p,
+        .sp-profile-info p {
+            margin: 0;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            line-height: 1.2;
+        }
+
+        .balance-grid,
+        .sp-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .balance-item,
+        .sp-stat-card {
+            background: var(--icon-bg);
+            border: 1px solid var(--card-border);
+            padding: 22px 12px;
+            border-radius: 18px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: 0.3s;
+        }
+
+        .balance-item:hover,
+        .sp-stat-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--mango);
+            background: rgba(255, 194, 68, 0.05);
+        }
+
+        .balance-item i,
+        .sp-stat-card i {
+            font-size: 22px;
+            color: var(--mango);
+        }
+
+        .balance-item span,
+        .sp-stat-card h4 {
+            font-size: 22px;
+            font-weight: 900;
+            letter-spacing: -1px;
+            color: var(--text-main);
+            line-height: 1.1;
+            word-break: break-word;
+            margin: 0;
+        }
+
+        .balance-item small,
+        .sp-stat-card p {
+            font-size: 10px;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            line-height: 1.3;
+            margin: 0;
+        }
+
+        .account-menu,
+        .sp-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .acc-link-btn,
+        .sp-link {
+            background: transparent;
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 18px 20px;
+            border-radius: 15px;
+            font-size: 13px;
+            font-weight: 800;
+            text-align: left;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-decoration: none;
+        }
+
+        .acc-link-btn i,
+        .sp-link i {
+            font-size: 16px;
+            color: var(--text-muted);
+            width: 20px;
+            min-width: 20px;
+            text-align: center;
+            transition: 0.3s;
+        }
+
+        .acc-link-btn:hover,
+        .sp-link:hover {
+            background: var(--hover-bg);
+            border-color: var(--text-main);
+            transform: translateX(5px);
+        }
+
+        .acc-link-btn:hover i,
+        .sp-link:hover i {
+            color: var(--mango);
+        }
+
+        .acc-link-btn.danger:hover,
+        .sp-link.danger:hover {
+            background: rgba(255, 77, 109, 0.1);
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .acc-link-btn.danger:hover i,
+        .sp-link.danger:hover i {
+            color: var(--danger);
+        }
+
+        /* Cart Specific */
+        .cart-items {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 30px;
+        }
+
+        .cart-items::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .cart-items::-webkit-scrollbar-thumb {
+            background: var(--mango);
+            border-radius: 10px;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px dashed var(--card-border);
+            gap: 15px;
+            transition: 0.3s ease;
+        }
+
+        .cart-item:hover {
+            transform: translateX(5px);
+            border-color: var(--mango);
+        }
+
+        .cart-item h4 {
+            font-size: 15px;
+            font-weight: 800;
+            margin-bottom: 5px;
+            color: var(--text-main);
+        }
+
+        .cart-item p {
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.4;
+            font-weight: 600;
+        }
+
+        .cart-item-price {
+            font-size: 15px;
+            font-weight: 900;
+            color: var(--mango);
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .checkout-section {
+            padding: 30px;
+            background: var(--icon-bg);
+            border-top: 1px solid var(--card-border);
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 24px;
+            font-weight: 900;
+            margin-bottom: 25px;
+            color: var(--text-main);
+        }
+
+        /* AVATAR FIX (Makes the profile picture a perfect circle) */
+        .avatar-has-shell {
+            overflow: hidden;
+            position: relative;
+            border-radius: 50%;
+        }
+
+        .avatar-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            border-radius: 50%;
+        }
+
+        .avatar-text {
+            display: inline-flex;
+            width: 100%;
+            height: 100%;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .avatar-circle.has-image {
+            background: transparent !important;
+            color: transparent !important;
+            border-radius: 50%;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* =========================================
+           RESPONSIVE MOBILE FIXES & HAMBURGER MENU
+           ========================================= */
+        @media (max-width: 950px) {
+            .nav-links {
+                position: fixed;
+                top: 0;
+                left: -100%;
+                width: 250px;
+                height: 100vh;
+                background: var(--bg-main);
+                backdrop-filter: blur(35px);
+                -webkit-backdrop-filter: blur(35px);
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 100px 30px 40px;
+                gap: 25px;
+                border-right: 1px solid var(--card-border);
+                box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+                z-index: 999;
+            }
+
+            .nav-links.active {
+                left: 0;
+            }
+
+            .nav-links a {
+                font-size: 14px;
+                width: 100%;
+                padding-bottom: 10px;
+                border-bottom: 1px solid var(--card-border);
+            }
+
+            .btn-logout {
+                border: none !important;
+                padding: 0 !important;
+                color: var(--danger) !important;
+                margin-top: 20px;
+            }
+
+            .btn-logout:hover {
+                background: transparent !important;
+                color: var(--danger) !important;
+                transform: translateX(5px);
+            }
+
+            .hamburger-btn {
+                display: grid;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .product-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .controls-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .qty-row {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 20px;
+            }
+
+            .qty-controls {
+                justify-content: center;
+            }
+
+            .menu-header h1 {
+                font-size: 32px;
+                text-align: center;
+            }
+
+            .center-modal {
+                width: 95%;
+                max-height: 85vh;
+            }
+
+            .modal-body h2 {
+                font-size: 24px;
+            }
+
+            .selector-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 520px) {
+            .side-panel {
+                max-width: 100%;
+                border-left: none;
+            }
+
+            .balance-grid,
+            .sp-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav>
+        <div class="nav-brand-wrap">
+            <button class="hamburger-btn" id="mobileMenuToggle" title="Open Menu">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <a href="index.html" class="logo">
+                <img src="logo.png" alt="Teo D' Mango">
+            </a>
+        </div>
+
+        <div class="nav-links" id="navMenu">
+            <a href="welcome.html">HOME</a>
+            <a href="menu.html" class="active">MENU</a>
+            <a href="rewards.html">REWARDS</a>
+            <a href="topup.html">TOP-UP TEOPAY</a>
+            <a href="dashaccsett.html">SETTINGS</a>
+            <a href="index.html" class="btn-logout">LOG OUT</a>
+        </div>
+
+        <div class="nav-actions">
+            <button class="circle-btn" id="themeToggle" title="Toggle Light/Dark Mode">
+                <i class="fa-solid fa-sun"></i>
+            </button>
+            <button class="circle-btn" onclick="openAccountPanel()" title="Account Info">
+                <i class="fa-solid fa-user"></i>
+            </button>
+            <button class="circle-btn" onclick="openCart()" title="View Cart">
+                <i class="fa-solid fa-cart-shopping"></i>
+                <span class="cart-badge" id="cartCount">0</span>
+            </button>
+        </div>
+    </nav>
+
+    <div class="menu-wrapper">
+        <div class="menu-header">
+            <div>
+                <h1>The Premium Selection</h1>
+            </div>
+
+            <div class="controls-bar">
+                <div class="filter-chips" id="filterChips">
+                    <button class="chip active" type="button" data-category="all">All Items</button>
+                </div>
+
+                <div class="search-box">
+                    <i class="fa-solid fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Search beverages..." onkeyup="searchMenu()">
+                </div>
+            </div>
+        </div>
+
+        <div class="product-grid" id="productGrid">
+            <div class="empty-state" id="emptyState">
+                <i class="fa-solid fa-mug-hot"></i>
+                <h3>No Drinks Found</h3>
+                <p>Try searching for a different flavor or changing your category filter.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel-overlay overlay" id="mainOverlay" onclick="closeAllPanels()"></div>
+
+    <div class="center-modal" id="productModal">
+        <button class="circle-btn"
+            style="position:absolute; top:15px; right:15px; z-index:10; background:rgba(0,0,0,0.5); color:white; border:none;"
+            onclick="closeAll()">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <img src="" id="modalImg" class="modal-hero" alt="Product">
+
+        <div class="modal-body">
+            <h2 id="modalTitle">Product Title</h2>
+            <p id="modalDesc">Description goes here.</p>
+
+            <div class="config-section">
+                <span class="config-title">Cup Size</span>
+                <div class="selector-grid" id="sizeSelector">
+                    <label>
+                        <input type="radio" name="size" value="small" checked onchange="updateModalPrice()">
+                        <div class="select-label">Small</div>
+                    </label>
+                    <label>
+                        <input type="radio" name="size" value="medium" onchange="updateModalPrice()">
+                        <div class="select-label">Medium (+₱10)</div>
+                    </label>
+                    <label>
+                        <input type="radio" name="size" value="large" onchange="updateModalPrice()">
+                        <div class="select-label">Large (+₱20)</div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="config-section">
+                <span class="config-title">Premium Add-ons</span>
+                <div class="addon-list" id="modalAddonList">
+                    <p style="font-size:13px; color:var(--text-muted);">Loading add-ons...</p>
+                </div>
+            </div>
+
+            <div class="config-section">
+                <span class="config-title">Special Notes</span>
+                <textarea id="modalNotes" class="modal-notes" placeholder="Optional notes for this item..."></textarea>
+            </div>
+
+            <div class="qty-row">
+                <div class="qty-controls">
+                    <button class="qty-btn" onclick="changeQty(-1)"><i class="fa-solid fa-minus"></i></button>
+                    <span class="qty-val" id="modalQty">1</span>
+                    <button class="qty-btn" onclick="changeQty(1)"><i class="fa-solid fa-plus"></i></button>
+                </div>
+
+                <h2 style="font-size:24px; font-weight:900; color:var(--mango);" id="modalTotal">₱120.00</h2>
+            </div>
+
+            <button class="btn-massive" onclick="addToCartExecute()">Add to Order</button>
+        </div>
+    </div>
+
+    <div class="side-panel" id="cartPanel">
+        <div class="panel-header">
+            <h2>Your Order</h2>
+            <button class="circle-btn" style="border:none; background:transparent; color:var(--text-muted);"
+                onclick="closeAll()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="cart-items" id="cartItemsList">
+            <p style="text-align:center; color:var(--text-muted); margin-top:50px;">Your cart is empty.</p>
+        </div>
+
+        <div class="checkout-section">
+            <div class="total-row">
+                <span>Total</span>
+                <span id="cartGrandTotal" style="color: var(--mango);">₱0.00</span>
+            </div>
+
+            <button class="btn-massive" id="btnGoCheckout" onclick="proceedToCheckout()"
+                style="opacity:0.5; pointer-events:none;">
+                Proceed to Checkout
+            </button>
+        </div>
+    </div>
+
+    <div class="side-panel" id="accountPanel">
+        <div class="panel-header">
+            <h2>Account Info</h2>
+            <button class="panel-close-btn" type="button" onclick="closeAllPanels()"><i
+                    class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <div class="panel-body">
+            <div class="profile-card">
+                <div class="avatar-circle avatar-has-shell" id="panelAvatar">
+                    <span class="avatar-text" id="panelUserInitials">--</span>
+                    <img id="panelAvatarImage" class="avatar-image hidden">
+                </div>
+
+                <div class="profile-details">
+                    <h3 id="panelUserName">Loading...</h3>
+                    <p id="panelUserTier">MEMBER</p>
+                </div>
+            </div>
+
+            <div class="balance-grid">
+                <div class="balance-item">
+                    <i class="fa-solid fa-star"></i>
+                    <span id="panelRewardPoints">0</span>
+                    <small>Reward Points</small>
+                </div>
+
+                <div class="balance-item">
+                    <i class="fa-solid fa-wallet"></i>
+                    <span id="panelWalletBalance">₱0.00</span>
+                    <small>TIMS-RPAY Bal</small>
+                </div>
+            </div>
+
+            <div class="account-menu">
+                <a href="dashaccsett.html" class="acc-link-btn">
+                    <i class="fa-solid fa-gear"></i> Account Settings
+                </a>
+                <a href="rewards.html" class="acc-link-btn">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Transaction History
+                </a>
+                <a href="topup.html" class="acc-link-btn">
+                    <i class="fa-solid fa-plus-circle"></i> Top-Up Wallet
+                </a>
+                <a href="index.html" class="acc-link-btn danger">
+                    <i class="fa-solid fa-right-from-bracket"></i> Log Out
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/authGuard.js"></script>
+    <script src="js/logout.js"></script>
+    <script src="js/theme-sync.js"></script>
+    <script src="js/sidepanel-fetching.js"></script>
+    <script src="js/account-panel.js"></script>
+    <script src="js/menu.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            if (typeof loadSharedAccountPanel === "function") {
+                await loadSharedAccountPanel();
+            }
+
+            const mobileBtn = document.getElementById("mobileMenuToggle");
+            if (mobileBtn) {
+                const navMenu = document.getElementById("navMenu");
+                const icon = mobileBtn.querySelector("i");
+                const navLinks = navMenu.querySelectorAll("a");
+
+                mobileBtn.addEventListener("click", () => {
+                    navMenu.classList.toggle("active");
+                    if (navMenu.classList.contains("active")) {
+                        icon.classList.remove("fa-bars");
+                        icon.classList.add("fa-xmark");
+                    } else {
+                        icon.classList.remove("fa-xmark");
+                        icon.classList.add("fa-bars");
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.addEventListener("click", () => {
+                        navMenu.classList.remove("active");
+                        icon.classList.remove("fa-xmark");
+                        icon.classList.add("fa-bars");
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

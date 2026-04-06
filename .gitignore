@@ -1,4 +1,12 @@
-.env
+# Python env
 .venv/
+
+# env files
+.env
+backend/.env
+
+# Python cache
 __pycache__/
 *.pyc
+backend/__pycache__/
+backend/routers/__pycache__/
