@@ -33,6 +33,7 @@ cors_origins_env = (os.getenv("CORS_ORIGINS") or "").strip()
 default_origins = [
     "http://127.0.0.1:5500",
     "http://localhost:5500",
+    "https://felithejealous.github.io",
 ]
 allow_origins = (
     [o.strip() for o in cors_origins_env.split(",") if o.strip()]

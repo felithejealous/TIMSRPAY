@@ -1082,16 +1082,16 @@ def _create_order_core(
         pay_with_wallet(db, wallet.user_id, order.id, final_total)
         order.status = "paid"
 
-        if not user_id:
-            order.user_id = int(wallet.user_id)
-            user_id = int(wallet.user_id)
+        # Always bind the order to the real TeoPay owner
+        order.user_id = int(wallet.user_id)
+        user_id = int(wallet.user_id)
 
-        if not getattr(order, "customer_name", None) or not order.user_id:
-            order.customer_name = resolve_customer_name(
-                db=db,
-                user_id=int(wallet.user_id),
-                explicit_customer_name=customer_name,
-            )
+        # wallet order naenm sync
+        order.customer_name = resolve_customer_name(
+            db=db,
+            user_id=int(wallet.user_id),
+            explicit_customer_name=customer_name,
+        )
 
         earned_points = 0
         for it in items:

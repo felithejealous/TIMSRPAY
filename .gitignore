@@ -1,5 +1,16 @@
-".venv/"
-"__pycache__/"
-"backend\.env"
-backend/.env
+# Python env
+.venv/
+
+# env files
 .env
+backend/.env
+
+# Python cache
+__pycache__/
+*.pyc
+backend/__pycache__/
+backend/routers/__pycache__/
+4 2
+# optional
+uploads/*
+dump.sql
