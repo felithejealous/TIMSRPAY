@@ -132,11 +132,28 @@ function getUsernameFromEmail(email) {
     return email.split("@")[0];
 }
 
-function getProfileImage(user) {
-    if (user?.profile_picture) return user.profile_picture;
-    return buildInitialAvatar(getDisplayName(user));
+function resolveProfileImage(profilePicture, fallbackName) {
+    const value = String(profilePicture || "").trim();
+    const fallback = buildInitialAvatar(fallbackName);
+
+    if (!value) return fallback;
+
+    if (value.startsWith("data:image")) return value;
+
+    if (value.startsWith("http://") || value.startsWith("https://")) {
+        return value;
+    }
+
+    if (value.startsWith("/")) {
+        return `${window.API_URL || ""}${value}`;
+    }
+
+    return `${window.API_URL || ""}/${value.replace(/^\/+/, "")}`;
 }
 
+function getProfileImage(user) {
+    return resolveProfileImage(user?.profile_picture, getDisplayName(user));
+}
 function canOpenAttendance(user) {
     const role = String(user?.role_name || "").toLowerCase();
     return role === "staff" || role === "cashier";
@@ -214,7 +231,7 @@ function renderGrid() {
         card.onclick = () => viewProfile(user.user_id);
 
         card.innerHTML = `
-            <img src="${getProfileImage(user)}" class="staff-img">
+            <img src="${getProfileImage(user)}" class="staff-img" onerror="this.onerror=null; this.src='${buildInitialAvatar(displayName)}';">
             <h3 class="font-black text-lg">${displayName}</h3>
             <p class="text-[10px] opacity-40 font-bold -mt-1 mb-2">#${user.user_id}</p>
             <span class="role-badge ${roleClass}">${roleName}</span>
@@ -280,7 +297,14 @@ function viewProfile(userId) {
     const roleClass = getRoleBadgeClass(user.role_name);
     const username = getUsernameFromEmail(user.email);
 
-    document.getElementById("viewProfileImg").src = getProfileImage(user);
+    const viewProfileImg = document.getElementById("viewProfileImg");
+if (viewProfileImg) {
+    viewProfileImg.onerror = () => {
+        viewProfileImg.onerror = null;
+        viewProfileImg.src = buildInitialAvatar(displayName);
+    };
+    viewProfileImg.src = getProfileImage(user);
+}
     document.getElementById("viewProfileName").innerText = displayName;
     document.getElementById("viewProfileId").innerText = `ID: ${user.user_id}`;
     document.getElementById("viewProfileUsername").innerText = `@${username}`;

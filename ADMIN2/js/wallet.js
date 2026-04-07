@@ -3,8 +3,6 @@ let currentWalletUser = null;
 let walletSearchDebounce = null;
 let lastSearchValue = "";
 let walletSuggestionsCache = [];
-const API_URL = window.API_URL || "";
-
 function getToken() {
     return localStorage.getItem("token");
 }
