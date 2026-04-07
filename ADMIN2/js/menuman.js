@@ -123,7 +123,7 @@ async function fetchCategories() {
 
 async function fetchProducts() {
     try {
-        const response = await fetch(`${API_BASE_URL}/products/?limit=500/`, {
+        const response = await fetch(`${API_BASE_URL}/products/?limit=500`, {
             method: "GET",
             headers: getAuthHeaders(),
         });
@@ -142,11 +142,11 @@ async function fetchProducts() {
 async function fetchAddons() {
     try {
         const [addonsResponse, sizesResponse] = await Promise.all([
-            fetch(`${API_BASE_URL}/addons/?active_only=false&addon_type=ADDON/`, {
+            fetch(`${API_BASE_URL}/addons/?active_only=false&addon_type=ADDON`, {
                 method: "GET",
                 headers: getAuthHeaders(),
             }),
-            fetch(`${API_BASE_URL}/addons/?active_only=false&addon_type=SIZE/`, {
+            fetch(`${API_BASE_URL}/addons/?active_only=false&addon_type=SIZE`, {
                 method: "GET",
                 headers: getAuthHeaders(),
             })
@@ -165,7 +165,7 @@ async function fetchAddons() {
 }
 async function fetchInventoryReference() {
     try {
-        const response = await fetch(`${API_BASE_URL}/inventory/master/?only_active=true&limit=500/`, {
+        const response = await fetch(`${API_BASE_URL}/inventory/master/?only_active=true&limit=500`, {
             method: "GET",
             headers: getAuthHeaders(),
         });
@@ -417,7 +417,7 @@ async function saveProduct() {
                 body: JSON.stringify(payload)
             });
         } else {
-            response = await fetch(`${API_BASE_URL}/products/`, {
+            response = await fetch(`${API_BASE_URL}/products`, {
                 method: "POST",
                 headers: getAuthHeaders({
                     "Content-Type": "application/json"
