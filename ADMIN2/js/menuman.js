@@ -4,7 +4,7 @@ let sizesCache = [];
 let inventoryCache = [];
 let categoriesCache = [];
 let tempProductImage = "";
-const API_BASE_URL = window.API_URL || "";
+
 function getToken() {
 return localStorage.getItem("token");
 }
@@ -142,32 +142,21 @@ async function fetchProducts() {
 async function fetchAddons() {
     try {
         const [addonsResponse, sizesResponse] = await Promise.all([
-            fetch(`${API_BASE_URL}/addons/?active_only=false&addon_type=ADDON`, {
+            fetch(`${API_URL}/addons/?active_only=false&addon_type=ADDON`, {
                 method: "GET",
                 headers: getAuthHeaders(),
             }),
-            fetch(`${API_BASE_URL}/addons/?active_only=false&addon_type=SIZE`, {
+            fetch(`${API_URL}/addons/?active_only=false&addon_type=SIZE`, {
                 method: "GET",
                 headers: getAuthHeaders(),
             })
         ]);
 
-        const addonsResult = addonsResponse.ok ? await addonsResponse.json() : [];
-        const sizesResult = sizesResponse.ok ? await sizesResponse.json() : [];
+        const addonsResult = addonsResponse.ok ? await addonsResponse.json() : { data: [] };
+        const sizesResult = sizesResponse.ok ? await sizesResponse.json() : { data: [] };
 
-        console.log("ADDONS RAW:", addonsResult);
-        console.log("SIZES RAW:", sizesResult);
-
-        addonsCache = Array.isArray(addonsResult)
-            ? addonsResult
-            : (addonsResult.data || addonsResult.items || addonsResult.addons || addonsResult.results || []);
-
-        sizesCache = Array.isArray(sizesResult)
-            ? sizesResult
-            : (sizesResult.data || sizesResult.items || sizesResult.addons || sizesResult.results || []);
-
-        console.log("ADDONS CACHE:", addonsCache);
-        console.log("SIZES CACHE:", sizesCache);
+        addonsCache = addonsResult.data || [];
+        sizesCache = sizesResult.data || [];
     } catch (error) {
         console.error("Add-ons fetch error:", error);
         addonsCache = [];
@@ -293,8 +282,6 @@ function renderProducts() {
 function renderOptions() {
     const addonTbody = document.getElementById("addonTableBody");
     const sizeTbody = document.getElementById("sizeTableBody");
-    console.log("renderOptions addonsCache:", addonsCache);
-    console.log("renderOptions sizesCache:", sizesCache);
 
     if (addonTbody) addonTbody.innerHTML = "";
     if (sizeTbody) sizeTbody.innerHTML = "";
