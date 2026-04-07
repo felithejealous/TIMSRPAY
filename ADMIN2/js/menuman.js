@@ -104,7 +104,7 @@ function previewImage(input) {
 
 async function fetchCategories() {
     try {
-        const response = await fetch(`${API_URL}/products/categories/`, {
+        const response = await fetch(`${API_URL}/products/categories`, {
             method: "GET",
             headers: getAuthHeaders(),
         });
