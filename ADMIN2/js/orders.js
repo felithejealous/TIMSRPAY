@@ -483,7 +483,7 @@ function buildRewardsInfoHtml(receipt) {
 
 async function viewDetails(orderId) {
     try {
-        const receipt = await apiFetch(`${API_URL}/orders/${orderId}/receipt`, {
+        const receipt = await apiFetch(`${API_URL}/orders/${orderId}/receipt/`, {
             method: "GET"
         });
 
