@@ -52,14 +52,20 @@
             transition: transform 0.4s ease, filter 0.4s ease;
         }
 
+<<<<<<< HEAD
         /* Blur background when typing */
+=======
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
         body.is-typing .unified-card {
             transform: scale(0.95);
             filter: blur(10px);
             pointer-events: none;
         }
 
+<<<<<<< HEAD
         /* --- HERO SECTION --- */
+=======
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
         .hero-header {
             padding: 30px 40px 10px;
             text-align: center;
@@ -86,7 +92,10 @@
         .hero-header h2 { font-size: 1.8rem; font-weight: 800; color: var(--text-dark); text-transform: uppercase; }
         .hero-header p { font-size: 0.9rem; color: #5d4037; opacity: 0.6; margin-top: 4px; }
 
+<<<<<<< HEAD
         /* --- OPTIONS AREA --- */
+=======
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
         .options-area {
             flex: 1;
             padding: 0 50px 20px;
@@ -120,7 +129,10 @@
         .check-pill.active { border-color: var(--mango-deep); color: var(--mango-deep); background: #fff; }
         .check-pill input { display: none; }
 
+<<<<<<< HEAD
         /* Notes Style */
+=======
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
         .notes-field {
             width: 100%; padding: 16px 20px; border-radius: 15px;
             border: 1.5px solid rgba(255,255,255,0.5); background: rgba(255,255,255,0.7);
@@ -128,7 +140,10 @@
             cursor: pointer;
         }
 
+<<<<<<< HEAD
         /* --- NOTE POP-OUT MODAL --- */
+=======
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
         .note-focus-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.2);
@@ -151,7 +166,10 @@
             background: #fff9f0; outline: none;
         }
 
+<<<<<<< HEAD
         /* QTY & FOOTER */
+=======
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
         .qty-row {
             display: flex; align-items: center; justify-content: space-between;
             margin-top: 20px; padding: 15px 0; border-top: 1px solid rgba(0,0,0,0.06);
@@ -177,7 +195,10 @@
         .btn-back { background: rgba(255,255,255,0.12); color: white; }
         .btn-confirm { background: var(--mango-deep); color: white; }
 
+<<<<<<< HEAD
         /* Keyboard */
+=======
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
         .keyboard-overlay {
             position: fixed; bottom: -100%; left: 0; width: 100%;
             background: #cbd5e0; padding: 10px; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -214,6 +235,7 @@
                 <button class="pill-btn" data-val="Large" data-price="20">Large<span class="price-addon">+₱20</span></button>
             </div>
 
+<<<<<<< HEAD
             <span class="section-label">Sugar Level</span>
             <div class="pill-group" id="sugarGroup">
                 <button class="pill-btn" data-val="0%">0%</button>
@@ -231,13 +253,26 @@
 
             <span class="section-label">Special Notes</span>
             <input type="text" class="notes-field" id="orderNotes" placeholder="Tap to add a note..." readonly onclick="openNoteFocus()">
+=======
+            <span class="section-label">Add-ons</span>
+            <div class="addon-grid" id="addonsGroup"></div>
+
+            <span class="section-label">Special Notes</span>
+            <input type="text" class="notes-field" id="orderNotes" placeholder="Tap to add a note..." readonly>
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
 
             <div class="qty-row">
                 <span class="section-label" style="margin:0">Quantity</span>
                 <div class="qty-stepper">
+<<<<<<< HEAD
                     <button class="step-btn" onclick="adjustQty(-1)">-</button>
                     <div class="qty-val" id="qtyDisplay">1</div>
                     <button class="step-btn" onclick="adjustQty(1)">+</button>
+=======
+                    <button class="step-btn" id="qtyMinusBtn">-</button>
+                    <div class="qty-val" id="qtyDisplay">1</div>
+                    <button class="step-btn" id="qtyPlusBtn">+</button>
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
                 </div>
             </div>
         </div>
@@ -248,7 +283,11 @@
                 <h2 id="totalDisplay">₱ 0.00</h2>
             </div>
             <div class="action-group">
+<<<<<<< HEAD
                 <button class="btn btn-back" onclick="window.location.href='menu.html'">Back</button>
+=======
+                <button class="btn btn-back" id="backBtn">Back</button>
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
                 <button class="btn btn-confirm" id="addToCartBtn">Add to Tray</button>
             </div>
         </div>
@@ -264,6 +303,7 @@
 
     <div class="keyboard-overlay" id="kb"></div>
 
+<<<<<<< HEAD
     <script>
         const products = [
             { id: 1, name: "Classic Mango", price: 60, desc: "Tropical mango slush with signature layers.", img: "../Images/mangga.png" },
@@ -395,5 +435,9 @@
             window.location.href = "menu.html";
         };
     </script>
+=======
+    <script src="../config.js"></script>
+    <script src="../js/kiosk-customize.js"></script>
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
 </body>
 </html>

@@ -1,5 +1,9 @@
+<<<<<<< HEAD
 # auth.py
 from fastapi import APIRouter, Depends, HTTPException, Request, Header
+=======
+from fastapi import APIRouter, Depends, Response, HTTPException, Request, Header, Form, UploadFile, File
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta, timezone
 import hashlib
@@ -8,12 +12,18 @@ import os
 import secrets
 import smtplib
 import bcrypt
+<<<<<<< HEAD
 import re  # ✅ ADD: password rules regex
+=======
+import re
+import string
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
 from email.message import EmailMessage
 from pydantic import BaseModel, EmailStr, Field
 import requests
 from fastapi.responses import RedirectResponse
 from urllib.parse import urlencode
+<<<<<<< HEAD
 from backend.routers.wallet import _get_wallet_by_user_id #added
 
 from backend.database import SessionLocal
@@ -24,6 +34,17 @@ from backend.security import create_access_token, get_current_user
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
+=======
+from pathlib import Path
+from uuid import uuid4
+from backend.database import SessionLocal
+from backend.models import User, Wallet, RewardWallet, Role, PasswordResetToken, LoginRateLimit, CustomerProfile
+from backend.security import create_access_token, get_current_user
+from backend.activity_logger import log_activity
+router = APIRouter(prefix="/auth", tags=["Auth"])
+
+
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
 # -----------------------
 # DB DEP
 # -----------------------
@@ -34,8 +55,14 @@ def get_db():
     finally:
         db.close()
 
+<<<<<<< HEAD
 # ----------------------
 # PASSWORD STRENGTH RULES (ADD-ONLY)
+=======
+
+# ----------------------
+# PASSWORD STRENGTH RULES
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
 # ----------------------
 def validate_password_strength(pw: str):
     pw = (pw or "").strip()
@@ -55,23 +82,37 @@ def validate_password_strength(pw: str):
     if not re.search(r"\d", pw):
         raise HTTPException(status_code=400, detail="Password must contain at least 1 number")
 
+<<<<<<< HEAD
     # special character (anything not alphanumeric underscore)
     if not re.search(r"[^\w]", pw):
         raise HTTPException(status_code=400, detail="Password must contain at least 1 special character")
 
+=======
+    if not re.search(r"[^\w]", pw):
+        raise HTTPException(status_code=400, detail="Password must contain at least 1 special character")
+
+
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
 # ----------------------
 # PASSWORD HASH
 # ----------------------
 def hash_password(pw: str) -> str:
     pw = (pw or "").strip()
 
+<<<<<<< HEAD
     # ✅ keep your existing length check
+=======
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
     if len(pw) < 8:
         raise HTTPException(status_code=400, detail="Password must be at least 8 characters")
 
     hashed = bcrypt.hashpw(pw.encode("utf-8"), bcrypt.gensalt())
     return hashed.decode("utf-8")
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
 def verify_password(pw: str, stored_hash: str) -> bool:
     if not pw or not stored_hash:
         return False
@@ -84,6 +125,10 @@ def verify_password(pw: str, stored_hash: str) -> bool:
     except Exception:
         return False
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
 # -----------------------
 # ROLE HELPERS
 # -----------------------
@@ -94,18 +139,143 @@ def _get_role_id(db: Session, role_name: str) -> int:
     return r.id
 
 
+<<<<<<< HEAD
+=======
+def _generate_wallet_code(length: int = 6) -> str:
+    alphabet = string.ascii_uppercase + string.digits
+    return "".join(secrets.choice(alphabet) for _ in range(length))
+
+
+def _generate_unique_wallet_code(db: Session) -> str:
+    while True:
+        code = _generate_wallet_code(6)
+        existing = db.query(Wallet).filter(Wallet.wallet_code == code).first()
+        if not existing:
+            return code
+
+#===============
+#HELPER TO GENERATE SPILIT NAME
+#---------------------------
+def split_full_name(full_name: str):
+    full_name = (full_name or "").strip()
+    if not full_name:
+        return "", ""
+
+    parts = full_name.split()
+    first_name = parts[0]
+    last_name = " ".join(parts[1:]) if len(parts) > 1 else ""
+    return first_name, last_name
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
 # -----------------------
 # TIME HELPERS
 # -----------------------
 def _utcnow():
     return datetime.now(timezone.utc)
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
 def _as_utc(dt: datetime):
     if dt is None:
         return None
     if dt.tzinfo is None:
         return dt.replace(tzinfo=timezone.utc)
     return dt.astimezone(timezone.utc)
+<<<<<<< HEAD
+=======
+#----------
+#-----HELPER
+#-----------------------
+def _ensure_upload_dir(path: str):
+    Path(path).mkdir(parents=True, exist_ok=True)
+def _safe_profile_picture_extension(filename: str, content_type: str = "") -> str:
+    filename = (filename or "").lower()
+    content_type = (content_type or "").lower()
+
+    if filename.endswith(".jpg") or filename.endswith(".jpeg") or content_type == "image/jpeg":
+        return ".jpg"
+    if filename.endswith(".png") or content_type == "image/png":
+        return ".png"
+    if filename.endswith(".webp") or content_type == "image/webp":
+        return ".webp"
+
+    raise HTTPException(status_code=400, detail="Only JPG, PNG, and WEBP images are allowed")
+# -----------------------
+# LOGIN RATE LIMIT
+# -----------------------
+LOGIN_MAX_FAILED_ATTEMPTS = 5
+LOGIN_LOCK_MINUTES = 15
+
+
+def _get_client_ip(request: Request) -> str:
+    forwarded_for = request.headers.get("x-forwarded-for")
+    if forwarded_for:
+        return forwarded_for.split(",")[0].strip()
+
+    real_ip = request.headers.get("x-real-ip")
+    if real_ip:
+        return real_ip.strip()
+
+    if request.client and request.client.host:
+        return request.client.host.strip()
+
+    return "unknown"
+
+
+def _get_login_rate_limit_row(db: Session, email: str, ip_address: str) -> LoginRateLimit:
+    row = db.query(LoginRateLimit).filter(
+        LoginRateLimit.email == email,
+        LoginRateLimit.ip_address == ip_address
+    ).first()
+
+    if not row:
+        row = LoginRateLimit(
+            email=email,
+            ip_address=ip_address,
+            failed_count=0,
+            locked_until=None
+        )
+        db.add(row)
+        db.flush()
+
+    return row
+
+
+def _check_login_lock(row: LoginRateLimit):
+    now = datetime.utcnow()
+
+    if row.locked_until and now < row.locked_until:
+        remaining_seconds = int((row.locked_until - now).total_seconds())
+        remaining_minutes = max(1, (remaining_seconds + 59) // 60)
+        raise HTTPException(
+            status_code=429,
+            detail=f"Too many failed login attempts. Try again in about {remaining_minutes} minute(s)."
+        )
+
+    if row.locked_until and now >= row.locked_until:
+        row.failed_count = 0
+        row.locked_until = None
+
+
+def _register_failed_login(db: Session, row: LoginRateLimit):
+    now = datetime.utcnow()
+
+    row.failed_count = int(row.failed_count or 0) + 1
+    row.last_attempt_at = now
+
+    if row.failed_count >= LOGIN_MAX_FAILED_ATTEMPTS:
+        row.locked_until = now + timedelta(minutes=LOGIN_LOCK_MINUTES)
+
+    db.commit()
+
+
+def _reset_login_rate_limit(db: Session, row: LoginRateLimit):
+    row.failed_count = 0
+    row.locked_until = None
+    row.last_attempt_at = datetime.utcnow()
+    db.commit()
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
 
 
 # -----------------------
@@ -142,14 +312,26 @@ def _send_email(to_email: str, subject: str, body: str):
 
 
 # -----------------------
+<<<<<<< HEAD
 # TOKEN HASH (PBKDF2) for reset code
 # -----------------------
 TOKEN_ITERS = 120_000
 
+=======
+# TOKEN HASH
+# -----------------------
+TOKEN_ITERS = 120_000
+
+
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
 def _hash_token(token_str: str, salt: bytes) -> str:
     dk = hashlib.pbkdf2_hmac("sha256", token_str.encode(), salt, TOKEN_ITERS, dklen=32)
     return f"pbkdf2_sha256${TOKEN_ITERS}${salt.hex()}${dk.hex()}"
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
 def _verify_token(token_str: str, stored: str) -> bool:
     try:
         algo, iters, salt_hex, dk_hex = stored.split("$", 3)
@@ -176,16 +358,36 @@ class ForgotPasswordConfirmPayload(BaseModel):
     email: EmailStr
     code: str = Field(min_length=6, max_length=6)
     new_password: str = Field(min_length=8)
+<<<<<<< HEAD
 
+=======
+class ChangePasswordPayload(BaseModel):
+    current_password: str
+    new_password: str
+    confirm_password: str
+class UpdateProfilePayload(BaseModel):
+    first_name: str
+    last_name: str
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
 
 # ============================================================
 # REGISTER
 # ============================================================
 @router.post("/register")
+<<<<<<< HEAD
 def register_user(full_name: str, email: str, password: str, db: Session = Depends(get_db)): #added full_name param
     email = email.strip().lower()
 
     # ✅ ADD: enforce strong password rules on register
+=======
+def register_user(full_name: str, email: str, password: str, db: Session = Depends(get_db)):
+    email = email.strip().lower()
+    full_name = (full_name or "").strip()
+
+    if not full_name:
+        raise HTTPException(status_code=400, detail="Full name is required")
+
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
     validate_password_strength(password)
 
     if db.query(User).filter(User.email == email).first():
@@ -194,7 +396,10 @@ def register_user(full_name: str, email: str, password: str, db: Session = Depen
     role_id = _get_role_id(db, "customer")
 
     user = User(
+<<<<<<< HEAD
         full_name=full_name, #added full_name field
+=======
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
         email=email,
         password_hash=hash_password(password),
         role_id=role_id,
@@ -204,6 +409,7 @@ def register_user(full_name: str, email: str, password: str, db: Session = Depen
     db.commit()
     db.refresh(user)
 
+<<<<<<< HEAD
     db.add(Wallet(user_id=user.id, balance=0))
     db.add(RewardWallet(user_id=user.id, total_points=0))
     db.commit()
@@ -220,11 +426,58 @@ def login(email: str, password: str, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == email).first()
 
     if not user or not verify_password(password, user.password_hash):
+=======
+    db.add(Wallet(
+        user_id=user.id,
+        balance=0,
+        wallet_code=_generate_unique_wallet_code(db),
+    ))
+    db.add(RewardWallet(user_id=user.id, total_points=0))
+    first_name, last_name = split_full_name(full_name)
+    db.add(CustomerProfile(
+        user_id=user.id,
+        full_name=full_name,
+        first_name=first_name,
+        last_name=last_name
+    ))
+    db.commit()
+    return {
+        "user_id": user.id,
+        "message": "Account created successfully"
+    }
+
+# ============================================================
+# LOGIN
+# ============================================================
+@router.post("/login")
+def login(
+    response: Response,
+    request: Request,
+    email: str = Form(...),
+    password: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    email = email.strip().lower()
+    ip_address = _get_client_ip(request)
+
+    rate_limit_row = _get_login_rate_limit_row(db, email, ip_address)
+    _check_login_lock(rate_limit_row)
+
+    user = db.query(User).filter(User.email == email).first()
+
+    if not user or not verify_password(password, user.password_hash):
+        _register_failed_login(db, rate_limit_row)
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     if hasattr(user, "is_active") and not bool(user.is_active):
         raise HTTPException(status_code=403, detail="Account is deactivated")
 
+<<<<<<< HEAD
+=======
+    _reset_login_rate_limit(db, rate_limit_row)
+
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
     role = db.query(Role).filter(Role.id == user.role_id).first()
     role_name = (role.name if role else "customer").lower()
 
@@ -234,6 +487,7 @@ def login(email: str, password: str, db: Session = Depends(get_db)):
         "email": user.email
     })
 
+<<<<<<< HEAD
     return {
         "access_token": access_token_jwt,
         "token_type": "bearer",
@@ -245,10 +499,49 @@ def login(email: str, password: str, db: Session = Depends(get_db)):
 
 # ============================================================
 # FORGOT PASSWORD - REQUEST (6 DIGIT CODE)
+=======
+    response.set_cookie(
+        key="access_token",
+        value=access_token_jwt,
+        httponly=True,
+        secure=False,
+        samesite="lax",
+        max_age=60 * 60 * 24 * 7
+    )
+
+    return {
+        "user_id": user.id,
+        "email": user.email,
+        "role": role_name,
+        "access_token": access_token_jwt,
+        "token_type": "bearer"
+    }
+
+
+#===========================
+# LOGOUT
+#===========================
+@router.post("/logout")
+def logout(response: Response):
+    response.delete_cookie(
+        key="access_token",
+        httponly=True,
+        samesite="lax"
+    )
+    return {"message": "Logged out successfully"}
+
+
+# ============================================================
+# FORGOT PASSWORD - REQUEST
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
 # ============================================================
 RESET_TTL_SECONDS = 15 * 60
 RESET_MAX_ATTEMPTS = 3
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
 @router.post("/forgot-password/request")
 def forgot_password_request(email: str, db: Session = Depends(get_db)):
     email = email.strip().lower()
@@ -296,7 +589,10 @@ def forgot_password_confirm(payload: ForgotPasswordConfirmPayload, db: Session =
     email = payload.email.strip().lower()
     code = payload.code.strip()
 
+<<<<<<< HEAD
     # ✅ ADD: enforce strong password rules on reset too
+=======
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
     validate_password_strength(payload.new_password)
 
     user = db.query(User).filter(User.email == email).first()
@@ -330,6 +626,7 @@ def forgot_password_confirm(payload: ForgotPasswordConfirmPayload, db: Session =
 
     row.is_used = True
     user.password_hash = hash_password(payload.new_password)
+<<<<<<< HEAD
     #  (RESET PIN)
     wallet = _get_wallet_by_user_id(user.id)
     wallet.pin_hash = hash_pin("0000")  # default PIN OR force change later
@@ -340,17 +637,80 @@ def forgot_password_confirm(payload: ForgotPasswordConfirmPayload, db: Session =
 
 # ============================================================
 # GOOGLE OAUTH (CONTINUE WITH GOOGLE) - WITH STATE VALIDATION
+=======
+    db.commit()
+
+    return {"message": "Password reset successful"}
+#==================
+#change password
+#==================
+@router.post("/change-password")
+def change_password(
+    payload: ChangePasswordPayload,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    user = db.query(User).filter(User.id == current_user.id).first()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    current_password = (payload.current_password or "").strip()
+    new_password = (payload.new_password or "").strip()
+    confirm_password = (payload.confirm_password or "").strip()
+
+    if not current_password or not new_password or not confirm_password:
+        raise HTTPException(status_code=400, detail="All password fields are required")
+
+    if not user.password_hash:
+        raise HTTPException(status_code=400, detail="This account does not support password change")
+
+    if not verify_password(current_password, user.password_hash):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+
+    if new_password != confirm_password:
+        raise HTTPException(status_code=400, detail="New password and confirm password do not match")
+
+    if current_password == new_password:
+        raise HTTPException(status_code=400, detail="New password must be different from current password")
+
+    validate_password_strength(new_password)
+
+    user.password_hash = hash_password(new_password)
+    log_activity(
+    db,
+    user=current_user,
+    action="Changed password",
+    module="security",
+    target_type="user",
+    target_id=user.id,
+    details="User changed own password"
+)
+    db.commit()
+
+    return {"message": "Password updated successfully"}
+# ============================================================
+# GOOGLE OAUTH
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
 # ============================================================
 GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
 GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
 def _google_env(name: str) -> str:
     v = (os.getenv(name) or "").strip()
     if not v:
         raise HTTPException(status_code=500, detail=f"Missing env var: {name}")
     return v
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
 @router.get("/google/login")
 def google_login():
     client_id = _google_env("GOOGLE_CLIENT_ID")
@@ -369,18 +729,31 @@ def google_login():
 
     resp = RedirectResponse(url=f"{GOOGLE_AUTH_URL}?{urlencode(params)}")
 
+<<<<<<< HEAD
     # ✅ store state in cookie (anti-CSRF)
+=======
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
     resp.set_cookie(
         key="oauth_state",
         value=state,
         httponly=True,
         samesite="lax",
+<<<<<<< HEAD
         secure=False,   # set True in prod HTTPS
         max_age=600,
         domain="127.0.0.1", # Force it to the IP you are using
     )
     return resp
 
+=======
+        secure=False,
+        max_age=600,
+        domain="127.0.0.1",
+    )
+    return resp
+
+
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
 @router.get("/google/callback")
 def google_callback(
     request: Request,
@@ -391,7 +764,10 @@ def google_callback(
     if not code:
         raise HTTPException(status_code=400, detail="Missing code from Google")
 
+<<<<<<< HEAD
     # ✅ validate state
+=======
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
     saved_state = request.cookies.get("oauth_state")
     if not saved_state or saved_state != state:
         raise HTTPException(status_code=400, detail="Invalid OAuth state")
@@ -400,10 +776,15 @@ def google_callback(
     client_secret = _google_env("GOOGLE_CLIENT_SECRET")
     redirect_uri = _google_env("GOOGLE_REDIRECT_URI")
 
+<<<<<<< HEAD
     frontend_redirect = os.getenv(
     "FRONTEND_OAUTH_REDIRECT",
     "http://127.0.0.1:5500/PUBLICWEB/oauth-callback.html"
 )
+=======
+    frontend_redirect = os.getenv("FRONTEND_OAUTH_REDIRECT")
+
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
     token_res = requests.post(
         GOOGLE_TOKEN_URL,
         data={
@@ -434,7 +815,11 @@ def google_callback(
     google_id = info.get("sub")
     email = (info.get("email") or "").strip().lower()
     picture = info.get("picture")
+<<<<<<< HEAD
     name = info.get("name") #added to capture full name from Google profile
+=======
+    full_name = (info.get("name") or "").strip()
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
 
     if not google_id or not email:
         raise HTTPException(status_code=400, detail="Google account missing required fields (sub/email)")
@@ -448,10 +833,22 @@ def google_callback(
         user.oauth_provider = "google"
         user.profile_picture = picture
 
+<<<<<<< HEAD
         #added: only update full_name if it's not already set, to avoid overwriting existing names with empty or less accurate data from Google
         if not user.full_name and name: 
             user.full_name = name
 
+=======
+        existing_profile = db.query(CustomerProfile).filter(CustomerProfile.user_id == user.id).first()
+        if not existing_profile and full_name:
+             first_name, last_name = split_full_name(full_name)
+             db.add(CustomerProfile(
+             user_id=user.id,
+            full_name=full_name,
+            first_name=first_name,
+            last_name=last_name
+    ))
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
     else:
         customer_role_id = _get_role_id(db, "customer")
         user = User(
@@ -462,12 +859,34 @@ def google_callback(
             google_id=google_id,
             oauth_provider="google",
             profile_picture=picture,
+<<<<<<< HEAD
             full_name=name, #added full_name from Google profile
         )
         db.add(user)
         db.flush()
         db.add(Wallet(user_id=user.id, balance=0))
         db.add(RewardWallet(user_id=user.id, total_points=0))
+=======
+        )
+        db.add(user)
+        db.flush()
+
+        db.add(Wallet(
+            user_id=user.id,
+            balance=0,
+            wallet_code=_generate_unique_wallet_code(db),
+        ))
+        db.add(RewardWallet(user_id=user.id, total_points=0))
+        profile_name = full_name or email.split("@")[0]
+        first_name, last_name = split_full_name(profile_name)
+
+        db.add(CustomerProfile(
+            user_id=user.id,
+            full_name=profile_name,
+            first_name=first_name,
+            last_name=last_name
+        ))
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
 
     db.commit()
     db.refresh(user)
@@ -484,12 +903,16 @@ def google_callback(
     q = urlencode({"token": access_token_jwt})
     resp = RedirectResponse(url=f"{frontend_redirect}?{q}")
 
+<<<<<<< HEAD
     # ✅ clear state cookie
+=======
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
     resp.delete_cookie("oauth_state")
     return resp
 
 
 # ============================================================
+<<<<<<< HEAD
 # ME (JWT-protected)
 # ============================================================
 @router.get("/me")
@@ -506,12 +929,165 @@ def me(current_user: User = Depends(get_current_user)):
 
 # ============================================================
 # BOOTSTRAP ADMIN (ADD-ONLY, does NOT remove anything)
+=======
+# ME
+# ============================================================
+@router.get("/me")
+def me(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    wallet = db.query(Wallet).filter(Wallet.user_id == current_user.id).first()
+    customer_profile = db.query(CustomerProfile).filter(CustomerProfile.user_id == current_user.id).first()
+
+    if wallet and not (getattr(wallet, "wallet_code", None) or "").strip():
+        wallet.wallet_code = _generate_unique_wallet_code(db)
+        db.commit()
+        db.refresh(wallet)
+
+    full_name = None
+    first_name = None
+    last_name = None
+
+    if customer_profile:
+        full_name = (customer_profile.full_name or "").strip() or None
+        first_name = (getattr(customer_profile, "first_name", None) or "").strip() or None
+        last_name = (getattr(customer_profile, "last_name", None) or "").strip() or None
+
+    display_name = first_name or full_name or current_user.email
+
+    return {
+        "user_id": current_user.id,
+        "email": current_user.email,
+        "full_name": full_name,
+        "first_name": first_name,
+        "last_name": last_name,
+        "display_name": display_name,
+        "role": getattr(current_user, "role_name", "customer"),
+        "provider": getattr(current_user, "oauth_provider", None),
+        "profile_picture": getattr(current_user, "profile_picture", None),
+        "wallet_code": getattr(wallet, "wallet_code", None) if wallet else None,
+        "created_at": current_user.created_at,
+    }
+#===============
+#===PROFILE
+#==============
+@router.put("/profile")
+def update_profile(
+    payload: UpdateProfilePayload,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    first_name = (payload.first_name or "").strip()
+    last_name = (payload.last_name or "").strip()
+
+    if not first_name:
+        raise HTTPException(status_code=400, detail="First name is required")
+
+    profile = db.query(CustomerProfile).filter(CustomerProfile.user_id == current_user.id).first()
+
+    if not profile:
+        profile = CustomerProfile(
+            user_id=current_user.id,
+            full_name=first_name if not last_name else f"{first_name} {last_name}",
+            first_name=first_name,
+            last_name=last_name,
+        )
+        db.add(profile)
+    else:
+        profile.first_name = first_name
+        profile.last_name = last_name
+        profile.full_name = first_name if not last_name else f"{first_name} {last_name}"
+
+    db.commit()
+
+    return {"message": "Profile updated successfully"}
+@router.post("/profile-picture")
+async def upload_profile_picture(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if not file:
+        raise HTTPException(status_code=400, detail="No file uploaded")
+
+    ext = _safe_profile_picture_extension(file.filename or "", file.content_type or "")
+    upload_dir = "uploads/profile_pictures"
+    _ensure_upload_dir(upload_dir)
+
+    content = await file.read()
+    if not content:
+        raise HTTPException(status_code=400, detail="Uploaded file is empty")
+
+    max_size = 5 * 1024 * 1024
+    if len(content) > max_size:
+        raise HTTPException(status_code=400, detail="Image must be 5MB or smaller")
+
+    user = db.query(User).filter(User.id == current_user.id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    filename = f"user_{user.id}_{uuid4().hex}{ext}"
+    filepath = os.path.join(upload_dir, filename)
+
+    with open(filepath, "wb") as f:
+        f.write(content)
+
+    old_path = (getattr(user, "profile_picture", None) or "").strip()
+
+    user.profile_picture = f"/uploads/profile_pictures/{filename}"
+    db.commit()
+    db.refresh(user)
+
+    if old_path.startswith("/uploads/profile_pictures/"):
+        old_file = old_path.lstrip("/")
+        if os.path.exists(old_file):
+            try:
+                os.remove(old_file)
+            except Exception:
+                pass
+
+    return {
+        "message": "Profile picture uploaded successfully",
+        "profile_picture": user.profile_picture,
+    }
+@router.delete("/profile-picture")
+def delete_profile_picture(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    user = db.query(User).filter(User.id == current_user.id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    old_path = (getattr(user, "profile_picture", None) or "").strip()
+    user.profile_picture = None
+
+    db.commit()
+    db.refresh(user)
+
+    if old_path.startswith("/uploads/profile_pictures/"):
+        old_file = old_path.lstrip("/")
+        if os.path.exists(old_file):
+            try:
+                os.remove(old_file)
+            except Exception:
+                pass
+
+    return {
+        "message": "Profile picture removed successfully.",
+        "profile_picture": user.profile_picture
+    }
+# ============================================================
+# BOOTSTRAP ADMIN
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
 # ============================================================
 class BootstrapAdminPayload(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8)
     full_name: str = Field(min_length=1)
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
 def _get_or_create_role(db: Session, name: str) -> Role:
     name = (name or "").strip().lower()
     r = db.query(Role).filter(Role.name.ilike(name)).first()
@@ -522,6 +1098,10 @@ def _get_or_create_role(db: Session, name: str) -> Role:
     db.flush()
     return r
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
 def _has_any_admin(db: Session) -> bool:
     admin_role = db.query(Role).filter(Role.name.ilike("admin")).first()
     if not admin_role:
@@ -529,6 +1109,10 @@ def _has_any_admin(db: Session) -> bool:
     exists = db.query(User).filter(User.role_id == admin_role.id).first()
     return bool(exists)
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
 @router.post("/bootstrap-admin")
 def bootstrap_admin(
     payload: BootstrapAdminPayload,
@@ -541,13 +1125,19 @@ def bootstrap_admin(
     if (x_bootstrap_secret or "").strip() != expected:
         raise HTTPException(status_code=403, detail="Invalid bootstrap secret")
 
+<<<<<<< HEAD
     # disable if admin already exists
+=======
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
     if _has_any_admin(db):
         raise HTTPException(status_code=403, detail="Admin already exists; bootstrap is disabled")
 
     email = payload.email.strip().lower()
 
+<<<<<<< HEAD
     # ✅ ADD: enforce strong password rules for bootstrap too
+=======
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
     validate_password_strength(payload.password)
 
     if db.query(User).filter(User.email == email).first():
@@ -557,7 +1147,11 @@ def bootstrap_admin(
 
     u = User(
         email=email,
+<<<<<<< HEAD
         password_hash=hash_password(payload.password),  # uses your current hash_password()
+=======
+        password_hash=hash_password(payload.password),
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
         role_id=admin_role.id,
         is_active=True,
     )
@@ -578,4 +1172,8 @@ def bootstrap_admin(
         "role": "admin",
         "access_token": token,
         "token_type": "bearer",
+<<<<<<< HEAD
     }
+=======
+    }
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d

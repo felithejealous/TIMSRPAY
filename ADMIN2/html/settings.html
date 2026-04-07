@@ -22,6 +22,11 @@
             --sidebar-width: 240px;
             --modal-overlay: rgba(0,0,0,0.92);
             --modal-card: #14110e;
+<<<<<<< HEAD
+=======
+            --danger: #ef4444;
+            --success: #22c55e;
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
         }
 
         body.light-theme {
@@ -37,6 +42,22 @@
             --modal-overlay: rgba(0,0,0,0.4);
         }
 
+<<<<<<< HEAD
+=======
+        html.preload-light body {
+            --mango-dark: #f8f9fa;
+            --text-main: #1a1a1a;
+            --text-sub: #4a4a4a;
+            --glass-bg: rgba(255, 255, 255, 0.8);
+            --glass-border: rgba(0, 0, 0, 0.1);
+            --mesh-color-1: rgba(252, 219, 5, 0.15);
+            --mesh-color-2: rgba(255, 140, 0, 0.05);
+            --logo-filter: none;
+            --modal-card: #ffffff;
+            --modal-overlay: rgba(0,0,0,0.4);
+        }
+
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
         * { box-sizing: border-box; margin: 0; padding: 0; transition: background 0.3s, color 0.3s, border 0.3s, transform 0.2s; }
         ::-webkit-scrollbar { width: 0px; background: transparent; }
 
@@ -48,24 +69,45 @@
                 radial-gradient(at 100% 100%, var(--mesh-color-2) 0px, transparent 40%);
             background-attachment: fixed;
             color: var(--text-main);
+<<<<<<< HEAD
             display: flex; min-height: 100vh; overflow: hidden;
+=======
+            display: flex;
+            min-height: 100vh;
+            overflow: hidden;
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
         }
 
         .glass { background: var(--glass-bg); backdrop-filter: blur(12px); border: 1px solid var(--glass-border); }
 
+<<<<<<< HEAD
         /* --- SIDEBAR --- */
+=======
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
         .sidebar {
             width: var(--sidebar-width);
             background: var(--glass-bg);
             backdrop-filter: blur(25px);
+<<<<<<< HEAD
             height: 100vh; position: fixed; left: 0; top: 0;
             border-right: 1px solid var(--glass-border);
             display: flex; flex-direction: column; z-index: 100;
+=======
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            border-right: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
         }
 
         .logo-section { padding: 40px 20px; text-align: center; }
         .logo-section img { width: 120px; filter: var(--logo-filter); }
 
+<<<<<<< HEAD
         .nav-menu { flex: 1; padding: 10px 15px; }
         .nav-item {
             display: flex; align-items: center; gap: 12px;
@@ -115,6 +157,285 @@
         @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
     </style>
 </head>
+=======
+        .nav-menu { flex: 1; padding: 10px 15px; overflow-y: auto; }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 18px;
+            margin-bottom: 6px;
+            border-radius: 12px;
+            color: var(--text-sub);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: var(--mango-yellow);
+            color: #120f0a !important;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(252, 219, 5, 0.2);
+        }
+
+        .logout-btn {
+            padding: 12px 18px;
+            margin: 15px;
+            border-radius: 12px;
+            color: #ef4444;
+            font-weight: 700;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            font-size: 0.85rem;
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            height: 100vh;
+        }
+
+        .header-card {
+            padding: 25px 40px;
+            border-radius: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .theme-toggle-circle {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            background: var(--mango-yellow);
+            color: #120f0a;
+            border: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .settings-card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .settings-card {
+            padding: 30px;
+            border-radius: 28px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .settings-card:hover {
+            background: rgba(252, 219, 5, 0.05);
+            border-color: var(--mango-yellow);
+            transform: translateY(-5px);
+        }
+
+        .settings-card i {
+            font-size: 2rem;
+            color: var(--mango-yellow);
+            margin-bottom: 20px;
+        }
+
+        .settings-card h3 {
+            font-weight: 900;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .settings-card p {
+            color: var(--text-sub);
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--modal-overlay);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(15px);
+            padding: 20px;
+        }
+
+        .modal-overlay.open { display: flex; }
+
+        .modal-card {
+            position: relative;
+            background: var(--modal-card);
+            width: 100%;
+            max-width: 500px;
+            padding: 40px;
+            border-radius: 32px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-close-btn {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            border: 1px solid var(--glass-border);
+            background: rgba(255,255,255,0.06);
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-size: 1rem;
+        }
+
+        .modal-close-btn:hover {
+            transform: scale(1.06);
+            background: rgba(255,255,255,0.12);
+        }
+
+        body.light-theme .modal-close-btn {
+            background: rgba(255,255,255,0.65);
+        }
+        
+        .input-group label {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--mango-orange);
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            outline: none;
+            margin-bottom: 15px;
+        }
+
+        body.light-theme .input-group input, body.light-theme .input-group select {
+            background: #f1f3f5;
+            color: #000;
+            border: 1px solid #dee2e6;
+        }
+
+        .btn-save {
+            background: var(--mango-yellow);
+            color: #000;
+            padding: 14px 24px;
+            border-radius: 16px;
+            font-weight: 900;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            width: 100%;
+            transition: 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-save:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        
+        .activity-item {
+            padding: 15px 0;
+            border-bottom: 1px solid var(--glass-border);
+            font-size: 0.85rem;
+            color: var(--text-sub);
+        }
+
+        .activity-item strong { color: var(--mango-yellow); }
+
+        .status-box {
+            margin-top: 10px;
+            padding: 12px 14px;
+            border-radius: 14px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            display: none;
+            line-height: 1.5;
+        }
+
+        .status-box.show { display: block; }
+
+        .status-box.error {
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.28);
+            color: #fecaca;
+        }
+
+        .status-box.success {
+            background: rgba(34, 197, 94, 0.12);
+            border: 1px solid rgba(34, 197, 94, 0.28);
+            color: #bbf7d0;
+        }
+
+        body.light-theme .status-box.error { color: #991b1b; }
+        body.light-theme .status-box.success { color: #166534; }
+
+        #toast-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 9999;
+        }
+
+        .toast {
+            background: var(--mango-yellow);
+            color: #000;
+            padding: 16px 24px;
+            border-radius: 16px;
+            margin-top: 10px;
+            font-weight: 900;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.3s forwards;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+    </style>
+</head>
+<script>
+(function () {
+    const savedTheme = localStorage.getItem("admin-theme");
+    if (savedTheme === "light") {
+        document.documentElement.classList.add("preload-light");
+    }
+})();
+</script>
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
 <body>
 
     <div id="toast-container"></div>
@@ -125,15 +446,31 @@
             <a href="dashboard.html" class="nav-item" data-lang="nav_dash"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
             <a href="orders.html" class="nav-item"><i class="fa-solid fa-receipt"></i> Orders</a>
             <a href="accounts.html" class="nav-item" data-lang="nav_accounts"><i class="fa-solid fa-user-gear"></i> Accounts</a>
+<<<<<<< HEAD
+=======
+            <a href="wallet.html" class="nav-item"><i class="fa-solid fa-wallet"></i> Wallets</a>
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
             <a href="inventory.html" class="nav-item" data-lang="nav_inv"><i class="fa-solid fa-boxes-stacked"></i> Inventory</a>
             <a href="menuman.html" class="nav-item" data-lang="nav_menu"><i class="fa-solid fa-utensils"></i> Menu Manager</a>
             <a href="promo.html" class="nav-item" data-lang="nav_promo"><i class="fa-solid fa-tags"></i> Promos</a>
             <a href="rewards.html" class="nav-item" data-lang="nav_rewards"><i class="fa-solid fa-gift"></i> Rewards</a>
+<<<<<<< HEAD
             <a href="announce.html" class="nav-item" data-lang="nav_ann"><i class="fa-solid fa-bell"></i> Announce</a>
             <a href="payments.html" class="nav-item" data-lang="nav_pay"><i class="fa-solid fa-credit-card"></i> Payments</a>
             <a href="settings.html" class="nav-item active" data-lang="nav_set"><i class="fa-solid fa-cog"></i> Settings</a>
         </nav>
         <a href="index.html" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> <span data-lang="logout">Log Out</span></a>
+=======
+            <a href="reward-management.html" class="nav-item"><i class="fa-solid fa-trophy"></i> Reward Catalog</a>
+            <a href="announce.html" class="nav-item" data-lang="nav_ann"><i class="fa-solid fa-bell"></i> Announce</a>
+            <a href="engagement.html" class="nav-item"><i class="fa-solid fa-comments"></i> Engagement</a>
+            <a href="attendance.html" class="nav-item"><i class="fa-solid fa-user-clock"></i> Employee Shift Logs</a>
+            <a href="payments.html" class="nav-item" data-lang="nav_pay"><i class="fa-solid fa-file-arrow-down"></i> Reports</a>
+            <a href="settings.html" class="nav-item active" data-lang="nav_set"><i class="fa-solid fa-cog"></i> Settings</a>
+           
+        </nav>
+        <a href="#" class="logout-btn" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Log Out</a>
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
     </aside>
 
     <main class="main-content">
@@ -142,17 +479,24 @@
                 <h1 class="text-2xl font-black uppercase tracking-tighter" style="color: var(--mango-yellow);" data-lang="nav_set">Settings</h1>
                 <p class="text-xs font-mono opacity-60" data-lang="set_sub">System Preferences & Localization</p>
             </div>
+<<<<<<< HEAD
             <button class="theme-toggle-circle" onclick="toggleTheme()">
+=======
+            <button class="theme-toggle-circle">
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
                 <i class="fa-solid fa-sun" id="themeIcon"></i>
             </button>
         </header>
 
         <div class="settings-card-grid">
+<<<<<<< HEAD
             <div class="settings-card glass" onclick="openModal('profileModal')">
                 <i class="fa-solid fa-store"></i>
                 <h3 data-lang="set_shop">Shop Profile</h3>
                 <p data-lang="set_shop_sub">Update shop name, address, and contact</p>
             </div>
+=======
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
             <div class="settings-card glass" onclick="openModal('langModal')">
                 <i class="fa-solid fa-language"></i>
                 <h3 data-lang="set_lang">Language</h3>
@@ -177,6 +521,7 @@
     </main>
 
     <div class="modal-overlay" id="modalOverlay">
+<<<<<<< HEAD
         
         <div class="modal-card" id="profileModal" style="display:none;">
             <h3 class="text-xl font-black uppercase text-yellow-400 mb-8" data-lang="set_shop">Shop Profile</h3>
@@ -194,6 +539,12 @@
         </div>
 
         <div class="modal-card" id="langModal" style="display:none;">
+=======
+        <div class="modal-card" id="langModal" style="display:none;">
+            <button type="button" class="modal-close-btn" onclick="closeAllModals()" aria-label="Close">
+                <i class="fas fa-xmark"></i>
+            </button>
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
             <h3 class="text-xl font-black uppercase text-yellow-400 mb-8" data-lang="set_lang">Language Prefs</h3>
             <div class="input-group">
                 <label>Select System Language</label>
@@ -206,6 +557,7 @@
             <button class="btn-save" onclick="closeAllModals()">Close</button>
         </div>
 
+<<<<<<< HEAD
         <div class="modal-card" id="activityModal" style="display:none;">
             <h3 class="text-xl font-black uppercase text-yellow-400 mb-8" data-lang="set_log">Audit Log</h3>
             <div class="max-h-[300px] overflow-y-auto pr-4">
@@ -309,5 +661,83 @@
             }
         };
     </script>
+=======
+        <div class="modal-card" id="accountModal" style="display:none;">
+            <button type="button" class="modal-close-btn" onclick="closeAllModals()" aria-label="Close">
+                <i class="fas fa-xmark"></i>
+            </button>
+            <h3 class="text-xl font-black uppercase text-yellow-400 mb-8">Change Password</h3>
+
+            <form id="changePasswordForm">
+                <div class="input-group">
+                    <label>Current Password</label>
+                    <input type="password" id="currentPasswordInput" placeholder="Enter current password" required>
+                </div>
+
+                <div class="input-group">
+                    <label>New Password</label>
+                    <input type="password" id="newPasswordInput" placeholder="Enter new password" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Confirm New Password</label>
+                    <input type="password" id="confirmPasswordInput" placeholder="Confirm new password" required>
+                </div>
+
+                <div id="passwordStatus" class="status-box"></div>
+
+                <button type="submit" class="btn-save" id="changePasswordBtn">
+                    Update Password
+                </button>
+            </form>
+        </div>
+        <div class="modal-card" id="activityModal" style="display:none;">
+    <button type="button" class="modal-close-btn" onclick="closeAllModals()" aria-label="Close">
+        <i class="fas fa-xmark"></i>
+    </button>
+    <h3 class="text-xl font-black uppercase text-yellow-400 mb-8" data-lang="set_log">Audit Log</h3>
+
+    <div id="activityLogList" class="max-h-[420px] overflow-y-auto pr-2 space-y-3">
+        <div class="text-center opacity-60 py-8 font-bold">Loading activity logs...</div>
+    </div>
+
+    <button class="btn-save mt-6" onclick="closeAllModals()">Close</button>
+</div>
+
+        <div class="modal-card" id="notifModal" style="display:none; max-width: 760px;">
+            <button type="button" class="modal-close-btn" onclick="closeAllModals()" aria-label="Close">
+                <i class="fas fa-xmark"></i>
+            </button>
+
+            <div class="flex items-center justify-between mb-6 pr-12">
+                <h3 class="text-xl font-black uppercase text-yellow-400">Low Stock Notifications</h3>
+                <button class="btn-save" style="width:auto; padding:12px 18px;" onclick="loadNotificationCenter()">
+                    Refresh
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div class="glass rounded-2xl p-4">
+                    <div class="text-[10px] uppercase font-bold opacity-50">Active Alerts</div>
+                    <div id="notifActiveCount" class="text-2xl font-black mt-1">0</div>
+                </div>
+                <div class="glass rounded-2xl p-4">
+                    <div class="text-[10px] uppercase font-bold opacity-50">Dismissed Alerts</div>
+                    <div id="notifDismissedCount" class="text-2xl font-black mt-1">0</div>
+                </div>
+            </div>
+
+            <div id="notifList" class="max-h-[420px] overflow-y-auto pr-2 space-y-3"></div>
+
+            <button class="btn-save mt-6" onclick="closeAllModals()">Close</button>
+        </div>
+    </div>
+
+    <script src="../config.js"></script>
+    <script src="../js/settings.js"></script>
+    <script src="../js/authGuard.js"></script>
+    <script src="../js/admin-theme-sync.js"></script>
+    <script src="../js/logout.js"></script>
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
 </body>
 </html>

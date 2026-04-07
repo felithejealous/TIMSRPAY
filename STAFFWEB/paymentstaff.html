@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Checkout | Teo D' Mango Staff</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --mango: #ffc244;
+            --mango-dark: #d4a017;
+            --strawberry: #ff4d6d;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+
+            --bg-main: #050505;
+            --text-main: #ffffff;
+            --text-muted: #888888;
+            --card-bg: rgba(30, 30, 30, 0.4);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --sidebar-bg: rgba(10, 10, 10, 0.95);
+            --shadow: 0 15px 40px rgba(0,0,0,0.5);
+            --hover-bg: rgba(255, 255, 255, 0.06);
+            --icon-bg: rgba(255, 255, 255, 0.05);
+            --glow-opacity: 0.15;
+            --input-bg: rgba(0,0,0,0.3);
+            --panel-bg: #0a0a0a;
+        }
+
+        body.light-mode {
+            --bg-main: #f4f5f7;
+            --text-main: #1a1a1a;
+            --text-muted: #666666;
+            --card-bg: rgba(255, 255, 255, 0.7);
+            --card-border: rgba(0, 0, 0, 0.05);
+            --sidebar-bg: rgba(255, 255, 255, 0.9);
+            --shadow: 0 10px 30px rgba(0,0,0,0.05);
+            --hover-bg: rgba(255, 255, 255, 1);
+            --icon-bg: rgba(0, 0, 0, 0.03);
+            --glow-opacity: 0.3;
+            --input-bg: #ffffff;
+            --panel-bg: #ffffff;
+        }
+         html.preload-light body {
+    --bg-main: #f4f5f7;
+    --text-main: #1a1a1a;
+    --text-muted: #666666;
+    --card-bg: rgba(255, 255, 255, 0.7);
+    --card-border: rgba(0, 0, 0, 0.05);
+    --sidebar-bg: rgba(255, 255, 255, 0.9);
+    --shadow: 0 10px 30px rgba(0,0,0,0.05);
+    --hover-bg: rgba(255, 255, 255, 1);
+    --icon-bg: rgba(0, 0, 0, 0.03);
+    --glow-opacity: 0.3;
+    --input-bg: rgba(0, 0, 0, 0.03);
+}
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+            transition: 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body::before,
+        body::after {
+            content: '';
+            position: fixed;
+            border-radius: 50%;
+            z-index: -1;
+            pointer-events: none;
+            transition: 0.5s ease;
+        }
+
+        body::before {
+            top: -10%;
+            left: -5%;
+            width: 500px;
+            height: 500px;
+            background: var(--mango);
+            filter: blur(120px);
+            opacity: var(--glow-opacity);
+        }
+
+        body::after {
+            bottom: -10%;
+            right: -5%;
+            width: 400px;
+            height: 400px;
+            background: var(--strawberry);
+            filter: blur(150px);
+            opacity: calc(var(--glow-opacity) - 0.05);
+        }
+
+        aside {
+            width: 260px;
+            background: var(--sidebar-bg);
+            height: 100vh;
+            position: fixed;
+            border-right: 1px solid var(--card-border);
+            padding: 2rem 1.2rem;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            backdrop-filter: blur(20px);
+        }
+
+        .sidebar-logo {
+            padding: 10px 5px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .sidebar-logo img {
+            max-width: 100%;
+            height: auto;
+            max-height: 50px;
+            display: block;
+            margin: 0 auto;
+            filter: drop-shadow(0 0 5px var(--mango));
+        }
+
+        nav {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: var(--text-muted);
+            padding: 1rem 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-weight: 700;
+            font-size: 13px;
+            border-radius: 14px;
+            margin-bottom: 0.5rem;
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        nav a:hover {
+            color: var(--text-main);
+            background: var(--icon-bg);
+            transform: translateX(5px);
+        }
+
+        nav li.active a {
+            background: var(--mango);
+            color: #111;
+            box-shadow: 0 8px 20px rgba(245, 158, 11, 0.2);
+        }
+
+        main {
+            margin-left: 260px;
+            flex: 1;
+            display: flex;
+            height: 100vh;
+            width: calc(100% - 260px);
+        }
+
+        .payment-container {
+            flex: 1.5;
+            padding: 2.5rem 3.5rem;
+            overflow-y: auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+            gap: 1rem;
+        }
+
+        .page-title {
+            font-size: 2.2rem;
+            font-weight: 900;
+            letter-spacing: -1.5px;
+        }
+
+        .page-sub {
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 13px;
+            letter-spacing: 1px;
+            margin-top: 4px;
+        }
+
+        .theme-btn {
+            background: var(--icon-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.3s;
+            display: grid;
+            place-items: center;
+            font-size: 16px;
+        }
+
+        .theme-btn:hover {
+            background: var(--mango);
+            color: #111;
+            transform: rotate(15deg);
+        }
+
+        .method-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .method-card {
+            background: var(--card-bg);
+            border-radius: 24px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            border: 2px solid var(--card-border);
+            transition: 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .method-card:hover {
+            border-color: var(--mango);
+            transform: translateY(-3px);
+        }
+
+        .method-card.active {
+            border-color: var(--mango);
+            background: var(--hover-bg);
+        }
+
+        .method-card i {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+        }
+
+        .method-card span {
+            font-weight: 800;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .cash-panel,
+        .wallet-panel,
+        .summary-box {
+            background: var(--card-bg);
+            border-radius: 30px;
+            padding: 2rem;
+            border: 1px solid var(--card-border);
+            transition: 0.4s ease;
+            margin-bottom: 1.5rem;
+        }
+
+        .panel-head {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 800;
+            margin-bottom: 1rem;
+        }
+
+        .display-box {
+            background: var(--input-bg);
+            padding: 1.5rem;
+            border-radius: 20px;
+            text-align: right;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--card-border);
+        }
+
+        .display-box small {
+            color: var(--text-muted);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 11px;
+        }
+
+        .display-value {
+            font-size: 2.5rem;
+            font-weight: 900;
+            letter-spacing: -1px;
+            color: var(--text-main);
+        }
+
+        .cash-input-wrap {
+            margin-bottom: 1rem;
+        }
+
+        .cash-input-wrap label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .cash-input {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--input-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            color: var(--text-main);
+            outline: none;
+            font-weight: 800;
+            font-size: 16px;
+        }
+
+        .cash-input:focus {
+            border-color: var(--mango);
+        }
+
+        .calc-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .calc-btn {
+            padding: 18px;
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            background: var(--icon-bg);
+            color: var(--text-main);
+            font-weight: 900;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .calc-btn:hover {
+            background: var(--mango);
+            color: #111;
+            border-color: var(--mango);
+        }
+
+        .btn-exact {
+            background: rgba(16, 185, 129, 0.12);
+            color: var(--success);
+            border-color: rgba(16, 185, 129, 0.2);
+        }
+
+        .btn-exact:hover {
+            background: var(--success);
+            color: #fff;
+            border-color: var(--success);
+        }
+
+        .btn-clear {
+            grid-column: span 3;
+            color: var(--danger);
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        .btn-clear:hover {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        .wallet-panel input {
+            width: 100%;
+            padding: 14px 16px;
+            margin-bottom: 12px;
+            background: var(--input-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            color: var(--text-main);
+            outline: none;
+            font-weight: 700;
+        }
+
+        .wallet-panel input:focus {
+            border-color: var(--mango);
+        }
+
+        .wallet-help {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 10px 0;
+            border-bottom: 1px dashed var(--card-border);
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .summary-row:last-child {
+            border-bottom: none;
+        }
+
+        .receipt-sidebar {
+            width: 430px;
+            background: var(--panel-bg);
+            border-left: 1px solid var(--card-border);
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            box-shadow: -10px 0 30px rgba(0,0,0,0.3);
+        }
+
+        .receipt-paper {
+            background: #fffdf5;
+            border: 1px solid #ddd;
+            padding: 2rem;
+            font-family: 'Courier New', monospace;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            line-height: 1.4;
+            color: #111;
+        }
+
+        .receipt-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px dashed #444;
+            padding-bottom: 1rem;
+        }
+
+        .receipt-body {
+            min-height: 180px;
+        }
+
+        .receipt-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 6px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .receipt-row-sub {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 4px;
+            font-size: 11px;
+            color: #555;
+            padding-left: 10px;
+            font-weight: 700;
+        }
+
+        .receipt-divider {
+            border-top: 1px dashed #444;
+            margin: 10px 0;
+        }
+
+        .points-summary {
+            background: #fdf2d0;
+            border: 1.5px solid #f59e0b;
+            padding: 12px;
+            border-radius: 12px;
+            margin-top: 20px;
+            text-align: center;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .receipt-note {
+            background: #fff0f0;
+            border: 1px dashed #ef4444;
+            color: #7f1d1d;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            margin-top: 12px;
+            font-family: 'Inter', sans-serif;
+            display: none;
+            font-weight: 700;
+        }
+
+        .action-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 2rem;
+        }
+
+        .btn-complete {
+            width: 100%;
+            padding: 1.2rem;
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: 18px;
+            font-weight: 900;
+            font-size: 14px;
+            text-transform: uppercase;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: 0.3s;
+        }
+
+        .btn-complete:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);
+        }
+
+        .btn-complete:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            width: 100%;
+            padding: 1rem;
+            background: transparent;
+            color: var(--danger);
+            border: 2px solid rgba(239, 68, 68, 0.3);
+            border-radius: 18px;
+            font-weight: 800;
+            font-size: 12px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-secondary:hover {
+            background: var(--danger);
+            color: white;
+            border-color: var(--danger);
+        }
+
+        .btn-print {
+            width: 100%;
+            padding: 1rem;
+            background: var(--icon-bg);
+            color: var(--text-main);
+            border: 1px solid var(--card-border);
+            border-radius: 18px;
+            font-weight: 800;
+            font-size: 12px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-print:hover {
+            background: var(--hover-bg);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media screen and (max-width: 1100px) {
+            aside {
+                width: 90px;
+            }
+
+            aside span,
+            .sidebar-logo img {
+                display: none;
+            }
+
+            main {
+                margin-left: 90px;
+                width: calc(100% - 90px);
+            }
+
+            .receipt-sidebar {
+                width: 360px;
+            }
+
+            nav a {
+                justify-content: center;
+            }
+        }
+
+        @media screen and (max-width: 900px) {
+            body {
+                overflow: auto;
+            }
+
+            main {
+                margin-left: 90px;
+                width: calc(100% - 90px);
+                flex-direction: column;
+                height: auto;
+            }
+
+            .payment-container,
+            .receipt-sidebar {
+                width: 100%;
+            }
+
+            .receipt-sidebar {
+                border-left: none;
+                border-top: 1px solid var(--card-border);
+            }
+        }
+
+        @media screen and (max-width: 768px) {
+            aside {
+                width: 100%;
+                height: 70px;
+                bottom: 0;
+                top: auto;
+                flex-direction: row;
+                padding: 0;
+            }
+
+            nav ul {
+                flex-direction: row;
+                justify-content: space-around;
+                width: 100%;
+            }
+
+            nav a {
+                flex-direction: column;
+                font-size: 0.6rem;
+                padding: 8px;
+                gap: 4px;
+                margin-bottom: 0;
+            }
+
+            main {
+                margin-left: 0;
+                width: 100%;
+                margin-bottom: 70px;
+            }
+
+            .payment-container,
+            .receipt-sidebar {
+                padding: 1.2rem;
+            }
+        }
+
+        @media print {
+            body * {
+                visibility: hidden !important;
+            }
+
+            .receipt-paper,
+            .receipt-paper * {
+                visibility: visible !important;
+            }
+
+            .receipt-paper {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                box-shadow: none;
+                border: none;
+                margin: 0;
+                padding: 20px;
+            }
+
+            .action-stack,
+            aside,
+            .payment-container,
+            .receipt-note {
+                display: none !important;
+            }
+
+            .receipt-sidebar {
+                width: 100% !important;
+                border: none !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+                background: white !important;
+            }
+
+            main {
+                margin: 0 !important;
+                width: 100% !important;
+                display: block !important;
+            }
+
+            body {
+                background: white !important;
+                overflow: visible !important;
+            }
+
+            body::before,
+            body::after {
+                display: none !important;
+            }
+        }
+    </style>
+    <script>
+(function () {
+    const savedTheme = localStorage.getItem("staff-theme");
+    if (savedTheme === "light") {
+        document.documentElement.classList.add("preload-light");
+    } else {
+        document.documentElement.classList.remove("preload-light");
+    }
+})();
+</script>
+</head>
+<body>
+
+    <aside>
+        <div class="sidebar-logo"><img src="logo.png" alt="Teo D' Mango"></div>
+        <nav>
+            <ul>
+                <li><a href="overview.html"><i class="fa-solid fa-chart-line"></i> <span>Overview</span></a></li>
+                <li><a href="orderstaffs.html"><i class="fa-solid fa-bell-concierge"></i> <span>Orders</span></a></li>
+                <li class="active"><a href="menustaff.html"><i class="fa-solid fa-receipt"></i> <span>Menu</span></a></li>
+                <li><a href="inventory.html"><i class="fa-solid fa-boxes-stacked"></i> <span>Inventory</span></a></li>
+                <li><a href="dashboardstaff.html"><i class="fa-solid fa-user-clock"></i> <span>Attendance</span></a></li>
+                <li><a href="walletstaff.html"><i class="fa-solid fa-credit-card"></i> <span>RPAY</span></a></li>
+                <li><a href="rewardsstaff.html"><i class="fa-solid fa-gift"></i> <span>Rewards</span></a></li>
+                <li><a href="dashaccsettstaff.html"><i class="fa-solid fa-gear"></i> <span>Settings</span></a></li>
+                <li style="margin-top: auto;"><a href="loginstaff.html" class="logout-link" style="color: var(--danger);"><i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main>
+        <section class="payment-container">
+            <header>
+                <div>
+                    <h1 class="page-title">Checkout</h1>
+                    <p class="page-sub" id="orderSubtitle">Processing order...</p>
+                </div>
+                <button class="theme-btn" id="themeToggle"><i class="fa-solid fa-sun"></i></button>
+            </header>
+
+            <h3 class="panel-head">Accept Payment Via</h3>
+            <div class="method-grid">
+                <div class="method-card" id="methodWalletCard" data-method="wallet">
+                    <i class="fa-solid fa-id-card" style="color: var(--mango);"></i>
+                    <span>TeoPay</span>
+                </div>
+                <div class="method-card active" id="methodCashCard" data-method="cash">
+                    <i class="fa-solid fa-money-bill-1-wave" style="color: var(--success);"></i>
+                    <span>Cash</span>
+                </div>
+            </div>
+
+            <div class="summary-box">
+                <div class="panel-head">Order Summary</div>
+                <div class="summary-row">
+                    <span>Customer</span>
+                    <span id="summaryCustomer">-</span>
+                </div>
+                <div class="summary-row">
+                    <span>Items</span>
+                    <span id="summaryItemsCount">0</span>
+                </div>
+                <div class="summary-row">
+                    <span>Total Due</span>
+                    <span id="summaryTotal">₱0.00</span>
+                </div>
+            </div>
+
+            <div id="cashCalc" class="cash-panel">
+                <div class="panel-head">Cash Calculator</div>
+                <div class="display-box">
+                    <small>Cash Received</small>
+                    <div class="display-value" id="tenderedText">₱0.00</div>
+                </div>
+
+                <div class="cash-input-wrap">
+                    <label for="cashReceivedInput">Type actual cash received</label>
+                    <input
+                        type="number"
+                        id="cashReceivedInput"
+                        class="cash-input"
+                        min="0"
+                        step="0.01"
+                        inputmode="decimal"
+                        placeholder="Enter amount received"
+                    >
+                </div>
+
+                <div class="calc-grid">
+                    <button class="calc-btn" data-money="20">₱20</button>
+                    <button class="calc-btn" data-money="50">₱50</button>
+                    <button class="calc-btn" data-money="100">₱100</button>
+                    <button class="calc-btn" data-money="200">₱200</button>
+                    <button class="calc-btn" data-money="500">₱500</button>
+                    <button class="calc-btn" data-money="1000">₱1000</button>
+                    <button class="calc-btn btn-exact" id="exactMoneyBtn" type="button"><i class="fa-solid fa-equals"></i> Exact</button>
+                    <button class="calc-btn btn-clear" id="resetMoneyBtn"><i class="fa-solid fa-rotate-left"></i> Reset Amount</button>
+                </div>
+            </div>
+
+            <div id="walletPanel" class="wallet-panel hidden">
+                <div class="panel-head">TeoPay Payment</div>
+                <input type="text" id="walletIdentifierInput" placeholder="Enter email or wallet code" autocomplete="off">
+                <input type="password" id="walletPinInput" placeholder="Enter wallet PIN" autocomplete="new-password">
+                <div class="wallet-help">
+                    Gamitin ang customer email o wallet code.
+                    Kapag TeoPay ang ginamit, existing order lang ang babayaran at hindi gagawa ng bagong transaction.
+                </div>
+            </div>
+        </section>
+
+        <section class="receipt-sidebar">
+           <div class="receipt-paper">
+    <div class="receipt-header">
+        <strong style="font-size: 1.2rem;">TEO D' MANGO</strong><br>
+        <small>Staff POS Receipt Preview</small><br>
+        <small id="dateTime">Loading...</small>
+    </div>
+
+    <div id="receiptMetaBox" style="margin-bottom: 14px;">
+        <div class="receipt-row"><span>Order ID:</span><strong id="receiptDisplayId">-</strong></div>
+        <div class="receipt-row"><span>Raw ID:</span><span id="receiptRawId">-</span></div>
+        <div class="receipt-row"><span>Customer:</span><span id="receiptCustomerName">-</span></div>
+        <div class="receipt-row"><span>Order Type:</span><span id="receiptOrderType">-</span></div>
+        <div class="receipt-row"><span>Status:</span><span id="receiptStatus">-</span></div>
+    </div>
+
+    <div class="receipt-note" id="receiptClaimBox" style="display:none;"></div>
+
+    <div class="receipt-body" id="receiptBody">
+        <div class="receipt-row"><span>Loading receipt...</span><span>--</span></div>
+    </div>
+
+    <div class="receipt-note" id="receiptNoteBox"></div>
+
+    <div class="receipt-divider"></div>
+    <div class="receipt-row"><span>Method:</span><strong id="methodLabel">Cash</strong></div>
+    <div class="receipt-row"><span>Received:</span><span id="receiptTendered">₱0.00</span></div>
+    <div class="receipt-row" style="color: #059669;"><span>Change:</span><strong id="receiptChange">₱0.00</strong></div>
+
+    <div class="points-summary">
+        <small style="font-weight: 900; color: #92400e; font-size: 10px; text-transform: uppercase;">Rewards / Points</small>
+        <div class="receipt-row" style="margin-top: 8px;">
+            <span id="pointsCustomerLabel">Customer</span>
+            <strong id="pointsValueLabel">0 pts</strong>
+        </div>
+    </div>
+</div>
+
+            <div class="action-stack">
+                <button class="btn-complete" id="finishBtn">
+                    <i class="fa-solid fa-print"></i> Pay & Print Receipt
+                </button>
+                <button class="btn-print" id="printBtn">
+                    <i class="fa-solid fa-print"></i> Print Preview
+                </button>
+                <button class="btn-secondary" id="voidBtn">
+                    <i class="fa-solid fa-trash-can"></i> Void Transaction
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <script src="config.js"></script>
+    <script src="js/authGuard.js"></script>
+    <script src="js/logoutstaff.js"></script>
+    <script src="js/themesync.js"></script>
+    <script src="js/paymentstaff.js"></script>
+</body>
+</html>

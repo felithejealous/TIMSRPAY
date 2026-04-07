@@ -1,28 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script>
+<<<<<<< HEAD
         (function () { const t = localStorage.getItem("publicweb-theme") || "dark"; if (t === "light") document.documentElement.classList.add("light-mode"); })();
+=======
+        (function () {
+            const t = localStorage.getItem("publicweb-theme") || "dark";
+            if (t === "light") document.documentElement.classList.add("light-mode");
+        })();
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
     </script>
     <title>TIMS-RPAY Wallet | Teo D' Mango Premium</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+<<<<<<< HEAD
         /* --- DYNAMIC THEME VARIABLES --- */
+=======
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
         :root {
             --mango: #ffc244;
             --mango-dark: #d4a017;
             --strawberry: #ff4d6d;
+<<<<<<< HEAD
             
             /* DARK MODE (Default) */
+=======
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
             --bg-main: #050505;
             --text-main: #ffffff;
             --text-muted: #888888;
             --card-bg: rgba(255, 255, 255, 0.03);
             --card-border: rgba(255, 255, 255, 0.08);
             --nav-bg: rgba(5, 5, 5, 0.7);
+<<<<<<< HEAD
             --shadow: 0 30px 60px rgba(0,0,0,0.5);
+=======
+            --shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
             --hover-bg: rgba(255, 255, 255, 0.06);
             --icon-bg: rgba(255, 255, 255, 0.05);
             --glow-opacity: 0.15;
@@ -30,7 +51,10 @@
             --input-bg: rgba(255, 255, 255, 0.05);
         }
 
+<<<<<<< HEAD
         /* LIGHT MODE */
+=======
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
         .light-mode {
             --bg-main: #f4f5f7;
             --text-main: #1a1a1a;
@@ -38,6 +62,7 @@
             --card-bg: rgba(255, 255, 255, 0.6);
             --card-border: rgba(0, 0, 0, 0.05);
             --nav-bg: rgba(244, 245, 247, 0.8);
+<<<<<<< HEAD
             --shadow: 0 20px 50px rgba(0,0,0,0.04);
             --hover-bg: rgba(255, 255, 255, 1);
             --icon-bg: rgba(0, 0, 0, 0.03);
@@ -321,11 +346,741 @@
             opacity: 0.5;
             pointer-events: none;
         }
+=======
+            --shadow: 0 20px 50px rgba(0, 0, 0, 0.04);
+            --hover-bg: rgba(255, 255, 255, 1);
+            --icon-bg: rgba(0, 0, 0, 0.03);
+            --glow-opacity: 0.4;
+            --input-bg: rgba(0, 0, 0, 0.03);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+            transition: background-color 0.5s ease, color 0.5s ease;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before,
+        body::after {
+            content: '';
+            position: fixed;
+            border-radius: 50%;
+            z-index: -1;
+            transition: 0.5s ease;
+            pointer-events: none;
+        }
+
+        body::before {
+            top: -10%;
+            left: -5%;
+            width: 600px;
+            height: 600px;
+            background: var(--mango);
+            filter: blur(120px);
+            opacity: var(--glow-opacity);
+        }
+
+        body::after {
+            bottom: -10%;
+            right: -5%;
+            width: 500px;
+            height: 500px;
+            background: var(--strawberry);
+            filter: blur(150px);
+            opacity: calc(var(--glow-opacity) - 0.05);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 8%;
+            background: var(--nav-bg);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid var(--card-border);
+            transition: background 0.5s ease, border-color 0.5s ease;
+        }
+
+        .nav-brand-wrap {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 1001;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .logo img {
+            height: 40px;
+            object-fit: contain;
+            filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.8)) drop-shadow(0 0 5px var(--mango));
+            transition: 0.3s ease;
+        }
+
+        .logo img:hover {
+            filter: drop-shadow(0 0 4px rgba(255, 255, 255, 1)) drop-shadow(0 0 10px var(--mango));
+            transform: scale(1.05);
+        }
+
+        /* HAMBURGER BTN CSS */
+        .hamburger-btn {
+            display: none;
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-size: 24px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .hamburger-btn:hover {
+            color: var(--mango);
+            transform: scale(1.1);
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+            align-items: center;
+            transition: all 0.4s ease;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.3s;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--text-main);
+        }
+
+        .btn-logout {
+            border: 1.5px solid var(--text-main);
+            padding: 8px 20px;
+            border-radius: 50px;
+            color: var(--text-main) !important;
+            text-decoration: none;
+            transition: 0.3s ease;
+        }
+
+        .btn-logout:hover {
+            background: var(--text-main);
+            color: var(--bg-main) !important;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            z-index: 1001;
+        }
+
+        .circle-btn {
+            background: var(--icon-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+        }
+
+        .circle-btn:hover {
+            background: var(--hover-bg);
+            transform: scale(1.05);
+            color: var(--mango);
+        }
+
+        .wrapper {
+            max-width: 1000px;
+            width: min(100%, 1000px);
+            margin: 40px auto 80px;
+            padding: 0 20px;
+            animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        @keyframes slideUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .page-badge {
+            display: inline-block;
+            background: rgba(255, 194, 68, 0.1);
+            color: var(--mango);
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 11px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 194, 68, 0.3);
+        }
+
+        .page-header h1 {
+            font-size: clamp(32px, 5vw, 42px);
+            font-weight: 900;
+            letter-spacing: -1.5px;
+            margin-bottom: 5px;
+        }
+
+        .page-header p {
+            font-size: clamp(13px, 3vw, 14px);
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .card-container {
+            width: 100%;
+            max-width: 400px;
+            aspect-ratio: 1.6 / 1;
+            margin: 0 auto 50px;
+            perspective: 2000px;
+            cursor: pointer;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+            transform-style: preserve-3d;
+        }
+
+        .card-container:hover .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 25px;
+            padding: clamp(20px, 4vw, 35px);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, #1c1c1c 0%, #050505 100%);
+            border: 1px solid rgba(255, 194, 68, 0.2);
+            overflow: hidden;
+        }
+
+        .card-front::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle, var(--mango) 0%, transparent 60%);
+            opacity: 0.15;
+            filter: blur(40px);
+            pointer-events: none;
+        }
+
+        .card-logo {
+            align-self: flex-end;
+            font-weight: 900;
+            color: #fff;
+            font-size: clamp(12px, 2vw, 16px);
+            letter-spacing: 2px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .card-logo span {
+            color: var(--mango);
+        }
+
+        .card-middle {
+            position: relative;
+            z-index: 2;
+            margin-top: 10px;
+        }
+
+        .card-chip {
+            width: 45px;
+            height: 35px;
+            background: linear-gradient(135deg, #e6c27a, #d4a017);
+            border-radius: 6px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+            margin-bottom: 15px;
+        }
+
+        .card-chip::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .card-chip::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 1px;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .card-num {
+            font-size: clamp(20px, 5vw, 32px);
+            letter-spacing: clamp(6px, 2vw, 12px);
+            font-family: 'Courier New', monospace;
+            color: #f0f0f0;
+            text-shadow: 1px 1px 0px #000, -1px -1px 0px rgba(255, 255, 255, 0.2), 0 5px 10px rgba(0, 0, 0, 0.5);
+            font-weight: 800;
+        }
+
+        .card-holder-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            position: relative;
+            z-index: 2;
+            margin-top: 10px;
+        }
+
+        .holder-label {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #888;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .holder-name {
+            font-size: clamp(12px, 3vw, 16px);
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #fff;
+        }
+
+        .card-back {
+            background: #0a0a0a;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transform: rotateY(180deg);
+            padding: 30px 0;
+            display: block;
+        }
+
+        .mag-stripe {
+            background: #000;
+            height: 50px;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .signature-area {
+            background: #1a1a1a;
+            height: 45px;
+            width: 80%;
+            margin: 30px auto;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 15px;
+            border-radius: 4px;
+            border: 1px solid #222;
+        }
+
+        .cvv-code {
+            color: #ffffff;
+            font-family: monospace;
+            font-size: 16px;
+            letter-spacing: 3px;
+            font-style: italic;
+        }
+
+        .bento-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 25px;
+            transition: all 0.4s ease;
+        }
+
+        .glass-bento {
+            background: var(--card-bg);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid var(--card-border);
+            border-radius: 35px;
+            padding: clamp(25px, 4vw, 40px);
+            box-shadow: var(--shadow);
+            transition: 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .glass-bento:hover {
+            border-color: rgba(255, 194, 68, 0.3);
+            transform: translateY(-5px);
+        }
+
+        .bento-title {
+            font-size: clamp(16px, 3vw, 18px);
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-main);
+        }
+
+        .bento-title i {
+            color: var(--mango);
+            font-size: 20px;
+        }
+
+        .balance-amt {
+            font-size: clamp(48px, 8vw, 64px);
+            font-weight: 900;
+            letter-spacing: -2px;
+            line-height: 1;
+            margin-bottom: 5px;
+            color: var(--text-main);
+            transition: 0.5s ease;
+        }
+
+        .balance-currency {
+            font-size: clamp(24px, 4vw, 32px);
+            color: var(--mango);
+            vertical-align: super;
+        }
+
+        .balance-sub {
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 40px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .action-group {
+            display: flex;
+            gap: 15px;
+            margin-top: auto;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 18px 20px;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.3s;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            min-width: 120px;
+            text-align: center;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text-main);
+            border: 2px solid var(--card-border);
+        }
+
+        .btn-outline:hover {
+            background: var(--hover-bg);
+            border-color: var(--text-main);
+        }
+
+        .btn-massive {
+            width: 100%;
+            padding: 18px;
+            background: var(--text-main);
+            color: var(--bg-main);
+            border: none;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-massive:hover {
+            background: var(--mango);
+            color: #111;
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(255, 194, 68, 0.2);
+        }
+
+        .topup-method {
+            background: var(--icon-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 25px;
+            padding: clamp(15px, 3vw, 25px);
+            margin-bottom: 20px;
+            transition: 0.3s;
+        }
+
+        .method-header {
+            display: flex;
+            align-items: center;
+            gap: clamp(10px, 3vw, 20px);
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .method-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 15px;
+            background: var(--bg-main);
+            border: 1px solid var(--card-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--mango);
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .method-info {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .method-info h4 {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 3px;
+        }
+
+        .method-info p {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .security-reminder {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            background: rgba(255, 194, 68, 0.05);
+            border: 1px dashed rgba(255, 194, 68, 0.3);
+            padding: 20px;
+            border-radius: 20px;
+            margin-top: 10px;
+        }
+
+        .security-reminder i {
+            color: var(--mango);
+            font-size: 18px;
+            margin-top: 2px;
+        }
+
+        .security-reminder h5 {
+            font-size: 12px;
+            color: var(--mango);
+            margin-bottom: 5px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .security-reminder p {
+            font-size: 11px;
+            color: var(--text-muted);
+            line-height: 1.5;
+            font-weight: 600;
+        }
+
+        /* Modals & Overlays */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            z-index: 3000;
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.4s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .center-modal {
+            background: var(--bg-main);
+            border: 1px solid var(--card-border);
+            padding: clamp(30px, 5vw, 50px) clamp(20px, 4vw, 40px);
+            border-radius: 35px;
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+            transform: translateY(30px) scale(0.95);
+            opacity: 0;
+            transition: 0.4s;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.4);
+            color: var(--text-main);
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-overlay.active .center-modal {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+        }
+
+        .center-modal::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .center-modal::-webkit-scrollbar-thumb {
+            background: var(--mango);
+            border-radius: 10px;
+        }
+
+        .modal-icon {
+            width: 70px;
+            height: 70px;
+            background: rgba(255, 194, 68, 0.1);
+            color: var(--mango);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            margin: 0 auto 20px;
+            border: 1px solid rgba(255, 194, 68, 0.3);
+        }
+
+        .modal-title {
+            font-weight: 900;
+            font-size: 24px;
+            margin-bottom: 10px;
+            letter-spacing: -1px;
+        }
+
+        .modal-desc {
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        .forgot-pin-title {
+            font-size: clamp(24px, 4vw, 30px);
+            font-weight: 900;
+            letter-spacing: -1.2px;
+            line-height: 1.05;
+            margin-bottom: 10px;
+            color: var(--text-main);
+            text-align: center;
+        }
+
+        .forgot-pin-link-wrap {
+            text-align: center;
+            margin-top: 12px;
+        }
+
+        .forgot-pin-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            color: var(--mango);
+            text-decoration: none;
+            cursor: pointer;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(255, 194, 68, 0.08);
+            border: 1px solid rgba(255, 194, 68, 0.18);
+            transition: 0.25s ease;
+        }
+
+        .forgot-pin-link:hover {
+            color: #111;
+            background: var(--mango);
+            border-color: var(--mango);
+            transform: translateY(-1px);
+            box-shadow: 0 10px 24px rgba(255, 194, 68, 0.18);
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
         }
 
         .pin-container {
             display: flex;
             justify-content: center;
+<<<<<<< HEAD
             gap: 10px;
             margin: 15px 0;
         }
@@ -335,6 +1090,80 @@
             height: 50px;
             text-align: center;
             font-size: 20px;
+=======
+            gap: clamp(5px, 2vw, 10px);
+            margin: 15px 0 25px;
+            flex-wrap: nowrap;
+        }
+
+        .pin-box {
+            width: clamp(40px, 10vw, 50px);
+            height: clamp(40px, 10vw, 50px);
+            text-align: center;
+            font-size: clamp(16px, 4vw, 20px);
+            border-radius: 10px;
+            border: 1px solid var(--card-border);
+            background: var(--icon-bg);
+            color: var(--text-main);
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .pin-box:focus {
+            border-color: var(--mango);
+            box-shadow: 0 0 0 3px rgba(255, 194, 68, 0.12);
+        }
+
+        .forgot-section-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin: 6px 0 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 800;
+            text-align: center;
+        }
+
+        .forgot-input {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 14px;
+            border: 1px solid var(--card-border);
+            background: var(--icon-bg);
+            color: var(--text-main);
+            outline: none;
+            margin-bottom: 12px;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        .forgot-input:focus {
+            border-color: var(--mango);
+            box-shadow: 0 0 0 3px rgba(255, 194, 68, 0.12);
+        }
+
+        .cooldown-text {
+            min-height: 18px;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .store-qr-box {
+            background: #fff;
+            padding: 20px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .store-qr-box img,
+        .store-qr-box canvas {
+            width: 180px;
+            height: 180px;
+            display: block;
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
             border-radius: 10px;
         }
 
@@ -356,17 +1185,382 @@
             opacity: 1;
             transform: translateX(-50%) translateY(0);
         }
+<<<<<<< HEAD
     </style>
 </head>
+=======
+
+        #historyContainer {
+            max-height: 320px;
+            overflow-y: auto;
+            text-align: left;
+            padding-right: 5px;
+        }
+
+        #historyContainer::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        #historyContainer::-webkit-scrollbar-thumb {
+            background: var(--mango);
+            border-radius: 10px;
+        }
+
+        /* Side Panel (Account) */
+        .panel-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.4s;
+        }
+
+        .panel-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .side-panel {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 100%;
+            max-width: 420px;
+            height: 100%;
+            background: var(--bg-main);
+            border-left: 1px solid var(--card-border);
+            box-shadow: -20px 0 50px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 2001;
+        }
+
+        .side-panel.active {
+            right: 0;
+        }
+
+        .panel-header {
+            padding: 22px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .panel-header h2 {
+            font-size: 20px;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            color: var(--text-main);
+            margin: 0;
+        }
+
+        .panel-close-btn {
+            background: transparent;
+            border: none;
+            font-size: 24px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .panel-close-btn:hover {
+            color: var(--text-main);
+            transform: rotate(90deg);
+        }
+
+        .panel-body {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .panel-body::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .panel-body::-webkit-scrollbar-thumb {
+            background: var(--mango);
+            border-radius: 10px;
+        }
+
+        .profile-card {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 25px;
+        }
+
+        .profile-details {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .profile-details h3 {
+            font-size: 18px;
+            font-weight: 900;
+            margin-bottom: 3px;
+            letter-spacing: -0.5px;
+            color: var(--text-main);
+            line-height: 1.2;
+            word-break: break-word;
+        }
+
+        .profile-details p {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* AVATAR FIX FOR SIDE PANEL */
+        .avatar-circle {
+            width: 60px;
+            height: 60px;
+            background: var(--mango);
+            color: #111;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            font-size: 24px;
+            font-weight: 900;
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .avatar-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            border-radius: 50%;
+        }
+
+        .avatar-text {
+            display: inline-flex;
+            width: 100%;
+            height: 100%;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            inset: 0;
+        }
+
+        .avatar-has-shell {
+            background: transparent;
+        }
+
+        .avatar-circle.has-image .avatar-text {
+            display: none;
+        }
+
+        .balance-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .balance-item {
+            background: var(--icon-bg);
+            border: 1px solid var(--card-border);
+            padding: 22px 12px;
+            border-radius: 18px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: 0.3s;
+        }
+
+        .balance-item:hover {
+            transform: translateY(-5px);
+            border-color: var(--mango);
+            background: rgba(255, 194, 68, 0.05);
+        }
+
+        .balance-item i {
+            font-size: 22px;
+            color: var(--mango);
+        }
+
+        .balance-item span {
+            font-size: 22px;
+            font-weight: 900;
+            letter-spacing: -1px;
+            color: var(--text-main);
+            line-height: 1.1;
+            word-break: break-word;
+        }
+
+        .balance-item small {
+            font-size: 10px;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            line-height: 1.3;
+        }
+
+        .account-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .acc-link-btn {
+            background: transparent;
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 18px 20px;
+            border-radius: 15px;
+            font-size: 13px;
+            font-weight: 800;
+            text-align: left;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-decoration: none;
+        }
+
+        .acc-link-btn i {
+            font-size: 16px;
+            color: var(--text-muted);
+            width: 20px;
+            min-width: 20px;
+            text-align: center;
+            transition: 0.3s;
+        }
+
+        .acc-link-btn:hover {
+            background: var(--hover-bg);
+            border-color: var(--text-main);
+            transform: translateX(5px);
+        }
+
+        .acc-link-btn:hover i {
+            color: var(--mango);
+        }
+
+        .acc-link-btn.danger:hover {
+            background: rgba(255, 77, 109, 0.1);
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .acc-link-btn.danger:hover i {
+            color: var(--danger);
+        }
+
+        /* =========================================
+           RESPONSIVE MOBILE FIXES & HAMBURGER MENU
+           ========================================= */
+        @media (max-width: 950px) {
+            .bento-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .card-container {
+                margin: 0 auto 30px;
+            }
+
+            .hamburger-btn {
+                display: grid;
+            }
+
+            .nav-links {
+                position: fixed;
+                top: 0;
+                left: -100%;
+                width: 250px;
+                height: 100vh;
+                background: var(--bg-main);
+                backdrop-filter: blur(35px);
+                -webkit-backdrop-filter: blur(35px);
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 100px 30px 40px;
+                gap: 25px;
+                border-right: 1px solid var(--card-border);
+                box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+                transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+                z-index: 999;
+            }
+
+            .nav-links.active {
+                left: 0;
+            }
+
+            .nav-links a {
+                font-size: 14px;
+                width: 100%;
+                padding-bottom: 10px;
+                border-bottom: 1px solid var(--card-border);
+            }
+
+            .btn-logout {
+                border: none !important;
+                padding: 0 !important;
+                color: var(--danger) !important;
+                margin-top: 20px;
+            }
+
+            .btn-logout:hover {
+                background: transparent !important;
+                color: var(--danger) !important;
+                transform: translateX(5px);
+            }
+        }
+
+        @media (max-width: 520px) {
+            .side-panel {
+                max-width: 100%;
+                border-left: none;
+            }
+
+            .balance-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
 <body>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <div id="toast" class="toast"></div>
 
     <nav>
+<<<<<<< HEAD
         <a href="index.html" class="logo">
             <img src="logo.png" alt="Teo D' Mango">
         </a>
         <div class="nav-links">
+=======
+        <div class="nav-brand-wrap">
+            <button class="hamburger-btn" id="mobileMenuToggle" title="Open Menu">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <a href="index.html" class="logo">
+                <img src="logo.png" alt="Teo D' Mango">
+            </a>
+        </div>
+
+        <div class="nav-links" id="navMenu">
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
             <a href="welcome.html">HOME</a>
             <a href="menu.html">MENU</a>
             <a href="rewards.html">REWARDS</a>
@@ -374,6 +1568,10 @@
             <a href="dashaccsett.html">SETTINGS</a>
             <a href="index.html" class="btn-logout">LOG OUT</a>
         </div>
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
         <div class="nav-actions">
             <button class="circle-btn" id="themeToggle" title="Toggle Light/Dark Mode">
                 <i class="fa-solid fa-sun"></i>
@@ -391,6 +1589,7 @@
             <p>Manage and reload your secure digital funds.</p>
         </div>
 
+<<<<<<< HEAD
             <div class="card-container">
                 <div class="card-inner">
                     <div class="card-face card-front">
@@ -422,6 +1621,39 @@
                 
                 <div>
                     <div class="balance-amt" id="displayBalance"><span class="balance-currency">₱</span>0</div>
+=======
+        <div class="card-container">
+            <div class="card-inner">
+                <div class="card-face card-front">
+                    <div class="card-logo">TIMS <span>RPAY</span></div>
+                    <div class="card-middle">
+                        <div class="card-chip"></div>
+                        <div class="card-num"></div>
+                    </div>
+                    <div class="card-holder-info">
+                        <div>
+                            <span class="holder-label">Cardholder</span>
+                            <span class="holder-name"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-face card-back">
+                    <div class="mag-stripe"></div>
+                    <div class="signature-area">
+                        <span class="cvv-code"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bento-grid">
+            <div class="glass-bento">
+                <h2 class="bento-title"><i class="fa-solid fa-wallet"></i> Current Balance</h2>
+
+                <div>
+                    <div class="balance-amt" id="displayBalance"><span class="balance-currency"></span></div>
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
                     <div class="balance-sub" id="lastUpdated">Updated just now</div>
                 </div>
 
@@ -429,7 +1661,11 @@
                     <button id="pinBtn" class="btn btn-outline" onclick="handlePinClick()">
                         <i class="fa-solid fa-lock"></i> Set PIN
                     </button>
+<<<<<<< HEAD
                     <button class="btn btn-outline" onclick="window.location.href='rewards.html'">
+=======
+                    <button class="btn btn-outline" onclick="openHistory()">
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
                         <i class="fa-solid fa-clock-rotate-left"></i> History
                     </button>
                 </div>
@@ -445,22 +1681,36 @@
                             <h4>Over The Counter</h4>
                             <p>Pay with cash at any branch</p>
                         </div>
+<<<<<<< HEAD
                         <button class="btn btn-outline" style="margin-left: auto; width: auto; padding: 12px 20px;" onclick="openModal('storeQrModal')">Show QR</button>
+=======
+                        <button class="btn btn-outline" style="margin-left: auto; width: auto; padding: 12px 20px;"
+                            onclick="openModal('storeQrModal')">Show QR</button>
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
                     </div>
                 </div>
 
                 <div class="security-reminder">
                     <i class="fa-solid fa-shield-check"></i>
                     <div>
+<<<<<<< HEAD
                         <h5>End-to-End Encryption</h5>
                         <p>Your transactions are fully secured. Never share your 4-digit PIN with anyone, including Teo D' Mango staff.</p>
                     </div>
                 </div>
 
+=======
+                        <h5>SECURE TRANSACTIONS</h5>
+                        <p>Your transactions are fully secured. Never share your 4-digit PIN with anyone, including Teo
+                            D' Mango staff.</p>
+                    </div>
+                </div>
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
             </div>
         </div>
     </main>
 
+<<<<<<< HEAD
     
     <div class="modal-overlay" id="mainOverlay" onclick="closeAll()"></div>
 
@@ -468,6 +1718,16 @@
     <div class="modal-overlay" id="setPinModal">
         <div class="center-modal">
             <button class="circle-btn" style="position:absolute; top:15px; right:15px; background:rgba(0,0,0,0.3); border:none;" onclick="closeModal('setPinModal')"><i class="fa-solid fa-xmark"></i></button>
+=======
+    <div class="modal-overlay" id="setPinModal">
+        <div class="center-modal">
+            <button class="circle-btn"
+                style="position:absolute; top:15px; right:15px; background:rgba(0,0,0,0.3); border:none;"
+                onclick="closeModal('setPinModal')">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
             <div class="modal-icon"><i class="fa-solid fa-key"></i></div>
             <h2 class="modal-title">Set PIN</h2>
             <p class="modal-desc">Enter your new 4-digit PIN</p>
@@ -481,11 +1741,16 @@
 
             <div class="action-group" style="margin-top:0;">
                 <button class="btn btn-outline" onclick="closeModal('setPinModal')">Cancel</button>
+<<<<<<< HEAD
                 <button class="btn-massive" style="width: auto; flex: 1;" onclick="savePin()">Save PIN</button>
+=======
+                <button class="btn-massive" style="width:auto; flex:1;" onclick="savePin()">Save PIN</button>
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
             </div>
         </div>
     </div>
 
+<<<<<<< HEAD
     <div class="modal-overlay" id="verifyPinModal"> <!-- enterpin modal -->
         <div class="center-modal">
     
@@ -500,19 +1765,38 @@
             <h2 class="modal-title">Enter PIN</h2>
             <p class="modal-desc">Enter your PIN to continue</p>
     
+=======
+    <div class="modal-overlay" id="verifyPinModal">
+        <div class="center-modal">
+            <button class="circle-btn"
+                style="position:absolute; top:15px; right:15px; background:rgba(0,0,0,0.3); border:none;"
+                onclick="closeModal('verifyPinModal')">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="modal-icon"><i class="fa-solid fa-fingerprint"></i></div>
+            <h2 class="modal-title">Enter PIN</h2>
+            <p class="modal-desc">Enter your PIN to continue</p>
+
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
             <div class="pin-container">
                 <input type="password" maxlength="1" class="pin-box" onkeyup="moveToNext(this,event)">
                 <input type="password" maxlength="1" class="pin-box" onkeyup="moveToNext(this,event)">
                 <input type="password" maxlength="1" class="pin-box" onkeyup="moveToNext(this,event)">
                 <input type="password" maxlength="1" class="pin-box" onkeyup="moveToNext(this,event)">
             </div>
+<<<<<<< HEAD
     
             <p id="pinTimer" class="pin-timer"></p>
     
+=======
+
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
             <div class="action-group">
                 <button class="btn btn-outline" onclick="closeModal('verifyPinModal')">Cancel</button>
                 <button id="verifyBtn" class="btn-massive" onclick="verifyPIN()">Verify PIN</button>
             </div>
+<<<<<<< HEAD
     
             <!-- 🔥 FORGOT PIN -->
             <p style="text-align:center; margin-top:10px;">
@@ -556,11 +1840,20 @@
                 <i class="fa-solid fa-xmark"></i>
             </button>
     
+=======
+
+            <div class="forgot-pin-link-wrap">
+                <a class="forgot-pin-link" href="javascript:void(0)" onclick="showForgotPin()">
+                    <i class="fa-solid fa-key"></i> Forgot PIN?
+                </a>
+            </div>
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
         </div>
     </div>
 
     <div class="modal-overlay" id="storeQrModal">
         <div class="center-modal">
+<<<<<<< HEAD
             <button class="circle-btn" style="position:absolute; top:15px; right:15px; background:rgba(0,0,0,0.3); border:none;" onclick="closeModal('storeQrModal')"><i class="fa-solid fa-xmark"></i></button>
             <h2 class="modal-title" style="margin-top: 10px;">Store Top-Up</h2>
             <p class="modal-desc" style="margin-bottom: 20px;">Present this barcode to the cashier to load cash into your wallet.</p>
@@ -580,10 +1873,134 @@
             <div class="sp-profile">
                 <div class="sp-avatar" id="panelUserInitials">--</div>
                 <div class="sp-profile-info">
+=======
+            <button class="circle-btn"
+                style="position:absolute; top:15px; right:15px; background:rgba(0,0,0,0.3); border:none;"
+                onclick="closeModal('storeQrModal')">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <h2 class="modal-title" style="margin-top: 10px;">Store Top-Up</h2>
+            <p class="modal-desc" style="margin-bottom: 20px;">Present this barcode to the cashier to load cash into
+                your wallet.</p>
+
+            <div class="store-qr-box" id="qrcode"></div>
+            <p id="qrLabel"
+                style="font-weight:900; letter-spacing:5px; font-family:monospace; font-size:20px; color:var(--mango);">
+            </p>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="historyModal">
+        <div class="center-modal" style="max-width:500px">
+            <button class="circle-btn"
+                style="position:absolute; top:15px; right:15px; background:rgba(0,0,0,0.3); border:none;"
+                onclick="closeModal('historyModal')">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <h2 class="modal-title">Top-Up History</h2>
+
+            <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; justify-content:center;">
+                <button class="btn btn-outline" style="min-width:auto;" onclick="loadHistory('today')">Today</button>
+                <button class="btn btn-outline" style="min-width:auto;" onclick="loadHistory('week')">1 Week</button>
+                <button class="btn btn-outline" style="min-width:auto;" onclick="loadHistory('month')">1 Month</button>
+            </div>
+
+            <div id="historyContainer"></div>
+        </div>
+    </div>
+
+    <div id="forgotPinModal" class="modal-overlay">
+        <div class="center-modal">
+            <button class="circle-btn"
+                style="position:absolute; top:15px; right:15px; background:rgba(0,0,0,0.3); border:none;"
+                onclick="closeModal('forgotPinModal')">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div id="requestView">
+                <div class="modal-icon"><i class="fa-solid fa-envelope"></i></div>
+                <h2 class="forgot-pin-title">Forgot PIN</h2>
+                <p class="modal-desc">Enter your account email to receive a wallet PIN reset code.</p>
+
+                <input type="email" id="forgotPinEmail" class="forgot-input" placeholder="Enter your email">
+
+                <p id="forgotPinCooldownText" class="cooldown-text"></p>
+
+                <div class="action-group" style="margin-top:0;">
+                    <button class="btn btn-outline" onclick="closeModal('forgotPinModal')">Cancel</button>
+                    <button id="sendForgotPinBtn" class="btn-massive" style="width:auto; flex:1;"
+                        onclick="sendForgotPinCode()">Send Code</button>
+                </div>
+            </div>
+
+            <div id="confirmView" style="display:none;">
+                <div class="modal-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                <h2 class="modal-title">Reset Wallet PIN</h2>
+                <p class="modal-desc">Enter the 6-digit code sent to your email, then set your new 4-digit PIN.</p>
+
+                <p class="forgot-section-label">Verification Code</p>
+                <div class="pin-container" id="forgotPinCodeContainer" style="gap:5px;">
+                    <input type="password" maxlength="1" inputmode="numeric" class="pin-box"
+                        style="width:40px;height:40px;" onkeyup="moveToNext(this,event)">
+                    <input type="password" maxlength="1" inputmode="numeric" class="pin-box"
+                        style="width:40px;height:40px;" onkeyup="moveToNext(this,event)">
+                    <input type="password" maxlength="1" inputmode="numeric" class="pin-box"
+                        style="width:40px;height:40px;" onkeyup="moveToNext(this,event)">
+                    <input type="password" maxlength="1" inputmode="numeric" class="pin-box"
+                        style="width:40px;height:40px;" onkeyup="moveToNext(this,event)">
+                    <input type="password" maxlength="1" inputmode="numeric" class="pin-box"
+                        style="width:40px;height:40px;" onkeyup="moveToNext(this,event)">
+                    <input type="password" maxlength="1" inputmode="numeric" class="pin-box"
+                        style="width:40px;height:40px;" onkeyup="moveToNext(this,event)">
+                </div>
+
+                <p class="forgot-section-label">New PIN</p>
+                <div class="pin-container" id="forgotPinNewPinContainer" style="gap:5px;">
+                    <input type="password" maxlength="1" inputmode="numeric" class="pin-box"
+                        style="width:40px;height:40px;" onkeyup="moveToNext(this,event)">
+                    <input type="password" maxlength="1" inputmode="numeric" class="pin-box"
+                        style="width:40px;height:40px;" onkeyup="moveToNext(this,event)">
+                    <input type="password" maxlength="1" inputmode="numeric" class="pin-box"
+                        style="width:40px;height:40px;" onkeyup="moveToNext(this,event)">
+                    <input type="password" maxlength="1" inputmode="numeric" class="pin-box"
+                        style="width:40px;height:40px;" onkeyup="moveToNext(this,event)">
+                </div>
+
+                <div class="action-group" style="margin-top:0;">
+                    <button class="btn btn-outline" onclick="backToForgotPinRequest()">Back</button>
+                    <button class="btn-massive" style="width:auto; flex:1;" onclick="resetForgotPin()">Confirm
+                        Reset</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel-overlay" id="mainOverlay" onclick="closeAllPanels()"></div>
+
+    <div class="side-panel" id="accountPanel">
+        <div class="panel-header">
+            <h2>Account Info</h2>
+            <button class="panel-close-btn" type="button" onclick="closeAllPanels()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="panel-body">
+            <div class="profile-card">
+                <div class="avatar-circle avatar-has-shell" id="panelAvatar">
+                    <span class="avatar-text" id="panelUserInitials">--</span>
+                    <img id="panelAvatarImage" class="avatar-image hidden">
+                </div>
+
+                <div class="profile-details">
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
                     <h3 id="panelUserName">Loading...</h3>
                     <p id="panelUserTier">MEMBER</p>
                 </div>
             </div>
+<<<<<<< HEAD
             
             <div class="sp-grid">
                 <div class="sp-stat-card">
@@ -610,12 +2027,40 @@
                     <i class="fa-solid fa-plus-circle"></i> Top-Up Wallet
                 </a>
                 <a href="index.html" class="sp-link danger">
+=======
+
+            <div class="balance-grid">
+                <div class="balance-item">
+                    <i class="fa-solid fa-star"></i>
+                    <span id="panelRewardPoints">0</span>
+                    <small>Reward Points</small>
+                </div>
+                <div class="balance-item">
+                    <i class="fa-solid fa-wallet"></i>
+                    <span id="panelWalletBalance">₱0.00</span>
+                    <small>TIMS-RPAY Bal</small>
+                </div>
+            </div>
+
+            <div class="account-menu">
+                <a href="dashaccsett.html" class="acc-link-btn">
+                    <i class="fa-solid fa-gear"></i> Account Settings
+                </a>
+                <a href="rewards.html" class="acc-link-btn">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Transaction History
+                </a>
+                <a href="topup.html" class="acc-link-btn">
+                    <i class="fa-solid fa-plus-circle"></i> Top-Up Wallet
+                </a>
+                <a href="index.html" class="acc-link-btn danger">
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
                     <i class="fa-solid fa-right-from-bracket"></i> Log Out
                 </a>
             </div>
         </div>
     </div>
 
+<<<<<<< HEAD
     <!-- Custom JS  -->
     <script src="js/api.js"></script>
     <script src="js/theme-sync.js"></script>
@@ -623,4 +2068,51 @@
     <script src="js/account-panel.js"></script>
     <script src="js/topup.js"></script>
 </body>
+=======
+    <script src="config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/authGuard.js"></script>
+    <script src="js/topup.js"></script>
+    <script src="js/logout.js"></script>
+    <script src="js/theme-sync.js"></script>
+    <script src="js/sidepanel-fetching.js"></script>
+    <script src="js/account-panel.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            if (typeof loadSharedAccountPanel === "function") {
+                await loadSharedAccountPanel();
+            }
+
+            // HAMBURGER TOGGLE LOGIC
+            const mobileBtn = document.getElementById("mobileMenuToggle");
+            if (mobileBtn) {
+                const navMenu = document.getElementById("navMenu");
+                const icon = mobileBtn.querySelector("i");
+                const navLinks = navMenu.querySelectorAll("a");
+
+                mobileBtn.addEventListener("click", () => {
+                    navMenu.classList.toggle("active");
+                    if (navMenu.classList.contains("active")) {
+                        icon.classList.remove("fa-bars");
+                        icon.classList.add("fa-xmark");
+                    } else {
+                        icon.classList.remove("fa-xmark");
+                        icon.classList.add("fa-bars");
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.addEventListener("click", () => {
+                        navMenu.classList.remove("active");
+                        icon.classList.remove("fa-xmark");
+                        icon.classList.add("fa-bars");
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
 </html>

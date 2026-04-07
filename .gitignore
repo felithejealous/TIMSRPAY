@@ -1,5 +1,20 @@
+<<<<<<< HEAD
 .venv/
 __pycache__/
 backend/.env
 .env
 backend/routers/__pycache__/"__pycache__/" 
+=======
+# Python env
+.venv/
+
+# env files
+.env
+backend/.env
+
+# Python cache
+__pycache__/
+*.pyc
+backend/__pycache__/
+backend/routers/__pycache__/
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d

@@ -2,7 +2,11 @@ from datetime import datetime, timedelta, timezone
 import os
 from typing import Optional, Dict, Any, Set, Callable
 
+<<<<<<< HEAD
 from fastapi import Depends, HTTPException
+=======
+from fastapi import Depends, HTTPException, Request
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import jwt, JWTError
 from sqlalchemy.orm import Session
@@ -100,10 +104,30 @@ def _attach_role_name(db: Session, user: User, token_payload: Dict[str, Any]) ->
 # CURRENT USER DEP (REQUIRED)
 # =======================
 def get_current_user(
+<<<<<<< HEAD
     creds: HTTPAuthorizationCredentials = Depends(bearer_scheme),
     db: Session = Depends(get_db),
 ) -> User:
     token = creds.credentials
+=======
+    request: Request,
+    creds: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme_optional),
+    db: Session = Depends(get_db),
+) -> User:
+    token = None
+
+    # 1. Try Authorization header first
+    if creds and getattr(creds, "credentials", None):
+        token = creds.credentials
+
+    # 2. Fallback to cookie
+    if not token:
+        token = request.cookies.get("access_token")
+
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
     payload = decode_token(token)
 
     user_id = payload.get("sub")
@@ -130,6 +154,7 @@ def get_current_user(
 # Useful for endpoints that allow guest but want user if logged-in.
 # =======================
 def get_current_user_optional(
+<<<<<<< HEAD
     creds: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme_optional),
     db: Session = Depends(get_db),
 ) -> Optional[User]:
@@ -137,6 +162,23 @@ def get_current_user_optional(
         return None
 
     token = creds.credentials
+=======
+    request: Request,
+    creds: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme_optional),
+    db: Session = Depends(get_db),
+) -> Optional[User]:
+    token = None
+
+    if creds and getattr(creds, "credentials", None):
+        token = creds.credentials
+
+    if not token:
+        token = request.cookies.get("access_token")
+
+    if not token:
+        return None
+
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
     payload = decode_token(token)
 
     user_id = payload.get("sub")

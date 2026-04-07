@@ -68,6 +68,10 @@
             width: 3rem; height: 3rem; border-radius: 1rem;
             display: flex; align-items: center; justify-content: center;
             z-index: 100; backdrop-filter: var(--glass-blur); color: var(--text-dark);
+<<<<<<< HEAD
+=======
+            cursor: pointer;
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
         }
 
         .container { width: 95%; max-width: 900px; text-align: center; z-index: 10; transition: 0.4s; }
@@ -90,7 +94,10 @@
         .pin-dot { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--mango-deep); transition: 0.2s; }
         .pin-dot.filled { background: var(--mango-deep); transform: scale(1.2); }
 
+<<<<<<< HEAD
         /* --- LOADING & CONFIRMATION --- */
+=======
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
         .verifying-content { display: none; flex-direction: column; align-items: center; gap: 20px; }
         .loader-ring {
             width: 80px; height: 80px; border: 8px solid rgba(255,255,255,0.3);
@@ -117,7 +124,10 @@
         }
         .icon-box { width: 60px; height: 60px; margin-bottom: 15px; color: var(--mango-deep); }
 
+<<<<<<< HEAD
         /* --- MODAL --- */
+=======
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.4); backdrop-filter: blur(8px);
@@ -134,7 +144,10 @@
             width: 100%; margin-top: 20px; cursor: pointer;
         }
 
+<<<<<<< HEAD
         /* --- KEYBOARD --- */
+=======
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
         .keyboard-container {
             position: fixed; bottom: 0; left: 0; width: 100%;
             background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(30px);
@@ -158,7 +171,11 @@
 </head>
 <body>
 
+<<<<<<< HEAD
     <button class="back-btn" onclick="handleBack()">
+=======
+    <button class="back-btn" id="backBtn">
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
     </button>
 
@@ -167,6 +184,7 @@
 
         <div class="ui-phase active-phase" id="selectionPhase">
             <div class="login-choices">
+<<<<<<< HEAD
                 <div class="option-card" onclick="startLogin('email')">
                     <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
                     <span style="font-weight:800">EMAIL ADDRESS</span>
@@ -174,6 +192,15 @@
                 <div class="option-card" onclick="startLogin('card')">
                     <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
                     <span style="font-weight:800">6-DIGIT CARD</span>
+=======
+                <div class="option-card" id="emailLoginCard">
+                    <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+                    <span style="font-weight:800">EMAIL ADDRESS</span>
+                </div>
+                <div class="option-card" id="cardLoginCard">
+                    <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
+                    <span style="font-weight:800">WALLET CODE</span>
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
                 </div>
             </div>
         </div>
@@ -189,7 +216,11 @@
             <div class="glass-panel" id="pinContainer">
                 <div class="pin-display" id="pinDisplay">
                     <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+<<<<<<< HEAD
                     <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+=======
+                    <div class="pin-dot"></div>
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
                 </div>
                 <p style="margin-top:15px; color:#5d4037; font-weight:600;">ENTER YOUR PIN</p>
             </div>
@@ -210,9 +241,15 @@
     <div class="modal-overlay" id="errorModal">
         <div class="modal-card">
             <div style="color:var(--error-red); font-size:3.5rem; margin-bottom:15px;">⚠</div>
+<<<<<<< HEAD
             <h2 style="font-weight:800; margin-bottom:10px;">PIN INCORRECT</h2>
             <p style="color:#5d4037; font-size:0.95rem; line-height:1.4;">The PIN you entered does not match our records. Please try again.</p>
             <button class="modal-btn" onclick="closeError()">TRY AGAIN</button>
+=======
+            <h2 style="font-weight:800; margin-bottom:10px;" id="errorTitle">Payment Error</h2>
+            <p style="color:#5d4037; font-size:0.95rem; line-height:1.4;" id="errorMessage">Something went wrong. Please try again.</p>
+            <button class="modal-btn" id="errorOkBtn">TRY AGAIN</button>
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
         </div>
     </div>
 
@@ -220,6 +257,7 @@
         <div id="keyboardLayout"></div>
     </div>
 
+<<<<<<< HEAD
     <script>
         let currentMode = '';
         let phase = 'selection';
@@ -363,5 +401,9 @@
             }
         }
     </script>
+=======
+    <script src="../config.js"></script>
+    <script src="../js/kiosk-teopay.js"></script>
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
 </body>
 </html>

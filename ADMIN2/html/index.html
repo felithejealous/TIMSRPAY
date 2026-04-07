@@ -34,6 +34,21 @@
             --mesh-color-2: rgba(255, 140, 0, 0.15);
             --logo-filter: none;
         }
+<<<<<<< HEAD
+=======
+        html.preload-light body {
+    --mango-dark: #f8f9fa;
+    --text-main: #1a1a1a;
+    --text-sub: #4a4a4a;
+    --glass-bg: rgba(255, 255, 255, 0.8);
+    --glass-border: rgba(0, 0, 0, 0.1);
+    --mesh-color-1: rgba(252, 219, 5, 0.15);
+    --mesh-color-2: rgba(255, 140, 0, 0.05);
+    --logo-filter: none;
+    --modal-card: #ffffff;
+    --modal-overlay: rgba(0,0,0,0.4);
+}
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
 
         body {
             background-color: var(--mango-dark);
@@ -114,6 +129,17 @@
             transition: filter 0.4s ease;
         }
     </style>
+<<<<<<< HEAD
+=======
+    <script>
+(function () {
+    const savedTheme = localStorage.getItem("admin-theme");
+    if (savedTheme === "light") {
+        document.documentElement.classList.add("preload-light");
+    }
+})();
+</script>
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
 </head>
 <body class="antialiased flex flex-col justify-between">
     <div class="page-transition" id="transitionOverlay"></div>
@@ -124,7 +150,11 @@
             Secure Terminal
         </div>
         
+<<<<<<< HEAD
         <button id="theme-toggle" onclick="toggleTheme()">
+=======
+        <button id="theme-toggle">
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
             <i class="fas fa-circle-half-stroke mr-2"></i>
             <span id="theme-text">Light Mode</span>
         </button>
@@ -159,6 +189,7 @@
     </footer>
 
     <script>
+<<<<<<< HEAD
         // --- THEME TOGGLE LOGIC ---
         function toggleTheme() {
             const body = document.body;
@@ -181,6 +212,8 @@
             document.getElementById('theme-text').innerText = "Dark Mode";
         }
 
+=======
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
         // --- TRANSITION LOGIC ---
         window.addEventListener('DOMContentLoaded', () => {
             const overlay = document.getElementById('transitionOverlay');
@@ -199,5 +232,10 @@
             }, 500);
         });
     </script>
+<<<<<<< HEAD
+=======
+    <script src="../config.js"></script>
+    <script src="../js/admin-theme-sync.js"></script>
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
 </body>
 </html>

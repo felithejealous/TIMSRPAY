@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+<<<<<<< HEAD
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -10,30 +11,54 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         /* --- DYNAMIC THEME VARIABLES --- */
+=======
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script>(function () { const t = localStorage.getItem("publicweb-theme") || "dark"; if (t === "light") document.documentElement.classList.add("light-mode"); })();</script>
+    <title>Account Settings | Teo D' Mango Premium</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
         :root {
             --mango: #ffc244;
             --mango-dark: #d4a017;
             --strawberry: #ff4d6d;
+<<<<<<< HEAD
             
             /* DARK MODE (Default) */
+=======
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
             --bg-main: #050505;
             --text-main: #ffffff;
             --text-muted: #888888;
             --card-bg: rgba(255, 255, 255, 0.03);
             --card-border: rgba(255, 255, 255, 0.08);
             --nav-bg: rgba(5, 5, 5, 0.7);
+<<<<<<< HEAD
             --shadow: 0 30px 60px rgba(0,0,0,0.5);
+=======
+            --shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
             --hover-bg: rgba(255, 255, 255, 0.06);
             --icon-bg: rgba(255, 255, 255, 0.05);
             --glow-opacity: 0.15;
             --danger: #ff4d6d;
+<<<<<<< HEAD
         }
 
         /* LIGHT MODE */
+=======
+            --input-bg: rgba(255, 255, 255, 0.04);
+        }
+
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
         .light-mode {
             --bg-main: #f4f5f7;
             --text-main: #1a1a1a;
             --text-muted: #666666;
+<<<<<<< HEAD
             --card-bg: rgba(255, 255, 255, 0.6);
             --card-border: rgba(0, 0, 0, 0.05);
             --nav-bg: rgba(244, 245, 247, 0.8);
@@ -295,6 +320,883 @@
             <img src="logo.png" alt="Teo D' Mango">
         </a>
         <div class="nav-links">
+=======
+            --card-bg: rgba(255, 255, 255, 0.65);
+            --card-border: rgba(0, 0, 0, 0.06);
+            --nav-bg: rgba(244, 245, 247, 0.8);
+            --shadow: 0 20px 50px rgba(0, 0, 0, 0.04);
+            --hover-bg: rgba(255, 255, 255, 1);
+            --icon-bg: rgba(0, 0, 0, 0.03);
+            --glow-opacity: 0.35;
+            --input-bg: rgba(0, 0, 0, 0.03);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+            transition: background-color 0.5s ease, color 0.5s ease;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before,
+        body::after {
+            content: '';
+            position: fixed;
+            border-radius: 50%;
+            z-index: -1;
+            transition: 0.5s ease;
+            pointer-events: none;
+        }
+
+        body::before {
+            top: -10%;
+            left: -5%;
+            width: 600px;
+            height: 600px;
+            background: var(--mango);
+            filter: blur(120px);
+            opacity: var(--glow-opacity);
+        }
+
+        body::after {
+            bottom: -10%;
+            right: -5%;
+            width: 500px;
+            height: 500px;
+            background: var(--strawberry);
+            filter: blur(150px);
+            opacity: calc(var(--glow-opacity) - 0.05);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 8%;
+            background: var(--nav-bg);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid var(--card-border);
+            transition: background 0.5s ease, border-color 0.5s ease;
+        }
+
+        .nav-brand-wrap {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 1001;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .logo img {
+            height: 40px;
+            object-fit: contain;
+            filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.8)) drop-shadow(0 0 5px var(--mango));
+            transition: 0.3s ease;
+        }
+
+        .logo img:hover {
+            filter: drop-shadow(0 0 4px rgba(255, 255, 255, 1)) drop-shadow(0 0 10px var(--mango));
+            transform: scale(1.05);
+        }
+
+        /* HAMBURGER BTN CSS */
+        .hamburger-btn {
+            display: none;
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-size: 24px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .hamburger-btn:hover {
+            color: var(--mango);
+            transform: scale(1.1);
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+            align-items: center;
+            transition: all 0.4s ease;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.3s;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--text-main);
+        }
+
+        .btn-logout {
+            border: 1.5px solid var(--text-main);
+            padding: 8px 20px;
+            border-radius: 50px;
+            color: var(--text-main) !important;
+            text-decoration: none;
+            transition: 0.3s ease;
+        }
+
+        .btn-logout:hover {
+            background: var(--text-main);
+            color: var(--bg-main) !important;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            z-index: 1001;
+        }
+
+        .circle-btn {
+            background: var(--icon-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+        }
+
+        .circle-btn:hover {
+            background: var(--hover-bg);
+            transform: scale(1.05);
+            color: var(--mango);
+        }
+
+        .settings-wrapper {
+            max-width: 980px;
+            margin: 40px auto 80px;
+            padding: 0 20px;
+            transition: all 0.4s ease;
+        }
+
+        .page-header {
+            margin-bottom: 18px;
+        }
+
+        .page-badge {
+            display: inline-block;
+            background: rgba(255, 194, 68, 0.1);
+            color: var(--mango);
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 11px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 194, 68, 0.3);
+        }
+
+        .page-header h1 {
+            font-size: clamp(2.3rem, 5vw, 3.4rem);
+            font-weight: 900;
+            letter-spacing: -1.7px;
+            line-height: 1.04;
+        }
+
+        .glass-bento {
+            background: var(--card-bg);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid var(--card-border);
+            border-radius: 32px;
+            padding: clamp(24px, 4vw, 32px);
+            box-shadow: var(--shadow);
+            transition: 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-bento:hover {
+            border-color: rgba(255, 194, 68, 0.22);
+        }
+
+        .main-settings-card {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .profile-top {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 14px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        /* AVATAR FIXES (Bilog) */
+        .avatar-massive {
+            width: 118px;
+            height: 118px;
+            background: var(--mango);
+            color: #111;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            font-size: 42px;
+            font-weight: 900;
+            box-shadow: 0 15px 30px rgba(255, 194, 68, 0.25);
+            transition: 0.35s ease;
+            overflow: hidden;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .avatar-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            border-radius: 50%;
+        }
+
+        .avatar-text {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        .profile-name {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .profile-name h2 {
+            font-size: clamp(1.8rem, 3.4vw, 2.8rem);
+            font-weight: 900;
+            letter-spacing: -1.2px;
+            line-height: 1.05;
+            color: var(--text-main);
+            word-break: break-word;
+            overflow-wrap: anywhere;
+        }
+
+        .profile-name p {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-muted);
+            letter-spacing: 1.3px;
+            text-transform: uppercase;
+        }
+
+        .settings-avatar-actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            margin-top: 2px;
+        }
+
+        .btn-avatar-action {
+            border: 1px solid var(--card-border);
+            background: var(--icon-bg);
+            color: var(--text-main);
+            border-radius: 14px;
+            padding: 10px 14px;
+            font-size: 11px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-avatar-action:hover {
+            border-color: var(--mango);
+            color: var(--mango);
+            background: var(--hover-bg);
+            transform: translateY(-1px);
+        }
+
+        .btn-avatar-remove:hover {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .section-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: clamp(20px, 4vw, 24px);
+        }
+
+        .section-card h3,
+        .section-card h4 {
+            font-size: 22px;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-main);
+        }
+
+        .section-card h3 i,
+        .section-card h4 i {
+            color: var(--mango);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+
+        .form-group {
+            position: relative;
+        }
+
+        .full-width {
+            grid-column: 1/-1;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.4px;
+            margin-bottom: 10px;
+        }
+
+        .input-shell {
+            position: relative;
+        }
+
+        .form-group input {
+            width: 100%;
+            border: 1px solid var(--card-border);
+            background: var(--input-bg);
+            color: var(--text-main);
+            border-radius: 18px;
+            padding: 16px 18px;
+            font-size: 15px;
+            font-weight: 700;
+            outline: none;
+            transition: 0.25s ease;
+        }
+
+        .form-group input:focus {
+            border-color: rgba(255, 194, 68, 0.55);
+            box-shadow: 0 0 0 4px rgba(255, 194, 68, 0.1);
+        }
+
+        .form-group input::placeholder {
+            color: rgba(136, 136, 136, 0.75);
+            font-weight: 600;
+        }
+
+        .readonly-input {
+            opacity: 0.9;
+        }
+
+        .password-field input {
+            padding-right: 50px;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .toggle-password:hover {
+            color: var(--mango);
+        }
+
+        .helper-text {
+            margin-top: 10px;
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.5;
+            font-weight: 600;
+        }
+
+        .save-card .action-highlight {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .save-card .action-highlight i {
+            width: 46px;
+            height: 46px;
+            display: grid;
+            place-items: center;
+            border-radius: 16px;
+            background: rgba(255, 194, 68, 0.1);
+            color: var(--mango);
+            font-size: 20px;
+            border: 1px solid rgba(255, 194, 68, 0.2);
+            flex-shrink: 0;
+        }
+
+        .save-card p,
+        .danger-card p {
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .btn-primary-compact {
+            width: 100%;
+            border: none;
+            border-radius: 18px;
+            padding: 16px 18px;
+            background: var(--mango);
+            color: #111;
+            font-size: 14px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 12px 24px rgba(255, 194, 68, 0.16);
+        }
+
+        .btn-primary-compact:hover {
+            transform: translateY(-2px);
+            background: #ffd06a;
+        }
+
+        .danger-card {
+            background: rgba(255, 77, 109, 0.05);
+            border: 1px solid rgba(255, 77, 109, 0.4);
+        }
+
+        .danger-card h4 {
+            color: var(--danger);
+        }
+
+        .btn-danger {
+            margin-top: 18px;
+            width: 100%;
+            background: transparent;
+            color: var(--danger);
+            border: 1.5px solid var(--danger);
+            padding: 14px 16px;
+            border-radius: 18px;
+            font-weight: 900;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1.3px;
+            cursor: pointer;
+            transition: 0.25s ease;
+        }
+
+        .btn-danger:hover {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        /* Side Panel */
+        .panel-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.4s;
+        }
+
+        .panel-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .side-panel {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 100%;
+            max-width: 450px;
+            height: 100%;
+            background: var(--bg-main);
+            border-left: 1px solid var(--card-border);
+            box-shadow: -20px 0 50px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 2001;
+        }
+
+        .side-panel.active {
+            right: 0;
+        }
+
+        .panel-header {
+            padding: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .panel-header h2 {
+            font-size: 20px;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            color: var(--text-main);
+        }
+
+        .panel-close-btn {
+            background: transparent;
+            border: none;
+            font-size: 24px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: 0.3s;
+            display: grid;
+            place-items: center;
+        }
+
+        .panel-close-btn:hover {
+            color: var(--text-main);
+            transform: rotate(90deg);
+        }
+
+        .panel-body {
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .panel-body::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .panel-body::-webkit-scrollbar-thumb {
+            background: var(--mango);
+            border-radius: 10px;
+        }
+
+        .profile-card {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 25px;
+            transition: 0.3s;
+        }
+
+        /* Side Panel Avatar Bilog Fix */
+        .avatar-circle {
+            width: 60px;
+            height: 60px;
+            background: var(--mango);
+            color: #111;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            font-size: 24px;
+            font-weight: 900;
+            overflow: hidden;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .avatar-circle.has-image {
+            background: transparent !important;
+            color: transparent !important;
+        }
+
+        .profile-details {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .profile-details h3 {
+            font-size: 18px;
+            font-weight: 900;
+            margin-bottom: 3px;
+            letter-spacing: -0.5px;
+            color: var(--text-main);
+            word-break: break-word;
+        }
+
+        .profile-details p {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 0;
+        }
+
+        .balance-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .balance-item {
+            background: var(--icon-bg);
+            border: 1px solid var(--card-border);
+            padding: 25px 15px;
+            border-radius: 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: 0.3s;
+        }
+
+        .balance-item:hover {
+            transform: translateY(-5px);
+            border-color: var(--mango);
+            background: rgba(255, 194, 68, 0.05);
+        }
+
+        .balance-item i {
+            font-size: 24px;
+            color: var(--mango);
+        }
+
+        .balance-item span {
+            font-size: 22px;
+            font-weight: 900;
+            letter-spacing: -1px;
+            color: var(--text-main);
+            line-height: 1.1;
+            word-break: break-word;
+            margin: 0;
+        }
+
+        .balance-item small {
+            font-size: 10px;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            line-height: 1.3;
+            margin: 0;
+        }
+
+        .account-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .acc-link-btn {
+            background: transparent;
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 18px 20px;
+            border-radius: 15px;
+            font-size: 13px;
+            font-weight: 800;
+            text-align: left;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-decoration: none;
+        }
+
+        .acc-link-btn i {
+            font-size: 16px;
+            color: var(--text-muted);
+            width: 20px;
+            text-align: center;
+            transition: 0.3s;
+            min-width: 20px;
+        }
+
+        .acc-link-btn:hover {
+            background: var(--hover-bg);
+            border-color: var(--text-main);
+            transform: translateX(5px);
+        }
+
+        .acc-link-btn:hover i {
+            color: var(--mango);
+        }
+
+        .acc-link-btn.danger:hover {
+            background: rgba(255, 77, 109, 0.1);
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .acc-link-btn.danger:hover i {
+            color: var(--danger);
+        }
+
+        /* =========================================
+           RESPONSIVE MOBILE FIXES & HAMBURGER MENU
+           ========================================= */
+        @media (max-width: 950px) {
+            .hamburger-btn {
+                display: grid;
+            }
+
+            .nav-links {
+                position: fixed;
+                top: 0;
+                left: -100%;
+                /* Hidden on left */
+                width: 250px;
+                height: 100vh;
+                background: var(--bg-main);
+                backdrop-filter: blur(35px);
+                -webkit-backdrop-filter: blur(35px);
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 100px 30px 40px;
+                gap: 25px;
+                border-right: 1px solid var(--card-border);
+                box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+                transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+                z-index: 999;
+            }
+
+            .nav-links.active {
+                left: 0;
+            }
+
+            .nav-links a {
+                font-size: 14px;
+                width: 100%;
+                padding-bottom: 10px;
+                border-bottom: 1px solid var(--card-border);
+            }
+
+            .btn-logout {
+                border: none !important;
+                padding: 0 !important;
+                color: var(--danger) !important;
+                margin-top: 20px;
+            }
+
+            .btn-logout:hover {
+                background: transparent !important;
+                color: var(--danger) !important;
+                transform: translateX(5px);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .full-width {
+                grid-column: auto;
+            }
+
+            .settings-avatar-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .btn-avatar-action {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 520px) {
+            .side-panel {
+                max-width: 100%;
+                border-left: none;
+            }
+
+            .balance-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav>
+        <div class="nav-brand-wrap">
+            <button class="hamburger-btn" id="mobileMenuToggle" title="Open Menu">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <a href="index.html" class="logo">
+                <img src="logo.png" alt="Teo D' Mango">
+            </a>
+        </div>
+
+        <div class="nav-links" id="navMenu">
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
             <a href="welcome.html">HOME</a>
             <a href="menu.html">MENU</a>
             <a href="rewards.html">REWARDS</a>
@@ -302,6 +1204,10 @@
             <a href="dashaccsett.html" class="active">SETTINGS</a>
             <a href="index.html" class="btn-logout">LOG OUT</a>
         </div>
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
         <div class="nav-actions">
             <button class="circle-btn" id="themeToggle" title="Toggle Light/Dark Mode">
                 <i class="fa-solid fa-sun"></i>
@@ -313,12 +1219,16 @@
     </nav>
 
     <div class="settings-wrapper">
+<<<<<<< HEAD
         
+=======
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
         <div class="page-header">
             <span class="page-badge">Profile & Security</span>
             <h1>Account Settings</h1>
         </div>
 
+<<<<<<< HEAD
         <div class="glass-bento hero-bento">
             <div class="avatar-massive" id="settingsAvatar">--</div>
             <div class="hero-text">
@@ -389,16 +1299,117 @@
                 <p id="dangerZoneText"></p>
         
                 <button type="button" class="btn-danger" onclick="confirm('Are you absolutely sure? This cannot be undone.');">
+=======
+        <div class="glass-bento main-settings-card">
+            <div class="profile-top">
+                <div class="avatar-massive" id="settingsAvatar">
+                    <span class="avatar-text">--</span>
+                </div>
+
+                <div class="profile-name">
+                    <h2 id="settingsFullName">Loading...</h2>
+                    <p>Customer Profile</p>
+                </div>
+
+                <input type="file" id="settingsProfileUpload" accept="image/*" hidden>
+
+                <div class="settings-avatar-actions">
+                    <button type="button" class="btn-avatar-action" id="changeProfilePhotoBtn">
+                        <i class="fa-solid fa-camera"></i> Change Photo
+                    </button>
+                    <button type="button" class="btn-avatar-action btn-avatar-remove" id="removeProfilePhotoBtn">
+                        <i class="fa-solid fa-trash"></i> Remove
+                    </button>
+                </div>
+            </div>
+
+            <div class="section-card">
+                <form id="settingsForm">
+                    <h3><i class="fa-solid fa-address-card"></i> Identity</h3>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="settingsFirstName">First Name</label>
+                            <div class="input-shell">
+                                <input type="text" id="settingsFirstName" placeholder="Enter first name">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="settingsLastName">Last Name</label>
+                            <div class="input-shell">
+                                <input type="text" id="settingsLastName" placeholder="Enter last name">
+                            </div>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label for="settingsEmail">Email Address</label>
+                            <div class="input-shell">
+                                <input type="email" id="settingsEmail" class="readonly-input" readonly>
+                            </div>
+                            <p class="helper-text">Email address is currently managed by your account registration or
+                                Google sign-in.</p>
+                        </div>
+
+                        <div class="form-group full-width password-field">
+                            <label for="settingsCurrentPassword">Current Password</label>
+                            <div class="input-shell">
+                                <input type="password" id="settingsCurrentPassword"
+                                    placeholder="Enter current password">
+                                <i class="fa-solid fa-eye toggle-password"></i>
+                            </div>
+                        </div>
+
+                        <div class="form-group full-width password-field">
+                            <label for="settingsNewPassword">New Password</label>
+                            <div class="input-shell">
+                                <input type="password" id="settingsNewPassword" placeholder="Type new password...">
+                                <i class="fa-solid fa-eye toggle-password"></i>
+                            </div>
+                            <p class="helper-text">Leave both password fields blank if you only want to update your
+                                profile details.</p>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="section-card save-card">
+                <div class="action-highlight">
+                    <i class="fa-solid fa-check-double"></i>
+                    <div>
+                        <h4>Save Changes</h4>
+                        <p>Update your profile details and password securely.</p>
+                    </div>
+                </div>
+
+                <button class="btn-primary-compact" type="button"
+                    onclick="document.getElementById('settingsForm').requestSubmit();">
+                    <i class="fa-solid fa-floppy-disk"></i> Commit Changes
+                </button>
+            </div>
+
+            <div class="section-card danger-card">
+                <h4>Danger Zone</h4>
+                <p id="dangerZoneText">Deleting your account is permanent and cannot be undone.</p>
+                <button type="button" class="btn-danger"
+                    onclick="confirm('Are you absolutely sure? This cannot be undone.');">
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
                     Delete Account
                 </button>
             </div>
         </div>
+<<<<<<< HEAD
             
+=======
+    </div>
+
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
     <div class="panel-overlay" id="mainOverlay" onclick="closeAllPanels()"></div>
 
     <div class="side-panel" id="accountPanel">
         <div class="panel-header">
             <h2>Account Info</h2>
+<<<<<<< HEAD
             <button class="panel-close-btn" onclick="closeAllPanels()">
                 <i class="fa-solid fa-xmark"></i>
             </button>
@@ -418,10 +1429,31 @@
                 <div class="balance-item">
                     <i class="fa-solid fa-star"></i>
                     <span id="panelPoints">0</span>
+=======
+            <button class="panel-close-btn" type="button" onclick="closeAllPanels()"><i
+                    class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="panel-body">
+            <div class="profile-card">
+                <div class="avatar-circle" id="panelAvatar">
+                    <span class="avatar-text" id="panelUserInitials">--</span>
+                    <img id="panelAvatarImage" class="avatar-image" style="display:none;">
+                </div>
+                <div class="profile-details">
+                    <h3 id="panelUserName">Loading...</h3>
+                    <p id="panelUserTier">MEMBER</p>
+                </div>
+            </div>
+            <div class="balance-grid">
+                <div class="balance-item">
+                    <i class="fa-solid fa-star"></i>
+                    <span id="panelRewardPoints">0</span>
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
                     <small>Reward Points</small>
                 </div>
                 <div class="balance-item">
                     <i class="fa-solid fa-wallet"></i>
+<<<<<<< HEAD
                     <span id="panelWallet">₱0.00</span>
                     <small>TIMS-RPAY Bal</small>
                 </div>
@@ -447,9 +1479,65 @@
 
     <!-- Custom JS  -->
     <script src="js/api.js"></script>
+=======
+                    <span id="panelWalletBalance">₱0.00</span>
+                    <small>TEOPAY Bal</small>
+                </div>
+            </div>
+            <div class="account-menu">
+                <a href="dashaccsett.html" class="acc-link-btn"><i class="fa-solid fa-gear"></i> Account Settings</a>
+                <a href="rewards.html" class="acc-link-btn"><i class="fa-solid fa-clock-rotate-left"></i> Transaction
+                    History</a>
+                <a href="topup.html" class="acc-link-btn"><i class="fa-solid fa-plus-circle"></i> Top-Up Wallet</a>
+                <a href="index.html" class="acc-link-btn danger"><i class="fa-solid fa-right-from-bracket"></i> Log
+                    Out</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/authGuard.js"></script>
+    <script src="js/logout.js"></script>
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
     <script src="js/theme-sync.js"></script>
     <script src="js/sidepanel-fetching.js"></script>
     <script src="js/account-panel.js"></script>
     <script src="js/settings.js"></script>
+<<<<<<< HEAD
 </body>
+=======
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const mobileBtn = document.getElementById("mobileMenuToggle");
+            if (mobileBtn) {
+                const navMenu = document.getElementById("navMenu");
+                const icon = mobileBtn.querySelector("i");
+                const navLinks = navMenu.querySelectorAll("a");
+
+                mobileBtn.addEventListener("click", () => {
+                    navMenu.classList.toggle("active");
+                    if (navMenu.classList.contains("active")) {
+                        icon.classList.remove("fa-bars");
+                        icon.classList.add("fa-xmark");
+                    } else {
+                        icon.classList.remove("fa-xmark");
+                        icon.classList.add("fa-bars");
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.addEventListener("click", () => {
+                        navMenu.classList.remove("active");
+                        icon.classList.remove("fa-xmark");
+                        icon.classList.add("fa-bars");
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
 </html>

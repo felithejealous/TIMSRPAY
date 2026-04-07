@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Rewards Ledger | Teo D' Mango Staff</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --mango: #ffc244;
+            --mango-dark: #d4a017;
+            --strawberry: #ff4d6d;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+
+            --bg-main: #050505;
+            --text-main: #ffffff;
+            --text-muted: #888888;
+            --card-bg: rgba(30, 30, 30, 0.4);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --sidebar-bg: rgba(10, 10, 10, 0.95);
+            --shadow: 0 15px 40px rgba(0,0,0,0.5);
+            --hover-bg: rgba(255, 255, 255, 0.06);
+            --icon-bg: rgba(255, 255, 255, 0.05);
+            --glow-opacity: 0.15;
+            --input-bg: rgba(0,0,0,0.3);
+        }
+
+        body.light-mode {
+            --bg-main: #f4f5f7;
+            --text-main: #1a1a1a;
+            --text-muted: #666666;
+            --card-bg: rgba(255, 255, 255, 0.7);
+            --card-border: rgba(0, 0, 0, 0.05);
+            --sidebar-bg: rgba(255, 255, 255, 0.9);
+            --shadow: 0 10px 30px rgba(0,0,0,0.05);
+            --hover-bg: rgba(255, 255, 255, 1);
+            --icon-bg: rgba(0, 0, 0, 0.03);
+            --glow-opacity: 0.3;
+            --input-bg: #ffffff;
+        }
+          html.preload-light body {
+    --bg-main: #f4f5f7;
+    --text-main: #1a1a1a;
+    --text-muted: #666666;
+    --card-bg: rgba(255, 255, 255, 0.7);
+    --card-border: rgba(0, 0, 0, 0.05);
+    --sidebar-bg: rgba(255, 255, 255, 0.9);
+    --shadow: 0 10px 30px rgba(0,0,0,0.05);
+    --hover-bg: rgba(255, 255, 255, 1);
+    --icon-bg: rgba(0, 0, 0, 0.03);
+    --glow-opacity: 0.3;
+    --input-bg: rgba(0, 0, 0, 0.03);
+}
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+            transition: 0.4s ease;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before,
+        body::after {
+            content: '';
+            position: fixed;
+            border-radius: 50%;
+            z-index: -1;
+            pointer-events: none;
+            transition: 0.5s ease;
+        }
+
+        body::before {
+            top: -10%;
+            left: -5%;
+            width: 500px;
+            height: 500px;
+            background: var(--mango);
+            filter: blur(120px);
+            opacity: var(--glow-opacity);
+        }
+
+        body::after {
+            bottom: -10%;
+            right: -5%;
+            width: 400px;
+            height: 400px;
+            background: var(--strawberry);
+            filter: blur(150px);
+            opacity: calc(var(--glow-opacity) - 0.05);
+        }
+
+        aside {
+            width: 260px;
+            background: var(--sidebar-bg);
+            height: 100vh;
+            position: fixed;
+            border-right: 1px solid var(--card-border);
+            padding: 2rem 1.2rem;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            backdrop-filter: blur(20px);
+            transition: all 0.4s ease;
+        }
+
+        .sidebar-logo {
+            padding: 10px 5px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .sidebar-logo img {
+            max-width: 100%;
+            height: auto;
+            max-height: 50px;
+            display: block;
+            margin: 0 auto;
+            filter: drop-shadow(0 0 5px var(--mango));
+        }
+
+        nav {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: var(--text-muted);
+            padding: 1rem 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-weight: 700;
+            font-size: 13px;
+            border-radius: 14px;
+            margin-bottom: 0.5rem;
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        nav a:hover {
+            color: var(--text-main);
+            background: var(--icon-bg);
+            transform: translateX(5px);
+        }
+
+        nav li.active a {
+            background: var(--mango);
+            color: #111;
+            box-shadow: 0 8px 20px rgba(245, 158, 11, 0.2);
+            transform: translateX(0);
+        }
+
+        nav a i {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+
+        main {
+            margin-left: 260px;
+            flex: 1;
+            padding: 2.5rem 3rem;
+            transition: all 0.4s ease;
+            width: calc(100% - 260px);
+        }
+
+        .page-hero {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 18px;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+
+        .hero-left {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .page-title {
+            font-size: clamp(1.9rem, 4vw, 2.4rem);
+            font-weight: 900;
+            letter-spacing: -1.5px;
+            color: var(--text-main);
+            line-height: 1;
+        }
+
+        .page-subtitle {
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .theme-btn {
+            background: var(--icon-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.3s;
+            display: grid;
+            place-items: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .theme-btn:hover {
+            background: var(--mango);
+            color: #111;
+            transform: rotate(15deg);
+        }
+
+        .page-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.8rem;
+        }
+
+        .two-col-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.8rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            border-radius: 30px;
+            padding: 1.8rem;
+            box-shadow: var(--shadow);
+            transition: 0.3s;
+        }
+
+        .card:hover {
+            box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+        }
+
+        .card h3 {
+            margin-bottom: 1.25rem;
+            font-size: 18px;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-main);
+        }
+
+        .card-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-bottom: 1.2rem;
+        }
+
+        .card-head h3 {
+            margin-bottom: 0;
+        }
+
+        .search-inline {
+            background: var(--input-bg);
+            border: 1px solid var(--card-border);
+            padding: 12px 16px;
+            border-radius: 50px;
+            color: var(--text-main);
+            font-size: 13px;
+            outline: none;
+            width: 260px;
+            font-weight: 600;
+        }
+
+        .search-inline:focus {
+            border-color: var(--mango);
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 18px;
+            background: var(--input-bg);
+            border: 2px solid var(--card-border);
+            border-radius: 14px;
+            color: var(--text-main);
+            font-weight: 700;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .form-group input:focus {
+            border-color: var(--mango);
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn-action {
+            width: 100%;
+            padding: 1.05rem;
+            background: var(--text-main);
+            color: var(--bg-main);
+            border: none;
+            border-radius: 16px;
+            font-weight: 900;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-action:hover {
+            background: var(--mango);
+            color: #111;
+            transform: translateY(-3px);
+        }
+
+        .btn-ghost {
+            background: var(--icon-bg);
+            color: var(--text-main);
+            border: 1px solid var(--card-border);
+        }
+
+        .btn-ghost:hover {
+            background: rgba(255,255,255,0.12);
+            color: var(--text-main);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #0ea271;
+            color: white;
+        }
+
+        .info-box {
+            margin-top: 1rem;
+            padding: 14px 16px;
+            border-radius: 16px;
+            border: 1px solid var(--card-border);
+            background: rgba(255,255,255,0.03);
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.6;
+            min-height: 88px;
+        }
+
+        .table-shell {
+            border: 1px solid var(--card-border);
+            border-radius: 22px;
+            overflow: hidden;
+            background: rgba(255,255,255,0.02);
+        }
+
+        .table-scroll-y {
+            max-height: 420px;
+            overflow-y: auto;
+            overflow-x: auto;
+        }
+
+        .table-scroll-y::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        .table-scroll-y::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.04);
+            border-radius: 999px;
+        }
+
+        .table-scroll-y::-webkit-scrollbar-thumb {
+            background: rgba(255,194,68,0.4);
+            border-radius: 999px;
+        }
+
+        .table-scroll-y::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,194,68,0.65);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 860px;
+        }
+
+        th {
+            text-align: left;
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 800;
+            padding: 15px 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 2px solid var(--card-border);
+            background: rgba(0,0,0,0.08);
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            backdrop-filter: blur(14px);
+        }
+
+        td {
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--card-border);
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-main);
+            vertical-align: middle;
+        }
+
+        tr:hover td {
+            background: var(--hover-bg);
+        }
+
+        .member-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .member-name {
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .member-sub {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        .promo-badge {
+            padding: 6px 14px;
+            border-radius: 100px;
+            font-size: 10px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 1px solid transparent;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .eligible {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            border-color: var(--success);
+        }
+
+        .not-eligible {
+            background: rgba(136, 136, 136, 0.1);
+            color: var(--text-muted);
+            border-color: var(--card-border);
+        }
+
+        .points-bar {
+            width: 150px;
+            height: 10px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 999px;
+            overflow: hidden;
+            border: 1px solid var(--card-border);
+            margin-top: 8px;
+        }
+
+        .points-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--mango), #ffd977);
+            border-radius: 999px;
+            transition: width 0.4s ease;
+        }
+
+        .inline-action-btn {
+            padding: 9px 14px;
+            border-radius: 12px;
+            border: none;
+            font-size: 10px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .inline-action-btn.redeem-btn {
+            background: var(--mango);
+            color: #111;
+        }
+
+        .inline-action-btn.redeem-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .inline-action-btn.redeem-btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .manual-note {
+            margin-top: 1rem;
+            color: var(--text-muted);
+            font-size: 12px;
+            line-height: 1.6;
+            padding: 12px 14px;
+            border: 1px solid var(--card-border);
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+        }
+
+        @media (max-width: 1200px) {
+            .two-col-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 1100px) {
+            aside {
+                width: 90px;
+                padding: 2rem 0.5rem;
+            }
+
+            aside span,
+            .sidebar-logo img {
+                display: none;
+            }
+
+            nav a {
+                justify-content: center;
+                padding: 1.2rem;
+            }
+
+            nav a i {
+                font-size: 20px;
+            }
+
+            main {
+                margin-left: 90px;
+                width: calc(100% - 90px);
+                padding: 2rem;
+            }
+
+            .search-inline {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            main {
+                padding: 1.2rem;
+            }
+
+            .card {
+                padding: 1.2rem;
+                border-radius: 24px;
+            }
+
+            .page-hero {
+                align-items: flex-start;
+            }
+
+            .theme-btn {
+                width: 44px;
+                height: 44px;
+            }
+
+            .table-scroll-y {
+                max-height: 360px;
+            }
+        }
+    </style>
+    <script>
+(function () {
+    const savedTheme = localStorage.getItem("staff-theme");
+    if (savedTheme === "light") {
+        document.documentElement.classList.add("preload-light");
+    } else {
+        document.documentElement.classList.remove("preload-light");
+    }
+})();
+</script>
+</head>
+<body>
+
+    <aside>
+        <div class="sidebar-logo"><img src="logo.png" alt="Teo D' Mango"></div>
+        <nav>
+            <ul>
+                <li><a href="overview.html"><i class="fa-solid fa-chart-line"></i> <span>Overview</span></a></li>
+                <li><a href="orderstaffs.html"><i class="fa-solid fa-bell-concierge"></i> <span>Orders</span></a></li>
+                <li><a href="menustaff.html"><i class="fa-solid fa-receipt"></i> <span>Menu</span></a></li>
+                <li><a href="inventory.html"><i class="fa-solid fa-boxes-stacked"></i> <span>Inventory</span></a></li>
+                <li><a href="dashboardstaff.html"><i class="fa-solid fa-user-clock"></i> <span>Attendance</span></a></li>
+                <li><a href="walletstaff.html"><i class="fa-solid fa-credit-card"></i> <span>RPAY</span></a></li>
+                <li class="active"><a href="rewardsstaff.html"><i class="fa-solid fa-gift"></i> <span>Rewards</span></a></li>
+                <li><a href="dashaccsettstaff.html"><i class="fa-solid fa-gear"></i> <span>Settings</span></a></li>
+                <li style="margin-top: auto;"><a href="index.html" style="color: var(--danger);"><i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main>
+        <section class="page-hero">
+            <div class="hero-left">
+                <h1 class="page-title">Rewards Ledger</h1>
+                <p class="page-subtitle">Manual rewards add, token redemption, and member lookup</p>
+            </div>
+
+            <button class="theme-btn" id="themeToggle" aria-label="Toggle theme">
+                <i class="fa-solid fa-sun"></i>
+            </button>
+        </section>
+
+        <section class="page-layout">
+            <div class="card">
+                <div class="card-head">
+                    <h3><i class="fa-solid fa-users" style="color: var(--mango);"></i> Active Members</h3>
+                    <input type="text" id="memberSearchInput" class="search-inline" placeholder="Search customer...">
+                </div>
+
+                <div class="table-shell">
+                    <div class="table-scroll-y">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Member</th>
+                                    <th>Points</th>
+                                    <th>Progression</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="membersTableBody">
+                                <tr>
+                                    <td colspan="5" style="color: var(--text-muted);">Loading members...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="two-col-grid">
+                <div class="card">
+                    <h3><i class="fa-solid fa-magnifying-glass" style="color: var(--mango);"></i> Customer Inquiry</h3>
+
+                    <div class="form-group">
+                        <label>Search by Email / Wallet Code / User ID</label>
+                        <input type="text" id="inquiryInput" placeholder="Enter email, wallet code, or user id">
+                    </div>
+
+                    <button class="btn-action btn-ghost" id="searchCustomerBtn">
+                        <i class="fa-solid fa-user-check"></i> Search Customer
+                    </button>
+
+                    <div id="inquiryResult" class="info-box">
+                        Search a customer to view reward details.
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3><i class="fa-solid fa-qrcode" style="color: var(--mango);"></i> Redeem Token</h3>
+
+                    <div class="form-group">
+                        <label>Input Customer Token / QR Code</label>
+                        <input type="text" id="tokenInput" placeholder="RDM_xxxxxx" autocomplete="off">
+                    </div>
+
+                    <button class="btn-action" id="consumeTokenBtn">
+                        <i class="fa-solid fa-ticket"></i> Consume Token
+                    </button>
+
+                    <div id="redeemTokenInfo" class="info-box">
+                        Use this for customers who already generated a redeem token from the public side. Free drink token does not expire, but once consumed it cannot be reused.
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+    <h3><i class="fa-solid fa-plus" style="color: var(--mango);"></i> Manual Sync Points</h3>
+
+    <div class="two-col-grid" style="gap: 1.2rem;">
+        <div>
+            <div class="form-group">
+                <label>Customer Email</label>
+                <input type="email" id="manualEmailInput" placeholder="customer@email.com">
+            </div>
+
+            <div class="form-group">
+                <label>Order Reference</label>
+                <input type="text" id="manualOrderReferenceInput" placeholder="e.g. #TM-1090 or 190">
+            </div>
+        </div>
+
+        <div>
+            <div class="form-group">
+                <label>Received OTP</label>
+                <input type="text" id="manualOtpInput" maxlength="6" placeholder="Enter OTP">
+            </div>
+
+            <div class="manual-note">
+                Use this when staff, cashier, or admin needs to sync claimable reward points from a specific order to the customer account.
+                This flow still uses OTP expiration and order claim window validation.
+            </div>
+        </div>
+    </div>
+
+    <div class="btn-row" style="margin-top: 1rem;">
+        <button class="btn-action btn-ghost" id="requestManualOtpBtn">
+            <i class="fa-solid fa-paper-plane"></i> Send OTP Request
+        </button>
+
+        <button class="btn-action btn-success" id="confirmManualAddBtn">
+            <i class="fa-solid fa-key"></i> Confirm Sync Points
+        </button>
+    </div>
+</div>
+        </section>
+    </main>
+
+    <script src="config.js"></script>
+    <script src="js/authGuard.js"></script>
+    <script src="js/logoutstaff.js"></script>
+    <script src="js/themesync.js"></script>
+    <script src="js/rewardsstaff.js"></script>
+</body>
+</html>

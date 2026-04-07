@@ -91,7 +91,10 @@
             cursor: pointer;
         }
 
+<<<<<<< HEAD
         /* KEYBOARD STYLING */
+=======
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
         .keyboard-container {
             position: fixed; bottom: 0; left: 0; width: 100%;
             background: rgba(255, 255, 255, 0.4);
@@ -127,7 +130,10 @@
         .key:active { background: white; transform: translateY(2px); box-shadow: none; }
         .key.space { flex: 4; font-size: 0.9rem; letter-spacing: 3px; }
 
+<<<<<<< HEAD
         /* THE NEW CONFIRM (DONE) BUTTON */
+=======
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
         .key.done { 
             flex: 2; 
             background: var(--text-dark); 
@@ -164,11 +170,44 @@
         }
 
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+<<<<<<< HEAD
+=======
+
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+            display: none; align-items: center; justify-content: center; z-index: 5000;
+            padding: 20px;
+        }
+
+        .modal-card {
+            background: white; width: 100%; max-width: 340px;
+            border-radius: 22px; padding: 24px; text-align: center;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+
+        .modal-card h3 {
+            color: #ff8c00; font-size: 18px; margin-bottom: 10px; font-weight: 900;
+        }
+
+        .modal-card p {
+            color: #555; font-size: 14px; line-height: 1.5; margin-bottom: 20px;
+        }
+
+        .modal-btn {
+            width: 100%; padding: 12px; border-radius: 12px; border: none;
+            font-weight: 700; cursor: pointer; font-size: 14px;
+            background: #ff8c00; color: white;
+        }
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
     </style>
 </head>
 <body>
 
+<<<<<<< HEAD
     <button class="back-btn" onclick="history.back()">
+=======
+    <button class="back-btn" id="backBtn">
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
         <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
     </button>
 
@@ -186,6 +225,17 @@
         <p style="font-size: 1.1rem; color: #5d4037; font-weight: 600; margin-top: 0.5rem;">Please wait while we prepare your order...</p>
     </div>
 
+<<<<<<< HEAD
+=======
+    <div class="modal-overlay" id="errorModal">
+        <div class="modal-card">
+            <h3 id="modalTitle">Order Error</h3>
+            <p id="modalMessage">Something went wrong.</p>
+            <button class="modal-btn" id="modalOkBtn">OK</button>
+        </div>
+    </div>
+
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
     <div class="keyboard-container" id="keyboard">
         <div class="kb-row">
             <div class="key" onclick="type('Q')">Q</div><div class="key" onclick="type('W')">W</div><div class="key" onclick="type('E')">E</div><div class="key" onclick="type('R')">R</div><div class="key" onclick="type('T')">T</div><div class="key" onclick="type('Y')">Y</div><div class="key" onclick="type('U')">U</div><div class="key" onclick="type('I')">I</div><div class="key" onclick="type('O')">O</div><div class="key" onclick="type('P')">P</div>
@@ -198,6 +248,7 @@
         </div>
         <div class="kb-row">
             <div class="key space" onclick="type(' ')">SPACE</div>
+<<<<<<< HEAD
             <div class="key done" id="doneBtn" onclick="processOrder()">CONFIRM</div>
         </div>
     </div>
@@ -254,5 +305,13 @@
             }
         });
     </script>
+=======
+            <div class="key done" id="doneBtn">CONFIRM</div>
+        </div>
+    </div>
+
+    <script src="../config.js"></script>
+    <script src="../js/kiosk-counter.js"></script>
+>>>>>>> 2d6fbf2f26c40f214140ad6009db07046db5635d
 </body>
 </html>

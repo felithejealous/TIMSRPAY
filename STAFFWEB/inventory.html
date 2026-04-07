@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Inventory | Teo D' Mango Staff</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --mango: #ffc244;
+            --mango-dark: #d4a017;
+            --strawberry: #ff4d6d;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+
+            --bg-main: #050505;
+            --text-main: #ffffff;
+            --text-muted: #888888;
+            --card-bg: rgba(30, 30, 30, 0.4);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --sidebar-bg: rgba(10, 10, 10, 0.95);
+            --shadow: 0 15px 40px rgba(0,0,0,0.5);
+            --hover-bg: rgba(255, 255, 255, 0.06);
+            --icon-bg: rgba(255, 255, 255, 0.05);
+            --glow-opacity: 0.15;
+            --input-bg: rgba(0,0,0,0.3);
+        }
+
+        body.light-mode {
+    --bg-main: #f4f5f7;
+    --text-main: #1a1a1a;
+    --text-muted: #666666;
+    --card-bg: rgba(255, 255, 255, 0.7);
+    --card-border: rgba(0, 0, 0, 0.05);
+    --sidebar-bg: rgba(255, 255, 255, 0.9);
+    --shadow: 0 10px 30px rgba(0,0,0,0.05);
+    --hover-bg: rgba(255, 255, 255, 1);
+    --icon-bg: rgba(0, 0, 0, 0.03);
+    --glow-opacity: 0.3;
+    --input-bg: rgba(0, 0, 0, 0.03);
+}
+
+html.preload-light body {
+    --bg-main: #f4f5f7;
+    --text-main: #1a1a1a;
+    --text-muted: #666666;
+    --card-bg: rgba(255, 255, 255, 0.7);
+    --card-border: rgba(0, 0, 0, 0.05);
+    --sidebar-bg: rgba(255, 255, 255, 0.9);
+    --shadow: 0 10px 30px rgba(0,0,0,0.05);
+    --hover-bg: rgba(255, 255, 255, 1);
+    --icon-bg: rgba(0, 0, 0, 0.03);
+    --glow-opacity: 0.3;
+    --input-bg: rgba(0, 0, 0, 0.03);
+}
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+            transition: 0.4s ease;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before, body::after {
+            content: '';
+            position: fixed;
+            border-radius: 50%;
+            z-index: -1;
+            pointer-events: none;
+            transition: 0.5s ease;
+        }
+
+        body::before {
+            top: -10%;
+            left: -5%;
+            width: 500px;
+            height: 500px;
+            background: var(--mango);
+            filter: blur(120px);
+            opacity: var(--glow-opacity);
+        }
+
+        body::after {
+            bottom: -10%;
+            right: -5%;
+            width: 400px;
+            height: 400px;
+            background: var(--strawberry);
+            filter: blur(150px);
+            opacity: calc(var(--glow-opacity) - 0.05);
+        }
+
+        aside {
+            width: 260px;
+            background: var(--sidebar-bg);
+            height: 100vh;
+            position: fixed;
+            border-right: 1px solid var(--card-border);
+            padding: 2rem 1.2rem;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            backdrop-filter: blur(20px);
+            transition: all 0.4s ease;
+        }
+
+        .sidebar-logo {
+            padding: 10px 5px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .sidebar-logo img {
+            max-width: 100%;
+            height: auto;
+            max-height: 50px;
+            display: block;
+            margin: 0 auto;
+            filter: drop-shadow(0 0 5px var(--mango));
+        }
+
+        nav {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: var(--text-muted);
+            padding: 1rem 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-weight: 700;
+            font-size: 13px;
+            border-radius: 14px;
+            margin-bottom: 0.5rem;
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        nav a:hover {
+            color: var(--text-main);
+            background: var(--icon-bg);
+            transform: translateX(5px);
+        }
+
+        nav li.active a {
+            background: var(--mango);
+            color: #111;
+            box-shadow: 0 8px 20px rgba(245, 158, 11, 0.2);
+            transform: translateX(0);
+        }
+
+        nav a i {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .logout-link {
+            color: var(--danger) !important;
+        }
+
+        main {
+            margin-left: 260px;
+            flex: 1;
+            padding: 2.5rem 3.5rem;
+            transition: all 0.4s ease;
+            width: calc(100% - 260px);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 2.5rem;
+            gap: 1rem;
+        }
+
+        header h1 {
+            font-size: clamp(2rem, 4vw, 2.5rem);
+            font-weight: 900;
+            letter-spacing: -1px;
+            line-height: 1;
+            margin-bottom: 5px;
+            color: var(--text-main);
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .theme-btn {
+            background: var(--icon-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.3s;
+            display: grid;
+            place-items: center;
+            font-size: 16px;
+        }
+
+        .theme-btn:hover {
+            background: var(--mango);
+            color: #111;
+            transform: rotate(15deg);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            padding: 1.5rem;
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            transition: 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--mango);
+        }
+
+        .icon-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 16px;
+            display: grid;
+            place-items: center;
+            font-size: 1.2rem;
+        }
+
+        .stat-info h4 {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            margin-bottom: 3px;
+        }
+
+        .stat-info div {
+            font-size: 20px;
+            font-weight: 900;
+            color: var(--text-main);
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            border-radius: 30px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 800;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            transition: 0.3s;
+            border: 1px solid transparent;
+        }
+
+        .tab:hover {
+            color: var(--text-main);
+        }
+
+        .tab.active {
+            background: var(--mango);
+            color: #111;
+        }
+
+        .category-select {
+            min-width: 200px;
+            padding: 10px 14px;
+            border-radius: 14px;
+            border: 1px solid var(--card-border);
+            background: var(--input-bg);
+            color: var(--text-main);
+            font-size: 12px;
+            font-weight: 800;
+            outline: none;
+            letter-spacing: 0.5px;
+        }
+
+        .category-select:focus {
+            border-color: var(--mango);
+        }
+
+        .btn-add {
+            background: var(--text-main);
+            color: var(--bg-main);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 12px;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-add:hover {
+            background: var(--success);
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        .table-scroll-shell {
+            max-height: 560px;
+            overflow-y: auto;
+            overflow-x: auto;
+            width: 100%;
+            border-radius: 18px;
+        }
+
+        .table-scroll-shell::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .table-scroll-shell::-webkit-scrollbar-thumb {
+            background: rgba(255, 194, 68, 0.35);
+            border-radius: 999px;
+        }
+
+        .table-scroll-shell::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 194, 68, 0.6);
+        }
+
+        .table-responsive {
+            width: 100%;
+            min-width: 100%;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 700px;
+        }
+
+        th {
+            text-align: left;
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 800;
+            padding: 15px 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 2px solid var(--card-border);
+            position: sticky;
+            top: 0;
+            background: color-mix(in srgb, var(--bg-main) 78%, transparent);
+            backdrop-filter: blur(14px);
+            z-index: 2;
+        }
+
+        td {
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--card-border);
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-main);
+            vertical-align: middle;
+        }
+
+        tr:hover td {
+            background: var(--hover-bg);
+        }
+
+        .progress-wrapper {
+            width: 100px;
+            background: rgba(255,255,255,0.1);
+            height: 6px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 5px;
+            border: 1px solid var(--card-border);
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 10px;
+        }
+
+        .btn-edit {
+            background: var(--icon-bg);
+            color: var(--text-main);
+            border: 1px solid var(--card-border);
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-weight: 800;
+            font-size: 11px;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+
+        .btn-edit:hover {
+            background: var(--mango);
+            color: #111;
+            border-color: var(--mango);
+        }
+
+        .loading-row td,
+        .empty-row td {
+            text-align: center;
+            color: var(--text-muted);
+            font-weight: 700;
+            padding: 2rem 1rem;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 800;
+            font-size: 11px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .status-good {
+            color: var(--success);
+        }
+
+        .status-warning {
+            color: var(--warning);
+        }
+
+        .status-low {
+            color: var(--danger);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            place-items: center;
+            padding: 1rem;
+        }
+        .search-wrap {
+    position: relative;
+    min-width: 280px;
+    flex: 1;
+    max-width: 420px;
+}
+
+.search-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--input-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 0 14px;
+    min-height: 44px;
+    transition: 0.3s;
+}
+
+.search-box:focus-within {
+    border-color: var(--mango);
+}
+
+.search-box i {
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.search-box input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-main);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    padding: 12px 0;
+}
+
+.search-box input::placeholder {
+    color: var(--text-muted);
+}
+
+.clear-search-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 13px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    transition: 0.2s;
+    display: grid;
+    place-items: center;
+}
+
+.clear-search-btn:hover {
+    background: var(--icon-bg);
+    color: var(--text-main);
+}
+
+.search-suggestions {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background: var(--bg-main);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    z-index: 20;
+    max-height: 260px;
+    overflow-y: auto;
+}
+
+.search-suggestions::-webkit-scrollbar {
+    width: 6px;
+}
+
+.search-suggestions::-webkit-scrollbar-thumb {
+    background: rgba(255, 194, 68, 0.35);
+    border-radius: 999px;
+}
+
+.search-suggestion-item {
+    padding: 12px 14px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--card-border);
+    transition: 0.2s;
+}
+
+.search-suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.search-suggestion-item:hover {
+    background: var(--hover-bg);
+}
+
+.search-suggestion-title {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--text-main);
+    margin-bottom: 3px;
+}
+
+.search-suggestion-meta {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+@media screen and (max-width: 768px) {
+    .search-wrap {
+        min-width: 0;
+        max-width: 100%;
+        width: 100%;
+    }
+}
+
+        .modal-content {
+            background: var(--bg-main);
+            padding: 2.5rem;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            border: 1px solid var(--card-border);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-content label {
+            display: block;
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .modal-content input {
+            width: 100%;
+            padding: 14px 20px;
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            background: var(--input-bg);
+            color: var(--text-main);
+            outline: none;
+            font-weight: 700;
+            transition: 0.3s;
+        }
+
+        .modal-content input:focus {
+            border-color: var(--mango);
+        }
+
+        .save-btn {
+            width: 100%;
+            background: var(--success);
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 900;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 10px;
+        }
+
+        .save-btn:hover {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+
+        @media screen and (max-width: 1100px) {
+            aside {
+                width: 90px;
+                padding: 2rem 0.5rem;
+            }
+
+            aside span, .sidebar-logo img {
+                display: none;
+            }
+
+            nav a {
+                justify-content: center;
+                padding: 1.2rem;
+            }
+
+            nav a i {
+                font-size: 20px;
+            }
+
+            main {
+                margin-left: 90px;
+                width: calc(100% - 90px);
+                padding: 2rem;
+            }
+        }
+
+        @media screen and (max-width: 768px) {
+            aside {
+                width: 100%;
+                height: 70px;
+                position: fixed;
+                bottom: 0;
+                top: auto;
+                flex-direction: row;
+                border-right: none;
+                border-top: 1px solid var(--card-border);
+                padding: 0;
+                backdrop-filter: blur(30px);
+            }
+
+            nav {
+                width: 100%;
+            }
+
+            nav ul {
+                display: flex;
+                flex-direction: row;
+                justify-content: space-around;
+                align-items: center;
+                height: 100%;
+            }
+
+            nav li {
+                margin-bottom: 0;
+            }
+
+            nav a {
+                flex-direction: column;
+                gap: 4px;
+                font-size: 0.65rem;
+                padding: 8px;
+                border-radius: 0;
+            }
+
+            nav li.active a {
+                background: none;
+                color: var(--mango);
+                box-shadow: none;
+                transform: translateY(-3px);
+            }
+
+            main {
+                margin-left: 0;
+                width: 100%;
+                margin-bottom: 70px;
+                padding: 1.5rem;
+            }
+
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .table-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .category-select {
+                width: 100%;
+                min-width: 0;
+            }
+
+            .table-scroll-shell {
+                max-height: 420px;
+            }
+        }
+    </style>
+    <script>
+(function () {
+    const savedTheme = localStorage.getItem("staff-theme");
+    if (savedTheme === "light") {
+        document.documentElement.classList.add("preload-light");
+    } else {
+        document.documentElement.classList.remove("preload-light");
+    }
+})();
+</script>
+</head>
+<body>
+
+    <aside>
+        <div class="sidebar-logo"><img src="logo.png" alt="Teo D' Mango"></div>
+        <nav>
+            <ul>
+                <li><a href="overview.html"><i class="fa-solid fa-chart-line"></i> <span>Overview</span></a></li>
+                <li><a href="orderstaffs.html"><i class="fa-solid fa-bell-concierge"></i> <span>Orders</span></a></li>
+                <li><a href="menustaff.html"><i class="fa-solid fa-receipt"></i> <span>Menu</span></a></li>
+
+                <li class="active"><a href="inventory.html"><i class="fa-solid fa-boxes-stacked"></i> <span>Inventory</span></a></li>
+
+                <li><a href="dashboardstaff.html"><i class="fa-solid fa-user-clock"></i> <span>Attendance</span></a></li>
+                <li><a href="walletstaff.html"><i class="fa-solid fa-credit-card"></i> <span>RPAY</span></a></li>
+                <li><a href="rewardsstaff.html"><i class="fa-solid fa-gift"></i> <span>Rewards</span></a></li>
+                <li class="admin-only"><a href="dashaccsettstaff.html"><i class="fa-solid fa-gear"></i> <span>Settings</span></a></li>
+
+                <li style="margin-top: auto;">
+                    <a href="loginstaff.html" class="logout-link"><i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main>
+        <header>
+            <div>
+                <h1 id="pageTitle">Inventory View</h1>
+                <p id="pageDesc">Read-only access to stock levels.</p>
+            </div>
+            <button class="theme-btn" id="themeToggle" title="Toggle Light/Dark Mode">
+                <i class="fa-solid fa-sun"></i>
+            </button>
+        </header>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="icon-circle" style="background: rgba(59, 130, 246, 0.1); color: var(--info);">
+                    <i class="fa-solid fa-layer-group"></i>
+                </div>
+                <div class="stat-info">
+                    <h4>Total Items</h4>
+                    <div id="totalItemsStat">0</div>
+                </div>
+            </div>
+
+            <div class="stat-card" style="border-bottom: 4px solid var(--danger);">
+                <div class="icon-circle" style="background: rgba(239, 68, 68, 0.1); color: var(--danger);">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div class="stat-info">
+                    <h4>Low Stock</h4>
+                    <div id="lowStockStat" style="color: var(--danger);">0</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="icon-circle" style="background: rgba(16, 185, 129, 0.1); color: var(--success);">
+                    <i class="fa-solid fa-rotate"></i>
+                </div>
+                <div class="stat-info">
+                    <h4>Refilled Today</h4>
+                    <div id="refilledTodayStat" style="color: var(--success);">0</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="icon-circle" style="background: rgba(245, 158, 11, 0.1); color: var(--warning);">
+                    <i class="fa-solid fa-tags"></i>
+                </div>
+                <div class="stat-info">
+                    <h4>Categories</h4>
+                    <div id="categoriesStat">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="table-header">
+                <div class="filter-group">
+                    <div class="filter-tabs">
+                        <div class="search-wrap">
+    <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input
+            type="text"
+            id="inventorySearchInput"
+            placeholder="Search item, category, or unit..."
+            autocomplete="off"
+        >
+        <button type="button" id="clearSearchBtn" class="clear-search-btn" title="Clear search" style="display:none;">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+    <div id="searchSuggestions" class="search-suggestions" style="display:none;"></div>
+</div>
+                        <div class="tab active" data-filter="all">All Items</div>
+                        <div class="tab" data-filter="low">Low Stock</div>
+                    </div>
+
+                    <select id="categoryFilter" class="category-select">
+                        <option value="all">All Categories</option>
+                    </select>
+                </div>
+
+                <button class="btn-add admin-action" id="addItemBtn" style="display:none;">
+                    <i class="fa-solid fa-plus"></i> Add Item
+                </button>
+            </div>
+
+            <div class="table-scroll-shell">
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item Details</th>
+                                <th>Category</th>
+                                <th>Stock Level</th>
+                                <th>Status</th>
+                                <th class="admin-action" style="display:none;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventoryTableBody">
+                            <tr class="loading-row">
+                                <td colspan="5">Loading inventory...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script src="config.js"></script>
+    <script src="js/authGuard.js"></script>
+    <script src="js/logoutstaff.js"></script>
+    <script src="js/themesync.js"></script>
+    <script src="js/inventory.js"></script>
+</body>
+</html>
