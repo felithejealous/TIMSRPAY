@@ -3,6 +3,19 @@ let currentWalletUser = null;
 let walletSearchDebounce = null;
 let lastSearchValue = "";
 let walletSuggestionsCache = [];
+const API_URL = window.API_URL || "http://127.0.0.1:8000";
+
+function getToken() {
+    return localStorage.getItem("token");
+}
+
+function getAuthHeaders(extra = {}) {
+    const token = getToken();
+    return {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...extra
+    };
+}
 function escapeHtml(value) {
     return String(value ?? "")
         .replace(/&/g, "&amp;")
@@ -215,7 +228,7 @@ async function fetchWalletSuggestions(q) {
     try {
         const response = await fetch(`${API_URL}/wallet/lookup?q=${encodeURIComponent(search)}&limit=8`, {
             method: "GET",
-            credentials: "include"
+            headers: getAuthHeaders(),
         });
 
         const result = await response.json();
@@ -263,7 +276,7 @@ async function searchWallets(forceValue = null) {
     try {
         const response = await fetch(`${API_URL}/wallet/lookup?q=${encodeURIComponent(q)}&limit=50`, {
             method: "GET",
-            credentials: "include"
+            headers: getAuthHeaders(),
         });
 
         const result = await response.json();
@@ -360,10 +373,9 @@ async function submitTopupForm(event) {
     try {
         const response = await fetch(`${API_URL}/wallet/topup`, {
             method: "POST",
-            credentials: "include",
-            headers: {
+            headers: getAuthHeaders({
                 "Content-Type": "application/json"
-            },
+            }),
             body: JSON.stringify({
                 user_id: userId,
                 amount: amount
