@@ -139,29 +139,30 @@ async function fetchProducts() {
         productsCache = [];
     }
 }
-
 async function fetchAddons() {
     try {
         const [addonsResponse, sizesResponse] = await Promise.all([
-            fetch(`${API_URL}/addons?active_only=false&addon_type=ADDON`, {
+            fetch(`${API_BASE_URL}/addons/?active_only=false&addon_type=ADDON`, {
                 method: "GET",
                 headers: getAuthHeaders(),
             }),
-            fetch(`${API_URL}/addons?active_only=false&addon_type=SIZE`, {
+            fetch(`${API_BASE_URL}/addons/?active_only=false&addon_type=SIZE`, {
                 method: "GET",
                 headers: getAuthHeaders(),
             })
         ]);
 
-        addonsCache = addonsResponse.ok ? await addonsResponse.json() : [];
-        sizesCache = sizesResponse.ok ? await sizesResponse.json() : [];
+        const addonsResult = addonsResponse.ok ? await addonsResponse.json() : { data: [] };
+        const sizesResult = sizesResponse.ok ? await sizesResponse.json() : { data: [] };
+
+        addonsCache = addonsResult.data || [];
+        sizesCache = sizesResult.data || [];
     } catch (error) {
         console.error("Add-ons fetch error:", error);
         addonsCache = [];
         sizesCache = [];
     }
 }
-
 async function fetchInventoryReference() {
     try {
         const response = await fetch(`${API_URL}/inventory/master?only_active=true&limit=500/`, {
