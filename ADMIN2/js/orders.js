@@ -64,7 +64,7 @@ async function apiFetch(url, options = {}) {
 
 async function fetchOrders() {
     try {
-        const result = await apiFetch(`${API_URL}/orders`, {
+        const result = await apiFetch(`${API_URL}/orders/`, {
             method: "GET"
         });
 
@@ -77,7 +77,7 @@ async function fetchOrders() {
 
 async function fetchRefunds() {
     try {
-        const result = await apiFetch(`${API_URL}/orders/refunds`, {
+        const result = await apiFetch(`${API_URL}/orders/refunds/`, {
             method: "GET"
         });
 
