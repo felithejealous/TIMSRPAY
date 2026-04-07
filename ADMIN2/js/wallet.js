@@ -4,7 +4,7 @@ let walletSearchDebounce = null;
 let lastSearchValue = "";
 let walletSuggestionsCache = [];
 function getToken() {
-    return localStorage.getItem("token");
+return localStorage.getItem("token");
 }
 
 function getAuthHeaders(extra = {}) {

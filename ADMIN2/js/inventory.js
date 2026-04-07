@@ -3,9 +3,17 @@ let currentView = "grid";
 let currentId = null;
 let historyCache = [];
 const LOW_STOCK_THRESHOLD = 10;
+function getToken() {
+return localStorage.getItem("token");
+}
 
-
-
+function getAuthHeaders(extra = {}) {
+    const token = getToken();
+    return {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...extra
+    };
+}
 function getTodayDateString() {
     const now = new Date();
     const year = now.getFullYear();
@@ -123,7 +131,7 @@ async function fetchInventory() {
     try {
         const response = await fetch(`${API_URL}/inventory/master?only_active=false`, {
             method: "GET",
-            credentials: "include"
+           headers: getAuthHeaders()
         });
 
         if (!response.ok) {
@@ -156,7 +164,7 @@ async function fetchAllHistory() {
         for (const item of items) {
             const response = await fetch(`${API_URL}/inventory/master/${item.id}/movements?limit=30`, {
                 method: "GET",
-                credentials: "include"
+                headers: getAuthHeaders()
             });
 
             if (!response.ok) continue;
@@ -362,10 +370,9 @@ async function addNewItem() {
     try {
         const response = await fetch(`${API_URL}/inventory/master`, {
             method: "POST",
-            credentials: "include",
-            headers: {
+            headers: getAuthHeaders({
                 "Content-Type": "application/json"
-            },
+            }),
             body: JSON.stringify({
                 name,
                 category,
@@ -445,10 +452,9 @@ async function commitAdjust() {
         if (changeQty !== 0) {
             const response = await fetch(`${API_URL}/inventory/master/${currentId}/adjust`, {
                 method: "POST",
-                credentials: "include",
-                headers: {
+                headers: getAuthHeaders({
                     "Content-Type": "application/json"
-                },
+                }),
                 body: JSON.stringify({
                     change_qty: changeQty,
                     reason,
@@ -465,10 +471,9 @@ async function commitAdjust() {
         } else if (categoryChanged || expValue !== (item.exp ? item.exp.slice(0, 10) : "")) {
             const response = await fetch(`${API_URL}/inventory/master/${currentId}`, {
                 method: "PATCH",
-                credentials: "include",
-                headers: {
+                headers: getAuthHeaders({
                     "Content-Type": "application/json"
-                },
+                }),
                 body: JSON.stringify({
                     category: selectedCategory,
                     expiration_date: expValue ? `${expValue}T00:00:00` : null
@@ -499,10 +504,9 @@ async function toggleItemActive(id, currentlyActive) {
     try {
         const response = await fetch(`${API_URL}/inventory/master/${id}/active`, {
             method: "PATCH",
-            credentials: "include",
-            headers: {
+            headers: getAuthHeaders({
                 "Content-Type": "application/json"
-            },
+            }),
             body: JSON.stringify({
                 is_active: !currentlyActive
             })
