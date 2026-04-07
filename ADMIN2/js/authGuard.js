@@ -2,9 +2,19 @@ const API_URL = window.API_URL || "http://127.0.0.1:8000";
 
 async function checkAuth() {
     try {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            alert("No token found. Please log in again.");
+            window.location.href = "login.html";
+            return;
+        }
+
         const response = await fetch(`${API_URL}/auth/me`, {
             method: "GET",
-            credentials: "include"
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
         });
 
         console.log("auth/me status:", response.status);
@@ -14,6 +24,8 @@ async function checkAuth() {
 
         if (!response.ok) {
             alert(`auth/me failed: ${response.status}\n${text}`);
+            localStorage.removeItem("token");
+            window.location.href = "login.html";
             return;
         }
 
@@ -22,6 +34,8 @@ async function checkAuth() {
 
         if (data.role !== "admin") {
             alert("Unauthorized role: " + data.role);
+            localStorage.removeItem("token");
+            window.location.href = "login.html";
             return;
         }
 
