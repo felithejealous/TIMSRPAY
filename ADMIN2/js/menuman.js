@@ -309,8 +309,8 @@ function renderOptions() {
                         <td class="font-bold text-yellow-400">₱${Number(item.price || 0).toFixed(2)}</td>
                         <td>${item.is_active ? "ACTIVE" : "INACTIVE"}</td>
                         <td>
-                            <button class="text-xs font-bold text-sub hover:text-white mr-4" onclick="editOption(${item.id}, 'addon')">EDIT</button>
-                            <button class="text-xs font-bold text-red-500/50 hover:text-red-500" onclick="deleteOption(${item.id}, 'addon')">DEL</button>
+                            <button class="text-xs font-bold text-sub hover:text-white mr-4" onclick="editOption(${item.id ?? item.addon_id}, 'addon')">EDIT</button>
+                            <button class="text-xs font-bold text-red-500/50 hover:text-red-500" onclick="deleteOption(${item.id ?? item.addon_id}, 'addon')">DEL</button>
                         </td>
                     </tr>
                 `;
