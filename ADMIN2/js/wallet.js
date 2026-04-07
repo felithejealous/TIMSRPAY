@@ -3,7 +3,7 @@ let currentWalletUser = null;
 let walletSearchDebounce = null;
 let lastSearchValue = "";
 let walletSuggestionsCache = [];
-const API_URL = window.API_URL || "http://127.0.0.1:8000";
+const API_URL = window.API_URL || "";
 
 function getToken() {
     return localStorage.getItem("token");
