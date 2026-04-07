@@ -56,7 +56,7 @@ function buildInitialAvatar(name) {
 
 async function fetchUsers() {
     try {
-        const response = await fetch(`${API_URL}/users?limit=500&include_balances=true`, {
+        const response = await fetch(`${API_URL}/users/?limit=500&include_balances=true`, {
             method: "GET",
             headers: getAuthHeaders(),
         });
@@ -66,6 +66,8 @@ async function fetchUsers() {
         }
 
         const result = await response.json();
+        console.log("fetchUsers result:", result);
+        console.log("fetchUsers result.data:", result.data);
         usersCache = result.data || [];
     } catch (error) {
         console.error("Users fetch error:", error);
@@ -75,7 +77,7 @@ async function fetchUsers() {
 
 async function fetchStaffProfiles() {
     try {
-        const response = await fetch(`${API_URL}/staff`, {
+        const response = await fetch(`${API_URL}/staff/`, {
             method: "GET",
             headers: getAuthHeaders(),
         });
@@ -85,6 +87,8 @@ async function fetchStaffProfiles() {
         }
 
         const result = await response.json();
+        console.log("fetchStaffProfiles result:", result);
+        console.log("fetchStaffProfiles result.data:", result.data);
         staffCache = result.data || [];
 
         staffMap = {};
@@ -355,7 +359,7 @@ async function toggleStatus() {
     if (!user) return;
 
     try {
-const response = await fetch(`${API_URL}/users/${currentViewingUserId}/active`, {
+const response = await fetch(`${API_URL}/users/${currentViewingUserId}/active/`, {
     method: "PATCH",
     headers: getAuthHeaders({
         "Content-Type": "application/json"
@@ -431,7 +435,7 @@ async function processReset() {
     if (!currentViewingUserId) return;
 
     try {
-        const response = await fetch(`${API_URL}/staff/${currentViewingUserId}/reset-password`, {
+        const response = await fetch(`${API_URL}/staff/${currentViewingUserId}/reset-password/`, {
             method: "POST",
             headers: getAuthHeaders()
         });
@@ -541,7 +545,7 @@ async function submitAccountForm(event) {
             }
         } else {
             if (role === "customer") {
-                response = await fetch(`${API_URL}/users/customers`, {
+                response = await fetch(`${API_URL}/users/customers/`, {
                     method: "POST",
                     headers: getAuthHeaders({
                         "Content-Type": "application/json"
@@ -555,7 +559,7 @@ async function submitAccountForm(event) {
                     })
                 });
             } else {
-                response = await fetch(`${API_URL}/staff/register`, {
+                response = await fetch(`${API_URL}/staff/register/`, {
                     method: "POST",
                     headers: getAuthHeaders({
                         "Content-Type": "application/json"
