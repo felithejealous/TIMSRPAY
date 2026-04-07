@@ -164,7 +164,7 @@ async function fetchAllHistory() {
         const allLogs = [];
 
         for (const item of items) {
-            const response = await fetch(`${API_BASE_URL}/inventory/master/${item.id}/movements/?limit=30`, {
+            const response = await fetch(`${API_URL}/inventory/master/${item.id}/movements/?limit=30`, {
                 method: "GET",
                 headers: getAuthHeaders()
             });
@@ -452,7 +452,7 @@ async function commitAdjust() {
 
     try {
         if (changeQty !== 0) {
-            const response = await fetch(`${API_BASE_URL}/inventory/master/${currentId}/adjust`, {
+            const response = await fetch(`${API_URL}/inventory/master/${currentId}/adjust`, {
                 method: "POST",
                 headers: getAuthHeaders({
                     "Content-Type": "application/json"
@@ -471,7 +471,7 @@ async function commitAdjust() {
                 throw new Error(result.detail || `Adjust inventory failed: ${response.status}`);
             }
         } else if (categoryChanged || expValue !== (item.exp ? item.exp.slice(0, 10) : "")) {
-            const response = await fetch(`${API_BASE_URL}/inventory/master/${currentId}`, {
+            const response = await fetch(`${API_URL}/inventory/master/${currentId}`, {
                 method: "PATCH",
                 headers: getAuthHeaders({
                     "Content-Type": "application/json"
@@ -504,7 +504,7 @@ async function commitAdjust() {
 
 async function toggleItemActive(id, currentlyActive) {
     try {
-        const response = await fetch(`${API_BASE_URL}/inventory/master/${id}/active`, {
+        const response = await fetch(`${API_URL}/inventory/master/${id}/active`, {
             method: "PATCH",
             headers: getAuthHeaders({
                 "Content-Type": "application/json"
