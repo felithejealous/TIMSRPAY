@@ -4,7 +4,19 @@ let staffMap = {};
 let currentViewingUserId = null;
 let currentRoleFilter = "all";
 let uploadedProfileImage = null;
+const API_URL = window.API_URL || "http://127.0.0.1:8000";
 
+function getToken() {
+    return localStorage.getItem("token");
+}
+
+function getAuthHeaders(extra = {}) {
+    const token = getToken();
+    return {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...extra
+    };
+}
 function escapeXml(unsafe) {
     return String(unsafe || "")
         .replace(/&/g, "&amp;")
@@ -46,7 +58,7 @@ async function fetchUsers() {
     try {
         const response = await fetch(`${API_URL}/users?limit=500&include_balances=true`, {
             method: "GET",
-            credentials: "include"
+            headers: getAuthHeaders(),
         });
 
         if (!response.ok) {
@@ -65,7 +77,7 @@ async function fetchStaffProfiles() {
     try {
         const response = await fetch(`${API_URL}/staff`, {
             method: "GET",
-            credentials: "include"
+            headers: getAuthHeaders(),
         });
 
         if (!response.ok) {
@@ -343,16 +355,15 @@ async function toggleStatus() {
     if (!user) return;
 
     try {
-        const response = await fetch(`${API_URL}/users/${currentViewingUserId}/active`, {
-            method: "PATCH",
-            credentials: "include",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                is_active: !Boolean(user.is_active)
-            })
-        });
+const response = await fetch(`${API_URL}/users/${currentViewingUserId}/active`, {
+    method: "PATCH",
+    headers: getAuthHeaders({
+        "Content-Type": "application/json"
+    }),
+    body: JSON.stringify({
+        is_active: !Boolean(user.is_active)
+    })
+});
 
         if (!response.ok) {
             throw new Error(`Toggle active failed: ${response.status}`);
@@ -422,7 +433,7 @@ async function processReset() {
     try {
         const response = await fetch(`${API_URL}/staff/${currentViewingUserId}/reset-password`, {
             method: "POST",
-            credentials: "include"
+            headers: getAuthHeaders()
         });
 
         const result = await response.json();
@@ -506,10 +517,9 @@ async function submitAccountForm(event) {
             if (role === "customer") {
                 response = await fetch(`${API_URL}/users/customers/${editId}`, {
                     method: "PATCH",
-                    credentials: "include",
-                    headers: {
+                    headers: getAuthHeaders({
                         "Content-Type": "application/json"
-                    },
+                    }),
                     body: JSON.stringify({
                         full_name: fullName,
                         profile_picture: uploadedProfileImage
@@ -518,10 +528,9 @@ async function submitAccountForm(event) {
             } else {
                 response = await fetch(`${API_URL}/staff/${editId}`, {
                     method: "PATCH",
-                    credentials: "include",
-                    headers: {
+                    headers: getAuthHeaders({
                         "Content-Type": "application/json"
-                    },
+                    }),
                     body: JSON.stringify({
                         full_name: fullName,
                         role,
@@ -534,10 +543,9 @@ async function submitAccountForm(event) {
             if (role === "customer") {
                 response = await fetch(`${API_URL}/users/customers`, {
                     method: "POST",
-                    credentials: "include",
-                    headers: {
+                    headers: getAuthHeaders({
                         "Content-Type": "application/json"
-                    },
+                    }),
                     body: JSON.stringify({
                         email,
                         full_name: fullName,
@@ -549,10 +557,9 @@ async function submitAccountForm(event) {
             } else {
                 response = await fetch(`${API_URL}/staff/register`, {
                     method: "POST",
-                    credentials: "include",
-                    headers: {
+                    headers: getAuthHeaders({
                         "Content-Type": "application/json"
-                    },
+                    }),
                     body: JSON.stringify({
                         email,
                         full_name: fullName,
