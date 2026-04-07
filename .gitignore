@@ -1,5 +1,5 @@
-".venv/"
-"__pycache__/"
-"backend\.env"
+.venv/
+__pycache__/
 backend/.env
 .env
+backend/routers/__pycache__/
