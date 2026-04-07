@@ -104,7 +104,7 @@ function previewImage(input) {
 
 async function fetchCategories() {
     try {
-        const response = await fetch(`${API_BASE_URL}/products/categories/`, {
+        const response = await fetch(`${API_URL}/products/categories/`, {
             method: "GET",
             headers: getAuthHeaders(),
         });
@@ -123,7 +123,7 @@ async function fetchCategories() {
 
 async function fetchProducts() {
     try {
-        const response = await fetch(`${API_BASE_URL}/products/?limit=500`, {
+        const response = await fetch(`${API_URL}/products/?limit=500`, {
             method: "GET",
             headers: getAuthHeaders(),
         });
@@ -142,11 +142,11 @@ async function fetchProducts() {
 async function fetchAddons() {
     try {
         const [addonsResponse, sizesResponse] = await Promise.all([
-            fetch(`${API_BASE_URL}/addons/?active_only=false&addon_type=ADDON`, {
+            fetch(`${API_URL}/addons/?active_only=false&addon_type=ADDON`, {
                 method: "GET",
                 headers: getAuthHeaders(),
             }),
-            fetch(`${API_BASE_URL}/addons/?active_only=false&addon_type=SIZE`, {
+            fetch(`${API_URL}/addons/?active_only=false&addon_type=SIZE`, {
                 method: "GET",
                 headers: getAuthHeaders(),
             })
@@ -165,7 +165,7 @@ async function fetchAddons() {
 }
 async function fetchInventoryReference() {
     try {
-        const response = await fetch(`${API_BASE_URL}/inventory/master/?only_active=true&limit=500`, {
+        const response = await fetch(`${API_URL}/inventory/master/?only_active=true&limit=500`, {
             method: "GET",
             headers: getAuthHeaders(),
         });
@@ -409,7 +409,7 @@ async function saveProduct() {
         let response;
 
         if (productId) {
-            response = await fetch(`${API_BASE_URL}/products/${productId}`, {
+            response = await fetch(`${API_URL}/products/${productId}`, {
                 method: "PATCH",
                 headers: getAuthHeaders({
                     "Content-Type": "application/json"
@@ -417,7 +417,7 @@ async function saveProduct() {
                 body: JSON.stringify(payload)
             });
         } else {
-            response = await fetch(`${API_BASE_URL}/products`, {
+            response = await fetch(`${API_URL}/products`, {
                 method: "POST",
                 headers: getAuthHeaders({
                     "Content-Type": "application/json"
@@ -448,7 +448,7 @@ async function saveProduct() {
 
 async function toggleProduct(productId, currentActive) {
     try {
-        const response = await fetch(`${API_BASE_URL}/products/${productId}`, {
+        const response = await fetch(`${API_URL}/products/${productId}`, {
             method: "PATCH",
             headers: getAuthHeaders({
                 "Content-Type": "application/json"
@@ -479,7 +479,7 @@ async function deleteProduct(productId) {
     if (!confirmed) return;
 
     try {
-        const response = await fetch(`${API_BASE_URL}/products/${productId}`, {
+        const response = await fetch(`${API_URL}/products/${productId}`, {
             method: "PATCH",
             headers: getAuthHeaders({
                 "Content-Type": "application/json"
@@ -519,7 +519,7 @@ async function loadRecipe() {
     }
 
     try {
-        const response = await fetch(`${API_BASE_URL}/products/${productId}/recipe`, {
+        const response = await fetch(`${API_URL}/products/${productId}/recipe`, {
             method: "GET",
             headers: getAuthHeaders(),
         });
@@ -601,7 +601,7 @@ async function saveBulkRecipe() {
     try {
         const items = parseRecipeText(recipeText);
 
-        const response = await fetch(`${API_BASE_URL}/products/${productId}/recipe`, {
+        const response = await fetch(`${API_URL}/products/${productId}/recipe`, {
             method: "PUT",
             headers: getAuthHeaders({
                 "Content-Type": "application/json"
