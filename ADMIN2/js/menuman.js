@@ -165,7 +165,7 @@ async function fetchAddons() {
 }
 async function fetchInventoryReference() {
     try {
-        const response = await fetch(`${API_URL}/inventory/master?only_active=true&limit=500/`, {
+        const response = await fetch(`${API_URL}/inventory/master/?only_active=true&limit=500/`, {
             method: "GET",
             headers: getAuthHeaders(),
         });

@@ -131,7 +131,7 @@ function getFilteredItems() {
 
 async function fetchInventory() {
     try {
-        const response = await fetch(`${API_URL}/inventory/master?only_active=false`, {
+        const response = await fetch(`${API_URL}/inventory/master/?only_active=false`, {
             method: "GET",
            headers: getAuthHeaders()
         });
@@ -164,7 +164,7 @@ async function fetchAllHistory() {
         const allLogs = [];
 
         for (const item of items) {
-            const response = await fetch(`${API_BASE_URL}/inventory/master/${item.id}/movements?limit=30/`, {
+            const response = await fetch(`${API_BASE_URL}/inventory/master/${item.id}/movements/?limit=30/`, {
                 method: "GET",
                 headers: getAuthHeaders()
             });
