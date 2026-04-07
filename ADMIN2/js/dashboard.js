@@ -2,11 +2,22 @@ let charts = {};
 let modalChartInstance = null;
 let lowStockPollInterval = null;
 const LOW_STOCK_POLL_MS = 15000;
+function getToken() {
+    return localStorage.getItem("token");
+}
+
+function getAuthHeaders(extra = {}) {
+    const token = getToken();
+    return {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...extra
+    };
+}
 async function fetchInventoryMasterData() {
     try {
         const response = await fetch(`${API_URL}/inventory/master`, {
             method: "GET",
-            credentials: "include"
+            headers: getAuthHeaders(),
         });
 
         if (!response.ok) {
@@ -38,7 +49,7 @@ async function fetchDashboardData() {
     try {
         const response = await fetch(`${API_URL}/reports/dashboard/overview`, {
             method: "GET",
-            credentials: "include"
+            headers: getAuthHeaders(),
         });
 
         if (!response.ok) {
@@ -267,7 +278,7 @@ async function exportData() {
     try {
         const response = await fetch(`${API_URL}/reports/csv/orders`, {
             method: "GET",
-            credentials: "include"
+            headers: getAuthHeaders(),
         });
 
         if (!response.ok) {
@@ -289,7 +300,7 @@ async function fetchLowStockAlerts() {
     try {
         const response = await fetch(`${API_URL}/inventory/alerts/low-stock`, {
             method: "GET",
-            credentials: "include"
+            headers: getAuthHeaders(),
         });
 
         if (!response.ok) {
@@ -376,7 +387,7 @@ async function dismissLowStockAlert(inventoryMasterId) {
     try {
         const response = await fetch(`${API_URL}/inventory/alerts/low-stock/${inventoryMasterId}/dismiss`, {
             method: "POST",
-            credentials: "include"
+            headers: getAuthHeaders(),
         });
 
         const result = await response.json().catch(() => ({}));
