@@ -70,7 +70,7 @@ function resolveProfileImage(profilePicture) {
   }
 
   if (value.startsWith("/")) {
-    return `http://127.0.0.1:8000${value}`;
+    return `${window.API_URL || "http://127.0.0.1:8000"}${value}`;
   }
 
   return value;
