@@ -4,8 +4,6 @@ let staffMap = {};
 let currentViewingUserId = null;
 let currentRoleFilter = "all";
 let uploadedProfileImage = null;
-const API_URL = window.API_URL || "";
-
 function getToken() {
     return localStorage.getItem("token");
 }
