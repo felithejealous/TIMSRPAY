@@ -123,7 +123,7 @@ async function fetchCategories() {
 
 async function fetchProducts() {
     try {
-        const response = await fetch(`${API_URL}/products?limit=500/`, {
+        const response = await fetch(`${API_URL}/products/?limit=500`, {
             method: "GET",
             headers: getAuthHeaders(),
         });
