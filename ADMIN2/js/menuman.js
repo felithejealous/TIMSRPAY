@@ -123,7 +123,7 @@ async function fetchCategories() {
 
 async function fetchProducts() {
     try {
-        const response = await fetch(`${API_URL}/products/?limit=500`, {
+        const response = await fetch(`${API_URL}/products/?limit=500/`, {
             method: "GET",
             headers: getAuthHeaders(),
         });
@@ -142,11 +142,11 @@ async function fetchProducts() {
 async function fetchAddons() {
     try {
         const [addonsResponse, sizesResponse] = await Promise.all([
-            fetch(`${API_URL}/addons/?active_only=false&addon_type=ADDON`, {
+            fetch(`${API_URL}/addons/?active_only=false&addon_type=ADDON/`, {
                 method: "GET",
                 headers: getAuthHeaders(),
             }),
-            fetch(`${API_URL}/addons/?active_only=false&addon_type=SIZE`, {
+            fetch(`${API_URL}/addons/?active_only=false&addon_type=SIZE/`, {
                 method: "GET",
                 headers: getAuthHeaders(),
             })
