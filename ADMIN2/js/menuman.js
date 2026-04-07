@@ -4,7 +4,17 @@ let sizesCache = [];
 let inventoryCache = [];
 let categoriesCache = [];
 let tempProductImage = "";
+function getToken() {
+return localStorage.getItem("token");
+}
 
+function getAuthHeaders(extra = {}) {
+    const token = getToken();
+    return {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...extra
+    };
+}
 const EMPTY_IMAGE =
     "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
 
@@ -95,7 +105,7 @@ async function fetchCategories() {
     try {
         const response = await fetch(`${API_URL}/products/categories`, {
             method: "GET",
-            credentials: "include"
+            headers: getAuthHeaders(),
         });
 
         if (!response.ok) {
@@ -114,7 +124,7 @@ async function fetchProducts() {
     try {
         const response = await fetch(`${API_URL}/products?limit=500`, {
             method: "GET",
-            credentials: "include"
+            headers: getAuthHeaders(),
         });
 
         if (!response.ok) {
@@ -134,11 +144,11 @@ async function fetchAddons() {
         const [addonsResponse, sizesResponse] = await Promise.all([
             fetch(`${API_URL}/addons?active_only=false&addon_type=ADDON`, {
                 method: "GET",
-                credentials: "include"
+                headers: getAuthHeaders(),
             }),
             fetch(`${API_URL}/addons?active_only=false&addon_type=SIZE`, {
                 method: "GET",
-                credentials: "include"
+                headers: getAuthHeaders(),
             })
         ]);
 
@@ -155,7 +165,7 @@ async function fetchInventoryReference() {
     try {
         const response = await fetch(`${API_URL}/inventory/master?only_active=true&limit=500`, {
             method: "GET",
-            credentials: "include"
+            headers: getAuthHeaders(),
         });
 
         if (!response.ok) {
@@ -399,19 +409,17 @@ async function saveProduct() {
         if (productId) {
             response = await fetch(`${API_URL}/products/${productId}`, {
                 method: "PATCH",
-                credentials: "include",
-                headers: {
+                headers: getAuthHeaders({
                     "Content-Type": "application/json"
-                },
+                }),
                 body: JSON.stringify(payload)
             });
         } else {
             response = await fetch(`${API_URL}/products/`, {
                 method: "POST",
-                credentials: "include",
-                headers: {
+                headers: getAuthHeaders({
                     "Content-Type": "application/json"
-                },
+                }),
                 body: JSON.stringify(payload)
             });
         }
@@ -440,10 +448,9 @@ async function toggleProduct(productId, currentActive) {
     try {
         const response = await fetch(`${API_URL}/products/${productId}`, {
             method: "PATCH",
-            credentials: "include",
-            headers: {
+            headers: getAuthHeaders({
                 "Content-Type": "application/json"
-            },
+            }),
             body: JSON.stringify({
                 is_active: !currentActive,
                 is_available: !currentActive
@@ -472,10 +479,9 @@ async function deleteProduct(productId) {
     try {
         const response = await fetch(`${API_URL}/products/${productId}`, {
             method: "PATCH",
-            credentials: "include",
-            headers: {
+            headers: getAuthHeaders({
                 "Content-Type": "application/json"
-            },
+            }),
             body: JSON.stringify({
                 is_active: false,
                 is_available: false
@@ -513,7 +519,7 @@ async function loadRecipe() {
     try {
         const response = await fetch(`${API_URL}/products/${productId}/recipe`, {
             method: "GET",
-            credentials: "include"
+            headers: getAuthHeaders(),
         });
 
         const result = await response.json();
@@ -595,10 +601,9 @@ async function saveBulkRecipe() {
 
         const response = await fetch(`${API_URL}/products/${productId}/recipe`, {
             method: "PUT",
-            credentials: "include",
-            headers: {
+            headers: getAuthHeaders({
                 "Content-Type": "application/json"
-            },
+            }),
             body: JSON.stringify({ items })
         });
 

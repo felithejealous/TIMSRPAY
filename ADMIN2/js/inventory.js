@@ -3,8 +3,10 @@ let currentView = "grid";
 let currentId = null;
 let historyCache = [];
 const LOW_STOCK_THRESHOLD = 10;
+const API_BASE_URL = window.API_URL || "";
+
 function getToken() {
-return localStorage.getItem("token");
+    return localStorage.getItem("token");
 }
 
 function getAuthHeaders(extra = {}) {
