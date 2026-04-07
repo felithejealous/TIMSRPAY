@@ -142,11 +142,11 @@ async function fetchProducts() {
 async function fetchAddons() {
     try {
         const [addonsResponse, sizesResponse] = await Promise.all([
-            fetch(`${API_URL}/addons/?active_only=false&addon_type=ADDON`, {
+            fetch(`${API_BASE_URL}/addons/?active_only=false&addon_type=ADDON`, {
                 method: "GET",
                 headers: getAuthHeaders(),
             }),
-            fetch(`${API_URL}/addons/?active_only=false&addon_type=SIZE`, {
+            fetch(`${API_BASE_URL}/addons/?active_only=false&addon_type=SIZE`, {
                 method: "GET",
                 headers: getAuthHeaders(),
             })
@@ -155,16 +155,19 @@ async function fetchAddons() {
         const addonsResult = addonsResponse.ok ? await addonsResponse.json() : [];
         const sizesResult = sizesResponse.ok ? await sizesResponse.json() : [];
 
-        console.log("addonsResult:", addonsResult);
-        console.log("sizesResult:", sizesResult);
+        console.log("ADDONS RAW:", addonsResult);
+        console.log("SIZES RAW:", sizesResult);
 
         addonsCache = Array.isArray(addonsResult)
             ? addonsResult
-            : (addonsResult.data || addonsResult.items || addonsResult.addons || []);
+            : (addonsResult.data || addonsResult.items || addonsResult.addons || addonsResult.results || []);
 
         sizesCache = Array.isArray(sizesResult)
             ? sizesResult
-            : (sizesResult.data || sizesResult.items || sizesResult.addons || []);
+            : (sizesResult.data || sizesResult.items || sizesResult.addons || sizesResult.results || []);
+
+        console.log("ADDONS CACHE:", addonsCache);
+        console.log("SIZES CACHE:", sizesCache);
     } catch (error) {
         console.error("Add-ons fetch error:", error);
         addonsCache = [];
@@ -290,6 +293,8 @@ function renderProducts() {
 function renderOptions() {
     const addonTbody = document.getElementById("addonTableBody");
     const sizeTbody = document.getElementById("sizeTableBody");
+    console.log("renderOptions addonsCache:", addonsCache);
+    console.log("renderOptions sizesCache:", sizesCache);
 
     if (addonTbody) addonTbody.innerHTML = "";
     if (sizeTbody) sizeTbody.innerHTML = "";
@@ -309,8 +314,8 @@ function renderOptions() {
                         <td class="font-bold text-yellow-400">₱${Number(item.price || 0).toFixed(2)}</td>
                         <td>${item.is_active ? "ACTIVE" : "INACTIVE"}</td>
                         <td>
-                            <button class="text-xs font-bold text-sub hover:text-white mr-4" onclick="editOption(${item.id ?? item.addon_id}, 'addon')">EDIT</button>
-                            <button class="text-xs font-bold text-red-500/50 hover:text-red-500" onclick="deleteOption(${item.id ?? item.addon_id}, 'addon')">DEL</button>
+                            <button class="text-xs font-bold text-sub hover:text-white mr-4" onclick="editOption(${item.id}, 'addon')">EDIT</button>
+                            <button class="text-xs font-bold text-red-500/50 hover:text-red-500" onclick="deleteOption(${item.id}, 'addon')">DEL</button>
                         </td>
                     </tr>
                 `;
