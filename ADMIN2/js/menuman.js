@@ -4,6 +4,7 @@ let sizesCache = [];
 let inventoryCache = [];
 let categoriesCache = [];
 let tempProductImage = "";
+const API_BASE_URL = window.API_URL || "";
 function getToken() {
 return localStorage.getItem("token");
 }
@@ -103,7 +104,7 @@ function previewImage(input) {
 
 async function fetchCategories() {
     try {
-        const response = await fetch(`${API_URL}/products/categories`, {
+        const response = await fetch(`${API_URL}/products/categories/`, {
             method: "GET",
             headers: getAuthHeaders(),
         });
@@ -122,7 +123,7 @@ async function fetchCategories() {
 
 async function fetchProducts() {
     try {
-        const response = await fetch(`${API_URL}/products?limit=500`, {
+        const response = await fetch(`${API_URL}/products?limit=500/`, {
             method: "GET",
             headers: getAuthHeaders(),
         });
@@ -163,7 +164,7 @@ async function fetchAddons() {
 
 async function fetchInventoryReference() {
     try {
-        const response = await fetch(`${API_URL}/inventory/master?only_active=true&limit=500`, {
+        const response = await fetch(`${API_URL}/inventory/master?only_active=true&limit=500/`, {
             method: "GET",
             headers: getAuthHeaders(),
         });
