@@ -88,14 +88,19 @@ async function handleLoginSubmit(e) {
             })
         });
 
-        if (data.role === "admin") {
-            showStatus("loginStatus", "Login successful. Redirecting...", "success");
-            setTimeout(() => {
-                window.location.href = "../html/dashboard.html";
-            }, 700);
-        } else {
-            showStatus("loginStatus", "Not authorized for admin panel.");
-        }
+if (data.role === "admin") {
+    localStorage.setItem("token", data.access_token);
+    localStorage.setItem("user_role", data.role);
+    localStorage.setItem("user_email", data.email || email);
+    if (data.user_id) localStorage.setItem("user_id", String(data.user_id));
+
+    showStatus("loginStatus", "Login successful. Redirecting...", "success");
+    setTimeout(() => {
+        window.location.href = "../html/dashboard.html";
+    }, 700);
+} else {
+    showStatus("loginStatus", "Not authorized for admin panel.");
+}
     } catch (err) {
         console.error("Login error:", err);
         showStatus("loginStatus", err.message || "Server error.");
