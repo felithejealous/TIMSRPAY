@@ -152,11 +152,19 @@ async function fetchAddons() {
             })
         ]);
 
-        const addonsResult = addonsResponse.ok ? await addonsResponse.json() : { data: [] };
-        const sizesResult = sizesResponse.ok ? await sizesResponse.json() : { data: [] };
+        const addonsResult = addonsResponse.ok ? await addonsResponse.json() : [];
+        const sizesResult = sizesResponse.ok ? await sizesResponse.json() : [];
 
-        addonsCache = addonsResult.data || [];
-        sizesCache = sizesResult.data || [];
+        console.log("addonsResult:", addonsResult);
+        console.log("sizesResult:", sizesResult);
+
+        addonsCache = Array.isArray(addonsResult)
+            ? addonsResult
+            : (addonsResult.data || addonsResult.items || addonsResult.addons || []);
+
+        sizesCache = Array.isArray(sizesResult)
+            ? sizesResult
+            : (sizesResult.data || sizesResult.items || sizesResult.addons || []);
     } catch (error) {
         console.error("Add-ons fetch error:", error);
         addonsCache = [];
