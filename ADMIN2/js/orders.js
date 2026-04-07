@@ -4,7 +4,17 @@ let autoRefreshInterval = null;
 
 const AUTO_REFRESH_MS = 5000;
 const ORDER_DISPLAY_OFFSET = 900;
+function getToken() {
+    return localStorage.getItem("token");
+}
 
+function getAuthHeaders(extra = {}) {
+    const token = getToken();
+    return {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...extra
+    };
+}
 function $(id) {
     return document.getElementById(id);
 }
@@ -44,8 +54,8 @@ function getOrderDisplayId(order) {
 
 async function apiFetch(url, options = {}) {
     const response = await fetch(url, {
-        credentials: "include",
-        ...options
+        ...options,
+        headers: getAuthHeaders(options.headers || {})
     });
 
     let result = {};
