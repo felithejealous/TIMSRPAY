@@ -31,7 +31,7 @@ function resolveAnnouncementImage(imageUrl) {
   const clean = String(imageUrl || "").trim();
   if (!clean) return "";
   if (clean.startsWith("http://") || clean.startsWith("https://")) return clean;
-  if (clean.startsWith("/")) return `${API_BASE}${clean}`;
+  if (clean.startsWith("/")) return `${API_URL}${clean}`;
   return clean;
 }
 
@@ -66,7 +66,7 @@ function resolveBestSellerImage(imageUrl, productName = "") {
 
   if (!clean) return fallback;
   if (clean.startsWith("http://") || clean.startsWith("https://")) return clean;
-  if (clean.startsWith("/")) return `${API_BASE}${clean}`;
+  if (clean.startsWith("/")) return `${API_URL}${clean}`;
   return clean;
 }
 
@@ -101,7 +101,7 @@ function resolveMenuImage(imageUrl, productName = "") {
 
   if (!clean) return fallback;
   if (clean.startsWith("http://") || clean.startsWith("https://")) return clean;
-  if (clean.startsWith("/")) return `${API_BASE}${clean}`;
+  if (clean.startsWith("/")) return `${API_URL}${clean}`;
   return clean;
 }
 
@@ -294,7 +294,7 @@ async function loadPublicAnnouncements() {
   try {
     grid.innerHTML = `<div class="loading-card">Loading announcements...</div>`;
 
-    const res = await fetch(`${API_BASE}/announcements/public`);
+    const res = await fetch(`${API_URL}/announcements/public`);
     const data = await res.json();
 
     if (!res.ok) {
@@ -345,7 +345,7 @@ async function loadPublicFaq() {
   try {
     grid.innerHTML = `<div class="loading-card">Loading FAQs...</div>`;
 
-    const res = await fetch(`${API_BASE}/faq/public`);
+    const res = await fetch(`${API_URL}/faq/public`);
     const data = await res.json();
 
     if (!res.ok) {
@@ -395,7 +395,7 @@ async function loadBestSellers() {
   try {
     grid.innerHTML = `<div class="loading-card">Loading best sellers...</div>`;
 
-    const res = await fetch(`${API_BASE}/products/best-sellers/monthly?limit=3`);
+    const res = await fetch(`${API_URL}/products/best-sellers/monthly?limit=3`);
     const data = await res.json();
 
     if (!res.ok) {
@@ -451,7 +451,7 @@ async function loadPublicMenu() {
   try {
     grid.innerHTML = `<div class="loading-card">Loading menu...</div>`;
 
-    const res = await fetch(`${API_BASE}/products/menu`);
+    const res = await fetch(`${API_URL}/products/menu`);
     const data = await res.json();
 
     if (!res.ok) {
@@ -525,7 +525,7 @@ async function loadPublicFeedback() {
   try {
     container.innerHTML = `<div class="loading-card">Loading feedback...</div>`;
 
-    const res = await fetch(`${API_BASE}/feedback/public?limit=20`);
+    const res = await fetch(`${API_URL}/feedback/public?limit=20`);
     const data = await res.json();
 
     if (!res.ok) {
@@ -596,7 +596,7 @@ function bindInquiryModal() {
         status.innerText = "Sending inquiry...";
       }
 
-      const res = await fetch(`${API_BASE}/inquiries/public`, {
+      const res = await fetch(`${API_URL}/inquiries/public`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -665,7 +665,7 @@ function bindPublicFeedbackForm() {
         status.innerText = "Submitting feedback...";
       }
 
-      const res = await fetch(`${API_BASE}/feedback/`, {
+      const res = await fetch(`${API_URL}/feedback/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -741,7 +741,7 @@ function resolvePromoImage(imageUrl) {
   const clean = String(imageUrl || "").trim();
   if (!clean) return "";
   if (clean.startsWith("http://") || clean.startsWith("https://")) return clean;
-  if (clean.startsWith("/")) return `${API_BASE}${clean}`;
+  if (clean.startsWith("/")) return `${API_URL}${clean}`;
   return clean;
 }
 function buildPromoRedirectUrl(code = "") {
@@ -837,7 +837,7 @@ async function loadPublicPromos() {
     bannerDots.innerHTML = "";
     codeList.innerHTML = `<div class="loading-card">Loading promo codes...</div>`;
 
-    const res = await fetch(`${API_BASE}/promo/public/featured`);
+    const res = await fetch(`${API_URL}/promo/public/featured`);
     const data = await res.json();
 
     if (!res.ok) {
