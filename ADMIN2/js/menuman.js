@@ -117,7 +117,8 @@ async function fetchCategories() {
         }
 
         const result = await response.json();
-        categoriesCache = result.data || [];
+        // FIX: handle both direct array and { data: [] } response shapes
+        categoriesCache = Array.isArray(result) ? result : (result.data || []);
     } catch (error) {
         console.error("Categories fetch error:", error);
         categoriesCache = [];
@@ -136,12 +137,14 @@ async function fetchProducts() {
         }
 
         const result = await response.json();
-        productsCache = result.data || [];
+        // FIX: handle both direct array and { data: [] } response shapes
+        productsCache = Array.isArray(result) ? result : (result.data || []);
     } catch (error) {
         console.error("Products fetch error:", error);
         productsCache = [];
     }
 }
+
 async function fetchAddons() {
     try {
         const [addonsResponse, sizesResponse] = await Promise.all([
@@ -155,26 +158,19 @@ async function fetchAddons() {
             })
         ]);
 
-        const addonsResult = addonsResponse.ok ? await addonsResponse.json() : { data: [] };
-        const sizesResult = sizesResponse.ok ? await sizesResponse.json() : { data: [] };
+        const addonsResult = addonsResponse.ok ? await addonsResponse.json() : [];
+        const sizesResult = sizesResponse.ok ? await sizesResponse.json() : [];
 
-        console.log("ADDONS RESULT:", addonsResult);
-        console.log("SIZES RESULT:", sizesResult);
-        addonsCache = Array.isArray(addonsResult) 
-            ? addonsResult 
-            : (addonsResult.data || []);
-
-        sizesCache = Array.isArray(sizesResult) 
-            ? sizesResult 
-            : (sizesResult.data || []);s
-        console.log("addonsCache:", addonsCache);
-        console.log("sizesCache:", sizesCache);
+        // FIX: handle both direct array and { data: [] } response shapes
+        addonsCache = Array.isArray(addonsResult) ? addonsResult : (addonsResult.data || []);
+        sizesCache = Array.isArray(sizesResult) ? sizesResult : (sizesResult.data || []);
     } catch (error) {
         console.error("Add-ons fetch error:", error);
         addonsCache = [];
         sizesCache = [];
     }
 }
+
 async function fetchInventoryReference() {
     try {
         const response = await fetch(`${API_URL}/inventory/master/?only_active=true&limit=500`, {
@@ -187,12 +183,14 @@ async function fetchInventoryReference() {
         }
 
         const result = await response.json();
-        inventoryCache = result.data || [];
+        // FIX: handle both direct array and { data: [] } response shapes
+        inventoryCache = Array.isArray(result) ? result : (result.data || []);
     } catch (error) {
         console.error("Inventory reference fetch error:", error);
         inventoryCache = [];
     }
 }
+
 function populateCategorySelect() {
     const select = document.getElementById("prodCategory");
     if (!select) return;
@@ -542,9 +540,8 @@ async function loadRecipe() {
             throw new Error(result.detail || `Recipe fetch failed: ${response.status}`);
         }
 
-        const lines = (result.data || []).map(item =>
-            `${item.ingredient_name}: ${item.qty_used}`
-        );
+        const data = Array.isArray(result) ? result : (result.data || []);
+        const lines = data.map(item => `${item.ingredient_name}: ${item.qty_used}`);
 
         const displayText = lines.length ? lines.join("\n") : "No recipe assigned yet.";
 
