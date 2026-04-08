@@ -1,3 +1,4 @@
+const API_URL = window.API_URL || "http://127.0.0.1:8000";
 const optionCards = document.querySelectorAll(".option-card");
 const nextBtn = document.getElementById("nextBtn");
 
