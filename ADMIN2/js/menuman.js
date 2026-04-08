@@ -44,6 +44,9 @@ function switchTab(tab, btn) {
     if (btn) {
         btn.classList.add("active");
     }
+    if(tab === "addons" || tab === "sizes"){
+        renderOptions();
+    }
 }
 
 function openModal(modalId) {
