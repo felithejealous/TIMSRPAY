@@ -1,8 +1,5 @@
 console.log("logout.js loaded");
 
-// TANGGALIN ang: const API_URL = "http://127.0.0.1:8000";
-// Gamitin na lang yung API_URL galing sa authGuard.js
-
 document.addEventListener("DOMContentLoaded", function () {
     const logoutBtn = document.getElementById("logoutBtn");
     console.log("logoutBtn:", logoutBtn);
@@ -17,14 +14,20 @@ document.addEventListener("DOMContentLoaded", function () {
                     method: "POST",
                     credentials: "include"
                 });
-                const data = await response.json();
+
+                const data = await response.json().catch(() => ({}));
                 console.log("Logout response:", data);
             } catch (error) {
                 console.error("Logout error:", error);
             }
 
-            localStorage.removeItem('teoDmango_Store');
-            localStorage.removeItem('theme');
+            localStorage.removeItem("token");
+            localStorage.removeItem("user_id");
+            localStorage.removeItem("user_role");
+            localStorage.removeItem("teoDmango_Store");
+            localStorage.removeItem("theme");
+            sessionStorage.clear();
+
             window.location.href = "../html/login.html";
         });
     }
