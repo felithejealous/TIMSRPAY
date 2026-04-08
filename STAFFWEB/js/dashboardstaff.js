@@ -1,6 +1,4 @@
 const body = document.body;
-
-
 const welcomeText = document.getElementById("welcomeText");
 const liveClock = document.getElementById("live-clock");
 const liveDate = document.getElementById("live-date");
