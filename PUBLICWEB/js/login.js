@@ -1,6 +1,14 @@
 const RESET_CODE_COOLDOWN_SECONDS = 60;
 let cooldownInterval = null;
 
+function clearCustomerSession() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("user_id");
+  localStorage.removeItem("user_email");
+  localStorage.removeItem("user_role");
+  localStorage.removeItem("resetEmail");
+}
+
 function toggleTheme() {
   const body = document.body;
   const isDark = body.getAttribute("data-theme") === "dark";
@@ -11,6 +19,7 @@ function show(id) {
   document
     .querySelectorAll(".auth-view")
     .forEach((view) => view.classList.remove("active"));
+
   const target = document.getElementById(id);
   if (target) target.classList.add("active");
 
@@ -44,12 +53,14 @@ function clearSendCodeCooldown() {
   }
 
   const { button, text } = getCooldownElements();
+
   if (button) {
     button.disabled = false;
     button.textContent = "Send Reset Code";
     button.style.opacity = "1";
     button.style.cursor = "pointer";
   }
+
   if (text) {
     text.textContent = "";
   }
@@ -67,6 +78,7 @@ function restoreSendCodeCooldown() {
   }
 
   const expiresAt = Number(stored);
+
   if (!Number.isFinite(expiresAt) || expiresAt <= Date.now()) {
     clearSendCodeCooldown();
     return;
@@ -97,18 +109,27 @@ function restoreSendCodeCooldown() {
   cooldownInterval = setInterval(tick, 1000);
 }
 
+async function parseJsonSafe(response) {
+  try {
+    return await response.json();
+  } catch {
+    return {};
+  }
+}
+
 async function handleLogin(e) {
   e.preventDefault();
 
-  const email = document.getElementById("loginEmail").value.trim();
-  const password = document.getElementById("loginPassword").value.trim();
+  const email = document.getElementById("loginEmail")?.value.trim();
+  const password = document.getElementById("loginPassword")?.value.trim();
   const errorBox = document.getElementById("loginError");
 
   if (errorBox) errorBox.textContent = "";
 
   if (!email || !password) {
-    if (errorBox)
+    if (errorBox) {
       errorBox.textContent = "Please enter your email and password.";
+    }
     return;
   }
 
@@ -126,7 +147,7 @@ async function handleLogin(e) {
       credentials: "include",
     });
 
-    const data = await response.json();
+    const data = await parseJsonSafe(response);
     console.log("LOGIN RESPONSE:", data);
 
     if (!response.ok) {
@@ -145,20 +166,22 @@ async function handleLogin(e) {
         await fetch(`${API_URL}/auth/logout`, {
           method: "POST",
           credentials: "include",
+          headers: {
+            Authorization: `Bearer ${data.access_token || localStorage.getItem("token") || ""}`,
+          },
         });
       } catch (logoutError) {
         console.error("Forced logout error:", logoutError);
       }
 
-      localStorage.removeItem("token");
-      localStorage.removeItem("user_id");
-      localStorage.removeItem("user_email");
-      localStorage.removeItem("user_role");
+      clearCustomerSession();
       return;
     }
 
     if (data.access_token) {
       localStorage.setItem("token", data.access_token);
+    } else {
+      localStorage.removeItem("token");
     }
 
     localStorage.setItem("user_id", data.user_id || "");
@@ -168,17 +191,18 @@ async function handleLogin(e) {
     window.location.href = "welcome.html";
   } catch (error) {
     console.error("Login error:", error);
-    if (errorBox)
-      errorBox.textContent =
-        "Something went wrong while connecting to the server.";
+    if (errorBox) {
+      errorBox.textContent = "Something went wrong while connecting to the server.";
+    }
   }
 }
+
 async function handleRegister(e) {
   e.preventDefault();
 
-  const name = document.getElementById("registerName").value.trim();
-  const email = document.getElementById("registerEmail").value.trim();
-  const password = document.getElementById("registerPassword").value.trim();
+  const name = document.getElementById("registerName")?.value.trim();
+  const email = document.getElementById("registerEmail")?.value.trim();
+  const password = document.getElementById("registerPassword")?.value.trim();
 
   if (!name || !email || !password) {
     alert("Please fill out all fields.");
@@ -187,13 +211,13 @@ async function handleRegister(e) {
 
   try {
     const response = await fetch(
-  `${API_URL}/auth/register?full_name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`,
+      `${API_URL}/auth/register?full_name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`,
       {
         method: "POST",
-      },
+      }
     );
 
-    const data = await response.json();
+    const data = await parseJsonSafe(response);
     console.log("REGISTER RESPONSE:", data);
 
     if (!response.ok) {
@@ -209,10 +233,12 @@ async function handleRegister(e) {
 
     const strengthBar = document.getElementById("strengthBar");
     const strengthText = document.getElementById("strengthText");
+
     if (strengthBar) {
       strengthBar.style.width = "0%";
       strengthBar.style.background = "transparent";
     }
+
     if (strengthText) {
       strengthText.textContent = "";
     }
@@ -225,10 +251,8 @@ async function handleRegister(e) {
 }
 
 async function sendCode() {
-  const email = document.getElementById("email").value.trim();
-  const cooldownUntil = Number(
-    localStorage.getItem("forgotResetCooldownUntil") || "0",
-  );
+  const email = document.getElementById("email")?.value.trim();
+  const cooldownUntil = Number(localStorage.getItem("forgotResetCooldownUntil") || "0");
 
   if (cooldownUntil > Date.now()) {
     restoreSendCodeCooldown();
@@ -241,14 +265,14 @@ async function sendCode() {
   }
 
   try {
-  const response = await fetch(
-    `${API_URL}/auth/forgot-password/request?email=${encodeURIComponent(email)}`,
+    const response = await fetch(
+      `${API_URL}/auth/forgot-password/request?email=${encodeURIComponent(email)}`,
       {
         method: "POST",
-      },
+      }
     );
 
-    const data = await response.json();
+    const data = await parseJsonSafe(response);
     console.log("FORGOT PASSWORD REQUEST RESPONSE:", data);
 
     if (!response.ok) {
@@ -274,8 +298,8 @@ async function sendCode() {
 
 async function resetPassword() {
   const email = localStorage.getItem("resetEmail");
-  const code = document.getElementById("resetCode").value.trim();
-  const newPassword = document.getElementById("newPassword").value.trim();
+  const code = document.getElementById("resetCode")?.value.trim();
+  const newPassword = document.getElementById("newPassword")?.value.trim();
 
   if (!email) {
     alert("Missing reset email. Please request a code again.");
@@ -289,22 +313,19 @@ async function resetPassword() {
   }
 
   try {
-  const response = await fetch(
-    `${API_URL}/auth/forgot-password/confirm`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: email,
-          code: code,
-          new_password: newPassword,
-        }),
+    const response = await fetch(`${API_URL}/auth/forgot-password/confirm`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify({
+        email,
+        code,
+        new_password: newPassword,
+      }),
+    });
 
-    const data = await response.json();
+    const data = await parseJsonSafe(response);
     console.log("RESET PASSWORD RESPONSE:", data);
 
     if (!response.ok) {
@@ -315,9 +336,14 @@ async function resetPassword() {
     alert(data.message || "Password reset successful!");
 
     localStorage.removeItem("resetEmail");
-    document.getElementById("email").value = "";
-    document.getElementById("resetCode").value = "";
-    document.getElementById("newPassword").value = "";
+
+    const emailInput = document.getElementById("email");
+    const resetCodeInput = document.getElementById("resetCode");
+    const newPasswordInput = document.getElementById("newPassword");
+
+    if (emailInput) emailInput.value = "";
+    if (resetCodeInput) resetCodeInput.value = "";
+    if (newPasswordInput) newPasswordInput.value = "";
 
     show("login");
   } catch (error) {
@@ -328,7 +354,7 @@ async function resetPassword() {
 
 function togglePassword(inputId, icon) {
   const input = document.getElementById(inputId);
-  if (!input) return;
+  if (!input || !icon) return;
 
   if (input.type === "password") {
     input.type = "text";
