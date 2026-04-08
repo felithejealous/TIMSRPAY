@@ -30,15 +30,21 @@ let ordersRefreshInterval = null;
 ========================= */
 function getAPIURL() {
     if (!window.API_URL) {
-        throw new Error("API_URL is not defined. Make sure authGuard.js loads first.");
+        throw new Error("API_URL is not defined. Make sure config.js loads first.");
     }
     return window.API_URL;
 }
-
 async function fetchJSON(url, options = {}) {
+    const mergedHeaders = getAuthHeaders(options.headers || {});
+
+    console.log("fetchJSON URL:", url);
+    console.log("fetchJSON token:", localStorage.getItem("token"));
+    console.log("fetchJSON headers:", mergedHeaders);
+
     const response = await fetch(url, {
         credentials: "include",
-        ...options
+        ...options,
+        headers: mergedHeaders
     });
 
     let data = null;
@@ -47,6 +53,8 @@ async function fetchJSON(url, options = {}) {
     } catch {
         data = null;
     }
+
+    console.log("fetchJSON status:", response.status, "response:", data);
 
     if (!response.ok) {
         throw new Error(data?.detail || data?.message || `Request failed: ${response.status}`);
@@ -170,6 +178,7 @@ function getReceivedAmount(receipt) {
 
     return null;
 }
+
 function getChangeAmount(receipt) {
     if (receipt?.change_amount !== null && receipt?.change_amount !== undefined) {
         return Number(receipt.change_amount);
@@ -182,7 +191,6 @@ function getChangeAmount(receipt) {
 
     return null;
 }
-
 
 /* =========================
    LOGOUT
@@ -197,11 +205,16 @@ function setupLogout() {
         try {
             await fetch(`${getAPIURL()}/auth/logout`, {
                 method: "POST",
-                credentials: "include"
+                credentials: "include",
+                headers: getAuthHeaders()
             });
         } catch (error) {
             console.error("Logout failed:", error);
         } finally {
+            localStorage.removeItem("token");
+            localStorage.removeItem("staff_user_id");
+            localStorage.removeItem("staff_user_email");
+            localStorage.removeItem("staff_user_role");
             window.location.href = "loginstaff.html";
         }
     });
