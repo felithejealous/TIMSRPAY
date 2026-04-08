@@ -158,8 +158,13 @@ async function fetchAddons() {
         const addonsResult = addonsResponse.ok ? await addonsResponse.json() : { data: [] };
         const sizesResult = sizesResponse.ok ? await sizesResponse.json() : { data: [] };
 
+        console.log("ADDONS RESULT:", addonsResult);
+        console.log("SIZES RESULT:", sizesResult);
+
         addonsCache = addonsResult.data || [];
         sizesCache = sizesResult.data || [];
+        console.log("addonsCache:", addonsCache);
+        console.log("sizesCache:", sizesCache);
     } catch (error) {
         console.error("Add-ons fetch error:", error);
         addonsCache = [];
