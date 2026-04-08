@@ -1,4 +1,3 @@
-
 function isAllowedStaffRole(role) {
     const allowedRoles = ["cashier", "staff"];
     return allowedRoles.includes((role || "").toLowerCase());
@@ -23,9 +22,7 @@ async function checkStaffAuth() {
         const response = await fetch(`${window.API_URL}/auth/me`, {
             method: "GET",
             credentials: "include",
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
+            headers: getAuthHeaders()
         });
 
         let data = {};

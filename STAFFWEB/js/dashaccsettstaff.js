@@ -1,5 +1,4 @@
 let currentStaffProfile = null;
-
 /* =========================
    HELPERS
 ========================= */

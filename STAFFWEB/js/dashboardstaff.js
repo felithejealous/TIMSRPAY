@@ -29,7 +29,17 @@ let currentOpenStatus = null;
 let logsCache = [];
 let timerInterval = null;
 let checklistCache = null;
+function getToken() {
+    return localStorage.getItem("token");
+}
 
+function getAuthHeaders(extra = {}) {
+    const token = getToken();
+    return {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...extra
+    };
+}
 /* =========================
    HELPERS
 ========================= */
