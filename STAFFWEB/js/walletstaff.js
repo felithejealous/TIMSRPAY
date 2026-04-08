@@ -5,6 +5,17 @@ const walletGrid = document.getElementById("walletGrid");
 let walletResultsCache = [];
 let walletSearchDebounce = null;
 let lastSearchValue = "";
+function getToken() {
+    return localStorage.getItem("token");
+}
+
+function getAuthHeaders(extra = {}) {
+    const token = getToken();
+    return {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...extra
+    };
+}
 function getAPIURL() {
     if (!window.API_URL) {
         throw new Error("API_URL is not defined. Make sure authGuard.js loads first.");
