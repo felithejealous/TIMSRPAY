@@ -1,5 +1,3 @@
-const API_BASE_URL = window.API_URL || "http://127.0.0.1:8000";
-
 function clearCustomerSession() {
   localStorage.removeItem("token");
   localStorage.removeItem("user_id");
