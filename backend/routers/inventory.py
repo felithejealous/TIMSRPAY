@@ -489,36 +489,38 @@ def get_inventory_master_movements(
 ):
     item = _get_item(db, inventory_master_id)
 
-    try:
-        rows = (
-            db.query(
-                InventoryMasterMovement.id,
-                InventoryMasterMovement.inventory_master_id,
-                InventoryMasterMovement.change_qty
-            )
-            .filter(InventoryMasterMovement.inventory_master_id == inventory_master_id)
-            .order_by(InventoryMasterMovement.id.desc())
-            .limit(limit)
-            .all()
-        )
+    rows = (
+        db.query(InventoryMasterMovement)
+        .filter(InventoryMasterMovement.inventory_master_id == inventory_master_id)
+        .order_by(InventoryMasterMovement.id.desc())
+        .limit(limit)
+        .all()
+    )
 
-        return {
-            "inventory_master_id": inventory_master_id,
-            "item_name": item.name,
-            "count": len(rows),
-            "data": [
-                {
-                    "id": r.id,
-                    "change_qty": float(Decimal(str(r.change_qty))),
-                    "reason": None,
-                    "ref_order_id": None,
-                    "created_at": None,
-                }
-                for r in rows
-            ],
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Movement debug error: {str(e)}")
+    data = []
+
+    for r in rows:
+        try:
+            serialized = {
+                "id": r.id,
+                "change_qty": float(r.change_qty) if r.change_qty is not None else 0,
+                "reason": r.reason or "-",
+                "ref_order_id": getattr(r, "ref_order_id", None),
+                "created_at": str(r.created_at) if getattr(r, "created_at", None) else None,
+            }
+            data.append(serialized)
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Movement row serialization failed for row id={getattr(r, 'id', None)}: {str(e)}"
+            )
+
+    return {
+        "inventory_master_id": inventory_master_id,
+        "item_name": item.name,
+        "count": len(data),
+        "data": data,
+    }
 # =========================================================
 # 9) LOW STOCK ALERTS (ADMIN)
 # =========================================================
