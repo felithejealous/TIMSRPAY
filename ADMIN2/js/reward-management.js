@@ -1,5 +1,15 @@
 const rewardCatalogState = { rewards: [], filtered: [], products: [] };
+function getToken() {
+return localStorage.getItem("token");
+}
 
+function getAuthHeaders(extra = {}) {
+    const token = getToken();
+    return {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...extra
+    };
+}
 function escapeHtml(value) {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
@@ -154,7 +164,7 @@ async function fetchProductsForRewardDropdown() {
   try {
     const res = await fetch(`${API_URL}/products?active_only=true&limit=500`, {
       method: "GET",
-      credentials: "include",
+      headers: getAuthHeaders(),
     });
     const data = await res.json();
 
@@ -185,7 +195,7 @@ async function fetchRewardCatalog() {
   try {
     const res = await fetch(`${API_URL}/rewards/admin/catalog`, {
       method: "GET",
-      credentials: "include",
+      headers: getAuthHeaders(),
     });
     const data = await res.json();
 
@@ -241,8 +251,9 @@ async function submitRewardForm(event) {
 
     const res = await fetch(endpoint, {
       method,
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders({
+        "Content-Type": "application/json"
+      }) ,
       body: JSON.stringify(payload),
     });
 
@@ -275,7 +286,7 @@ async function toggleRewardStatus(rewardId) {
   try {
     const res = await fetch(`${API_URL}/rewards/admin/catalog/${rewardId}/toggle`, {
       method: "PATCH",
-      credentials: "include",
+      headers: getAuthHeaders(),
     });
     const data = await res.json();
 

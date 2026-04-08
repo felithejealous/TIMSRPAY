@@ -6,7 +6,17 @@ let activeTab = "inquiriesTab";
 let currentInquiryId = null;
 let currentFeedbackId = null;
 let currentFaqId = null;
+function getToken() {
+return localStorage.getItem("token");
+}
 
+function getAuthHeaders(extra = {}) {
+    const token = getToken();
+    return {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...extra
+    };
+}
 /* =========================
    HELPERS
 ========================= */
@@ -44,7 +54,9 @@ function renderScrollableText(text, widthClass = "table-cell-medium") {
 
 async function fetchJSON(url, options = {}) {
     const response = await fetch(url, {
-        credentials: "include",
+        headers: getAuthHeaders({
+            "Content-Type": "application/json"
+        }),
         ...options
     });
 

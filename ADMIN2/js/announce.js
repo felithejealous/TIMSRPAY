@@ -1,7 +1,17 @@
 let announcementsCache = [];
 let currentEditingAnnouncement = null;
 let selectedImageFile = null;
+function getToken() {
+return localStorage.getItem("token");
+}
 
+function getAuthHeaders(extra = {}) {
+    const token = getToken();
+    return {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...extra
+    };
+}
 function escapeHtml(value) {
     return String(value ?? "")
         .replace(/&/g, "&amp;")
@@ -140,7 +150,7 @@ async function fetchAnnouncements() {
     try {
         const response = await fetch(`${API_URL}/announcements?limit=100`, {
             method: "GET",
-            credentials: "include"
+            headers: getAuthHeaders(),
         });
 
         const result = await response.json();
@@ -428,7 +438,7 @@ async function submitAnnouncementForm(event) {
 
         const response = await fetch(url, {
             method,
-            credentials: "include",
+            headers: getAuthHeaders(),
             body: formData
         });
 
@@ -454,7 +464,7 @@ async function deleteAnnouncement(id) {
     try {
         const response = await fetch(`${API_URL}/announcements/${id}`, {
             method: "DELETE",
-            credentials: "include"
+            headers: getAuthHeaders(),
         });
 
         const result = await response.json();
@@ -512,7 +522,7 @@ async function patchAnnouncement(id, payload, successMessage) {
 
         const response = await fetch(`${API_URL}/announcements/${id}`, {
             method: "PATCH",
-            credentials: "include",
+            headers: getAuthHeaders(),
             body: formData
         });
 

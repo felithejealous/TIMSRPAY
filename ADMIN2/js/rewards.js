@@ -1,6 +1,16 @@
 let rewardCustomersCache = [];
 let rewardSearchTimer = null;
+function getToken() {
+return localStorage.getItem("token");
+}
 
+function getAuthHeaders(extra = {}) {
+    const token = getToken();
+    return {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...extra
+    };
+}
 function escapeHtml(value) {
     return String(value ?? "")
         .replace(/&/g, "&amp;")
@@ -29,7 +39,7 @@ async function fetchRewardsSummary() {
     try {
         const response = await fetch(`${API_URL}/rewards/admin/summary`, {
             method: "GET",
-            credentials: "include"
+            headers: getAuthHeaders(),
         });
 
         const result = await response.json();
@@ -58,7 +68,7 @@ async function fetchRewardCustomers() {
     try {
         const response = await fetch(`${API_URL}/rewards/admin/customers?q=${encodeURIComponent(q)}&limit=100`, {
             method: "GET",
-            credentials: "include"
+            headers: getAuthHeaders()
         });
 
         const result = await response.json();
@@ -196,10 +206,9 @@ async function submitClaimForm(event) {
     try {
         const response = await fetch(`${API_URL}/rewards/manual/otp/request`, {
             method: "POST",
-            credentials: "include",
-            headers: {
+            headers: getAuthHeaders({
                 "Content-Type": "application/json"
-            },
+            }),
             body: JSON.stringify({
                 email: email,
                 order_reference: orderReference
@@ -250,10 +259,9 @@ async function submitOtpForm(event) {
     try {
         const response = await fetch(`${API_URL}/rewards/manual/otp/confirm`, {
             method: "POST",
-            credentials: "include",
-            headers: {
+            headers: getAuthHeaders({
                 "Content-Type": "application/json"
-            },
+            }),
             body: JSON.stringify({
                 email: email,
                 order_reference: orderReference,
@@ -290,7 +298,7 @@ async function openHistoryModal(userId, customerName, customerEmail) {
     try {
         const response = await fetch(`${API_URL}/rewards/admin/customer/${userId}/history`, {
             method: "GET",
-            credentials: "include"
+            headers: getAuthHeaders()
         });
 
         const result = await response.json();
