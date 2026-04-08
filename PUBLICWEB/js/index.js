@@ -1,5 +1,3 @@
-const API_BASE_URL = window.API_URL || "http://127.0.0.1:8000";
-
 let allAnnouncementsCache = [];
 let allMenuCache = [];
 let allFaqCache = [];
