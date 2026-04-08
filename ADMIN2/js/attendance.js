@@ -6,7 +6,17 @@ let complianceSummary = null;
 let attendanceFilter = "all";
 let searchDebounceTimer = null;
 let currentAttendanceStaff = null;
+function getToken() {
+return localStorage.getItem("token");
+}
 
+function getAuthHeaders(extra = {}) {
+    const token = getToken();
+    return {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...extra
+    };
+}
 function escapeHtml(value) {
     return String(value ?? "")
         .replace(/&/g, "&amp;")
@@ -468,7 +478,7 @@ async function fetchStaff() {
     try {
         const response = await fetch(`${API_URL}/staff/`, {
             method: "GET",
-            credentials: "include"
+            headers: getAuthHeaders(),
         });
 
         const result = await response.json();
@@ -490,7 +500,7 @@ async function fetchAttendanceLogs() {
     try {
         const response = await fetch(`${API_URL}/attendance/logs?limit=200`, {
             method: "GET",
-            credentials: "include"
+            headers: getAuthHeaders(),
         });
 
         const result = await response.json();
@@ -516,7 +526,7 @@ async function fetchAttendanceStatuses() {
             try {
                 const response = await fetch(`${API_URL}/attendance/status/${staff.user_id}`, {
                     method: "GET",
-                    credentials: "include"
+                    headers: getAuthHeaders(),
                 });
 
                 const result = await response.json();
@@ -558,7 +568,7 @@ async function fetchClosingChecklists() {
         const localDate = getLocalDateString();
         const response = await fetch(`${API_URL}/attendance/closing-checklists?checklist_date=${encodeURIComponent(localDate)}`, {
             method: "GET",
-            credentials: "include"
+            headers: getAuthHeaders(),
         });
 
         const result = await response.json();
@@ -583,7 +593,7 @@ async function fetchComplianceSummary() {
         const localDate = getLocalDateString();
         const response = await fetch(`${API_URL}/attendance/closing-checklist/compliance-summary?checklist_date=${encodeURIComponent(localDate)}`, {
             method: "GET",
-            credentials: "include"
+            headers: getAuthHeaders(),
         });
 
         const result = await response.json();
@@ -718,7 +728,7 @@ async function downloadAttendance() {
 
         const response = await fetch(url, {
             method: "GET",
-            credentials: "include"
+            headers: getAuthHeaders(),
         });
 
         if (!response.ok) {

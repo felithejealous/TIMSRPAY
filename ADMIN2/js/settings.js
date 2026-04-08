@@ -47,7 +47,17 @@ const AVAILABLE_MODAL_IDS = new Set(["langModal", "notifModal", "accountModal", 
 const COMING_SOON_MODAL_IDS = new Set([
     "profileModal"
 ]);
+function getToken() {
+return localStorage.getItem("token");
+}
 
+function getAuthHeaders(extra = {}) {
+    const token = getToken();
+    return {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...extra
+    };
+}
 function escapeHTML(value) {
     return String(value ?? "")
         .replaceAll("&", "&amp;")
@@ -132,7 +142,9 @@ function showToast(message, iconClass = "fa-circle-check") {
 
 async function fetchJSON(url, options = {}) {
     const response = await fetch(url, {
-        credentials: "include",
+        headers: getAuthHeaders({
+            "Content-Type": "application/json"
+        }),
         ...options
     });
 

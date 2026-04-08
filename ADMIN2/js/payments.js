@@ -22,7 +22,17 @@ const translations = {
         nav_set: "Settings"
     }
 };
+function getToken() {
+return localStorage.getItem("token");
+}
 
+function getAuthHeaders(extra = {}) {
+    const token = getToken();
+    return {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...extra
+    };
+}
 function formatPeso(value) {
     return `₱${Number(value || 0).toLocaleString("en-PH", {
         minimumFractionDigits: 2,
@@ -96,7 +106,7 @@ function downloadFile(url, filenameFallback = "report.csv") {
 async function fetchJson(url) {
     const response = await fetch(url, {
         method: "GET",
-        credentials: "include"
+        headers: getAuthHeaders(),
     });
 
     const result = await response.json();
