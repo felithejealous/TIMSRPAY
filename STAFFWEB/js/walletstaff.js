@@ -176,7 +176,6 @@ function renderWalletGrid() {
 
     updateSummaryCards();
 }
-
 async function searchWallets(forceValue = null) {
     const q = String(forceValue ?? walletSearchInput?.value ?? "").trim();
     lastSearchValue = q;
@@ -188,16 +187,12 @@ async function searchWallets(forceValue = null) {
     }
 
     try {
-        const response = await fetch(`${getAPIURL()}/wallet/lookup?q=${encodeURIComponent(q)}&limit=50`, {
-            method: "GET",
-            credentials: "include"
-        });
-
-        const result = await response.json();
-
-        if (!response.ok) {
-            throw new Error(result.detail || `Wallet lookup failed: ${response.status}`);
-        }
+        const result = await fetchJSON(
+            `${getAPIURL()}/wallet/lookup?q=${encodeURIComponent(q)}&limit=50`,
+            {
+                method: "GET"
+            }
+        );
 
         walletResultsCache = Array.isArray(result?.data) ? result.data : [];
         renderWalletGrid();
@@ -207,7 +202,6 @@ async function searchWallets(forceValue = null) {
         renderWalletGrid();
     }
 }
-
 function handleWalletSearch(event) {
     const value = event?.target?.value ?? "";
     clearTimeout(walletSearchDebounce);
