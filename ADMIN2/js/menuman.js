@@ -161,12 +161,12 @@ async function fetchAddons() {
         console.log("ADDONS RESULT:", addonsResult);
         console.log("SIZES RESULT:", sizesResult);
         addonsCache = Array.isArray(addonsResult) 
-    ? addonsResult 
-    : (addonsResult.data || []);
+            ? addonsResult 
+            : (addonsResult.data || []);
 
-sizesCache = Array.isArray(sizesResult) 
-    ? sizesResult 
-    : (sizesResult.data || []);s
+        sizesCache = Array.isArray(sizesResult) 
+            ? sizesResult 
+            : (sizesResult.data || []);s
         console.log("addonsCache:", addonsCache);
         console.log("sizesCache:", sizesCache);
     } catch (error) {
