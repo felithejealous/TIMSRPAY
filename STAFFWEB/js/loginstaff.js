@@ -58,6 +58,13 @@ function isAllowedStaffRole(role) {
     return allowedRoles.includes((role || "").toLowerCase());
 }
 
+function clearStaffSession() {
+    localStorage.removeItem("token");
+    localStorage.removeItem("staff_user_id");
+    localStorage.removeItem("staff_user_email");
+    localStorage.removeItem("staff_user_role");
+}
+
 async function loginStaff(email, password) {
     const formData = new URLSearchParams();
     formData.append("email", email);
@@ -87,9 +94,14 @@ async function loginStaff(email, password) {
 }
 
 async function getCurrentUser() {
+    const token = localStorage.getItem("token");
+
     const response = await fetch(`${API_URL}/auth/me`, {
         method: "GET",
-        credentials: "include"
+        credentials: "include",
+        headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {})
+        }
     });
 
     let data = {};
@@ -121,11 +133,22 @@ async function handleLogin(event) {
     setButtonLoading(true);
 
     try {
-        await loginStaff(email, password);
+        clearStaffSession();
+
+        const loginData = await loginStaff(email, password);
+
+        if (loginData.access_token) {
+            localStorage.setItem("token", loginData.access_token);
+        }
+
+        localStorage.setItem("staff_user_id", loginData.user_id || "");
+        localStorage.setItem("staff_user_email", loginData.email || "");
+        localStorage.setItem("staff_user_role", loginData.role || "");
 
         const currentUser = await getCurrentUser();
 
         if (!isAllowedStaffRole(currentUser.role)) {
+            clearStaffSession();
             throw new Error("This account is not allowed to access the staff portal.");
         }
 
@@ -137,6 +160,7 @@ async function handleLogin(event) {
 
     } catch (error) {
         console.error("Staff login error:", error);
+        clearStaffSession();
         setLoginMessage(error.message || "Unable to login right now.", "error");
     } finally {
         setButtonLoading(false);

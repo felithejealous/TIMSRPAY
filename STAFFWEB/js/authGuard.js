@@ -5,11 +5,28 @@ function isAllowedStaffRole(role) {
     return allowedRoles.includes((role || "").toLowerCase());
 }
 
+function clearStaffSession() {
+    localStorage.removeItem("token");
+    localStorage.removeItem("staff_user_id");
+    localStorage.removeItem("staff_user_email");
+    localStorage.removeItem("staff_user_role");
+}
+
 async function checkStaffAuth() {
     try {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            window.location.href = "loginstaff.html";
+            return;
+        }
+
         const response = await fetch(`${window.API_URL}/auth/me`, {
             method: "GET",
-            credentials: "include"
+            credentials: "include",
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
         });
 
         let data = {};
@@ -20,11 +37,13 @@ async function checkStaffAuth() {
         }
 
         if (!response.ok) {
+            clearStaffSession();
             window.location.href = "loginstaff.html";
             return;
         }
 
         if (!isAllowedStaffRole(data.role)) {
+            clearStaffSession();
             alert("Unauthorized access.");
             window.location.href = "loginstaff.html";
             return;
@@ -34,6 +53,7 @@ async function checkStaffAuth() {
 
     } catch (error) {
         console.error("Staff auth check error:", error);
+        clearStaffSession();
         window.location.href = "loginstaff.html";
     }
 }
