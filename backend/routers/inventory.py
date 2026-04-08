@@ -489,29 +489,36 @@ def get_inventory_master_movements(
 ):
     item = _get_item(db, inventory_master_id)
 
-    rows = (
-        db.query(InventoryMasterMovement)
-        .filter(InventoryMasterMovement.inventory_master_id == inventory_master_id)
-        .order_by(InventoryMasterMovement.id.desc())
-        .limit(limit)
-        .all()
-    )
+    try:
+        rows = (
+            db.query(
+                InventoryMasterMovement.id,
+                InventoryMasterMovement.inventory_master_id,
+                InventoryMasterMovement.change_qty
+            )
+            .filter(InventoryMasterMovement.inventory_master_id == inventory_master_id)
+            .order_by(InventoryMasterMovement.id.desc())
+            .limit(limit)
+            .all()
+        )
 
-    return {
-        "inventory_master_id": inventory_master_id,
-        "item_name": item.name,
-        "count": len(rows),
-        "data": [
-            {
-                "id": r.id,
-                "change_qty": float(Decimal(str(r.change_qty))),
-                "reason": r.reason,
-                "ref_order_id": getattr(r, "ref_order_id", None),
-                "created_at": str(getattr(r, "created_at", "")) if hasattr(r, "created_at") else None,
-            }
-            for r in rows
-        ],
-    }
+        return {
+            "inventory_master_id": inventory_master_id,
+            "item_name": item.name,
+            "count": len(rows),
+            "data": [
+                {
+                    "id": r.id,
+                    "change_qty": float(Decimal(str(r.change_qty))),
+                    "reason": None,
+                    "ref_order_id": None,
+                    "created_at": None,
+                }
+                for r in rows
+            ],
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Movement debug error: {str(e)}")
 # =========================================================
 # 9) LOW STOCK ALERTS (ADMIN)
 # =========================================================
