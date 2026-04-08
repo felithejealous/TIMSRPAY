@@ -87,7 +87,7 @@ function resolveProductImageUrl(imageUrl, productName = "") {
   const clean = String(imageUrl).trim();
   if (!clean) return fallback;
   if (clean.startsWith("http://") || clean.startsWith("https://")) return clean;
-  if (clean.startsWith("/")) return `http://127.0.0.1:8000${clean}`;
+  if (clean.startsWith("/")) return `${API_URL}${clean}`;
 
   return clean;
 }
@@ -160,7 +160,7 @@ async function loadMonthlyBestSellers() {
 
     grid.innerHTML = `<div class="announcement-empty">Loading best sellers...</div>`;
 
-    const res = await fetch("http://127.0.0.1:8000/products/best-sellers/monthly?limit=4");
+    const res = await fetch(`${API_URL}/products/best-sellers/monthly?limit=4`);
     const data = await res.json();
 
     if (!res.ok) {
@@ -210,10 +210,10 @@ async function loadWelcomeOrders() {
 
     const selectedFilter = filterEl ? filterEl.value : "30";
 
-    let endpoint = "http://127.0.0.1:8000/orders/my?limit=50&days=30";
-    if (selectedFilter === "7") endpoint = "http://127.0.0.1:8000/orders/my?limit=50&days=7";
-    else if (selectedFilter === "paid") endpoint = "http://127.0.0.1:8000/orders/my?limit=50&days=30&status=paid";
-    else if (selectedFilter === "completed") endpoint = "http://127.0.0.1:8000/orders/my?limit=50&days=30&status=completed";
+    let endpoint = `${API_URL}/orders/my?limit=50&days=30`;
+    if (selectedFilter === "7") endpoint = `${API_URL}/orders/my?limit=50&days=7`;
+    else if (selectedFilter === "paid") endpoint = `${API_URL}/orders/my?limit=50&days=30&status=paid`;
+    else if (selectedFilter === "completed") endpoint = `${API_URL}/orders/my?limit=50&days=30&status=completed`;
 
     const res = await fetch(endpoint, {
       headers: { Authorization: "Bearer " + token },
@@ -293,7 +293,7 @@ async function loadWelcomeOrders() {
 }
 async function loadAnnouncements() {
   try {
-    const res = await fetch("http://127.0.0.1:8000/announcements/public");
+    const res = await fetch(`${API_URL}/announcements/public`);
     const data = await res.json();
 
     const preview = document.getElementById("announcementPreview");
@@ -329,7 +329,7 @@ async function loadAnnouncements() {
         <div class="announcement-meta">${formatAnnouncementDate(item.publish_at || item.created_at)}</div>
         ${
           item.image_url
-            ? `<img src="http://127.0.0.1:8000${item.image_url}" alt="${escapeHtml(item.title || "Announcement")}" style="width:100%;max-height:220px;object-fit:cover;border-radius:14px;margin-bottom:12px;">`
+            ? `<img src="${API_URL}${item.image_url}" alt="${escapeHtml(item.title || "Announcement")}" style="width:100%;max-height:220px;object-fit:cover;border-radius:14px;margin-bottom:12px;">`
             : ``
         }
         <div class="announcement-body">${escapeHtml(item.body || "")}</div>
@@ -364,7 +364,7 @@ async function viewReceipt(orderId) {
   rewardSection.innerHTML = "";
 
   try {
-    const res = await fetch(`http://127.0.0.1:8000/orders/${orderId}/receipt`, {
+    const res = await fetch(`${API_URL}/orders/${orderId}/receipt`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -559,7 +559,7 @@ function bindCustomerInquiryModal() {
         status.innerText = "Sending inquiry...";
       }
 
-      const res = await fetch("http://127.0.0.1:8000/inquiries/me", {
+      const res = await fetch(`${API_URL}/inquiries/me`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -733,7 +733,7 @@ function bindFeedbackModal() {
         submitData = result.data;
       } else {
         const token = localStorage.getItem("token");
-        submitRes = await fetch("http://127.0.0.1:8000/feedback/", {
+        submitRes = await fetch(`${API_URL}/feedback/`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -781,7 +781,7 @@ async function loadMyInquiries() {
   try {
     container.innerHTML = `<div class="announcement-empty">Loading your inquiries...</div>`;
 
-    const res = await fetch("http://127.0.0.1:8000/inquiries/my?limit=20", {
+    const res = await fetch(`${API_URL}/inquiries/my?limit=20`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
