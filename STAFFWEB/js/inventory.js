@@ -20,10 +20,6 @@ let inventoryItems = [];
 let currentFilter = "all";
 let currentCategory = "all";
 let currentSearch = "";
-
-/* =========================
-   HELPERS
-========================= */
 function getAPIURL() {
     if (!window.API_URL) {
         throw new Error("API_URL is not defined. Make sure authGuard.js loads first.");
@@ -33,8 +29,8 @@ function getAPIURL() {
 async function fetchJSON(url, options = {}) {
     const response = await fetch(url, {
         credentials: "include",
-        headers: getAuthHeaders(options.headers || {}),
-        ...options
+        ...options,
+        headers: getAuthHeaders(options.headers || {})
     });
 
     let data = null;
@@ -50,8 +46,9 @@ async function fetchJSON(url, options = {}) {
 
     return data;
 }
-
-
+/* =========================
+   HELPERS
+========================= */
 function escapeHTML(value) {
     return String(value ?? "")
         .replaceAll("&", "&amp;")

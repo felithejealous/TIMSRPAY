@@ -2,30 +2,17 @@ let rewardsMembersCache = [];
 let filteredMembersCache = [];
 let memberSearchTimer = null;
 let selectedRedeemCustomer = null;
-
-/* =========================
-   HELPERS
-========================= */
-function escapeHTML(value) {
-    return String(value ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-}
-
 function getAPIURL() {
     if (!window.API_URL) {
         throw new Error("API_URL is not defined. Make sure authGuard.js loads first.");
     }
     return window.API_URL;
 }
-
 async function fetchJSON(url, options = {}) {
     const response = await fetch(url, {
         credentials: "include",
-        ...options
+        ...options,
+        headers: getAuthHeaders(options.headers || {})
     });
 
     let data = null;
@@ -41,7 +28,17 @@ async function fetchJSON(url, options = {}) {
 
     return data;
 }
-
+/* =========================
+   HELPERS
+========================= */
+function escapeHTML(value) {
+    return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
 function formatPoints(value) {
     return `${Number(value || 0).toLocaleString()} pts`;
 }

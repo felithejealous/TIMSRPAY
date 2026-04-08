@@ -21,6 +21,26 @@ function getAPIURL() {
     }
     return window.API_URL;
 }
+async function fetchJSON(url, options = {}) {
+    const response = await fetch(url, {
+        credentials: "include",
+        ...options,
+        headers: getAuthHeaders(options.headers || {})
+    });
+
+    let data = null;
+    try {
+        data = await response.json();
+    } catch {
+        data = null;
+    }
+
+    if (!response.ok) {
+        throw new Error(data?.detail || data?.message || `Request failed: ${response.status}`);
+    }
+
+    return data;
+}
 
 function escapeHTML(value) {
     return String(value ?? "")
