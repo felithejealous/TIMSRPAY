@@ -1,33 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Signing you in...</title>
 </head>
+
 <body>
   <p>Signing you in, please wait...</p>
 
   <script>
     console.log("FULL URL:", window.location.href);
 
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get("token");
+    function clearCustomerSession() {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user_id");
+      localStorage.removeItem("user_email");
+      localStorage.removeItem("user_role");
+      localStorage.removeItem("resetEmail");
+    }
 
-    if (!token) {
-    document.body.innerHTML = "<p>Login failed: No token received.</p>";
-    throw new Error("Missing token");
-  }
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get("token");
 
-    // save token
-    localStorage.setItem("token", token);
+      if (!token) {
+        document.body.innerHTML = "<p>Login failed: No token received.</p>";
+        throw new Error("Missing token");
+      }
 
-    // remove token from URL (security)
-    window.history.replaceState({}, document.title, window.location.pathname);
+      clearCustomerSession();
+      localStorage.setItem("token", token);
 
-    // redirect to welcome page
-    window.location.href = "welcome.html";
-
+      window.history.replaceState({}, document.title, window.location.pathname);
+      window.location.href = "welcome.html";
+    } catch (error) {
+      console.error("OAuth callback error:", error);
+      setTimeout(() => {
+        window.location.href = "login.html";
+      }, 1500);
+    }
   </script>
 </body>
+
 </html>

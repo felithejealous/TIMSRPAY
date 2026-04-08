@@ -570,9 +570,8 @@ def _google_env(name: str) -> str:
         raise HTTPException(status_code=500, detail=f"Missing env var: {name}")
     return v
 
-
 @router.get("/google/login")
-def google_login():
+def google_login(request: Request):
     client_id = _google_env("GOOGLE_CLIENT_ID")
     redirect_uri = _google_env("GOOGLE_REDIRECT_URI")
     state = secrets.token_urlsafe(24)
@@ -589,18 +588,17 @@ def google_login():
 
     resp = RedirectResponse(url=f"{GOOGLE_AUTH_URL}?{urlencode(params)}")
 
+    is_https = request.url.scheme == "https"
+
     resp.set_cookie(
         key="oauth_state",
         value=state,
         httponly=True,
         samesite="lax",
-        secure=False,
+        secure=is_https,
         max_age=600,
-        domain="127.0.0.1",
     )
     return resp
-
-
 @router.get("/google/callback")
 def google_callback(
     request: Request,
@@ -618,8 +616,7 @@ def google_callback(
     client_id = _google_env("GOOGLE_CLIENT_ID")
     client_secret = _google_env("GOOGLE_CLIENT_SECRET")
     redirect_uri = _google_env("GOOGLE_REDIRECT_URI")
-
-    frontend_redirect = os.getenv("FRONTEND_OAUTH_REDIRECT")
+    frontend_redirect = _google_env("FRONTEND_OAUTH_REDIRECT")
 
     token_res = requests.post(
         GOOGLE_TOKEN_URL,
@@ -661,19 +658,20 @@ def google_callback(
     if user:
         if getattr(user, "google_id", None) and user.google_id != google_id:
             raise HTTPException(status_code=400, detail="This email is already linked to another Google account")
+
         user.google_id = google_id
         user.oauth_provider = "google"
         user.profile_picture = picture
 
         existing_profile = db.query(CustomerProfile).filter(CustomerProfile.user_id == user.id).first()
         if not existing_profile and full_name:
-             first_name, last_name = split_full_name(full_name)
-             db.add(CustomerProfile(
-             user_id=user.id,
-            full_name=full_name,
-            first_name=first_name,
-            last_name=last_name
-    ))
+            first_name, last_name = split_full_name(full_name)
+            db.add(CustomerProfile(
+                user_id=user.id,
+                full_name=full_name,
+                first_name=first_name,
+                last_name=last_name
+            ))
     else:
         customer_role_id = _get_role_id(db, "customer")
         user = User(
@@ -694,9 +692,9 @@ def google_callback(
             wallet_code=_generate_unique_wallet_code(db),
         ))
         db.add(RewardWallet(user_id=user.id, total_points=0))
+
         profile_name = full_name or email.split("@")[0]
         first_name, last_name = split_full_name(profile_name)
-
         db.add(CustomerProfile(
             user_id=user.id,
             full_name=profile_name,
@@ -719,10 +717,15 @@ def google_callback(
     q = urlencode({"token": access_token_jwt})
     resp = RedirectResponse(url=f"{frontend_redirect}?{q}")
 
-    resp.delete_cookie("oauth_state")
+    is_https = request.url.scheme == "https"
+    resp.delete_cookie(
+        key="oauth_state",
+        httponly=True,
+        samesite="lax",
+        secure=is_https,
+    )
+
     return resp
-
-
 # ============================================================
 # ME
 # ============================================================
