@@ -42,21 +42,28 @@ async function fetchJSON(url, options = {}) {
 function formatMoney(value) {
     return `₱${Number(value || 0).toFixed(2)}`;
 }
-
 function formatDateTime(value) {
     if (!value) return "--";
-    const date = new Date(value);
+
+    const normalizedValue =
+        typeof value === "string" && !/[zZ]|[+\-]\d{2}:\d{2}$/.test(value)
+            ? `${value}Z`
+            : value;
+
+    const date = new Date(normalizedValue);
     if (Number.isNaN(date.getTime())) return "--";
+
     return date.toLocaleString("en-PH", {
+        timeZone: "Asia/Manila",
         year: "numeric",
         month: "numeric",
         day: "numeric",
         hour: "numeric",
         minute: "2-digit",
-        second: "2-digit"
+        second: "2-digit",
+        hour12: true
     });
 }
-
 function prettifyPayment(paymentMethod) {
     const pm = String(paymentMethod || "").toLowerCase();
     if (pm === "wallet") return "TeoPay";
