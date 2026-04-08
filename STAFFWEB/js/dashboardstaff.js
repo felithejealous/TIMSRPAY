@@ -29,39 +29,17 @@ let currentOpenStatus = null;
 let logsCache = [];
 let timerInterval = null;
 let checklistCache = null;
-function getToken() {
-    return localStorage.getItem("token");
-}
-
-function getAuthHeaders(extra = {}) {
-    const token = getToken();
-    return {
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        ...extra
-    };
-}
-/* =========================
-   HELPERS
-========================= */
 function getAPIURL() {
     if (!window.API_URL) {
         throw new Error("API_URL is not defined. Make sure authGuard.js loads first.");
     }
     return window.API_URL;
 }
-
-function getLocalDateString() {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, "0");
-    const day = String(now.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-}
-
 async function fetchJSON(url, options = {}) {
     const response = await fetch(url, {
         credentials: "include",
-        ...options
+        ...options,
+        headers: getAuthHeaders(options.headers || {})
     });
 
     let data = null;
@@ -77,6 +55,29 @@ async function fetchJSON(url, options = {}) {
 
     return data;
 }
+function getToken() {
+    return localStorage.getItem("token");
+}
+
+function getAuthHeaders(extra = {}) {
+    const token = getToken();
+    return {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...extra
+    };
+}
+/* =========================
+   HELPERS
+========================= */
+
+function getLocalDateString() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+}
+
 
 function escapeHTML(value) {
     return String(value ?? "")
