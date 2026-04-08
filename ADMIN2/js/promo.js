@@ -47,6 +47,20 @@ function resetPromoForm() {
     document.getElementById("promoValidFrom").value = "";
     document.getElementById("promoValidUntil").value = "";
 }
+function resolveBannerImageUrl(imageUrl) {
+    const value = String(imageUrl || "").trim();
+    if (!value) return "";
+
+    if (value.startsWith("http://") || value.startsWith("https://") || value.startsWith("data:image")) {
+        return value;
+    }
+
+    if (value.startsWith("/")) {
+        return `${API_URL}${value}`;
+    }
+
+    return `${API_URL}/${value.replace(/^\/+/, "")}`;
+}
 
 function openPromoModal() {
     resetPromoForm();
@@ -225,7 +239,7 @@ function renderBannerList() {
     promoBannersCache.forEach(item => {
         list.innerHTML += `
             <div class="banner-card">
-                <img src="${item.image_url}" class="banner-thumb" alt="Banner">
+                <img src="${resolveBannerImageUrl(item.image_url)}" class="banner-thumb" alt="Banner">
                 <div class="flex items-center justify-between gap-4 mb-2">
                     <div class="min-w-0">
                         <p class="font-black text-sm truncate">${escapeHtml(item.title || "Campaign Banner")}</p>
