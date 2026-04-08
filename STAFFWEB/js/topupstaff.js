@@ -95,20 +95,13 @@ function sanitizeMemberURL(userId) {
     const cleanUrl = `${window.location.pathname}?user_id=${encodeURIComponent(String(userId))}`;
     window.history.replaceState({}, "", cleanUrl);
 }
-
 async function fetchMemberByUserId(userId) {
-    const response = await fetch(`${getAPIURL()}/wallet/member/${encodeURIComponent(userId)}`, {
-        method: "GET",
-        credentials: "include"
-    });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-        throw new Error(result.detail || `Failed to load wallet member: ${response.status}`);
-    }
-
-    return result;
+    return await fetchJSON(
+        `${getAPIURL()}/wallet/member/${encodeURIComponent(userId)}`,
+        {
+            method: "GET"
+        }
+    );
 }
 
 function loadSelectedMember(member) {
@@ -141,7 +134,6 @@ function loadSelectedMember(member) {
             : "";
     }
 }
-
 async function quickSearchAndRedirect() {
     const q = String(memberSearchInput?.value || "").trim();
     if (!q) {
@@ -150,16 +142,12 @@ async function quickSearchAndRedirect() {
     }
 
     try {
-        const response = await fetch(`${getAPIURL()}/wallet/lookup?q=${encodeURIComponent(q)}&limit=10`, {
-            method: "GET",
-            credentials: "include"
-        });
-
-        const result = await response.json();
-
-        if (!response.ok) {
-            throw new Error(result.detail || `Wallet lookup failed: ${response.status}`);
-        }
+        const result = await fetchJSON(
+            `${getAPIURL()}/wallet/lookup?q=${encodeURIComponent(q)}&limit=10`,
+            {
+                method: "GET"
+            }
+        );
 
         const rows = Array.isArray(result?.data) ? result.data : [];
 
@@ -280,9 +268,8 @@ async function processReload() {
     try {
         if (processReloadBtn) processReloadBtn.disabled = true;
 
-        const response = await fetch(`${getAPIURL()}/wallet/topup`, {
+        const result = await fetchJSON(`${getAPIURL()}/wallet/topup`, {
             method: "POST",
-            credentials: "include",
             headers: {
                 "Content-Type": "application/json"
             },
@@ -291,12 +278,6 @@ async function processReload() {
                 amount: amount
             })
         });
-
-        const result = await response.json();
-
-        if (!response.ok) {
-            throw new Error(result.detail || `Top-up failed: ${response.status}`);
-        }
 
         selectedMember.balance = Number(result.balance || 0);
         loadSelectedMember(selectedMember);
