@@ -117,7 +117,7 @@ async function handleLogin(e) {
     formData.append("email", email);
     formData.append("password", password);
 
-    const response = await fetch("http://127.0.0.1:8000/auth/login", {
+    const response = await fetch(`${API_URL}/auth/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
@@ -142,7 +142,7 @@ async function handleLogin(e) {
       }
 
       try {
-        await fetch("http://127.0.0.1:8000/auth/logout", {
+        await fetch(`${API_URL}/auth/logout`, {
           method: "POST",
           credentials: "include",
         });
@@ -187,7 +187,7 @@ async function handleRegister(e) {
 
   try {
     const response = await fetch(
-      `http://127.0.0.1:8000/auth/register?full_name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`,
+  `${API_URL}/auth/register?full_name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`,
       {
         method: "POST",
       },
@@ -241,8 +241,8 @@ async function sendCode() {
   }
 
   try {
-    const response = await fetch(
-      `http://127.0.0.1:8000/auth/forgot-password/request?email=${encodeURIComponent(email)}`,
+  const response = await fetch(
+    `${API_URL}/auth/forgot-password/request?email=${encodeURIComponent(email)}`,
       {
         method: "POST",
       },
@@ -289,8 +289,8 @@ async function resetPassword() {
   }
 
   try {
-    const response = await fetch(
-      "http://127.0.0.1:8000/auth/forgot-password/confirm",
+  const response = await fetch(
+    `${API_URL}/auth/forgot-password/confirm`,
       {
         method: "POST",
         headers: {

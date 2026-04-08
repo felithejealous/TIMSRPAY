@@ -13,13 +13,21 @@ function getAuthHeaders(extra = {}) {
     };
 }
 
+async function parseJsonSafe(res) {
+    try {
+        return await res.json();
+    } catch {
+        return {};
+    }
+}
+
 async function apiGet(path) {
     const res = await fetch(`${API_BASE_URL}${path}`, {
         method: "GET",
         headers: getAuthHeaders()
     });
 
-    const data = await res.json();
+    const data = await parseJsonSafe(res);
     return { res, data };
 }
 
@@ -33,9 +41,10 @@ async function apiPost(path, body = {}, extraHeaders = {}) {
         body: JSON.stringify(body)
     });
 
-    const data = await res.json();
+    const data = await parseJsonSafe(res);
     return { res, data };
 }
+
 async function apiPut(path, body = {}, extraHeaders = {}) {
     const res = await fetch(`${API_BASE_URL}${path}`, {
         method: "PUT",
@@ -46,30 +55,10 @@ async function apiPut(path, body = {}, extraHeaders = {}) {
         body: JSON.stringify(body)
     });
 
-    const data = await res.json();
-    return { res, data };
-}async function apiPostForm(path, formData, extraHeaders = {}) {
-    const res = await fetch(`${API_BASE_URL}${path}`, {
-        method: "POST",
-        headers: {
-            ...getAuthHeaders(extraHeaders)
-        },
-        body: formData
-    });
-
-    const data = await res.json();
+    const data = await parseJsonSafe(res);
     return { res, data };
 }
 
-async function apiDelete(path, extraHeaders = {}) {
-    const res = await fetch(`${API_BASE_URL}${path}`, {
-        method: "DELETE",
-        headers: getAuthHeaders(extraHeaders)
-    });
-
-    const data = await res.json();
-    return { res, data };
-}
 async function apiPatch(path, body = {}, extraHeaders = {}) {
     const res = await fetch(`${API_BASE_URL}${path}`, {
         method: "PATCH",
@@ -80,6 +69,29 @@ async function apiPatch(path, body = {}, extraHeaders = {}) {
         body: JSON.stringify(body)
     });
 
-    const data = await res.json();
+    const data = await parseJsonSafe(res);
+    return { res, data };
+}
+
+async function apiPostForm(path, formData, extraHeaders = {}) {
+    const res = await fetch(`${API_BASE_URL}${path}`, {
+        method: "POST",
+        headers: {
+            ...getAuthHeaders(extraHeaders)
+        },
+        body: formData
+    });
+
+    const data = await parseJsonSafe(res);
+    return { res, data };
+}
+
+async function apiDelete(path, extraHeaders = {}) {
+    const res = await fetch(`${API_BASE_URL}${path}`, {
+        method: "DELETE",
+        headers: getAuthHeaders(extraHeaders)
+    });
+
+    const data = await parseJsonSafe(res);
     return { res, data };
 }
