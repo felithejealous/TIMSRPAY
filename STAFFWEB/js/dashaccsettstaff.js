@@ -7,10 +7,23 @@ function getAPIURL() {
     return window.API_URL;
 }
 
+function getToken() {
+    return localStorage.getItem("token");
+}
+
+function getAuthHeaders(extra = {}) {
+    const token = getToken();
+    return {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...extra
+    };
+}
+
 async function fetchJSON(url, options = {}) {
     const response = await fetch(url, {
         credentials: "include",
-        ...options
+        ...options,
+        headers: getAuthHeaders(options.headers || {})
     });
 
     let data = null;
@@ -257,10 +270,11 @@ async function handlePasswordChange(event) {
         alert("New password and confirm password do not match.");
         return;
     }
+
     if (currentPassword === newPassword) {
-    alert("New password must be different from current password.");
-    return;
-}
+        alert("New password must be different from current password.");
+        return;
+    }
 
     try {
         setButtonLoading(
@@ -349,7 +363,6 @@ function bindEvents() {
 ========================= */
 async function initStaffSettingsPage() {
     try {
-
         bindEvents();
         await loadStaffProfile();
     } catch (error) {
