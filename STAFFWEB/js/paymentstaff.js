@@ -42,18 +42,34 @@ let receiptData = null;
 let currentMethod = "cash";
 let tendered = 0;
 let total = 0;
+
+function getToken() {
+    return localStorage.getItem("token");
+}
+
+function getAuthHeaders(extra = {}) {
+    const token = getToken();
+    return {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...extra
+    };
+}
+
 function getAPIURL() {
     if (!window.API_URL) {
         throw new Error("API_URL is not defined. Make sure authGuard.js loads first.");
     }
     return window.API_URL;
 }
+
 async function fetchJSON(url, options = {}) {
-    const response = await fetch(url, {
+    const mergedOptions = {
         credentials: "include",
-        headers: getAuthHeaders(options.headers || {}),
-        ...options
-    });
+        ...options,
+        headers: getAuthHeaders(options.headers || {})
+    };
+
+    const response = await fetch(url, mergedOptions);
 
     let data = null;
     try {
@@ -68,7 +84,6 @@ async function fetchJSON(url, options = {}) {
 
     return data;
 }
-
 
 /* =========================
    HELPERS
@@ -110,8 +125,6 @@ function getLockedCustomerName() {
         ""
     ).trim();
 }
-
-
 
 function escapeHTML(value) {
     return String(value ?? "")
@@ -240,7 +253,8 @@ function setupLogout() {
         try {
             await fetch(`${getAPIURL()}/auth/logout`, {
                 method: "POST",
-                credentials: "include"
+                credentials: "include",
+                headers: getAuthHeaders()
             });
         } catch (error) {
             console.error("Logout failed:", error);
@@ -317,44 +331,19 @@ function renderSummary() {
     orderSubtitle.textContent = `Processing ${receiptData?.display_id || `Order #${checkoutData.order_id}`}`;
     dateTime.textContent = formatDateTime(receiptData?.created_at || new Date());
 
-    if (receiptDisplayId) {
-        receiptDisplayId.textContent = receiptData?.display_id || "-";
-    }
-
-    if (receiptRawId) {
-        receiptRawId.textContent = receiptData?.order_id ?? checkoutData?.order_id ?? "-";
-    }
-
-    if (receiptCustomerName) {
-        receiptCustomerName.textContent = resolvedCustomerName;
-    }
-
-    if (receiptOrderType) {
-        receiptOrderType.textContent = prettifyText(receiptData?.order_type || "-");
-    }
-
-    if (receiptStatus) {
-        receiptStatus.textContent = prettifyText(receiptData?.status || "-");
-    }
+    if (receiptDisplayId) receiptDisplayId.textContent = receiptData?.display_id || "-";
+    if (receiptRawId) receiptRawId.textContent = receiptData?.order_id ?? checkoutData?.order_id ?? "-";
+    if (receiptCustomerName) receiptCustomerName.textContent = resolvedCustomerName;
+    if (receiptOrderType) receiptOrderType.textContent = prettifyText(receiptData?.order_type || "-");
+    if (receiptStatus) receiptStatus.textContent = prettifyText(receiptData?.status || "-");
 
     if (receiptClaimBox) {
         const claimParts = [];
 
-        if (receiptData?.claim_message) {
-            claimParts.push(receiptData.claim_message);
-        }
-
-        if (receiptData?.claim_expires_at) {
-            claimParts.push(`Claim until: ${formatDateTime(receiptData.claim_expires_at)}`);
-        }
-
-        if (receiptData?.points_claim_method) {
-            claimParts.push(`Claim method: ${prettifyText(receiptData.points_claim_method)}`);
-        }
-
-        if (receiptData?.points_claimed_at) {
-            claimParts.push(`Claimed at: ${formatDateTime(receiptData.points_claimed_at)}`);
-        }
+        if (receiptData?.claim_message) claimParts.push(receiptData.claim_message);
+        if (receiptData?.claim_expires_at) claimParts.push(`Claim until: ${formatDateTime(receiptData.claim_expires_at)}`);
+        if (receiptData?.points_claim_method) claimParts.push(`Claim method: ${prettifyText(receiptData.points_claim_method)}`);
+        if (receiptData?.points_claimed_at) claimParts.push(`Claimed at: ${formatDateTime(receiptData.points_claimed_at)}`);
 
         if (claimParts.length) {
             receiptClaimBox.style.display = "block";
