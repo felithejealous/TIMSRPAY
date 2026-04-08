@@ -12,7 +12,10 @@ document.addEventListener("DOMContentLoaded", function () {
             try {
                 const response = await fetch(`${API_URL}/auth/logout`, {
                     method: "POST",
-                    credentials: "include"
+                    credentials: "include",
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("token") || ""}`
+                    }
                 });
 
                 const data = await response.json().catch(() => ({}));
