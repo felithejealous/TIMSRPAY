@@ -1,7 +1,17 @@
 let promoCodesCache = [];
 let promoBannersCache = [];
 let editingPromoId = null;
+function getToken() {
+return localStorage.getItem("token");
+}
 
+function getAuthHeaders(extra = {}) {
+    const token = getToken();
+    return {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...extra
+    };
+}
 function escapeHtml(value) {
     return String(value ?? "")
         .replace(/&/g, "&amp;")
@@ -66,7 +76,7 @@ async function fetchPromoSummary() {
     try {
         const response = await fetch(`${API_URL}/promo/summary`, {
             method: "GET",
-            credentials: "include"
+            headers: getAuthHeaders(),
         });
 
         if (!response.ok) {
@@ -86,7 +96,7 @@ async function fetchPromoCodes() {
     try {
         const response = await fetch(`${API_URL}/promo/codes`, {
             method: "GET",
-            credentials: "include"
+            headers: getAuthHeaders(),
         });
 
         if (!response.ok) {
@@ -107,7 +117,7 @@ async function fetchPromoBanners() {
     try {
         const response = await fetch(`${API_URL}/promo/banners`, {
             method: "GET",
-            credentials: "include"
+            headers: getAuthHeaders(),
         });
 
         if (!response.ok) {
@@ -291,7 +301,7 @@ async function addBanner() {
 
         const response = await fetch(`${API_URL}/promo/banners`, {
             method: "POST",
-            credentials: "include",
+            headers: getAuthHeaders(),
             body: formData
         });
 
@@ -353,10 +363,7 @@ async function savePromo() {
         if (promoId) {
             response = await fetch(`${API_URL}/promo/codes/${promoId}`, {
                 method: "PATCH",
-                credentials: "include",
-                headers: {
-                    "Content-Type": "application/json"
-                },
+                headers: getAuthHeaders(),
                 body: JSON.stringify({
                     title: title || null,
                     description: description || null,
@@ -397,7 +404,7 @@ async function savePromo() {
 
         response = await fetch(`${API_URL}/promo/codes`, {
             method: "POST",
-            credentials: "include",
+            headers: getAuthHeaders(),
             body: formData
         });
 
@@ -420,7 +427,7 @@ async function togglePromoCode(promoId) {
     try {
         const response = await fetch(`${API_URL}/promo/codes/${promoId}/toggle`, {
             method: "PATCH",
-            credentials: "include"
+            headers: getAuthHeaders(),
         });
 
         const result = await response.json();
@@ -443,7 +450,7 @@ async function deletePromoCode(promoId) {
     try {
         const response = await fetch(`${API_URL}/promo/codes/${promoId}`, {
             method: "DELETE",
-            credentials: "include"
+           headers: getAuthHeaders(),
         });
 
         const result = await response.json();
@@ -469,7 +476,7 @@ async function toggleBanner(bannerId) {
     try {
         const response = await fetch(`${API_URL}/promo/banners/${bannerId}/toggle`, {
             method: "PATCH",
-            credentials: "include"
+            headers: getAuthHeaders(),
         });
 
         const result = await response.json();
@@ -493,7 +500,7 @@ async function deleteBanner(bannerId) {
     try {
         const response = await fetch(`${API_URL}/promo/banners/${bannerId}`, {
             method: "DELETE",
-            credentials: "include"
+            headers: getAuthHeaders(),
         });
 
         const result = await response.json();
