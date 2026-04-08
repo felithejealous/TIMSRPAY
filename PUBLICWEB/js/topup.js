@@ -27,7 +27,51 @@ function formatWalletDisplay(walletCode) {
   const groups = clean.match(/.{1,3}/g);
   return groups ? groups.join(" ") : clean;
 }
+function parseServerDate(value) {
+  if (!value) return null;
 
+  const raw = String(value).trim();
+  if (!raw) return null;
+
+  if (raw.endsWith("Z") || /[+-]\d{2}:\d{2}$/.test(raw)) {
+    const utcDate = new Date(raw);
+    return Number.isNaN(utcDate.getTime()) ? null : utcDate;
+  }
+
+  const normalized = raw.replace(" ", "T");
+  const match = normalized.match(
+    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?(?:\.\d+)?$/
+  );
+
+  if (!match) {
+    const fallbackDate = new Date(raw);
+    return Number.isNaN(fallbackDate.getTime()) ? null : fallbackDate;
+  }
+
+  const [, year, month, day, hour, minute, second = "00"] = match;
+
+  return new Date(
+    Number(year),
+    Number(month) - 1,
+    Number(day),
+    Number(hour),
+    Number(minute),
+    Number(second)
+  );
+}
+
+function formatDateTime(dateStr) {
+  const d = parseServerDate(dateStr);
+  if (!d) return "No date";
+
+  return d.toLocaleString("en-PH", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
 function getCurrentTimestamp() {
   const now = new Date();
 
@@ -154,9 +198,9 @@ async function loadHistory(range) {
 
     container.innerHTML = data.transactions
       .map((tx) => {
-        const date = tx.created_at
-          ? new Date(tx.created_at).toLocaleString("en-PH")
-          : "No date";
+      const date = tx.created_at
+        ? formatDateTime(tx.created_at)
+        : "No date";
 
         return `
                 <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.08);gap:12px;">

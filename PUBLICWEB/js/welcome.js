@@ -128,11 +128,43 @@ function bindReceiptModal() {
     if (e.target === modal) closeReceiptModal();
   });
 }
+function parseServerDate(value) {
+  if (!value) return null;
 
+  const raw = String(value).trim();
+  if (!raw) return null;
+
+  if (raw.endsWith("Z") || /[+-]\d{2}:\d{2}$/.test(raw)) {
+    const utcDate = new Date(raw);
+    return Number.isNaN(utcDate.getTime()) ? null : utcDate;
+  }
+
+  const normalized = raw.replace(" ", "T");
+  const match = normalized.match(
+    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?(?:\.\d+)?$/
+  );
+
+  if (!match) {
+    const fallbackDate = new Date(raw);
+    return Number.isNaN(fallbackDate.getTime()) ? null : fallbackDate;
+  }
+
+  const [, year, month, day, hour, minute, second = "00"] = match;
+
+  return new Date(
+    Number(year),
+    Number(month) - 1,
+    Number(day),
+    Number(hour),
+    Number(minute),
+    Number(second)
+  );
+}
 function formatDateTime(value) {
   if (!value) return "—";
-  const d = new Date(value);
-  if (isNaN(d.getTime())) return "—";
+
+  const d = parseServerDate(value);
+  if (!d || Number.isNaN(d.getTime())) return "—";
 
   return d.toLocaleString("en-PH", {
     year: "numeric",
@@ -142,7 +174,6 @@ function formatDateTime(value) {
     minute: "2-digit",
   });
 }
-
 function escapeHtml(value) {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
@@ -314,11 +345,20 @@ async function loadAnnouncements() {
       return;
     }
 
-    const formatAnnouncementDate = (value) => {
-      if (!value) return "Latest update";
-      const d = new Date(value);
-      return isNaN(d.getTime()) ? "Latest update" : d.toLocaleString();
-    };
+const formatAnnouncementDate = (value) => {
+  if (!value) return "Latest update";
+
+  const d = parseServerDate(value);
+  return !d || Number.isNaN(d.getTime())
+    ? "Latest update"
+    : d.toLocaleString("en-PH", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      });
+};
 
     const renderAnnouncementCard = (item) => `
       <div class="announcement-card">

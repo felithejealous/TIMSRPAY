@@ -77,19 +77,49 @@ function escapeHTML(value) {
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
 }
+function parseServerDate(value) {
+    if (!value) return null;
 
+    const raw = String(value).trim();
+    if (!raw) return null;
+
+    if (raw.endsWith("Z") || /[+-]\d{2}:\d{2}$/.test(raw)) {
+        const utcDate = new Date(raw);
+        return Number.isNaN(utcDate.getTime()) ? null : utcDate;
+    }
+
+    const normalized = raw.replace(" ", "T");
+    const match = normalized.match(
+        /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?(?:\.\d+)?$/
+    );
+
+    if (!match) {
+        const fallbackDate = new Date(raw);
+        return Number.isNaN(fallbackDate.getTime()) ? null : fallbackDate;
+    }
+
+    const [, year, month, day, hour, minute, second = "00"] = match;
+
+    return new Date(
+        Number(year),
+        Number(month) - 1,
+        Number(day),
+        Number(hour),
+        Number(minute),
+        Number(second)
+    );
+}
 function formatTime(dateString) {
     if (!dateString) return "--:--";
 
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return "--:--";
+    const date = parseServerDate(dateString);
+    if (!date || Number.isNaN(date.getTime())) return "--:--";
 
-    return date.toLocaleTimeString("en-US", {
+    return date.toLocaleTimeString("en-PH", {
         hour: "2-digit",
         minute: "2-digit"
     });
 }
-
 function formatDateTimeAgo(dateString) {
     if (!dateString) return "Unknown time";
 
@@ -109,7 +139,6 @@ function formatDateTimeAgo(dateString) {
     const diffDay = Math.floor(diffHr / 24);
     return `${diffDay}d ago`;
 }
-
 function setText(el, value, fallback = "--") {
     if (!el) return;
     el.textContent = value ?? fallback;
@@ -399,7 +428,7 @@ function renderAttendance(data) {
         setText(attendanceStatus, data.attendance_status || "Timed In");
         setText(attendanceTimeIn, formatTime(data.time_in), "--:--");
 
-        const timeInDate = data.time_in ? new Date(data.time_in) : null;
+        const timeInDate = data.time_in ? parseServerDate(data.time_in) : null;
         if (timeInDate && !isNaN(timeInDate.getTime())) {
             const now = new Date();
             const diffHours = Math.max(0, (now - timeInDate) / 3600000);

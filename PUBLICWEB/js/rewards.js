@@ -11,12 +11,43 @@ const redeemQrCanvas = document.getElementById("redeemQrCanvas");
 let allTransactions = [];
 let allRewards = [];
 let currentPoints = 0;
+function parseServerDate(value) {
+  if (!value) return null;
 
+  const raw = String(value).trim();
+  if (!raw) return null;
+
+  if (raw.endsWith("Z") || /[+-]\d{2}:\d{2}$/.test(raw)) {
+    const utcDate = new Date(raw);
+    return Number.isNaN(utcDate.getTime()) ? null : utcDate;
+  }
+
+  const normalized = raw.replace(" ", "T");
+  const match = normalized.match(
+    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?(?:\.\d+)?$/
+  );
+
+  if (!match) {
+    const fallbackDate = new Date(raw);
+    return Number.isNaN(fallbackDate.getTime()) ? null : fallbackDate;
+  }
+
+  const [, year, month, day, hour, minute, second = "00"] = match;
+
+  return new Date(
+    Number(year),
+    Number(month) - 1,
+    Number(day),
+    Number(hour),
+    Number(minute),
+    Number(second)
+  );
+}
 function formatDateTime(dateStr) {
   if (!dateStr) return "--";
 
-  const d = new Date(dateStr);
-  if (isNaN(d.getTime())) return dateStr;
+  const d = parseServerDate(dateStr);
+  if (!d || Number.isNaN(d.getTime())) return dateStr;
 
   return d.toLocaleString("en-PH", {
     year: "numeric",
@@ -26,12 +57,11 @@ function formatDateTime(dateStr) {
     minute: "2-digit",
   });
 }
-
 function formatExpiry(dateStr, hasExpiry = true) {
   if (!hasExpiry || !dateStr) return "No Expiry";
 
-  const date = new Date(dateStr);
-  if (isNaN(date.getTime())) return "No Expiry";
+  const date = parseServerDate(dateStr);
+  if (!date || Number.isNaN(date.getTime())) return "No Expiry";
 
   return date.toLocaleString("en-PH", {
     year: "numeric",
@@ -42,7 +72,6 @@ function formatExpiry(dateStr, hasExpiry = true) {
     hour12: true,
   });
 }
-
 function showEmptyHistory(target, message = "No transaction history yet.") {
   if (!target) return;
 

@@ -96,21 +96,64 @@ function formatPeso(value) {
     return `₱${Number(value || 0).toFixed(2)}`;
 }
 
+function parseServerDate(value) {
+    if (!value) return null;
+
+    const raw = String(value).trim();
+    if (!raw) return null;
+
+    if (/[zZ]$|[+\-]\d{2}:\d{2}$/.test(raw)) {
+        const zonedDate = new Date(raw);
+        return Number.isNaN(zonedDate.getTime()) ? null : zonedDate;
+    }
+
+    const normalized = raw.replace(" ", "T");
+
+    const match = normalized.match(
+        /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?(?:\.\d+)?$/
+    );
+
+    if (match) {
+        const [, year, month, day, hour, minute, second = "00"] = match;
+
+        return new Date(
+            Number(year),
+            Number(month) - 1,
+            Number(day),
+            Number(hour),
+            Number(minute),
+            Number(second)
+        );
+    }
+
+    const fallbackDate = new Date(normalized);
+    return Number.isNaN(fallbackDate.getTime()) ? null : fallbackDate;
+}
+
 function formatDateTime(value) {
     if (!value) return "-";
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return "-";
-    return date.toLocaleString();
+
+    const date = parseServerDate(value);
+    if (!date) return "-";
+
+    return date.toLocaleString("en-PH", {
+        year: "numeric",
+        month: "numeric",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        second: "2-digit"
+    });
 }
 
 function formatDateTimeAgo(value) {
     if (!value) return "Unknown time";
 
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return "Unknown time";
+    const date = parseServerDate(value);
+    if (!date) return "Unknown time";
 
     const now = new Date();
-    const diffMs = now - date;
+    const diffMs = now.getTime() - date.getTime();
     const diffMin = Math.floor(diffMs / 60000);
 
     if (diffMin < 1) return "Just now";
@@ -123,6 +166,20 @@ function formatDateTimeAgo(value) {
     return `${diffDay}d ago`;
 }
 
+function isSameLocalDate(dateValue) {
+    if (!dateValue) return false;
+
+    const orderDate = parseServerDate(dateValue);
+    if (!orderDate) return false;
+
+    const now = new Date();
+
+    return (
+        orderDate.getFullYear() === now.getFullYear() &&
+        orderDate.getMonth() === now.getMonth() &&
+        orderDate.getDate() === now.getDate()
+    );
+}
 function getStatusClass(status) {
     const clean = String(status || "").toLowerCase();
 
@@ -159,8 +216,8 @@ function buildEmptyState(message) {
 function isSameLocalDate(dateValue) {
     if (!dateValue) return false;
 
-    const orderDate = new Date(dateValue);
-    if (Number.isNaN(orderDate.getTime())) return false;
+    const orderDate = parseServerDate(dateValue);
+    if (!orderDate) return false;
 
     const now = new Date();
 
