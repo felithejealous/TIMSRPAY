@@ -166,7 +166,7 @@ function getProductImageByName(name) {
     if (clean.includes("buko")) return "buko2.png";
     if (clean.includes("strawberry")) return "berry2.png";
 
-    return "mango.png";
+    return "banner.png";
 }
 
 function showMenuMessage(message) {
