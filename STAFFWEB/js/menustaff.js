@@ -40,10 +40,10 @@ function getAPIURL() {
     }
     return window.API_URL;
 }
-
 async function fetchJSON(url, options = {}) {
     const response = await fetch(url, {
         credentials: "include",
+        headers: getAuthHeaders(options.headers || {}),
         ...options
     });
 
