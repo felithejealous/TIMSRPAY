@@ -371,14 +371,14 @@
             <a href="dashboard.html" class="nav-item"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
             <a href="orders.html" class="nav-item"><i class="fa-solid fa-receipt"></i> Orders</a>
             <a href="accounts.html" class="nav-item"><i class="fa-solid fa-user-gear"></i> Accounts</a>
-            <a href="wallet.html" class="nav-item active"><i class="fa-solid fa-wallet"></i> Wallets</a>
             <a href="inventory.html" class="nav-item"><i class="fa-solid fa-boxes-stacked"></i> Inventory</a>
-            <a href="menuman.html" class="nav-item"><i class="fa-solid fa-utensils"></i> Menu Manager</a>
+            <a href="menuman.html" class="nav-item"><i class="fa-solid fa-utensils"></i> Menu Management</a>
             <a href="promo.html" class="nav-item"><i class="fa-solid fa-tags"></i> Promos</a>
-            <a href="rewards.html" class="nav-item"><i class="fa-solid fa-gift"></i> Rewards</a>
-            <a href="reward-management.html" class="nav-item"><i class="fa-solid fa-trophy"></i> Reward Catalog</a>
-            <a href="announce.html" class="nav-item"><i class="fa-solid fa-bell"></i> Announce</a>
-            <a href="engagement.html" class="nav-item"><i class="fa-solid fa-comments"></i> Engagement</a>
+            <a href="rewards.html" class="nav-item"><i class="fa-solid fa-gift"></i> Rewards Monitoring</a>
+            <a href="wallet.html" class="nav-item active"><i class="fa-solid fa-wallet"></i> Wallets Monitoring</a>
+            <a href="reward-management.html" class="nav-item"><i class="fa-solid fa-trophy"></i> Reward Management</a>
+            <a href="announce.html" class="nav-item"><i class="fa-solid fa-bell"></i> Announcements</a>
+            <a href="engagement.html" class="nav-item"><i class="fa-solid fa-comments"></i> Interactions</a>
             <a href="attendance.html" class="nav-item "><i class="fa-solid fa-user-clock"></i> Employee Shift Logs</a>
             <a href="payments.html" class="nav-item"><i class="fa-solid fa-file-arrow-down"></i> Reports</a>
             <a href="settings.html" class="nav-item"><i class="fa-solid fa-cog"></i> Settings</a>
@@ -390,7 +390,7 @@
         <header class="header-card glass">
             <div>
                 <h1 class="text-2xl font-black uppercase tracking-tighter" style="color: var(--mango-yellow);">Wallet Manager</h1>
-                <p class="text-xs font-mono opacity-60">Search, inspect, and top up customer TeoPay wallets</p>
+                <p class="text-xs font-mono opacity-60">Search and inspect customer TeoPay wallets for monitoring</p>
             </div>
             <button class="theme-toggle-circle">
                 <i class="fa-solid fa-sun" id="themeIcon"></i>
@@ -444,77 +444,51 @@
         </div>
     </main>
 
-    <div class="modal-overlay" id="walletProfileModal">
-        <div class="modal-content glass">
-            <button class="absolute top-6 right-8 text-2xl opacity-40 hover:opacity-100" onclick="closeModal('walletProfileModal')">&times;</button>
+<div class="modal-overlay" id="walletProfileModal">
+    <div class="modal-content glass">
+        <button class="absolute top-6 right-8 text-2xl opacity-40 hover:opacity-100"
+            onclick="closeModal('walletProfileModal')">&times;</button>
 
-            <div class="grid md:grid-cols-2 gap-8 mt-4">
-                <div>
-                    <h2 class="text-xl font-black uppercase text-yellow-400 mb-6">Wallet Profile</h2>
+        <div class="mt-4">
+            <h2 class="text-xl font-black uppercase text-yellow-400 mb-6">Wallet Profile</h2>
 
-                    <div class="space-y-4">
-                        <div class="info-row">
-                            <span class="font-bold text-sm">Customer</span>
-                            <span class="text-sm opacity-80" id="walletDetailName">-</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="font-bold text-sm">Email</span>
-                            <span class="text-sm opacity-80" id="walletDetailEmail">-</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="font-bold text-sm">Wallet Code</span>
-                            <span class="wallet-code-chip" id="walletDetailCode">-</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="font-bold text-sm">Current Balance</span>
-                            <span class="text-lg font-black text-yellow-400" id="walletDetailBalance">₱0.00</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="font-bold text-sm">Status</span>
-                            <span id="walletDetailStatus">-</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="font-bold text-sm">User ID</span>
-                            <span class="text-sm opacity-80" id="walletDetailUserId">-</span>
-                        </div>
-                    </div>
+            <div class="space-y-4">
+                <div class="info-row">
+                    <span class="font-bold text-sm">Customer</span>
+                    <span class="text-sm opacity-80" id="walletDetailName">-</span>
                 </div>
-
-                <div>
-                    <h2 class="text-xl font-black uppercase text-yellow-400 mb-6">Top Up Wallet</h2>
-
-                    <form id="topupForm" class="space-y-5">
-                        <input type="hidden" id="topupUserId">
-
-                        <div class="input-group">
-                            <label>Target Customer</label>
-                            <input type="text" id="topupTargetName" readonly>
-                        </div>
-
-                        <div class="input-group">
-                            <label>Wallet Code</label>
-                            <input type="text" id="topupWalletCode" readonly>
-                        </div>
-
-                        <div class="input-group">
-                            <label>Top Up Amount (₱)</label>
-                            <input type="number" id="topupAmount" min="1" step="0.01" placeholder="Enter amount">
-                        </div>
-
-                        <div class="flex gap-3 pt-4">
-                            <button type="button" class="btn-muted w-full" onclick="closeModal('walletProfileModal')">Close</button>
-                            <button type="submit" class="btn-primary w-full">Confirm Top Up</button>
-                        </div>
-                    </form>
-
-                    <p class="text-xs opacity-50 mt-4 leading-relaxed">
-                        For security, search should normally be done using customer email or full name. Wallet code can still be used when needed.
-                    </p>
+                <div class="info-row">
+                    <span class="font-bold text-sm">Email</span>
+                    <span class="text-sm opacity-80" id="walletDetailEmail">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="font-bold text-sm">Wallet Code</span>
+                    <span class="wallet-code-chip" id="walletDetailCode">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="font-bold text-sm">Current Balance</span>
+                    <span class="text-lg font-black text-yellow-400" id="walletDetailBalance">₱0.00</span>
+                </div>
+                <div class="info-row">
+                    <span class="font-bold text-sm">Status</span>
+                    <span id="walletDetailStatus">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="font-bold text-sm">User ID</span>
+                    <span class="text-sm opacity-80" id="walletDetailUserId">-</span>
                 </div>
             </div>
+
+            <div class="flex gap-3 pt-6">
+                <button type="button" class="btn-muted w-full" onclick="closeModal('walletProfileModal')">Close</button>
+            </div>
+
+            <p class="text-xs opacity-50 mt-4 leading-relaxed">
+                This admin module is for wallet monitoring only. Customer top-ups should be processed on the staff side.
+            </p>
         </div>
     </div>
-
+</div>
     <div id="toast">Success</div>
 
     <script src="../config.js"></script>

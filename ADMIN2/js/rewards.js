@@ -1,7 +1,8 @@
 let rewardCustomersCache = [];
 let rewardSearchTimer = null;
+
 function getToken() {
-return localStorage.getItem("token");
+    return localStorage.getItem("token");
 }
 
 function getAuthHeaders(extra = {}) {
@@ -11,6 +12,7 @@ function getAuthHeaders(extra = {}) {
         ...extra
     };
 }
+
 function escapeHtml(value) {
     return String(value ?? "")
         .replace(/&/g, "&amp;")
@@ -31,6 +33,7 @@ function showToast(message) {
         toast.classList.remove("show");
     }, 2500);
 }
+
 function formatPoints(value) {
     return `${Number(value || 0).toLocaleString()} pts`;
 }
@@ -117,7 +120,7 @@ function renderRewardsTable() {
             <td class="font-black text-red-500">${Number(item.total_redeemed || 0).toLocaleString()}</td>
             <td style="text-align: right;">
                 <button
-                    class="text-yellow-400 mr-3 history-btn"
+                    class="text-yellow-400 history-btn"
                     type="button"
                     title="View history"
                     data-user-id="${item.user_id}"
@@ -125,15 +128,6 @@ function renderRewardsTable() {
                     data-customer-email="${escapeHtml(item.email || "-")}"
                 >
                     <i class="fas fa-clock-rotate-left"></i>
-                </button>
-
-                <button
-                    class="text-green-400 mr-3 claim-btn"
-                    type="button"
-                    title="Manual claim"
-                    data-email="${escapeHtml(item.email || "")}"
-                >
-                    <i class="fas fa-plus"></i>
                 </button>
             </td>
         `;
@@ -149,29 +143,6 @@ function debouncedSearchCustomers() {
     }, 350);
 }
 
-function openClaimModal() {
-    const form = document.getElementById("claimForm");
-    if (form) form.reset();
-
-    const modal = document.getElementById("claimModal");
-    if (modal) modal.classList.add("show");
-}
-
-function closeClaimModal() {
-    const modal = document.getElementById("claimModal");
-    if (modal) modal.classList.remove("show");
-}
-
-function openOtpModal() {
-    const modal = document.getElementById("otpModal");
-    if (modal) modal.classList.add("show");
-}
-
-function closeOtpModal() {
-    const modal = document.getElementById("otpModal");
-    if (modal) modal.classList.remove("show");
-}
-
 function openHistoryOnly() {
     const modal = document.getElementById("historyModal");
     if (modal) modal.classList.add("show");
@@ -180,108 +151,6 @@ function openHistoryOnly() {
 function closeHistoryModal() {
     const modal = document.getElementById("historyModal");
     if (modal) modal.classList.remove("show");
-}
-
-function quickClaim(email) {
-    const emailInput = document.getElementById("claimEmail");
-    const orderInput = document.getElementById("claimOrderReference");
-
-    if (emailInput) emailInput.value = email || "";
-    if (orderInput) orderInput.value = "";
-
-    openClaimModal();
-}
-
-async function submitClaimForm(event) {
-    event.preventDefault();
-
-    const email = (document.getElementById("claimEmail")?.value || "").trim();
-    const orderReference = (document.getElementById("claimOrderReference")?.value || "").trim();
-
-    if (!email || !orderReference) {
-        alert("Customer email and order reference are required.");
-        return;
-    }
-
-    try {
-        const response = await fetch(`${API_URL}/rewards/manual/otp/request`, {
-            method: "POST",
-            headers: getAuthHeaders({
-                "Content-Type": "application/json"
-            }),
-            body: JSON.stringify({
-                email: email,
-                order_reference: orderReference
-            })
-        });
-
-        const result = await response.json();
-
-        if (!response.ok) {
-            throw new Error(result.detail || `OTP request failed: ${response.status}`);
-        }
-
-        closeClaimModal();
-
-        const otpEmail = document.getElementById("otpEmail");
-        const otpOrderReference = document.getElementById("otpOrderReference");
-        const otpCode = document.getElementById("otpCode");
-
-        if (otpEmail) otpEmail.value = email;
-        if (otpOrderReference) otpOrderReference.value = result.display_id || result.order_id || orderReference;
-        if (otpCode) otpCode.value = "";
-
-        openOtpModal();
-
-        if (result.otp_dev) {
-            alert(`DEV MODE OTP: ${result.otp_dev}`);
-        }
-
-        showToast("OTP sent");
-    } catch (error) {
-        console.error("OTP request error:", error);
-        alert(error.message || "Failed to send OTP.");
-    }
-}
-
-async function submitOtpForm(event) {
-    event.preventDefault();
-
-    const email = (document.getElementById("otpEmail")?.value || "").trim();
-    const orderReference = (document.getElementById("otpOrderReference")?.value || "").trim();
-    const otp = (document.getElementById("otpCode")?.value || "").trim();
-
-    if (!email || !orderReference || !otp) {
-        alert("Complete the OTP form first.");
-        return;
-    }
-
-    try {
-        const response = await fetch(`${API_URL}/rewards/manual/otp/confirm`, {
-            method: "POST",
-            headers: getAuthHeaders({
-                "Content-Type": "application/json"
-            }),
-            body: JSON.stringify({
-                email: email,
-                order_reference: orderReference,
-                otp: otp
-            })
-        });
-
-        const result = await response.json();
-
-        if (!response.ok) {
-            throw new Error(result.detail || `OTP confirm failed: ${response.status}`);
-        }
-
-        closeOtpModal();
-        await refreshRewardsPage();
-        showToast("Points synced");
-    } catch (error) {
-        console.error("OTP confirm error:", error);
-        alert(error.message || "Failed to confirm OTP.");
-    }
 }
 
 async function openHistoryModal(userId, customerName, customerEmail) {
@@ -360,7 +229,6 @@ function bindRewardsTableActions() {
 
     tbody.addEventListener("click", async (event) => {
         const historyBtn = event.target.closest(".history-btn");
-        const claimBtn = event.target.closest(".claim-btn");
 
         if (historyBtn) {
             const userId = Number(historyBtn.dataset.userId || 0);
@@ -373,21 +241,12 @@ function bindRewardsTableActions() {
             }
 
             await openHistoryModal(userId, customerName, customerEmail);
-            return;
-        }
-
-        if (claimBtn) {
-            const email = claimBtn.dataset.email || "";
-            quickClaim(email);
         }
     });
 }
 
 function bindRewardsEvents() {
     document.getElementById("searchInput")?.addEventListener("input", debouncedSearchCustomers);
-    document.getElementById("claimForm")?.addEventListener("submit", submitClaimForm);
-    document.getElementById("otpForm")?.addEventListener("submit", submitOtpForm);
-
     bindRewardsTableActions();
 }
 
@@ -395,9 +254,7 @@ async function initializeRewardsPage() {
     bindRewardsEvents();
     await refreshRewardsPage();
 }
-window.openClaimModal = openClaimModal;
-window.closeClaimModal = closeClaimModal;
-window.closeOtpModal = closeOtpModal;
+
 window.closeHistoryModal = closeHistoryModal;
 
 window.onload = () => {

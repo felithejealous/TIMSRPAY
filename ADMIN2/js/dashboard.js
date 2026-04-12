@@ -2,6 +2,19 @@ let charts = {};
 let modalChartInstance = null;
 let lowStockPollInterval = null;
 const LOW_STOCK_POLL_MS = 15000;
+const PH_TIMEZONE = "Asia/Manila";
+
+function getSelectedTimeframe() {
+    const filter = document.getElementById("timeframeFilter");
+    return filter?.value === "daily" ? "daily" : "weekly";
+}
+
+function updateDashboardTitle(timeframe) {
+    const titleEl = document.getElementById("dashboardTitle");
+    if (!titleEl) return;
+
+    titleEl.innerText = timeframe === "daily" ? "Daily Report" : "Weekly Report";
+}
 function getToken() {
     return localStorage.getItem("token");
 }
@@ -47,7 +60,9 @@ async function fetchInventoryMasterData() {
 
 async function fetchDashboardData() {
     try {
-        const response = await fetch(`${API_URL}/reports/dashboard/overview`, {
+        const timeframe = getSelectedTimeframe();
+
+        const response = await fetch(`${API_URL}/reports/dashboard/overview?timeframe=${encodeURIComponent(timeframe)}`, {
             method: "GET",
             headers: getAuthHeaders(),
         });
@@ -59,47 +74,67 @@ async function fetchDashboardData() {
         const data = await response.json();
         console.log("Dashboard data:", data);
 
-        await renderDashboardFromAPI(data);
+        updateDashboardTitle(timeframe);
+        await renderDashboardFromAPI(data, timeframe);
     } catch (error) {
         console.error("Dashboard error:", error);
 
         document.getElementById("statRevenue").innerText = "₱0";
         document.getElementById("statRewards").innerText = "0 pts";
         document.getElementById("statStock").innerText = "0%";
-        document.getElementById("currentDate").innerText = new Date().toDateString();
+        document.getElementById("currentDate").innerText = new Date().toLocaleDateString("en-PH", {
+            timeZone: PH_TIMEZONE,
+            year: "numeric",
+            month: "short",
+            day: "numeric"
+        });
     }
 }
-
-async function renderDashboardFromAPI(apiData) {
+async function renderDashboardFromAPI(apiData, timeframe = "weekly") {
     const isLight = document.body.classList.contains("light-theme");
     Chart.defaults.color = isLight ? "#1c1917" : "#d1d5db";
     const accent = isLight ? "#ff8c00" : "#fcdb05";
 
-    const salesToday = apiData.sales_today || {};
-    const salesDaily = apiData.sales_daily_last_7_days || [];
-    const topProducts = apiData.top_products_last_7_days || [];
-    const walletToday = apiData.wallet_today?.by_type || {};
+    const salesSummary = timeframe === "daily"
+        ? (apiData.sales_today || {})
+        : (apiData.sales_last_7_days || {});
 
-    const rewardsSummary = apiData.rewards_summary || {};
-    const rewardsSeries = apiData.rewards_issued_last_7_days || [];
+    const salesSeries = timeframe === "daily"
+        ? (apiData.sales_daily_current_day || [])
+        : (apiData.sales_daily_last_7_days || []);
+
+    const topProducts = timeframe === "daily"
+        ? (apiData.top_products_today || [])
+        : (apiData.top_products_last_7_days || []);
+
+    const paymentBreakdown = timeframe === "daily"
+        ? (apiData.payment_breakdown_today?.by_type || {})
+        : (apiData.payment_breakdown_last_7_days?.by_type || {});
+    const rewardsSummary = timeframe === "daily"
+        ? (apiData.rewards_today_summary || {})
+        : (apiData.rewards_summary || {});
+
+    const rewardsSeries = timeframe === "daily"
+        ? (apiData.rewards_issued_today || [])
+        : (apiData.rewards_issued_last_7_days || []);
+
     const stockHealth = apiData.stock_health || {};
-
     const inventoryData = await fetchInventoryMasterData();
 
-    const totalRevenue = salesToday.gross_sales || 0;
-    const rewardsIssued = rewardsSummary.total_points_issued || 0;
+    const totalRevenue = Number(salesSummary.gross_sales || 0);
+    const rewardsIssued = Number(rewardsSummary.total_points_issued || 0);
     const stockHealthPercent = Number(stockHealth.percent || 0);
 
-    document.getElementById("statRevenue").innerText = `₱${Number(totalRevenue).toLocaleString()}`;
-    document.getElementById("statRewards").innerText = `${Number(rewardsIssued).toLocaleString()} pts`;
+    document.getElementById("statRevenue").innerText = `₱${totalRevenue.toLocaleString()}`;
+    document.getElementById("statRewards").innerText = `${rewardsIssued.toLocaleString()} pts`;
     document.getElementById("statStock").innerText = `${Math.round(stockHealthPercent)}%`;
-    document.getElementById("currentDate").innerText = apiData.date || new Date().toDateString();
+    document.getElementById("currentDate").innerText = apiData.date_label || apiData.date || "-";
 
     renderChart(
         "salesChart",
         "line",
-        salesDaily.map(x => x.date),
-        salesDaily.map(x => x.total_orders),
+        salesSeries.map(x => x.label || x.date || x.hour || "-"),
+        salesSeries.map(x => Number(x.total_orders || 0)),
         accent,
         "Orders",
         true
@@ -108,8 +143,8 @@ async function renderDashboardFromAPI(apiData) {
     renderChart(
         "revenueChart",
         "bar",
-        salesDaily.map(x => x.date),
-        salesDaily.map(x => x.gross_sales),
+        salesSeries.map(x => x.label || x.date || x.hour || "-"),
+        salesSeries.map(x => Number(x.gross_sales || 0)),
         "#52c41a",
         "Revenue",
         false
@@ -128,8 +163,8 @@ async function renderDashboardFromAPI(apiData) {
     renderChart(
         "bestSellersChart",
         "bar",
-        topProducts.map(x => x.name),
-        topProducts.map(x => x.qty_sold),
+        topProducts.map(x => x.name || "Unknown"),
+        topProducts.map(x => Number(x.qty_sold || 0)),
         accent,
         "Units",
         false
@@ -138,27 +173,26 @@ async function renderDashboardFromAPI(apiData) {
     renderChart(
         "paymentChart",
         "doughnut",
-        ["Topup", "Payment", "Refund"],
+        ["Topup", "TeoPay", "Cash", "Refund"],
         [
-            walletToday.TOPUP?.amount || 0,
-            walletToday.PAYMENT?.amount || 0,
-            walletToday.REFUND?.amount || 0
+            Number(paymentBreakdown.TOPUP?.amount || 0),
+            Number(paymentBreakdown.TEOPAY_PAYMENT?.amount || 0),
+            Number(paymentBreakdown.CASH_PAYMENT?.amount || 0),
+            Number(paymentBreakdown.REFUND?.amount || 0)
         ],
-        [accent, "#1890ff", "#ef4444"],
-        "Wallet"
+        [accent, "#1890ff", "#10b981", "#ef4444"],
+        "Payment Breakdown"
     );
-
     renderChart(
         "rewardsChart",
         "line",
-        rewardsSeries.map(x => x.date),
-        rewardsSeries.map(x => x.points_issued),
+        rewardsSeries.map(x => x.label || x.date || x.hour || "-"),
+        rewardsSeries.map(x => Number(x.points_issued || 0)),
         "#a855f7",
         "Rewards Points",
         true
     );
 }
-
 function renderChart(id, type, labels, data, color, labelName, isGradient = false) {
     const canvas = document.getElementById(id);
     if (!canvas) return;
@@ -437,6 +471,13 @@ window.onload = () => {
         document.body.classList.add("light-theme");
         document.getElementById("themeIcon").className = "fa-solid fa-moon";
     }
+
+    const timeframeFilter = document.getElementById("timeframeFilter");
+    if (timeframeFilter) {
+        timeframeFilter.value = "weekly";
+    }
+
+    updateDashboardTitle("weekly");
     fetchDashboardData();
     startLowStockPolling();
 };

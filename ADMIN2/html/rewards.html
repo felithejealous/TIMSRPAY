@@ -417,15 +417,14 @@
             <a href="dashboard.html" class="nav-item"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
             <a href="orders.html" class="nav-item"><i class="fa-solid fa-receipt"></i> Orders</a>
             <a href="accounts.html" class="nav-item"><i class="fa-solid fa-user-gear"></i> Accounts</a>
-            <a href="wallet.html" class="nav-item"><i class="fa-solid fa-wallet"></i> Wallets</a>
             <a href="inventory.html" class="nav-item"><i class="fa-solid fa-boxes-stacked"></i> Inventory</a>
-            <a href="menuman.html" class="nav-item"><i class="fa-solid fa-utensils"></i> Menu Manager</a>
+            <a href="menuman.html" class="nav-item"><i class="fa-solid fa-utensils"></i> Menu Management</a>
             <a href="promo.html" class="nav-item"><i class="fa-solid fa-tags"></i> Promos</a>
-            <a href="rewards.html" class="nav-item active"><i class="fa-solid fa-gift"></i> Rewards</a>
-            <a href="reward-management.html" class="nav-item"><i class="fa-solid fa-trophy"></i> Reward Catalog</a>
-            <a href="announce.html" class="nav-item"><i class="fa-solid fa-bell"></i> Announce</a>
-            <a href="engagement.html" class="nav-item"><i class="fa-solid fa-comments"></i> Engagement</a>
-            <a href="attendance.html" class="nav-item "><i class="fa-solid fa-user-clock"></i> Employee Shift Logs</a>
+            <a href="rewards.html" class="nav-item active"><i class="fa-solid fa-gift"></i> Rewards Monitoring</a>
+            <a href="wallet.html" class="nav-item"><i class="fa-solid fa-wallet"></i> Wallets Monitoring</a>
+            <a href="reward-management.html" class="nav-item"><i class="fa-solid fa-trophy"></i> Reward Management</a>
+            <a href="announce.html" class="nav-item"><i class="fa-solid fa-bell"></i> Announcements</a>
+            <a href="engagement.html" class="nav-item"><i class="fa-solid fa-comments"></i> Interactions</a>
             <a href="payments.html" class="nav-item"><i class="fa-solid fa-file-arrow-down"></i> Reports</a>
             <a href="settings.html" class="nav-item"><i class="fa-solid fa-cog"></i> Settings</a>
         </nav>
@@ -463,89 +462,33 @@
         </div>
 
         <div class="content-container glass">
-            <div class="flex justify-between items-center mb-8 gap-4">
-                <div class="search-container">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="searchInput" placeholder="Search customer or email...">
-                </div>
-                <button class="btn-main hover:scale-105" onclick="openClaimModal()">
-                    <i class="fas fa-plus mr-2"></i> Manual Claim
-                </button>
-            </div>
+<div class="flex justify-between items-center mb-8 gap-4">
+    <div class="search-container">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchInput" placeholder="Search customer or email...">
+    </div>
+</div>
 
             <table class="data-table" id="rewardsTable">
-                <thead>
-                    <tr>
-                        <th>Customer</th>
-                        <th>Email</th>
-                        <th>Status</th>
-                        <th>Points</th>
-                        <th>Earned</th>
-                        <th>Redeemed</th>
-                        <th style="text-align: right;">Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody">
-                    <tr>
-                        <td colspan="7" class="opacity-60">Loading rewards data...</td>
-                    </tr>
-                </tbody>
+<thead>
+    <tr>
+        <th>Customer</th>
+        <th>Email</th>
+        <th>Status</th>
+        <th>Points</th>
+        <th>Earned</th>
+        <th>Redeemed</th>
+        <th style="text-align: right;">History</th>
+    </tr>
+</thead>
+<tbody id="tableBody">
+    <tr>
+        <td colspan="7" class="opacity-60">Loading rewards data...</td>
+    </tr>
+</tbody>
             </table>
         </div>
     </main>
-
-    <div class="modal" id="claimModal">
-        <div class="modal-content glass">
-            <div class="modal-header">
-                <h2 class="modal-title">Manual Rewards Claim</h2>
-                <button type="button" class="modal-close" onclick="closeClaimModal()">&times;</button>
-            </div>
-
-            <form id="claimForm">
-                <div class="form-group">
-                    <label>Customer Email</label>
-                    <input type="email" id="claimEmail" required>
-                </div>
-                <div class="form-group">
-                    <label>Order Reference</label>
-                    <input type="text" id="claimOrderReference" placeholder="e.g. #TM-1090 or 190" required>
-                </div>
-                <div class="flex justify-between mt-10">
-                    <button type="button" class="btn-muted uppercase text-[10px]" onclick="closeClaimModal()">Cancel</button>
-                    <button type="submit" class="btn-main">Send OTP</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div class="modal" id="otpModal">
-        <div class="modal-content glass">
-            <div class="modal-header">
-                <h2 class="modal-title">Confirm OTP Claim</h2>
-                <button type="button" class="modal-close" onclick="closeOtpModal()">&times;</button>
-            </div>
-
-            <form id="otpForm">
-                <div class="form-group">
-                    <label>Customer Email</label>
-                    <input type="email" id="otpEmail" readonly>
-                </div>
-                <div class="form-group">
-                    <label>Order Reference</label>
-                    <input type="text" id="otpOrderReference" readonly>
-                </div>
-                <div class="form-group">
-                    <label>OTP Code</label>
-                    <input type="text" id="otpCode" placeholder="Enter OTP here" required>
-                </div>
-                <div class="flex justify-between mt-10">
-                    <button type="button" class="btn-muted uppercase text-[10px]" onclick="closeOtpModal()">Cancel</button>
-                    <button type="submit" class="btn-main">Confirm Claim</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <div class="modal" id="historyModal">
         <div class="modal-content glass">
             <div class="modal-header">

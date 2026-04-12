@@ -134,7 +134,8 @@ async function loadTopSummaryCards() {
 
         const salesToday = overview?.sales_today?.gross_sales || 0;
         const ordersToday = overview?.sales_today?.total_orders || 0;
-        const walletPaymentsToday = overview?.wallet_today?.by_type?.PAYMENT?.amount || 0;
+       const walletPaymentsToday =
+overview?.payment_breakdown_today?.by_type?.TEOPAY_PAYMENT?.amount || 0;
         const lowStockCount = overview?.low_stock?.count || 0;
 
         const salesTodayEl = document.getElementById("salesToday");

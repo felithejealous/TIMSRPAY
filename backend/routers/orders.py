@@ -36,7 +36,6 @@ from backend.security import get_current_user, require_roles
 router = APIRouter(prefix="/orders", tags=["Orders"])
 
 VAT_RATE = Decimal("0.12")
-REQUIRED_POINTS = 2800
 ORDER_POINTS_CLAIM_WINDOW_HOURS = 24
 ORDER_DISPLAY_OFFSET = 900
 PLACEHOLDER_CUSTOMER_NAMES = {
@@ -764,16 +763,8 @@ def sync_order_rewards_if_eligible(db: Session, order: Order):
         db.flush()
 
     current = int(rw.total_points or 0)
-
-    if current < REQUIRED_POINTS:
-        new_total = current + int(earned_points)
-        capped_total = min(REQUIRED_POINTS, new_total)
-        actual_added = capped_total - current
-    else:
-        actual_added = 0
-
-    rw.total_points = min(REQUIRED_POINTS, current + int(earned_points))
-
+    actual_added = int(earned_points)
+    rw.total_points = current + int(earned_points)
     if actual_added > 0:
         db.add(
             RewardTransaction(
@@ -1920,32 +1911,6 @@ def pay_wallet_order(
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")
-
-def get_order_refund_summary(db: Session, order_id: int) -> Dict[str, object]:
-    refund_txs = (
-        db.query(WalletTransaction)
-        .filter(
-            WalletTransaction.order_id == order_id,
-            WalletTransaction.transaction_type == "REFUND",
-        )
-        .order_by(WalletTransaction.created_at.desc(), WalletTransaction.id.desc())
-        .all()
-    )
-
-    total_refund = Decimal("0")
-    last_refund_at = None
-
-    for tx in refund_txs:
-        total_refund += Decimal(str(tx.amount or 0))
-        if last_refund_at is None:
-            last_refund_at = getattr(tx, "created_at", None)
-
-    return {
-        "is_refunded": len(refund_txs) > 0,
-        "refund_count": len(refund_txs),
-        "refund_amount": float(total_refund),
-        "last_refund_at": str(last_refund_at) if last_refund_at else None,
-    }
 @router.get("/{order_id}/receipt")
 def get_receipt(order_id: int, db: Session = Depends(get_db)):
     order = db.query(Order).filter(Order.id == order_id).first()

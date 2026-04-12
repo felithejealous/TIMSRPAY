@@ -23,7 +23,85 @@ function getTodayDateString() {
     const day = String(now.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
 }
+const PH_TIMEZONE = "Asia/Manila";
 
+function parseServerDate(value) {
+    if (!value) return null;
+
+    const raw = String(value).trim();
+    if (!raw) return null;
+
+    if (/[zZ]$|[+\-]\d{2}:\d{2}$/.test(raw)) {
+        const zonedDate = new Date(raw);
+        return Number.isNaN(zonedDate.getTime()) ? null : zonedDate;
+    }
+
+    const normalized = raw.replace(" ", "T");
+
+    const match = normalized.match(
+        /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?(?:\.\d+)?$/
+    );
+
+    if (match) {
+        const [, year, month, day, hour, minute, second = "00"] = match;
+
+        return new Date(Date.UTC(
+            Number(year),
+            Number(month) - 1,
+            Number(day),
+            Number(hour),
+            Number(minute),
+            Number(second)
+        ));
+    }
+
+    const fallbackDate = new Date(normalized);
+    return Number.isNaN(fallbackDate.getTime()) ? null : fallbackDate;
+}
+
+function formatDate(value) {
+    if (!value) return "-";
+
+    const raw = String(value).trim();
+
+    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+        const [year, month, day] = raw.split("-");
+        const safeDate = new Date(Number(year), Number(month) - 1, Number(day));
+        return safeDate.toLocaleDateString("en-PH", {
+            year: "numeric",
+            month: "short",
+            day: "numeric"
+        });
+    }
+
+    const date = parseServerDate(raw);
+    if (!date) return "-";
+
+    return date.toLocaleDateString("en-PH", {
+        timeZone: PH_TIMEZONE,
+        year: "numeric",
+        month: "short",
+        day: "numeric"
+    });
+}
+
+function formatDateTime(value) {
+    if (!value) return "-";
+
+    const date = parseServerDate(value);
+    if (!date) return "-";
+
+    return date.toLocaleString("en-PH", {
+        timeZone: PH_TIMEZONE,
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true
+    });
+}
 function applyDateMinimums() {
     const today = getTodayDateString();
 
@@ -67,19 +145,6 @@ function formatQty(value) {
     const num = Number(value || 0);
     return Number.isInteger(num) ? String(num) : num.toFixed(2);
 }
-
-function formatDate(value) {
-    if (!value) return "-";
-    const d = new Date(value);
-    return isNaN(d.getTime()) ? "-" : d.toLocaleDateString();
-}
-
-function formatDateTime(value) {
-    if (!value) return "-";
-    const d = new Date(value);
-    return isNaN(d.getTime()) ? "-" : d.toLocaleString();
-}
-
 function populateCategoryFilter() {
     const categoryFilter = document.getElementById("categoryFilter");
     if (!categoryFilter) return;
@@ -131,7 +196,7 @@ function getFilteredItems() {
 
 async function fetchInventory() {
     try {
-        const response = await fetch(`${API_URL}/inventory/master/?only_active=false`, {
+        const response = await fetch(`${API_URL}/inventory/master?only_active=false`, {
             method: "GET",
            headers: getAuthHeaders()
         });
@@ -531,10 +596,25 @@ async function toggleItemActive(id, currentlyActive) {
 
 async function initializeInventoryPage() {
     applyDateMinimums();
+
+    const searchInput = document.getElementById("searchInput");
+    const categoryFilter = document.getElementById("categoryFilter");
+    const statusFilter = document.getElementById("statusFilter");
+
+    if (searchInput) searchInput.value = "";
+    if (categoryFilter) categoryFilter.value = "all";
+    if (statusFilter) statusFilter.value = "all";
+
     setView("grid");
+
     await fetchInventory();
     await fetchAllHistory();
+
     populateCategoryFilter();
+
+    if (categoryFilter) categoryFilter.value = "all";
+    if (statusFilter) statusFilter.value = "all";
+
     renderItems();
 
     const confirmAdjustBtn = document.getElementById("confirmAdjust");
@@ -550,6 +630,6 @@ window.addNewItem = addNewItem;
 window.prepareAdjust = prepareAdjust;
 window.toggleItemActive = toggleItemActive;
 
-window.onload = () => {
+document.addEventListener("DOMContentLoaded", () => {
     initializeInventoryPage();
-};
+});

@@ -1,15 +1,27 @@
 from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
-from sqlalchemy import func as sa_func, or_
 from pydantic import BaseModel, EmailStr
+from sqlalchemy import func as sa_func, or_
+from sqlalchemy.orm import Session
+
 import secrets
 import string
 
 from backend.database import SessionLocal
-from backend.models import User, Role, Wallet, RewardWallet, CustomerProfile, StaffProfile
+from backend.models import (
+    User,
+    Role,
+    Wallet,
+    RewardWallet,
+    CustomerProfile,
+    StaffProfile,
+)
 from backend.security import get_current_user, require_roles
-from backend.routers.auth import hash_password as auth_hash_password
+from backend.routers.auth import (
+    hash_password as auth_hash_password,
+    verify_password as auth_verify_password,
+)
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -38,7 +50,10 @@ def _get_role_id(db: Session, role_name: str) -> Optional[int]:
 def _is_customer(db: Session, user: User) -> bool:
     customer_role_id = _get_role_id(db, "customer")
     if not customer_role_id:
-        raise HTTPException(status_code=500, detail="Role 'customer' not found in roles table")
+        raise HTTPException(
+            status_code=500,
+            detail="Role 'customer' not found in roles table"
+        )
     return int(getattr(user, "role_id", 0) or 0) == int(customer_role_id)
 
 
@@ -77,12 +92,20 @@ class CustomerPatchPayload(BaseModel):
     is_active: Optional[bool] = None
 
 
+class DeleteUserPayload(BaseModel):
+    admin_password: str
+    confirm_text: str
+
+
 @router.get("/")
 def list_users(
     q: Optional[str] = Query(default=None, description="search by email, name, or wallet code"),
     active_only: bool = Query(default=False),
     limit: int = Query(default=100, ge=1, le=500),
-    include_balances: bool = Query(default=False, description="include wallet_balance + reward_points"),
+    include_balances: bool = Query(
+        default=False,
+        description="include wallet_balance + reward_points"
+    ),
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles("staff", "cashier", "admin")),
 ):
@@ -97,7 +120,10 @@ def list_users(
     if role in {"staff", "cashier"}:
         customer_role_id = _get_role_id(db, "customer")
         if not customer_role_id:
-            raise HTTPException(status_code=500, detail="Role 'customer' not found in roles table")
+            raise HTTPException(
+                status_code=500,
+                detail="Role 'customer' not found in roles table"
+            )
         query = query.filter(User.role_id == customer_role_id)
 
     if active_only:
@@ -118,8 +144,15 @@ def list_users(
     points_map = {}
     if include_balances and rows:
         user_ids = [u.id for u, _, _ in rows]
-        reward_wallets = db.query(RewardWallet).filter(RewardWallet.user_id.in_(user_ids)).all()
-        points_map = {rw.user_id: int(rw.total_points or 0) for rw in reward_wallets}
+        reward_wallets = (
+            db.query(RewardWallet)
+            .filter(RewardWallet.user_id.in_(user_ids))
+            .all()
+        )
+        points_map = {
+            rw.user_id: int(rw.total_points or 0)
+            for rw in reward_wallets
+        }
 
     changed = False
     data = []
@@ -171,7 +204,10 @@ def create_customer(
 
     customer_role_id = _get_role_id(db, "customer")
     if not customer_role_id:
-        raise HTTPException(status_code=500, detail="Role 'customer' not found in roles table")
+        raise HTTPException(
+            status_code=500,
+            detail="Role 'customer' not found in roles table"
+        )
 
     temp_password = (payload.password or "").strip() or generate_temp_password()
 
@@ -231,7 +267,10 @@ def get_user(
 
     if role in {"staff", "cashier"}:
         if not _is_customer(db, u):
-            raise HTTPException(status_code=403, detail="Staff/Cashier can only view customers")
+            raise HTTPException(
+                status_code=403,
+                detail="Staff/Cashier can only view customers"
+            )
 
     wallet = db.query(Wallet).filter(Wallet.user_id == u.id).first()
     rw = db.query(RewardWallet).filter(RewardWallet.user_id == u.id).first()
@@ -329,4 +368,66 @@ def set_user_active(
     db.commit()
     db.refresh(u)
 
-    return {"message": "User updated", "user_id": u.id, "is_active": bool(u.is_active)}
+    return {
+        "message": "User updated",
+        "user_id": u.id,
+        "is_active": bool(u.is_active)
+    }
+
+
+@router.delete("/{user_id}")
+def delete_user(
+    user_id: int,
+    payload: DeleteUserPayload,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles("admin")),
+):
+    if payload.confirm_text.strip().upper() != "DELETE":
+        raise HTTPException(
+            status_code=400,
+            detail="Confirmation text must be DELETE"
+        )
+
+    if not auth_verify_password(payload.admin_password, current_user.password_hash):
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid admin password"
+        )
+
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if user.id == current_user.id:
+        raise HTTPException(
+            status_code=400,
+            detail="Admin cannot delete their own account"
+        )
+
+    wallet = db.query(Wallet).filter(Wallet.user_id == user_id).first()
+    reward_wallet = db.query(RewardWallet).filter(RewardWallet.user_id == user_id).first()
+
+    wallet_balance = float(wallet.balance) if wallet else 0.0
+    reward_points = int(reward_wallet.total_points or 0) if reward_wallet else 0
+
+    if wallet_balance > 0:
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot delete account with remaining wallet balance"
+        )
+
+    if reward_points > 0:
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot delete account with remaining reward points"
+        )
+
+    db.query(CustomerProfile).filter(CustomerProfile.user_id == user_id).delete()
+    db.query(StaffProfile).filter(StaffProfile.user_id == user_id).delete()
+    db.query(Wallet).filter(Wallet.user_id == user_id).delete()
+    db.query(RewardWallet).filter(RewardWallet.user_id == user_id).delete()
+
+    db.delete(user)
+    db.commit()
+
+    return {"message": "User deleted successfully"}

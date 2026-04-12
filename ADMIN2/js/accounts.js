@@ -636,6 +636,65 @@ async function initializeAccountsPage() {
     renderGrid();
     updateCounts();
 }
+function openDeleteModal() {
+    if (!currentViewingUserId) return;
+    openModal("deleteModal");
+}
+
+async function confirmDeleteAccount() {
+
+    if (!currentViewingUserId) return;
+
+    const confirmText = document.getElementById("deleteConfirmText").value.trim();
+    const adminPassword = document.getElementById("deleteAdminPassword").value.trim();
+
+    if (confirmText !== "DELETE") {
+        alert("You must type DELETE to confirm.");
+        return;
+    }
+
+    if (!adminPassword) {
+        alert("Admin password required.");
+        return;
+    }
+
+    try {
+
+        const response = await fetch(`${API_URL}/users/${currentViewingUserId}`, {
+            method: "DELETE",
+            headers: getAuthHeaders({
+                "Content-Type": "application/json"
+            }),
+            body: JSON.stringify({
+                admin_password: adminPassword,
+                confirm_text: confirmText
+            })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.detail || "Delete failed");
+        }
+
+        closeModal("deleteModal");
+        closeModal("profileModal");
+
+        await Promise.all([
+            fetchUsers(),
+            fetchStaffProfiles()
+        ]);
+
+        renderGrid();
+        updateCounts();
+
+        showToast("Account deleted");
+
+    } catch (err) {
+        console.error(err);
+        alert(err.message || "Failed to delete account");
+    }
+}
 
 window.searchCards = searchCards;
 window.openModal = openModal;

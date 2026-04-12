@@ -169,15 +169,14 @@
             <a href="dashboard.html" class="nav-item"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
             <a href="orders.html" class="nav-item"><i class="fa-solid fa-receipt"></i> Orders</a>
             <a href="accounts.html" class="nav-item active"><i class="fa-solid fa-user-gear"></i> Accounts</a>
-            <a href="wallet.html" class="nav-item"><i class="fa-solid fa-wallet"></i> Wallets</a>
             <a href="inventory.html" class="nav-item"><i class="fa-solid fa-boxes-stacked"></i> Inventory</a>
-            <a href="menuman.html" class="nav-item"><i class="fa-solid fa-utensils"></i> Menu Manager</a>
+            <a href="menuman.html" class="nav-item"><i class="fa-solid fa-utensils"></i> Menu Management</a>
             <a href="promo.html" class="nav-item"><i class="fa-solid fa-tags"></i> Promos</a>
-            <a href="rewards.html" class="nav-item"><i class="fa-solid fa-gift"></i> Rewards</a>
-            <a href="reward-management.html" class="nav-item"><i class="fa-solid fa-trophy"></i> Reward Catalog</a>
-            <a href="announce.html" class="nav-item"><i class="fa-solid fa-bell"></i> Announce</a>
-            <a href="engagement.html" class="nav-item"><i class="fa-solid fa-comments"></i> Engagement</a>
-            <a href="attendance.html" class="nav-item "><i class="fa-solid fa-user-clock"></i> Employee Shift Logs</a>
+            <a href="rewards.html" class="nav-item"><i class="fa-solid fa-gift"></i> Rewards Monitoring</a>
+            <a href="wallet.html" class="nav-item"><i class="fa-solid fa-wallet"></i> Wallets Monitoring</a>
+            <a href="reward-management.html" class="nav-item"><i class="fa-solid fa-trophy"></i> Rewards Manager</a>
+            <a href="announce.html" class="nav-item"><i class="fa-solid fa-bell"></i> Announcements</a>
+            <a href="engagement.html" class="nav-item"><i class="fa-solid fa-comments"></i> Interactions</a>
             <a href="payments.html" class="nav-item"><i class="fa-solid fa-file-arrow-down"></i> Reports</a>
             <a href="settings.html" class="nav-item"><i class="fa-solid fa-cog"></i> Settings</a>
         </nav>
@@ -300,6 +299,10 @@
                         <button class="bg-blue-600/20 text-blue-400 py-3 rounded-xl font-bold text-[10px] uppercase hover:bg-blue-600/30" onclick="confirmReset()">
                             <i class="fas fa-key mr-2"></i>Reset Password
                         </button>
+                        <button class="bg-red-600/20 text-red-500 py-3 rounded-xl font-bold text-[10px] uppercase hover:bg-red-600/30"
+                            onclick="openDeleteModal()">
+                            <i class="fas fa-trash mr-2"></i>Delete Account
+                        </button>
                         <button id="toggleActiveBtn" class="btn-toggle py-3 rounded-xl font-bold text-[10px] uppercase" onclick="toggleStatus()"></button>
                     </div>
                 </div>
@@ -327,7 +330,41 @@
             </div>
         </div>
     </div>
+<div class="modal-overlay" id="deleteModal">
+    <div class="modal-content glass alert-modal" style="max-width:420px">
 
+        <h2 class="text-xl font-black uppercase mb-2 text-red-500">
+            Delete Account
+        </h2>
+
+        <p class="text-xs opacity-70 mb-6">
+            This will permanently delete this account and cannot be undone.
+        </p>
+
+        <div class="input-group mb-4">
+            <label>Type DELETE to confirm</label>
+            <input type="text" id="deleteConfirmText">
+        </div>
+
+        <div class="input-group mb-6">
+            <label>Your Admin Password</label>
+            <input type="password" id="deleteAdminPassword">
+        </div>
+
+        <div class="flex gap-3">
+            <button class="flex-1 bg-white/10 py-3 rounded-xl font-bold text-[10px]"
+                onclick="closeModal('deleteModal')">
+                Cancel
+            </button>
+
+            <button class="flex-1 bg-red-600 text-white py-3 rounded-xl font-black text-[10px]"
+                onclick="confirmDeleteAccount()">
+                Delete
+            </button>
+        </div>
+
+    </div>
+</div>
     <div id="toast">Password Reset Link Sent!</div>
 
     <script src="../config.js"></script>

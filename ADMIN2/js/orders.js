@@ -4,6 +4,7 @@ let autoRefreshInterval = null;
 
 const AUTO_REFRESH_MS = 5000;
 const ORDER_DISPLAY_OFFSET = 900;
+const PH_TIMEZONE = "Asia/Manila";
 function getToken() {
     return localStorage.getItem("token");
 }
@@ -36,11 +37,73 @@ function formatPoints(value) {
     return `${Number(value || 0).toLocaleString()} pts`;
 }
 
+function parseServerDate(value) {
+    if (!value) return null;
+
+    const raw = String(value).trim();
+    if (!raw) return null;
+
+    if (/[zZ]$|[+\-]\d{2}:\d{2}$/.test(raw)) {
+        const zonedDate = new Date(raw);
+        return Number.isNaN(zonedDate.getTime()) ? null : zonedDate;
+    }
+
+    const normalized = raw.replace(" ", "T");
+    const match = normalized.match(
+        /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?(?:\.\d+)?$/
+    );
+
+    if (match) {
+        const [, year, month, day, hour, minute, second = "00"] = match;
+
+        return new Date(Date.UTC(
+            Number(year),
+            Number(month) - 1,
+            Number(day),
+            Number(hour),
+            Number(minute),
+            Number(second)
+        ));
+    }
+
+    const fallbackDate = new Date(normalized);
+    return Number.isNaN(fallbackDate.getTime()) ? null : fallbackDate;
+}
+
+function getPHDateKey(value) {
+    const date = value instanceof Date ? value : parseServerDate(value);
+    if (!date || Number.isNaN(date.getTime())) return "";
+
+    const parts = new Intl.DateTimeFormat("en-CA", {
+        timeZone: PH_TIMEZONE,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+    }).formatToParts(date);
+
+    const year = parts.find(part => part.type === "year")?.value || "0000";
+    const month = parts.find(part => part.type === "month")?.value || "00";
+    const day = parts.find(part => part.type === "day")?.value || "00";
+
+    return `${year}-${month}-${day}`;
+}
+
 function formatDateTime(value) {
     if (!value) return "-";
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return "-";
-    return date.toLocaleString();
+
+    const date = value instanceof Date ? value : parseServerDate(value);
+    if (!date || Number.isNaN(date.getTime())) return "-";
+
+    return date.toLocaleString("en-PH", {
+        timeZone: PH_TIMEZONE,
+        year: "numeric",
+        month: "numeric",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true
+    });
 }
 
 function formatOrderDisplayId(orderId, displayId = null) {
@@ -100,14 +163,19 @@ async function fetchRefunds() {
 
 function getPeriodRange(period) {
     const now = new Date();
-    const start = new Date(now);
+    const nowPHKey = getPHDateKey(now);
+
+    const [year, month, day] = nowPHKey.split("-").map(Number);
+    const phNowAsLocal = new Date(year, month - 1, day);
+
+    const start = new Date(phNowAsLocal);
 
     if (period === "today") {
         start.setHours(0, 0, 0, 0);
     } else if (period === "week") {
-        const day = start.getDay();
-        const diff = start.getDate() - day + (day === 0 ? -6 : 1);
-        start.setDate(diff);
+        const weekday = start.getDay();
+        const diff = weekday === 0 ? -6 : 1 - weekday;
+        start.setDate(start.getDate() + diff);
         start.setHours(0, 0, 0, 0);
     } else if (period === "month") {
         start.setDate(1);
@@ -116,7 +184,6 @@ function getPeriodRange(period) {
 
     return start;
 }
-
 function mapPaymentForUI(paymentMethod) {
     const raw = (paymentMethod || "").toLowerCase();
 
@@ -124,14 +191,12 @@ function mapPaymentForUI(paymentMethod) {
     if (raw === "gcash") return "GCash";
     return "Cash";
 }
-
 function mapServiceForUI(orderType) {
     const raw = (orderType || "").toLowerCase();
 
-    if (raw === "online") return "Delivery";
+    if (raw === "online" || raw === "delivery") return "Pick Up";
     return "Walk-in";
 }
-
 function isRevenueCountable(status) {
     const s = (status || "").toLowerCase();
     return s === "paid" || s === "completed";
@@ -172,10 +237,10 @@ function getSelectedFilters() {
 function matchesOrderFilters(order, filters) {
     const payment = mapPaymentForUI(order.payment_method);
     const service = mapServiceForUI(order.order_type);
-    const createdAt = new Date(order.created_at);
+    const createdAt = parseServerDate(order.created_at);
     const periodStart = getPeriodRange(filters.periodFilter);
 
-    const periodMatch = createdAt >= periodStart;
+    const periodMatch = createdAt && createdAt >= periodStart;
     const paymentMatch = filters.paymentFilter === "all" || payment === filters.paymentFilter;
     const serviceMatch = filters.serviceFilter === "all" || service === filters.serviceFilter;
 
@@ -191,12 +256,12 @@ function matchesRefundFilters(refund, filters) {
     const payment = mapPaymentForUI(refund.payment_method);
     const service = mapServiceForUI(refund.order_type);
     const refundDate = refund.last_refund_at
-        ? new Date(refund.last_refund_at)
-        : new Date(refund.created_at);
+        ? parseServerDate(refund.last_refund_at)
+        : parseServerDate(refund.created_at);
 
     const periodStart = getPeriodRange(filters.periodFilter);
 
-    const periodMatch = refundDate >= periodStart;
+    const periodMatch = refundDate && refundDate >= periodStart;
     const paymentMatch = filters.paymentFilter === "all" || payment === filters.paymentFilter;
     const serviceMatch = filters.serviceFilter === "all" || service === filters.serviceFilter;
 

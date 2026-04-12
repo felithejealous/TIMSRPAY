@@ -1,8 +1,9 @@
 from typing import Optional
-from datetime import date, datetime, time, timedelta
+from datetime import date, datetime, time, timedelta, timezone
 from decimal import Decimal
 import csv
 import io
+
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import Response
@@ -56,12 +57,13 @@ def _parse_date(s: Optional[str], field_name: str) -> Optional[date]:
 
 
 def _start_dt(d: date) -> datetime:
-    return datetime.combine(d, time.min)
+    local_dt = datetime.combine(d, time.min, tzinfo=PH_TIMEZONE)
+    return _to_utc_naive(local_dt)
 
 
 def _end_dt_exclusive(d: date) -> datetime:
-    return datetime.combine(d + timedelta(days=1), time.min)
-
+    local_dt = datetime.combine(d + timedelta(days=1), time.min, tzinfo=PH_TIMEZONE)
+    return _to_utc_naive(local_dt)
 
 def _money(value) -> float:
     return float(Decimal(str(value or 0)))
@@ -72,8 +74,42 @@ def _csv_response(content: str, filename: str) -> Response:
         media_type="text/csv",
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
+def _utc_naive_to_ph_date(dt_value) -> Optional[date]:
+    if dt_value is None:
+        return None
+
+    if isinstance(dt_value, str):
+        raw = dt_value.strip()
+        if not raw:
+            return None
+        try:
+            dt_value = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+        except Exception:
+            return None
+
+    if not isinstance(dt_value, datetime):
+        return None
+
+    if dt_value.tzinfo is None:
+        dt_value = dt_value.replace(tzinfo=UTC_TIMEZONE)
+    else:
+        dt_value = dt_value.astimezone(UTC_TIMEZONE)
+
+    return dt_value.astimezone(PH_TIMEZONE).date()
+PH_TIMEZONE = timezone(timedelta(hours=8))
+UTC_TIMEZONE = timezone.utc
+
+def _today_ph() -> date:
+    return datetime.now(PH_TIMEZONE).date()
 
 
+def _to_utc_naive(dt: datetime) -> datetime:
+    """
+    Convert timezone-aware datetime to UTC naive datetime.
+    This matches the current app behavior where backend datetimes
+    are effectively treated as UTC when consumed by the frontend.
+    """
+    return dt.astimezone(UTC_TIMEZONE).replace(tzinfo=None)
 def _resolve_date_range(
     start_date: Optional[str],
     end_date: Optional[str],
@@ -210,45 +246,50 @@ def sales_daily(
     days: int = Query(default=7, ge=1, le=90),
     db: Session = Depends(get_db),
 ):
-    end = date.today()
+    end = _today_ph()
     start = end - timedelta(days=days - 1)
 
     start_dt = _start_dt(start)
     end_dt = _end_dt_exclusive(end)
 
     rows = db.query(
-        sa_func.date(Order.created_at).label("d"),
-        sa_func.count(Order.id).label("cnt"),
-        sa_func.coalesce(sa_func.sum(Order.total_amount), 0).label("sum_total"),
+        Order.created_at,
+        Order.total_amount,
     ).filter(
         Order.created_at >= start_dt,
         Order.created_at < end_dt,
         Order.status.in_(["paid", "completed"]),
-    ).group_by(
-        sa_func.date(Order.created_at)
-    ).order_by(
-        sa_func.date(Order.created_at).asc()
     ).all()
 
-    by_date = {
-        str(row.d): {
-            "total_orders": int(row.cnt),
-            "gross_sales": _money(row.sum_total),
-        }
-        for row in rows
-    }
+    by_date = {}
+    for created_at, total_amount in rows:
+        ph_date = _utc_naive_to_ph_date(created_at)
+        if not ph_date:
+            continue
+
+        key = str(ph_date)
+        if key not in by_date:
+            by_date[key] = {
+                "total_orders": 0,
+                "gross_sales": 0.0,
+            }
+
+        by_date[key]["total_orders"] += 1
+        by_date[key]["gross_sales"] += _money(total_amount)
 
     data = []
     cur = start
     while cur <= end:
         key = str(cur)
         item = by_date.get(key, {"total_orders": 0, "gross_sales": 0.0})
-        data.append({"date": key, **item})
+        data.append({
+            "date": key,
+            "total_orders": int(item["total_orders"]),
+            "gross_sales": round(float(item["gross_sales"]), 2),
+        })
         cur += timedelta(days=1)
 
     return {"days": days, "data": data}
-
-
 # ============================================================
 # C) TOP PRODUCTS
 # ============================================================
@@ -458,26 +499,29 @@ def rewards_issued(
             detail="RewardTransaction.created_at is missing (needed for date filters).",
         )
 
-    end = date.today()
+    end = _today_ph()
     start = end - timedelta(days=days - 1)
 
     start_dt = _start_dt(start)
     end_dt = _end_dt_exclusive(end)
 
     rows = db.query(
-        sa_func.date(RewardTransaction.created_at).label("d"),
-        sa_func.coalesce(sa_func.sum(RewardTransaction.points_change), 0).label("points"),
+        RewardTransaction.created_at,
+        RewardTransaction.points_change,
     ).filter(
         RewardTransaction.created_at >= start_dt,
         RewardTransaction.created_at < end_dt,
         RewardTransaction.points_change > 0,
-    ).group_by(
-        sa_func.date(RewardTransaction.created_at)
-    ).order_by(
-        sa_func.date(RewardTransaction.created_at).asc()
     ).all()
 
-    by_date = {str(row.d): int(row.points) for row in rows}
+    by_date = {}
+    for created_at, points_change in rows:
+        ph_date = _utc_naive_to_ph_date(created_at)
+        if not ph_date:
+            continue
+
+        key = str(ph_date)
+        by_date[key] = by_date.get(key, 0) + int(points_change or 0)
 
     data = []
     cur = start
@@ -485,7 +529,7 @@ def rewards_issued(
 
     while cur <= end:
         key = str(cur)
-        pts = by_date.get(key, 0)
+        pts = int(by_date.get(key, 0))
         total_points_issued += pts
 
         data.append({
@@ -503,53 +547,161 @@ def rewards_issued(
         "total_cups_equivalent": int(total_points_issued / 14) if total_points_issued else 0,
         "data": data,
     }
+def _payment_breakdown_summary(
+    db: Session,
+    start_date: str,
+    end_date: str,
+):
+    wallet_data = wallet_summary(start_date=start_date, end_date=end_date, db=db)
 
+    s, e, start_dt, end_dt = _resolve_date_range(start_date, end_date, default_days=1)
 
+    cash_orders = db.query(
+        sa_func.coalesce(sa_func.sum(Order.total_amount), 0).label("sum_total"),
+        sa_func.count(Order.id).label("cnt"),
+    ).filter(
+        Order.created_at >= start_dt,
+        Order.created_at < end_dt,
+        Order.status.in_(["paid", "completed"]),
+        sa_func.lower(sa_func.coalesce(Order.payment_method, "")) == "cash",
+    ).first()
+
+    cash_amount = _money(cash_orders.sum_total if cash_orders else 0)
+    cash_count = int(cash_orders.cnt if cash_orders else 0)
+
+    wallet_types = wallet_data.get("by_type", {})
+
+    return {
+        "range": wallet_data.get("range", {"start_date": start_date, "end_date": end_date}),
+        "by_type": {
+            "TOPUP": wallet_types.get("TOPUP", {"count": 0, "amount": 0.0}),
+            "TEOPAY_PAYMENT": wallet_types.get("PAYMENT", {"count": 0, "amount": 0.0}),
+            "CASH_PAYMENT": {"count": cash_count, "amount": cash_amount},
+            "REFUND": wallet_types.get("REFUND", {"count": 0, "amount": 0.0}),
+        },
+        "totals": {
+            "topup_amount": _money(wallet_types.get("TOPUP", {}).get("amount", 0)),
+            "teopay_payment_amount": _money(wallet_types.get("PAYMENT", {}).get("amount", 0)),
+            "cash_payment_amount": cash_amount,
+            "refund_amount": _money(wallet_types.get("REFUND", {}).get("amount", 0)),
+        }
+    }
 # ============================================================
 # H) DASHBOARD OVERVIEW
 # ============================================================
 @router.get("/dashboard/overview", operation_id="reports_dashboard_overview_v1")
 def dashboard_overview(
+    timeframe: str = Query(default="weekly", description="daily | weekly"),
     low_stock_threshold: float = Query(default=10.0, ge=0),
     top_limit: int = Query(default=10, ge=1, le=50),
     stock_warning_threshold: float = Query(default=30.0, ge=0),
     stock_critical_threshold: float = Query(default=20.0, ge=0),
     db: Session = Depends(get_db),
 ):
-    today = date.today()
+    timeframe = (timeframe or "weekly").strip().lower()
+    if timeframe not in {"daily", "weekly"}:
+        raise HTTPException(status_code=400, detail="timeframe must be 'daily' or 'weekly'")
+
+    today = _today_ph()
     last7_start = today - timedelta(days=6)
 
     sales_today = sales_summary(start_date=str(today), end_date=str(today), db=db)
     sales_last_7_days = sales_summary(start_date=str(last7_start), end_date=str(today), db=db)
     sales_daily_last_7_days = sales_daily(days=7, db=db)
+
+    top_products_today = top_products(
+        limit=top_limit,
+        start_date=str(today),
+        end_date=str(today),
+        db=db,
+    )
     top_products_last_7_days = top_products(
         limit=top_limit,
         start_date=str(last7_start),
         end_date=str(today),
         db=db,
     )
+
     wallet_today = wallet_summary(start_date=str(today), end_date=str(today), db=db)
+    wallet_last_7_days = wallet_summary(start_date=str(last7_start), end_date=str(today), db=db)
+
+    payment_breakdown_today = _payment_breakdown_summary(
+        db=db,
+        start_date=str(today),
+        end_date=str(today),
+    )
+    payment_breakdown_last_7_days = _payment_breakdown_summary(
+        db=db,
+        start_date=str(last7_start),
+        end_date=str(today),
+    )
+
     low_stock_data = low_stock(threshold=low_stock_threshold, db=db)
+
+    rewards_today = rewards_issued(days=1, db=db)
     rewards_last_7_days = rewards_issued(days=7, db=db)
+
     stock_health = _stock_health_summary(
         db=db,
         warning_threshold=stock_warning_threshold,
         critical_threshold=stock_critical_threshold,
     )
 
+    sales_daily_current_day = [
+        {
+            "label": str(today),
+            "date": str(today),
+            "hour": "Today",
+            "total_orders": int(sales_today.get("total_orders", 0)),
+            "gross_sales": float(sales_today.get("gross_sales", 0)),
+        }
+    ]
+
+    rewards_issued_today = [
+        {
+            "label": str(today),
+            "date": str(today),
+            "hour": "Today",
+            "points_issued": int(rewards_today.get("total_points_issued", 0)),
+        }
+    ]
+
     return {
+        "timeframe": timeframe,
         "date": str(today),
+        "date_label": (
+            f"{today.strftime('%b %d, %Y')} (Daily Pulse)"
+            if timeframe == "daily"
+            else f"{last7_start.strftime('%b %d, %Y')} - {today.strftime('%b %d, %Y')} (Weekly Overview)"
+        ),
+
         "sales_today": sales_today,
         "sales_last_7_days": sales_last_7_days,
+        "sales_daily_current_day": sales_daily_current_day,
         "sales_daily_last_7_days": sales_daily_last_7_days["data"],
+
+        "top_products_today": top_products_today["data"],
         "top_products_last_7_days": top_products_last_7_days["data"],
+
         "wallet_today": wallet_today,
+        "wallet_last_7_days": wallet_last_7_days,
+
+        "payment_breakdown_today": payment_breakdown_today,
+        "payment_breakdown_last_7_days": payment_breakdown_last_7_days,
+
+        "rewards_today_summary": {
+            "total_points_issued": rewards_today["total_points_issued"],
+            "total_cups_equivalent": rewards_today["total_cups_equivalent"],
+            "points_per_cup": rewards_today["points_per_cup"],
+        },
         "rewards_summary": {
             "total_points_issued": rewards_last_7_days["total_points_issued"],
             "total_cups_equivalent": rewards_last_7_days["total_cups_equivalent"],
             "points_per_cup": rewards_last_7_days["points_per_cup"],
         },
+        "rewards_issued_today": rewards_issued_today,
         "rewards_issued_last_7_days": rewards_last_7_days["data"],
+
         "stock_health": stock_health,
         "low_stock": {
             "threshold": low_stock_data["threshold"],
@@ -557,8 +709,6 @@ def dashboard_overview(
             "items": low_stock_data["data"],
         },
     }
-
-
 # ============================================================
 # I) LOGS: WALLET TRANSACTIONS
 # ============================================================

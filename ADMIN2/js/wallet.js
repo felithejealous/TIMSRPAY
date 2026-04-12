@@ -313,7 +313,6 @@ function handleWalletSearch(event) {
         await searchWallets(trimmed);
     }, 250);
 }
-
 function openWalletProfile(userId) {
     const user = walletResultsCache.find(item => Number(item.user_id) === Number(userId));
     if (!user) return;
@@ -339,85 +338,11 @@ function openWalletProfile(userId) {
             : `<span class="wallet-badge wallet-badge-inactive">Inactive</span>`;
     }
 
-    const topupUserId = document.getElementById("topupUserId");
-    const topupTargetName = document.getElementById("topupTargetName");
-    const topupWalletCode = document.getElementById("topupWalletCode");
-    const topupAmount = document.getElementById("topupAmount");
-
-    if (topupUserId) topupUserId.value = user.user_id;
-    if (topupTargetName) topupTargetName.value = user.full_name || user.email || `User #${user.user_id}`;
-    if (topupWalletCode) topupWalletCode.value = maskWalletCode(user.wallet_code || "-");
-    if (topupAmount) topupAmount.value = "";
-
     openModal("walletProfileModal");
 }
-
-async function submitTopupForm(event) {
-    event.preventDefault();
-
-    const userId = Number(document.getElementById("topupUserId")?.value);
-    const amount = Number(document.getElementById("topupAmount")?.value);
-
-    if (!userId) {
-        alert("No wallet selected.");
-        return;
-    }
-
-    if (Number.isNaN(amount) || amount <= 0) {
-        alert("Enter a valid top-up amount.");
-        return;
-    }
-
-    try {
-        const response = await fetch(`${API_URL}/wallet/topup`, {
-            method: "POST",
-            headers: getAuthHeaders({
-                "Content-Type": "application/json"
-            }),
-            body: JSON.stringify({
-                user_id: userId,
-                amount: amount
-            })
-        });
-
-        const result = await response.json();
-
-        if (!response.ok) {
-            throw new Error(result.detail || `Top-up failed: ${response.status}`);
-        }
-
-        const target = walletResultsCache.find(item => Number(item.user_id) === userId);
-        if (target) {
-            target.balance = result.balance;
-        }
-
-        if (currentWalletUser && Number(currentWalletUser.user_id) === userId) {
-            currentWalletUser.balance = result.balance;
-
-            const detailBalance = document.getElementById("walletDetailBalance");
-            if (detailBalance) {
-                detailBalance.innerText = formatMoney(result.balance || 0);
-            }
-        }
-
-        renderWalletGrid();
-        showToast("Top-up successful");
-
-        const topupAmountInput = document.getElementById("topupAmount");
-        if (topupAmountInput) {
-            topupAmountInput.value = "";
-        }
-    } catch (error) {
-        console.error("Top-up error:", error);
-        alert(error.message || "Failed to top up wallet.");
-    }
-}
-
 function initializeWalletPage() {
     applySavedTheme();
     renderWalletGrid();
-
-    document.getElementById("topupForm")?.addEventListener("submit", submitTopupForm);
 
     const searchInput = document.getElementById("walletSearchInput");
     if (searchInput) {
@@ -447,7 +372,6 @@ function initializeWalletPage() {
         }
     });
 }
-
 window.searchWallets = searchWallets;
 window.handleWalletSearch = handleWalletSearch;
 window.openWalletProfile = openWalletProfile;

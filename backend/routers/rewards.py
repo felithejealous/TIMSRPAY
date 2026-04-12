@@ -11,9 +11,9 @@ import os
 import re
 import smtplib
 import string
-from backend.routers.notification import create_customer_notification
 from email.message import EmailMessage
-from backend.models import Product
+
+from backend.routers.notification import create_customer_notification
 from backend.schemas import RewardCreate, RewardUpdate
 from backend.security import get_current_user, require_roles
 from backend.database import SessionLocal
@@ -32,10 +32,6 @@ from backend.models import (
 )
 
 router = APIRouter(prefix="/rewards", tags=["Rewards"])
-
-REQUIRED_POINTS = 2800
-
-# token is effectively "no expiry" now for free drink redeem
 NO_EXPIRY_TOKEN_PLACEHOLDER = datetime(2099, 12, 31, 23, 59, 59, tzinfo=timezone.utc)
 
 MANUAL_OTP_TTL_SECONDS = 300
@@ -262,7 +258,7 @@ def _get_customer_role_id(db: Session) -> Optional[int]:
 def _ensure_claim_user_matches_order(user: User, order: Order):
     """
     Rules:
-    - If order.user_id exists, dapat same user ang mag-claim.
+    - If order.user_id exists, same user dapat ang mag-claim.
     - If order.user_id is null, puwede ang manual OTP claim to bind it to this customer account.
     """
     order_user_id = getattr(order, "user_id", None)
@@ -330,14 +326,18 @@ def _clear_unused_redeem_tokens(db: Session, user_id: int):
     ).delete(synchronize_session=False)
 
 
-def _create_no_expiry_redeem_token(db: Session, user: User):
+def _create_reward_redeem_token(db: Session, user: User, reward: Reward) -> RewardRedemptionToken:
     rw = _get_reward_wallet(db, int(user.id))
     points = int(rw.total_points or 0)
+    required_points = int(getattr(reward, "points_required", 0) or 0)
 
-    if points < REQUIRED_POINTS:
+    if required_points <= 0:
+        raise HTTPException(status_code=400, detail="Selected reward has invalid required points")
+
+    if points < required_points:
         raise HTTPException(
             status_code=400,
-            detail=f"Not enough points. Need {REQUIRED_POINTS}, you have {points}."
+            detail=f"Not enough points. Need {required_points}, you have {points}."
         )
 
     _clear_unused_redeem_tokens(db, int(user.id))
@@ -346,8 +346,9 @@ def _create_no_expiry_redeem_token(db: Session, user: User):
 
     row = RewardRedemptionToken(
         user_id=int(user.id),
+        reward_id=int(reward.id),
         token=token,
-        required_points=REQUIRED_POINTS,
+        required_points=required_points,
         expires_at=NO_EXPIRY_TOKEN_PLACEHOLDER,
         is_used=False
     )
@@ -373,6 +374,7 @@ class ManualOTPConfirm(BaseModel):
 
 class StaffRedeemTokenGenerateRequest(BaseModel):
     q: str = Field(min_length=1, description="Customer email, wallet code, or user id")
+    reward_id: int = Field(gt=0, description="Reward to redeem")
 
 
 # ============================================================
@@ -595,6 +597,7 @@ def admin_customer_history(
         ],
     }
 
+
 # ============================================================
 # ADMIN REWARD CATALOG MANAGEMENT
 # ============================================================
@@ -759,6 +762,8 @@ def admin_update_reward_catalog(
             "sort_order": int(row.sort_order or 0),
         }
     }
+
+
 @router.patch("/admin/catalog/{reward_id}/toggle")
 def admin_toggle_reward_catalog(
     reward_id: int,
@@ -778,6 +783,8 @@ def admin_toggle_reward_catalog(
         "reward_id": row.id,
         "is_active": bool(row.is_active),
     }
+
+
 @router.get("/admin/claimable-orders")
 def admin_claimable_orders(
     q: Optional[str] = Query(default=None),
@@ -889,6 +896,8 @@ def get_my_reward_points(
     rw = db.query(RewardWallet).filter(RewardWallet.user_id == current_user.id).first()
     points = int(rw.total_points or 0) if rw else 0
     return {"user_id": current_user.id, "total_points": points}
+
+
 @router.get("/catalog")
 def get_reward_catalog(
     db: Session = Depends(get_db),
@@ -921,6 +930,8 @@ def get_reward_catalog(
             for r in rewards
         ]
     }
+
+
 # ============================================================
 # CUSTOMER QR REDEMPTION
 # ============================================================
@@ -938,31 +949,7 @@ def generate_redeem_qr(
     if not reward:
         raise HTTPException(status_code=404, detail="Reward not found")
 
-    rw = _get_reward_wallet(db, int(current_user.id))
-    points = int(rw.total_points or 0)
-    required_points = int(reward.points_required or 0)
-
-    if points < required_points:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Not enough points. Need {required_points}, you have {points}."
-        )
-
-    _clear_unused_redeem_tokens(db, int(current_user.id))
-
-    token = _generate_short_redeem_token(db)
-
-    row = RewardRedemptionToken(
-        user_id=int(current_user.id),
-        token=token,
-        required_points=required_points,
-        expires_at=NO_EXPIRY_TOKEN_PLACEHOLDER,
-        is_used=False
-    )
-
-    db.add(row)
-    db.commit()
-    db.refresh(row)
+    row = _create_reward_redeem_token(db, current_user, reward)
 
     return {
         "user_id": int(current_user.id),
@@ -972,7 +959,7 @@ def generate_redeem_qr(
         "qr_value": row.token,
         "expires_at": None,
         "has_expiry": False,
-        "required_points": required_points,
+        "required_points": int(row.required_points or 0),
         "message": "Redeem token generated successfully"
     }
 
@@ -987,26 +974,26 @@ def generate_redeem_qr_for_customer(
     user = result["user"]
     customer_profile = result["customer_profile"]
 
-    rw = _get_reward_wallet(db, int(user.id))
-    points = int(rw.total_points or 0)
+    reward = db.query(Reward).filter(
+        Reward.id == int(payload.reward_id),
+        Reward.is_active == True
+    ).first()
+    if not reward:
+        raise HTTPException(status_code=404, detail="Reward not found")
 
-    if points < REQUIRED_POINTS:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Not enough points. Need {REQUIRED_POINTS}, you have {points}."
-        )
-
-    row = _create_no_expiry_redeem_token(db, user)
+    row = _create_reward_redeem_token(db, user, reward)
 
     return {
         "user_id": int(user.id),
         "full_name": customer_profile.full_name if customer_profile else None,
         "email": getattr(user, "email", None),
+        "reward_id": int(reward.id),
+        "reward_name": reward.name,
         "token": row.token,
         "qr_value": row.token,
         "expires_at": None,
         "has_expiry": False,
-        "required_points": REQUIRED_POINTS,
+        "required_points": int(row.required_points or 0),
         "message": "Redeem token generated successfully for customer"
     }
 
@@ -1032,8 +1019,11 @@ def consume_redeem_qr(
         raise HTTPException(status_code=400, detail="Token already used")
 
     rw = _get_reward_wallet(db, row.user_id)
-    required_points = int(getattr(row, "required_points", REQUIRED_POINTS) or REQUIRED_POINTS)
+    required_points = int(getattr(row, "required_points", 0) or 0)
     current_points = int(rw.total_points or 0)
+
+    if required_points <= 0:
+        raise HTTPException(status_code=400, detail="Invalid token points requirement")
 
     if current_points < required_points:
         raise HTTPException(status_code=400, detail="Not enough points")
@@ -1045,7 +1035,7 @@ def consume_redeem_qr(
     db.add(
         RewardTransaction(
             reward_wallet_id=rw.id,
-            reward_id=None,
+            reward_id=getattr(row, "reward_id", None),
             order_id=None,
             points_change=-required_points,
             transaction_type="REDEEM"
@@ -1057,6 +1047,7 @@ def consume_redeem_qr(
     return {
         "message": "Reward redeemed",
         "user_id": row.user_id,
+        "reward_id": getattr(row, "reward_id", None),
         "remaining_points": int(rw.total_points or 0)
     }
 
@@ -1242,20 +1233,7 @@ def confirm_manual_points_otp(
 
         rw = _get_reward_wallet(db, user.id)
         current = int(rw.total_points or 0)
-
-        if current >= REQUIRED_POINTS:
-            db.commit()
-            return {
-                "message": "Account already at max points. No points were added.",
-                "user_id": user.id,
-                "order_id": resolved_order_id,
-                "display_id": _format_order_display_id(resolved_order_id),
-                "added_points": 0,
-                "total_points": current
-            }
-
-        capped_total = min(REQUIRED_POINTS, current + claim_points)
-        actual_added = capped_total - current
+        actual_added = claim_points
 
         if actual_added <= 0:
             db.commit()
@@ -1268,7 +1246,7 @@ def confirm_manual_points_otp(
                 "total_points": current
             }
 
-        rw.total_points = capped_total
+        rw.total_points = current + claim_points
 
         db.add(
             RewardTransaction(
@@ -1336,18 +1314,8 @@ def confirm_manual_points_otp(
     rw = _get_reward_wallet(db, user.id)
     current = int(rw.total_points or 0)
 
-    if current >= REQUIRED_POINTS:
-        db.commit()
-        return {
-            "message": "Account already at max points. No points were added.",
-            "user_id": user.id,
-            "added_points": 0,
-            "total_points": current
-        }
-
-    capped_total = min(REQUIRED_POINTS, current + int(payload.points_to_add))
-    actual_added = capped_total - current
-    rw.total_points = capped_total
+    actual_added = int(payload.points_to_add)
+    rw.total_points = current + actual_added
 
     if actual_added > 0:
         db.add(
