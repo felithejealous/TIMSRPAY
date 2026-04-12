@@ -101,7 +101,9 @@
             filter: blur(150px);
             opacity: calc(var(--glow-opacity) - 0.05);
         }
-
+        .logout-link {
+            color: var(--danger) !important;
+        }
         aside {
             width: 260px;
             background: var(--sidebar-bg);
@@ -640,17 +642,18 @@
     <aside>
         <div class="sidebar-logo"><img src="logo.png" alt="Teo D' Mango"></div>
         <nav>
-            <ul>
-                <li><a href="overview.html"><i class="fa-solid fa-chart-line"></i> <span>Overview</span></a></li>
-                <li><a href="orderstaffs.html"><i class="fa-solid fa-bell-concierge"></i> <span>Orders</span></a></li>
-                <li><a href="menustaff.html"><i class="fa-solid fa-receipt"></i> <span>Menu</span></a></li>
-                <li><a href="inventory.html"><i class="fa-solid fa-boxes-stacked"></i> <span>Inventory</span></a></li>
-                <li><a href="dashboardstaff.html"><i class="fa-solid fa-user-clock"></i> <span>Attendance</span></a></li>
-                <li><a href="walletstaff.html"><i class="fa-solid fa-credit-card"></i> <span>RPAY</span></a></li>
-                <li class="active"><a href="rewardsstaff.html"><i class="fa-solid fa-gift"></i> <span>Rewards</span></a></li>
-                <li><a href="dashaccsettstaff.html"><i class="fa-solid fa-gear"></i> <span>Settings</span></a></li>
-                <li style="margin-top: auto;"><a href="index.html" style="color: var(--danger);"><i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></a></li>
-            </ul>
+<ul>
+    <li><a href="overview.html"><i class="fa-solid fa-chart-line"></i> <span>Overview</span></a></li>
+    <li ><a href="orderstaffs.html"><i class="fa-solid fa-bell-concierge"></i> <span>Orders</span></a>
+    </li>
+    <li><a href="menustaff.html"><i class="fa-solid fa-receipt"></i> <span>Menu</span></a></li>
+    <li><a href="inventory.html"><i class="fa-solid fa-boxes-stacked"></i> <span>Inventory</span></a></li>
+    <li><a href="walletstaff.html"><i class="fa-solid fa-credit-card"></i> <span>RPAY</span></a></li>
+    <li class="active"><a href="rewardsstaff.html"><i class="fa-solid fa-gift"></i> <span>Rewards</span></a></li>
+    <li><a href="salesreportstaff.html"><i class="fa-solid fa-chart-column"></i> <span>Sales Report</span></a></li>
+    <li style="margin-top: auto;"><a href="loginstaff.html" class="logout-link"><i
+                class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></a></li>
+</ul>
         </nav>
     </aside>
 

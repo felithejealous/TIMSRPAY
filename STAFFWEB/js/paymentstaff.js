@@ -138,14 +138,53 @@ function escapeHTML(value) {
 function formatPeso(value) {
     return `₱${Number(value || 0).toFixed(2)}`;
 }
+function parseServerDate(value) {
+    if (!value) return null;
+
+    const raw = String(value).trim();
+    if (!raw) return null;
+
+    if (/[zZ]$|[+\-]\d{2}:\d{2}$/.test(raw)) {
+        const zonedDate = new Date(raw);
+        return Number.isNaN(zonedDate.getTime()) ? null : zonedDate;
+    }
+
+    const normalized = raw.replace(" ", "T");
+    const match = normalized.match(
+        /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?(?:\.\d+)?$/
+    );
+
+    if (match) {
+        const [, year, month, day, hour, minute, second = "00"] = match;
+        return new Date(Date.UTC(
+            Number(year),
+            Number(month) - 1,
+            Number(day),
+            Number(hour),
+            Number(minute),
+            Number(second)
+        ));
+    }
+
+    const fallbackDate = new Date(normalized);
+    return Number.isNaN(fallbackDate.getTime()) ? null : fallbackDate;
+}
 
 function formatDateTime(value) {
     if (!value) return "-";
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return "-";
-    return date.toLocaleString();
+    const date = parseServerDate(value);
+    if (!date) return "-";
+    return date.toLocaleString("en-PH", {
+        timeZone: "Asia/Manila",
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true
+    });
 }
-
 function getOrderIdFromURL() {
     const params = new URLSearchParams(window.location.search);
     const orderId = params.get("order_id");
@@ -407,13 +446,19 @@ function renderReceipt() {
     }
 
     lines.push(`<div class="receipt-divider"></div>`);
-    lines.push(`<div class="receipt-row"><span>Subtotal</span><span>${escapeHTML(Number(receiptData?.subtotal || 0).toFixed(2))}</span></div>`);
-    lines.push(`<div class="receipt-row"><span>VAT</span><span>${escapeHTML(Number(receiptData?.vat_amount || 0).toFixed(2))}</span></div>`);
+    if (receiptData?.is_pwd_discount) {
+        lines.push(`<div class="receipt-row"><span>Gross Sales</span><span>${escapeHTML(Number(checkoutData?.subtotal_amount || receiptData?.total_amount || 0).toFixed(2))}</span></div>`);
+        lines.push(`<div class="receipt-row"><span>VAT-Exempt Sales</span><span>${escapeHTML(Number(receiptData?.vat_exempt_sales || 0).toFixed(2))}</span></div>`);
+        lines.push(`<div class="receipt-row"><span>VAT</span><span>0.00</span></div>`);
+        lines.push(`<div class="receipt-row"><span>PWD Discount</span><span>- ${escapeHTML(Number(receiptData?.pwd_discount_amount || 0).toFixed(2))}</span></div>`);
+    } else {
+        lines.push(`<div class="receipt-row"><span>Subtotal</span><span>${escapeHTML(Number(receiptData?.subtotal || 0).toFixed(2))}</span></div>`);
+        lines.push(`<div class="receipt-row"><span>VAT</span><span>${escapeHTML(Number(receiptData?.vat_amount || 0).toFixed(2))}</span></div>`);
 
-    if (Number(receiptData?.discount_amount || 0) > 0) {
-        lines.push(`<div class="receipt-row"><span>Discount</span><span>- ${escapeHTML(Number(receiptData.discount_amount).toFixed(2))}</span></div>`);
+        if (Number(receiptData?.discount_amount || 0) > 0) {
+            lines.push(`<div class="receipt-row"><span>Discount</span><span>- ${escapeHTML(Number(receiptData.discount_amount).toFixed(2))}</span></div>`);
+        }
     }
-
     lines.push(`<div class="receipt-divider"></div>`);
     lines.push(`
         <div class="receipt-row" style="font-size: 1.3rem; font-weight: 900;">

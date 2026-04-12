@@ -79,8 +79,37 @@ def _as_utc(dt: datetime) -> Optional[datetime]:
 
 def _money(value) -> Decimal:
     return Decimal(str(value or 0)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+def compute_pwd_ph_discount(gross_total: Decimal, pwd_rate: Decimal = Decimal("0.20")) -> Dict[str, Decimal]:
+    gross_total = _money(gross_total)
+    pwd_rate = Decimal(str(pwd_rate or 0)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP)
 
+    if gross_total <= Decimal("0.00"):
+        return {
+            "gross_total": Decimal("0.00"),
+            "vat_exempt_sales": Decimal("0.00"),
+            "pwd_discount_amount": Decimal("0.00"),
+            "final_total": Decimal("0.00"),
+            "vat_amount_removed": Decimal("0.00"),
+        }
 
+    vat_exempt_sales = (gross_total / (Decimal("1.00") + VAT_RATE)).quantize(
+        Decimal("0.01"),
+        rounding=ROUND_HALF_UP,
+    )
+    pwd_discount_amount = (vat_exempt_sales * pwd_rate).quantize(
+        Decimal("0.01"),
+        rounding=ROUND_HALF_UP,
+    )
+    final_total = _money(vat_exempt_sales - pwd_discount_amount)
+    vat_amount_removed = _money(gross_total - vat_exempt_sales)
+
+    return {
+        "gross_total": gross_total,
+        "vat_exempt_sales": vat_exempt_sales,
+        "pwd_discount_amount": pwd_discount_amount,
+        "final_total": final_total,
+        "vat_amount_removed": vat_amount_removed,
+    }
 def _display_order_id(order_id: int) -> str:
     return f"#TM-{ORDER_DISPLAY_OFFSET + int(order_id)}"
 
@@ -115,6 +144,10 @@ class BaseOrderPayload(BaseModel):
     wallet_pin: Optional[str] = None
     promo_code: Optional[str] = None
     user_id: Optional[int] = None
+    is_pwd_discount: Optional[bool] = False
+    pwd_discount_rate: Optional[Decimal] = Decimal("0.20")
+    pwd_name: Optional[str] = None
+    pwd_id_reference: Optional[str] = None
 class CashPayPayload(BaseModel):
     amount_received: Decimal = Field(gt=0)
 
@@ -230,6 +263,8 @@ def list_orders(
             "status": order.status,
             "payment_method": payment_method,
             "created_at": str(order.created_at),
+            "paid_at": str(getattr(order, "paid_at", None)) if getattr(order, "paid_at", None) else None,
+            "completed_at": str(getattr(order, "completed_at", None)) if getattr(order, "completed_at", None) else None,
             "subtotal": float(order.subtotal or 0),
             "vat_amount": float(order.vat_amount or 0),
             "discount_amount": float(getattr(order, "discount_amount", 0) or 0),
@@ -244,6 +279,15 @@ def list_orders(
             "last_refund_at": refund_info["last_refund_at"],
             "has_item_notes": any(bool((getattr(oi, "notes", "") or "").strip()) for oi, _ in item_rows),
             "item_details": item_details,
+            "is_pwd_discount": bool(getattr(order, "is_pwd_discount", False)),
+            "pwd_discount_amount": float(getattr(order, "pwd_discount_amount", 0) or 0),
+            "pwd_name": getattr(order, "pwd_name", None),
+            "pwd_id_reference": getattr(order, "pwd_id_reference", None),
+            "vat_exempt_sales": float(getattr(order, "vat_exempt_sales", 0) or 0),
+            "amount_received": float(getattr(order, "amount_received", 0) or 0)
+                if getattr(order, "amount_received", None) is not None else None,
+            "change_amount": float(getattr(order, "change_amount", 0) or 0)
+                if getattr(order, "change_amount", None) is not None else None,
         })
 
     return {"count": len(result), "data": result}
@@ -922,8 +966,17 @@ def _create_order_core(
     wallet_code: Optional[str],
     wallet_pin: Optional[str],
     promo_code: Optional[str] = None,
-    customer_name: Optional[str] = None,
+    customer_name: Optional[str] = None,   
+    is_pwd_discount: bool = False,
+    pwd_discount_rate: Decimal = Decimal("0.20"),
+    pwd_name: Optional[str] = None,
+    pwd_id_reference: Optional[str] = None,
 ):
+    if is_pwd_discount and (promo_code or "").strip():
+        raise HTTPException(
+            status_code=400,
+            detail="PWD discount cannot be combined with promo code."
+        )
     total_before_discount = Decimal("0")
     earned_points = 0
     potential_points = 0
@@ -1017,24 +1070,58 @@ def _create_order_core(
 
     total_before_discount = _money(total_before_discount)
 
-    promo_result = validate_and_compute_promo(
-        db=db,
-        promo_code_text=promo_code,
-        base_total=total_before_discount,
-        user_id=user_id,
-        payment_method=payment_method,
-        order_type=order_type,
-    )
-    promo_row = promo_result["promo"]
+    promo_result = {
+        "promo": None,
+        "discount_amount": Decimal("0.00"),
+        "discount_type": None,
+        "discount_value": None,
+        "promo_code_text": None,
+    }
 
-    discount_amount = _money(promo_result["discount_amount"])
-    final_total = _money(total_before_discount - discount_amount)
+    promo_row = None
+    promo_discount_amount = Decimal("0.00")
+    pwd_discount_amount = Decimal("0.00")
+    vat_exempt_sales = Decimal("0.00")
 
-    subtotal = (final_total / (Decimal("1") + VAT_RATE)).quantize(
-        Decimal("0.01"),
-        rounding=ROUND_HALF_UP,
-    )
-    vat_amount = _money(final_total - subtotal)
+    if is_pwd_discount:
+        pwd_calc = compute_pwd_ph_discount(
+            gross_total=total_before_discount,
+            pwd_rate=Decimal(str(pwd_discount_rate or Decimal("0.20"))),
+        )
+        vat_exempt_sales = _money(pwd_calc["vat_exempt_sales"])
+        pwd_discount_amount = _money(pwd_calc["pwd_discount_amount"])
+        discount_amount = _money(pwd_discount_amount)
+        final_total = _money(pwd_calc["final_total"])
+
+        # For PWD VAT-exempt sales, VAT on final receipt should be zero
+        subtotal = vat_exempt_sales
+        vat_amount = Decimal("0.00")
+        discount_type = "pwd"
+        discount_value = Decimal(str(pwd_discount_rate or Decimal("0.20")))
+        promo_code_text_final = None
+    else:
+        promo_result = validate_and_compute_promo(
+            db=db,
+            promo_code_text=promo_code,
+            base_total=total_before_discount,
+            user_id=user_id,
+            payment_method=payment_method,
+            order_type=order_type,
+        )
+        promo_row = promo_result["promo"]
+        promo_discount_amount = _money(promo_result["discount_amount"])
+
+        discount_amount = _money(promo_discount_amount)
+        final_total = _money(total_before_discount - discount_amount)
+
+        subtotal = (final_total / (Decimal("1") + VAT_RATE)).quantize(
+            Decimal("0.01"),
+            rounding=ROUND_HALF_UP,
+        )
+        vat_amount = _money(final_total - subtotal)
+        discount_type = promo_result["discount_type"]
+        discount_value = promo_result["discount_value"]
+        promo_code_text_final = promo_result["promo_code_text"]
 
     initial_status = compute_initial_status(order_type, payment_method)
     order_points_snapshot = int(earned_points if user_id else potential_points)
@@ -1056,10 +1143,21 @@ def _create_order_core(
         vat_rate=Decimal("12.00"),
         total_amount=final_total,
         promo_code_id=(promo_row.id if promo_row else None),
-        promo_code_text=promo_result["promo_code_text"],
+        promo_code_text=promo_code_text_final,
         discount_amount=discount_amount,
-        discount_type=promo_result["discount_type"],
-        discount_value=promo_result["discount_value"],
+        discount_type=discount_type,
+        discount_value=discount_value,
+
+        is_pwd_discount=bool(is_pwd_discount),
+        pwd_discount_rate=(
+            Decimal(str(pwd_discount_rate or Decimal("0.20")))
+            if is_pwd_discount
+            else Decimal("0.00")
+        ),
+        pwd_discount_amount=_money(pwd_discount_amount),
+        pwd_name=(pwd_name.strip() if pwd_name else None),
+        pwd_id_reference=(pwd_id_reference.strip() if pwd_id_reference else None),
+        vat_exempt_sales=_money(vat_exempt_sales) if is_pwd_discount else Decimal("0.00"),
         earned_points=order_points_snapshot,
         points_synced=False,
         points_claim_expires_at=(
@@ -1339,6 +1437,10 @@ def create_cashier_order(
             wallet_pin=payload.wallet_pin,
             promo_code=payload.promo_code,
             customer_name=payload.customer_name,
+            is_pwd_discount=bool(payload.is_pwd_discount),
+            pwd_discount_rate=payload.pwd_discount_rate or Decimal("0.20"),
+            pwd_name=payload.pwd_name,
+            pwd_id_reference=payload.pwd_id_reference,
         )
     except HTTPException:
         db.rollback()
@@ -1586,7 +1688,7 @@ def void_order(
 def complete_order(
     order_id: int,
     db: Session = Depends(get_db),
-   current_staff: User = Depends(require_roles("staff", "cashier", "admin")),
+    current_staff: User = Depends(require_roles("staff", "cashier", "admin")),
 ):
     try:
         order = db.query(Order).filter(Order.id == order_id).first()
@@ -1601,6 +1703,9 @@ def complete_order(
             raise HTTPException(status_code=400, detail="Only paid orders can be marked as completed")
 
         order.status = "completed"
+
+        if not getattr(order, "processed_by_staff_id", None):
+            order.processed_by_staff_id = int(current_staff.id)
 
         if hasattr(order, "completed_at"):
             order.completed_at = sa_func.now()
@@ -1630,6 +1735,7 @@ def complete_order(
                 reference_type="order",
                 reference_id=order.id,
             )
+
         return {"order_id": order.id, "status": order.status}
 
     except HTTPException:
@@ -1975,6 +2081,12 @@ def get_receipt(order_id: int, db: Session = Depends(get_db)):
             if getattr(order, "change_amount", None) is not None
             else None
             ),
+        "is_pwd_discount": bool(getattr(order, "is_pwd_discount", False)),
+        "pwd_discount_rate": float(getattr(order, "pwd_discount_rate", 0) or 0),
+        "pwd_discount_amount": float(getattr(order, "pwd_discount_amount", 0) or 0),
+        "pwd_name": getattr(order, "pwd_name", None),
+        "pwd_id_reference": getattr(order, "pwd_id_reference", None),
+        "vat_exempt_sales": float(getattr(order, "vat_exempt_sales", 0) or 0),
 
         "is_refunded": refund_info["is_refunded"],
         "refund_count": refund_info["refund_count"],

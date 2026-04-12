@@ -66,7 +66,6 @@ def _end_dt_exclusive(d: date) -> datetime:
 def _money(value) -> float:
     return float(Decimal(str(value or 0)))
 
-
 def _csv_response(content: str, filename: str) -> Response:
     return Response(
         content=content,

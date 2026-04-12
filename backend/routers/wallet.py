@@ -741,7 +741,53 @@ def top_up(
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Top-up failed: {str(e)}")
 
+# -----------------------
+# TOP-UP HISTORY (STAFF/CASHIER/ADMIN)
+# today's top-up logs from database
+# -----------------------
+@router.get("/topup/history")
+def get_topup_history(
+    limit: int = Query(default=50, ge=1, le=200),
+    db: Session = Depends(get_db),
+    _: User = Depends(require_roles("staff", "cashier", "admin")),
+):
+    now = datetime.utcnow()
+    start_of_day = datetime(now.year, now.month, now.day)
+    end_of_day = start_of_day + timedelta(days=1)
 
+    rows = (
+        db.query(WalletTransaction, Wallet, User, CustomerProfile)
+        .join(Wallet, Wallet.id == WalletTransaction.wallet_id)
+        .join(User, User.id == Wallet.user_id)
+        .outerjoin(CustomerProfile, CustomerProfile.user_id == User.id)
+        .filter(WalletTransaction.transaction_type == "TOPUP")
+        .filter(WalletTransaction.created_at >= start_of_day)
+        .filter(WalletTransaction.created_at < end_of_day)
+        .order_by(WalletTransaction.created_at.desc(), WalletTransaction.id.desc())
+        .limit(limit)
+        .all()
+    )
+
+    data = []
+
+    for tx, wallet, user, customer_profile in rows:
+        data.append({
+            "transaction_id": tx.id,
+            "wallet_id": wallet.id,
+            "user_id": user.id,
+            "email": user.email,
+            "full_name": customer_profile.full_name if customer_profile else None,
+            "wallet_code": getattr(wallet, "wallet_code", None),
+            "amount": float(tx.amount or 0),
+            "method": "Cash",
+            "status": "Completed",
+            "created_at": tx.created_at,
+        })
+
+    return {
+        "count": len(data),
+        "data": data,
+    }
 # -----------------------
 # BACKFILL WALLET CODES (ADMIN ONLY)
 # for old wallets with null/empty wallet_code

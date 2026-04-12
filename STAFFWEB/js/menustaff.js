@@ -13,7 +13,24 @@ const promoCodeInput = document.getElementById("promoCodeInput");
 const quantityInput = document.getElementById("quantityInput");
 const qtyMinusBtn = document.getElementById("qtyMinusBtn");
 const qtyPlusBtn = document.getElementById("qtyPlusBtn");
-
+const subtotalPrice = document.getElementById("subtotalPrice");
+const pwdDiscountRow = document.getElementById("pwdDiscountRow");
+const pwdDiscountAmount = document.getElementById("pwdDiscountAmount");
+const pwdDiscountCheckbox = document.getElementById("pwdDiscountCheckbox");
+const pwdFields = document.getElementById("pwdFields");
+const pwdNameInput = document.getElementById("pwdNameInput");
+const pwdIdInput = document.getElementById("pwdIdInput");
+const cartToggleBtn = document.getElementById("cartToggleBtn");
+const cartCloseBtn = document.getElementById("cartCloseBtn");
+const cartOverlay = document.getElementById("cartOverlay");
+const cartDrawer = document.getElementById("cartDrawer");
+const cartCountBadge = document.getElementById("cartCountBadge");
+const cartDrawerList = document.getElementById("cartDrawerList");
+const drawerSubtotalPrice = document.getElementById("drawerSubtotalPrice");
+const drawerPwdDiscountRow = document.getElementById("drawerPwdDiscountRow");
+const drawerPwdDiscountAmount = document.getElementById("drawerPwdDiscountAmount");
+const drawerTotalPrice = document.getElementById("drawerTotalPrice");
+const drawerCheckoutBtn = document.getElementById("drawerCheckoutBtn");
 let products = [];
 let addons = [];
 let sizeAddons = [];
@@ -30,7 +47,8 @@ let selectedQuantity = 1;
 
 let cart = [];
 let total = 0;
-
+const PWD_DISCOUNT_RATE = 0.20;
+let isPwdDiscountApplied = false;
 /* =========================
    HELPERS
 ========================= */
@@ -233,7 +251,155 @@ function syncCustomerNameFromLinkedAccount() {
         customerNameInput.value = displayName;
     }
 }
+function getCartSubtotal() {
+    return cart.reduce((sum, item) => sum + Number(item.display_price || 0), 0);
+}
 
+function getPwdVatExemptSales(grossTotalValue) {
+    const grossTotal = Number(grossTotalValue || 0);
+    if (!isPwdDiscountApplied || grossTotal <= 0) return 0;
+    return Number((grossTotal / 1.12).toFixed(2));
+}
+
+function getPwdVatExemptSales(grossTotalValue) {
+    const grossTotal = Number(grossTotalValue || 0);
+    if (!isPwdDiscountApplied || grossTotal <= 0) return 0;
+    return Number((grossTotal / 1.12).toFixed(2));
+}
+
+function getPwdDiscountAmount(grossTotalValue) {
+    const vatExemptSales = getPwdVatExemptSales(grossTotalValue);
+    if (!isPwdDiscountApplied || vatExemptSales <= 0) return 0;
+    return Number((vatExemptSales * PWD_DISCOUNT_RATE).toFixed(2));
+}
+
+function getCartFinalTotal() {
+    const subtotal = getCartSubtotal();
+    if (!isPwdDiscountApplied) return Number(subtotal.toFixed(2));
+
+    const vatExemptSales = getPwdVatExemptSales(subtotal);
+    const discount = getPwdDiscountAmount(subtotal);
+    return Number((vatExemptSales - discount).toFixed(2));
+}
+function updatePwdFieldsVisibility() {
+    if (!pwdFields) return;
+
+    if (isPwdDiscountApplied) {
+        pwdFields.classList.add("show");
+    } else {
+        pwdFields.classList.remove("show");
+    }
+}
+
+function syncPwdNameFromCustomer() {
+    if (!pwdNameInput) return;
+    if (pwdNameInput.value?.trim()) return;
+
+    const fallbackName =
+        customerNameInput?.value?.trim() ||
+        linkedCustomer?.full_name ||
+        "";
+
+    if (fallbackName) {
+        pwdNameInput.value = fallbackName;
+    }
+}
+
+function setupPwdControls() {
+    if (!pwdDiscountCheckbox) return;
+
+    pwdDiscountCheckbox.addEventListener("change", () => {
+        isPwdDiscountApplied = !!pwdDiscountCheckbox.checked;
+
+        if (isPwdDiscountApplied) {
+            syncPwdNameFromCustomer();
+        }
+
+        updatePwdFieldsVisibility();
+        updateCartUI();
+    });
+}
+/* =========================
+   CART DRAWER
+========================= */
+function openCartDrawer() {
+    cartDrawer?.classList.add("show");
+    cartOverlay?.classList.add("show");
+    document.body.style.overflow = "hidden";
+}
+
+function closeCartDrawer() {
+    cartDrawer?.classList.remove("show");
+    cartOverlay?.classList.remove("show");
+    document.body.style.overflow = "";
+}
+
+function setupCartDrawer() {
+    cartToggleBtn?.addEventListener("click", openCartDrawer);
+    cartCloseBtn?.addEventListener("click", closeCartDrawer);
+    cartOverlay?.addEventListener("click", closeCartDrawer);
+
+    drawerCheckoutBtn?.addEventListener("click", async () => {
+        closeCartDrawer();
+        await proceedToPayment();
+    });
+}
+
+function getCartItemHTML(item, index) {
+    return `
+        <div class="cart-item">
+            <div>
+                <div class="cart-item-name">${escapeHTML(item.display_name)}</div>
+                <div class="cart-item-meta">
+                    Size: ${escapeHTML(item.display_size || "Small")}<br>
+                    Add-ons: ${escapeHTML(item.display_addons.length ? item.display_addons.join(", ") : "No Add-ons")}
+                </div>
+
+                <div style="display:flex; align-items:center; gap:8px; margin-top:10px;">
+                    <button type="button" class="cart-qty-btn" data-action="minus" data-index="${index}">-</button>
+                    <input type="number" class="cart-qty-input" data-index="${index}" min="1" step="1" value="${escapeHTML(item.quantity)}" style="width:70px; text-align:center;">
+                    <button type="button" class="cart-qty-btn" data-action="plus" data-index="${index}">+</button>
+                </div>
+            </div>
+
+            <div style="display:flex; align-items:flex-start; gap:10px;">
+                <div class="cart-item-price">${escapeHTML(formatPeso(item.display_price))}</div>
+                <i class="fa-solid fa-xmark cart-delete" data-remove-index="${index}"></i>
+            </div>
+        </div>
+    `;
+}
+
+function bindCartEvents(container) {
+    if (!container) return;
+
+    container.querySelectorAll(".cart-delete").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const index = Number(btn.dataset.removeIndex);
+            removeCartItem(index);
+        });
+    });
+
+    container.querySelectorAll(".cart-qty-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const index = Number(btn.dataset.index);
+            const action = btn.dataset.action;
+            updateCartItemQuantity(index, action === "plus" ? 1 : -1);
+        });
+    });
+
+    container.querySelectorAll(".cart-qty-input").forEach(input => {
+        input.addEventListener("input", () => {
+            const index = Number(input.dataset.index);
+            setCartItemQuantity(index, input.value);
+        });
+
+        input.addEventListener("blur", () => {
+            const index = Number(input.dataset.index);
+            setCartItemQuantity(index, input.value);
+        });
+    });
+}
 /* =========================
    LOGOUT
 ========================= */
@@ -843,71 +1009,72 @@ function setCartItemQuantity(index, value) {
     recomputeCartItemDisplayPrice(item);
     updateCartUI();
 }
-
 function updateCartUI() {
     if (!cartList || !totalPrice) return;
 
-    total = cart.reduce((sum, item) => sum + Number(item.display_price || 0), 0);
+    const subtotal = getCartSubtotal();
+    const discount = getPwdDiscountAmount(subtotal);
+    total = getCartFinalTotal();
+
+    const totalItemCount = cart.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+    if (cartCountBadge) {
+        cartCountBadge.textContent = String(totalItemCount);
+    }
 
     if (!cart.length) {
-        cartList.innerHTML = `<div class="cart-empty">Cart is empty</div>`;
+        const emptyHTML = `<div class="cart-empty">Cart is empty</div>`;
+
+        cartList.innerHTML = emptyHTML;
+        if (cartDrawerList) {
+            cartDrawerList.innerHTML = emptyHTML;
+        }
+
+        if (subtotalPrice) subtotalPrice.textContent = formatPeso(0);
+        if (pwdDiscountAmount) pwdDiscountAmount.textContent = `-${formatPeso(0)}`;
+        if (pwdDiscountRow) pwdDiscountRow.style.display = "none";
+
+        if (drawerSubtotalPrice) drawerSubtotalPrice.textContent = formatPeso(0);
+        if (drawerPwdDiscountAmount) drawerPwdDiscountAmount.textContent = `-${formatPeso(0)}`;
+        if (drawerPwdDiscountRow) drawerPwdDiscountRow.style.display = "none";
+
         totalPrice.textContent = formatPeso(0);
+        if (drawerTotalPrice) drawerTotalPrice.textContent = formatPeso(0);
+
         return;
     }
 
-    cartList.innerHTML = cart.map((item, index) => `
-        <div class="cart-item">
-            <div>
-                <div class="cart-item-name">${escapeHTML(item.display_name)}</div>
-                <div class="cart-item-meta">
-                    Size: ${escapeHTML(item.display_size || "Small")}<br>
-                    Add-ons: ${escapeHTML(item.display_addons.length ? item.display_addons.join(", ") : "No Add-ons")}
-                </div>
+    const cartHTML = cart.map((item, index) => getCartItemHTML(item, index)).join("");
 
-                <div style="display:flex; align-items:center; gap:8px; margin-top:10px;">
-                    <button type="button" class="cart-qty-btn" data-action="minus" data-index="${index}">-</button>
-                    <input type="number" class="cart-qty-input" data-index="${index}" min="1" step="1" value="${escapeHTML(item.quantity)}" style="width:70px; text-align:center;">
-                    <button type="button" class="cart-qty-btn" data-action="plus" data-index="${index}">+</button>
-                </div>
-            </div>
+    cartList.innerHTML = cartHTML;
+    if (cartDrawerList) {
+        cartDrawerList.innerHTML = cartHTML;
+    }
 
-            <div style="display:flex; align-items:flex-start; gap:10px;">
-                <div class="cart-item-price">${escapeHTML(formatPeso(item.display_price))}</div>
-                <i class="fa-solid fa-xmark cart-delete" data-remove-index="${index}"></i>
-            </div>
-        </div>
-    `).join("");
+    if (subtotalPrice) subtotalPrice.textContent = formatPeso(subtotal);
+    if (drawerSubtotalPrice) drawerSubtotalPrice.textContent = formatPeso(subtotal);
+
+    if (pwdDiscountRow) {
+        pwdDiscountRow.style.display = isPwdDiscountApplied && subtotal > 0 ? "flex" : "none";
+    }
+    if (drawerPwdDiscountRow) {
+        drawerPwdDiscountRow.style.display = isPwdDiscountApplied && subtotal > 0 ? "flex" : "none";
+    }
+
+    if (pwdDiscountAmount) {
+        pwdDiscountAmount.textContent = `-${formatPeso(discount)}`;
+    }
+    if (drawerPwdDiscountAmount) {
+        drawerPwdDiscountAmount.textContent = `-${formatPeso(discount)}`;
+    }
 
     totalPrice.textContent = formatPeso(total);
+    if (drawerTotalPrice) {
+        drawerTotalPrice.textContent = formatPeso(total);
+    }
 
-    cartList.querySelectorAll(".cart-delete").forEach(btn => {
-        btn.addEventListener("click", () => {
-            const index = Number(btn.dataset.removeIndex);
-            removeCartItem(index);
-        });
-    });
-
-    cartList.querySelectorAll(".cart-qty-btn").forEach(btn => {
-        btn.addEventListener("click", () => {
-            const index = Number(btn.dataset.index);
-            const action = btn.dataset.action;
-            updateCartItemQuantity(index, action === "plus" ? 1 : -1);
-        });
-    });
-
-    cartList.querySelectorAll(".cart-qty-input").forEach(input => {
-        input.addEventListener("input", () => {
-            const index = Number(input.dataset.index);
-            setCartItemQuantity(index, input.value);
-        });
-
-        input.addEventListener("blur", () => {
-            const index = Number(input.dataset.index);
-            setCartItemQuantity(index, input.value);
-        });
-    });
+    bindCartEvents(cartList);
+    bindCartEvents(cartDrawerList);
 }
-
 /* =========================
    CHECKOUT
 ========================= */
@@ -919,12 +1086,23 @@ function buildCashierOrderPayload() {
         throw new Error("Promo requires a linked TIMSRPAY customer account.");
     }
 
+    const pwdName = pwdNameInput?.value?.trim() || customerName || null;
+    const pwdIdReference = pwdIdInput?.value?.trim() || null;
+    const subtotal = getCartSubtotal();
+    const pwdDiscountValue = getPwdDiscountAmount(subtotal);
+
     return {
         customer_name: customerName,
         user_id: linkedCustomer?.user_id || null,
         payment_method: "cash",
         order_type: "cashier",
         promo_code: promoCode || null,
+        is_pwd_discount: isPwdDiscountApplied,
+        pwd_discount_rate: isPwdDiscountApplied ? PWD_DISCOUNT_RATE : 0,
+        pwd_discount_amount: isPwdDiscountApplied ? pwdDiscountValue : 0,
+        vat_exempt_sales_preview: isPwdDiscountApplied ? getPwdVatExemptSales(subtotal) : 0,
+        pwd_name: isPwdDiscountApplied ? pwdName : null,
+        pwd_id_reference: isPwdDiscountApplied ? pwdIdReference : null,
         items: cart.map(item => ({
             product_id: Number(item.product_id),
             quantity: Number(item.quantity || 1),
@@ -933,7 +1111,6 @@ function buildCashierOrderPayload() {
         }))
     };
 }
-
 async function proceedToPayment() {
     if (!cart.length) {
         alert("Cart is empty.");
@@ -954,22 +1131,28 @@ async function proceedToPayment() {
             body: JSON.stringify(payload)
         });
 
-        localStorage.setItem("staff_checkout_order", JSON.stringify({
-            order_id: result.order_id,
-            customer_name: payload.customer_name,
-            user_id: payload.user_id,
-            linked_customer_email: linkedCustomer?.email || null,
-            linked_customer_name: linkedCustomer?.full_name || null,
-            linked_customer_wallet_code: linkedCustomer?.wallet_code || null,
-            promo_code: payload.promo_code,
-            promo_locked_user_id: payload.promo_code ? linkedCustomer?.user_id || null : null,
-            promo_locked_email: payload.promo_code ? linkedCustomer?.email || null : null,
-            promo_locked_name: payload.promo_code ? linkedCustomer?.full_name || null : null,
-            local_cart: cart,
-            total_amount: result.total_amount,
-            discount_amount: result.discount_amount || 0,
-            promo_code_text: result.promo_code_text || null
-        }));
+localStorage.setItem("staff_checkout_order", JSON.stringify({
+    order_id: result.order_id,
+    customer_name: payload.customer_name,
+    user_id: payload.user_id,
+    linked_customer_email: linkedCustomer?.email || null,
+    linked_customer_name: linkedCustomer?.full_name || null,
+    linked_customer_wallet_code: linkedCustomer?.wallet_code || null,
+    promo_code: payload.promo_code,
+    promo_locked_user_id: payload.promo_code ? linkedCustomer?.user_id || null : null,
+    promo_locked_email: payload.promo_code ? linkedCustomer?.email || null : null,
+    promo_locked_name: payload.promo_code ? linkedCustomer?.full_name || null : null,
+    local_cart: cart,
+    subtotal_amount: getCartSubtotal(),
+    pwd_discount_applied: isPwdDiscountApplied,
+    pwd_discount_rate: isPwdDiscountApplied ? PWD_DISCOUNT_RATE : 0,
+    pwd_discount_amount: getPwdDiscountAmount(getCartSubtotal()),
+    pwd_name: isPwdDiscountApplied ? (pwdNameInput?.value?.trim() || payload.customer_name || null) : null,
+    pwd_id_reference: isPwdDiscountApplied ? (pwdIdInput?.value?.trim() || null) : null,
+    total_amount: result.total_amount,
+    discount_amount: result.discount_amount || 0,
+    promo_code_text: result.promo_code_text || null
+}));
 
         cart = [];
         updateCartUI();
@@ -1003,7 +1186,10 @@ async function initMenuStaffPage() {
         setupQuantityControls();
         setupCustomerLookup();
         setupPromoWatcher();
+        setupPwdControls();
+        setupCartDrawer();
 
+        updatePwdFieldsVisibility();
         updateCartUI();
         setSelectedQuantity(1);
 
@@ -1023,5 +1209,4 @@ async function initMenuStaffPage() {
         showSizeMessage("JS Error");
     }
 }
-
 document.addEventListener("DOMContentLoaded", initMenuStaffPage);

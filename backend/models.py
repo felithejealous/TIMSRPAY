@@ -118,6 +118,12 @@ class Order(Base):
     completed_at = Column(DateTime(timezone=False), nullable=True)
     cancelled_at = Column(DateTime(timezone=False), nullable=True)
     cancel_reason = Column(Text, nullable=True)
+    is_pwd_discount = Column(Boolean, nullable=False, default=False)
+    pwd_discount_rate = Column(Numeric(5, 4), nullable=True, default=0)
+    pwd_discount_amount = Column(Numeric(12, 2), nullable=False, default=0)
+    pwd_name = Column(String(150), nullable=True)
+    pwd_id_reference = Column(String(100), nullable=True)
+    vat_exempt_sales = Column(Numeric(12, 2), nullable=True, default=0)
 
 
 class OrderItem(Base):

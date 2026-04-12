@@ -762,17 +762,17 @@
     <aside>
         <div class="sidebar-logo"><img src="logo.png" alt="Teo D' Mango"></div>
         <nav>
-            <ul>
-                <li class="active"><a href="overview.html"><i class="fa-solid fa-chart-line"></i> <span>Overview</span></a></li>
-                <li><a href="orderstaffs.html"><i class="fa-solid fa-bell-concierge"></i> <span>Orders</span></a></li>
-                <li><a href="menustaff.html"><i class="fa-solid fa-receipt"></i> <span>Menu</span></a></li>
-                <li><a href="inventory.html"><i class="fa-solid fa-boxes-stacked"></i> <span>Inventory</span></a></li>
-                <li><a href="dashboardstaff.html"><i class="fa-solid fa-user-clock"></i> <span>Attendance</span></a></li>
-                <li><a href="walletstaff.html"><i class="fa-solid fa-credit-card"></i> <span>RPAY</span></a></li>
-                <li><a href="rewardsstaff.html"><i class="fa-solid fa-gift"></i> <span>Rewards</span></a></li>
-                <li><a href="dashaccsettstaff.html"><i class="fa-solid fa-gear"></i> <span>Settings</span></a></li>
-                <li style="margin-top: auto;"><a href="loginstaff.html" class="logout-link"><i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></a></li>
-            </ul>
+<ul>
+    <li class="active"><a href="overview.html"><i class="fa-solid fa-chart-line"></i> <span>Overview</span></a></li>
+    <li><a href="orderstaffs.html"><i class="fa-solid fa-bell-concierge"></i> <span>Orders</span></a></li>
+    <li><a href="menustaff.html"><i class="fa-solid fa-receipt"></i> <span>Menu</span></a></li>
+    <li><a href="inventory.html"><i class="fa-solid fa-boxes-stacked"></i> <span>Inventory</span></a></li>
+    <li><a href="walletstaff.html"><i class="fa-solid fa-credit-card"></i> <span>RPAY</span></a></li>
+    <li><a href="rewardsstaff.html"><i class="fa-solid fa-gift"></i> <span>Rewards</span></a></li>
+    <li><a href="salesreportstaff.html"><i class="fa-solid fa-chart-column"></i> <span>Sales Report</span></a></li>
+    <li style="margin-top: auto;"><a href="loginstaff.html" class="logout-link"><i
+                class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></a></li>
+</ul>
         </nav>
     </aside>
 
@@ -857,31 +857,31 @@
                         Quick Actions
                     </div>
 
-                    <div class="quick-actions">
-                        <a href="orderstaffs.html" class="quick-action">
-                            <i class="fa-solid fa-bell-concierge"></i>
-                            <strong>Open Orders</strong>
-                            <span>Manage active and queued orders</span>
-                        </a>
+<div class="quick-actions">
+    <a href="orderstaffs.html" class="quick-action">
+        <i class="fa-solid fa-bell-concierge"></i>
+        <strong>Open Orders</strong>
+        <span>Manage active and queued orders</span>
+    </a>
 
-                        <a href="dashboardstaff.html" class="quick-action">
-                            <i class="fa-solid fa-user-clock"></i>
-                            <strong>Attendance</strong>
-                            <span>Check daily time in and time out</span>
-                        </a>
+    <a href="walletstaff.html" class="quick-action">
+        <i class="fa-solid fa-credit-card"></i>
+        <strong>RPAY Top-Up</strong>
+        <span>Process customer wallet top-ups</span>
+    </a>
 
-                        <a href="topupstaff.html" class="quick-action">
-                            <i class="fa-solid fa-credit-card"></i>
-                            <strong>RPAY Top-Up</strong>
-                            <span>Process customer wallet top-ups</span>
-                        </a>
+    <a href="rewardsstaff.html" class="quick-action">
+        <i class="fa-solid fa-gift"></i>
+        <strong>Rewards</strong>
+        <span>Verify and assist point claims</span>
+    </a>
 
-                        <a href="rewardsstaff.html" class="quick-action">
-                            <i class="fa-solid fa-gift"></i>
-                            <strong>Rewards</strong>
-                            <span>Verify and assist point claims</span>
-                        </a>
-                    </div>
+    <a href="salesreportstaff.html" class="quick-action">
+        <i class="fa-solid fa-chart-column"></i>
+        <strong>Sales Report</strong>
+        <span>View daily and weekly sales activity</span>
+    </a>
+</div>
                 </div>
             </div>
 
@@ -919,32 +919,32 @@
                     </div>
                 </div>
 
-                <div class="card">
-                    <div class="card-title">
-                        <i class="fa-solid fa-user-check" style="color:var(--success)"></i>
-                        Today's Attendance Status
-                    </div>
+<div class="card">
+    <div class="card-title">
+        <i class="fa-solid fa-user-shield" style="color:var(--success)"></i>
+        Current Staff Session
+    </div>
 
-                    <div class="sub-grid" style="grid-template-columns: 1fr;">
-                        <div class="mini-card">
-                            <div class="mini-label">Status</div>
-                            <div class="mini-value" id="attendanceStatus">Loading...</div>
-                            <div class="mini-sub">Approved for today’s shift</div>
-                        </div>
+    <div class="sub-grid" style="grid-template-columns: 1fr;">
+        <div class="mini-card">
+            <div class="mini-label">Logged-in Staff</div>
+            <div class="mini-value" id="sessionStaffName">Loading...</div>
+            <div class="mini-sub">Active staff account currently using this page</div>
+        </div>
 
-                        <div class="mini-card">
-                            <div class="mini-label">Time In</div>
-                            <div class="mini-value" id="attendanceTimeIn">--:--</div>
-                            <div class="mini-sub">Scheduled shift attendance</div>
-                        </div>
+        <div class="mini-card">
+            <div class="mini-label">Role</div>
+            <div class="mini-value" id="sessionStaffRole">--</div>
+            <div class="mini-sub">Authenticated account role</div>
+        </div>
 
-                        <div class="mini-card">
-                            <div class="mini-label">Hours Rendered</div>
-                            <div class="mini-value" id="attendanceHours">0.0 hrs</div>
-                            <div class="mini-sub">Live attendance summary for today</div>
-                        </div>
-                    </div>
-                </div>
+        <div class="mini-card">
+            <div class="mini-label">Login Time</div>
+            <div class="mini-value" id="sessionLoginTime">--:--</div>
+            <div class="mini-sub">Session-based monitoring instead of attendance logs</div>
+        </div>
+    </div>
+</div>
             </div>
         </div>
     </main>

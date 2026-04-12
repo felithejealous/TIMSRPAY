@@ -15,6 +15,10 @@ const attendanceStatus = document.getElementById("attendanceStatus");
 const attendanceTimeIn = document.getElementById("attendanceTimeIn");
 const attendanceHours = document.getElementById("attendanceHours");
 
+const sessionStaffName = document.getElementById("sessionStaffName");
+const sessionStaffRole = document.getElementById("sessionStaffRole");
+const sessionLoginTime = document.getElementById("sessionLoginTime");
+
 const pointsLookupInput = document.getElementById("pointsLookupInput");
 const pointsLookupBtn = document.getElementById("pointsLookupBtn");
 const pointsLookupResult = document.getElementById("pointsLookupResult");
@@ -100,14 +104,14 @@ function parseServerDate(value) {
 
     const [, year, month, day, hour, minute, second = "00"] = match;
 
-    return new Date(
+    return new Date(Date.UTC(
         Number(year),
         Number(month) - 1,
         Number(day),
         Number(hour),
         Number(minute),
         Number(second)
-    );
+    ));
 }
 function formatTime(dateString) {
     if (!dateString) return "--:--";
@@ -116,28 +120,41 @@ function formatTime(dateString) {
     if (!date || Number.isNaN(date.getTime())) return "--:--";
 
     return date.toLocaleTimeString("en-PH", {
+        timeZone: "Asia/Manila",
         hour: "2-digit",
-        minute: "2-digit"
+        minute: "2-digit",
+        hour12: true
     });
 }
 function formatDateTimeAgo(dateString) {
     if (!dateString) return "Unknown time";
 
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return "Unknown time";
+    const date = parseServerDate(dateString);
+    if (!date || Number.isNaN(date.getTime())) return "Unknown time";
 
     const now = new Date();
-    const diffMs = now - date;
-    const diffMin = Math.floor(diffMs / 60000);
+    const diffMs = now.getTime() - date.getTime();
 
-    if (diffMin < 1) return "Just now";
+    if (diffMs < 0) return "Just now";
+
+    const diffSec = Math.floor(diffMs / 1000);
+    if (diffSec < 60) return "Just now";
+
+    const diffMin = Math.floor(diffSec / 60);
     if (diffMin < 60) return `${diffMin}m ago`;
 
     const diffHr = Math.floor(diffMin / 60);
     if (diffHr < 24) return `${diffHr}h ago`;
 
     const diffDay = Math.floor(diffHr / 24);
-    return `${diffDay}d ago`;
+    if (diffDay < 7) return `${diffDay}d ago`;
+
+    return date.toLocaleDateString("en-PH", {
+        timeZone: "Asia/Manila",
+        month: "short",
+        day: "numeric",
+        year: "numeric"
+    });
 }
 function setText(el, value, fallback = "--") {
     if (!el) return;
@@ -156,6 +173,45 @@ function setWelcomeText(user) {
     }
 }
 
+function formatRoleLabel(role) {
+    const raw = String(role || "staff").trim();
+    if (!raw) return "Staff";
+    return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+}
+
+function getDisplayName(user) {
+    return (
+        user?.full_name ||
+        user?.name ||
+        user?.username ||
+        user?.email ||
+        "Current Staff"
+    );
+}
+
+function getLoginTimeValue(user) {
+    return (
+        user?.login_time ||
+        user?.logged_in_at ||
+        user?.last_login ||
+        user?.session_started_at ||
+        user?.created_at ||
+        null
+    );
+}
+
+function renderCurrentSession(user) {
+    setText(sessionStaffName, getDisplayName(user), "Current Staff");
+    setText(sessionStaffRole, formatRoleLabel(user?.role), "Staff");
+
+    const loginTimeValue = getLoginTimeValue(user);
+    if (loginTimeValue) {
+        setText(sessionLoginTime, formatTime(loginTimeValue), "--:--");
+    } else {
+        setText(sessionLoginTime, "Active now", "Active now");
+    }
+}
+
 /* =========================
    CURRENT USER
 ========================= */
@@ -164,9 +220,11 @@ async function loadCurrentUser() {
         const user = await fetchJSON(`${getAPIURL()}/auth/me`);
         currentStaffUser = user;
         setWelcomeText(user);
+        renderCurrentSession(user);
         return user;
     } catch (error) {
         console.error("Failed to load current user:", error);
+        renderCurrentSession(null);
         return null;
     }
 }
@@ -208,7 +266,7 @@ function renderOrders(orders = []) {
         const createdAt = formatDateTimeAgo(order.created_at);
         const customerName = order.customer_name || "Walk-in";
         const paymentMethod = order.payment_method || "N/A";
-        const status = order.status || "pending";
+        const status = String(order.status || "pending").toLowerCase();
         const itemsSummary = order.items_summary || "No items";
 
         let actionButton = "";
@@ -415,8 +473,11 @@ async function loadAnnouncements() {
 
 /* =========================
    ATTENDANCE
+   kept for compatibility / future fallback
 ========================= */
 function renderAttendance(data) {
+    if (!attendanceStatus || !attendanceTimeIn || !attendanceHours) return;
+
     if (!data) {
         setText(attendanceStatus, "No Record");
         setText(attendanceTimeIn, "--:--");
@@ -602,8 +663,7 @@ async function initOverview() {
     await Promise.all([
         loadOrders(),
         loadLowStock(),
-        loadAnnouncements(),
-        loadAttendanceToday()
+        loadAnnouncements()
     ]);
 
     setupPointsLookup();

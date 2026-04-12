@@ -35,26 +35,6 @@ function getAPIURL() {
     return window.API_URL;
 }
 async function fetchJSON(url, options = {}) {
-    const response = await fetch(url, {
-        credentials: "include",
-        ...options,
-        headers: getAuthHeaders(options.headers || {})
-    });
-
-    let data = null;
-    try {
-        data = await response.json();
-    } catch {
-        data = null;
-    }
-
-    if (!response.ok) {
-        throw new Error(data?.detail || data?.message || `Request failed: ${response.status}`);
-    }
-
-    return data;
-}
-async function fetchJSON(url, options = {}) {
     const mergedHeaders = getAuthHeaders(options.headers || {});
 
     console.log("fetchJSON URL:", url);
@@ -82,7 +62,6 @@ async function fetchJSON(url, options = {}) {
 
     return data;
 }
-
 function escapeHTML(value) {
     return String(value ?? "")
         .replaceAll("&", "&amp;")
@@ -102,6 +81,7 @@ function parseServerDate(value) {
     const raw = String(value).trim();
     if (!raw) return null;
 
+    // If may timezone na talaga, gamitin diretso
     if (/[zZ]$|[+\-]\d{2}:\d{2}$/.test(raw)) {
         const zonedDate = new Date(raw);
         return Number.isNaN(zonedDate.getTime()) ? null : zonedDate;
@@ -116,20 +96,20 @@ function parseServerDate(value) {
     if (match) {
         const [, year, month, day, hour, minute, second = "00"] = match;
 
-        return new Date(
+        // Treat naive backend datetime as UTC
+        return new Date(Date.UTC(
             Number(year),
             Number(month) - 1,
             Number(day),
             Number(hour),
             Number(minute),
             Number(second)
-        );
+        ));
     }
 
     const fallbackDate = new Date(normalized);
     return Number.isNaN(fallbackDate.getTime()) ? null : fallbackDate;
 }
-
 function formatDateTime(value) {
     if (!value) return "-";
 
@@ -137,15 +117,16 @@ function formatDateTime(value) {
     if (!date) return "-";
 
     return date.toLocaleString("en-PH", {
+        timeZone: "Asia/Manila",
         year: "numeric",
-        month: "numeric",
+        month: "short",
         day: "numeric",
         hour: "numeric",
         minute: "2-digit",
-        second: "2-digit"
+        second: "2-digit",
+        hour12: true
     });
 }
-
 function formatDateTimeAgo(value) {
     if (!value) return "Unknown time";
 
@@ -154,18 +135,27 @@ function formatDateTimeAgo(value) {
 
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
-    const diffMin = Math.floor(diffMs / 60000);
 
-    if (diffMin < 1) return "Just now";
+    if (diffMs < 0) return "Just now";
+
+    const diffSec = Math.floor(diffMs / 1000);
+    if (diffSec < 60) return "Just now";
+
+    const diffMin = Math.floor(diffSec / 60);
     if (diffMin < 60) return `${diffMin}m ago`;
 
     const diffHr = Math.floor(diffMin / 60);
     if (diffHr < 24) return `${diffHr}h ago`;
 
     const diffDay = Math.floor(diffHr / 24);
-    return `${diffDay}d ago`;
-}
+    if (diffDay < 7) return `${diffDay}d ago`;
 
+    return date.toLocaleDateString("en-PH", {
+        month: "short",
+        day: "numeric",
+        year: "numeric"
+    });
+}
 function isSameLocalDate(dateValue) {
     if (!dateValue) return false;
 
@@ -174,11 +164,15 @@ function isSameLocalDate(dateValue) {
 
     const now = new Date();
 
-    return (
-        orderDate.getFullYear() === now.getFullYear() &&
-        orderDate.getMonth() === now.getMonth() &&
-        orderDate.getDate() === now.getDate()
-    );
+    const orderPH = orderDate.toLocaleDateString("en-CA", {
+        timeZone: "Asia/Manila"
+    });
+
+    const nowPH = now.toLocaleDateString("en-CA", {
+        timeZone: "Asia/Manila"
+    });
+
+    return orderPH === nowPH;
 }
 function getStatusClass(status) {
     const clean = String(status || "").toLowerCase();
@@ -213,20 +207,7 @@ function buildEmptyState(message) {
     return `<div class="empty-state">${escapeHTML(message)}</div>`;
 }
 
-function isSameLocalDate(dateValue) {
-    if (!dateValue) return false;
 
-    const orderDate = parseServerDate(dateValue);
-    if (!orderDate) return false;
-
-    const now = new Date();
-
-    return (
-        orderDate.getFullYear() === now.getFullYear() &&
-        orderDate.getMonth() === now.getMonth() &&
-        orderDate.getDate() === now.getDate()
-    );
-}
 
 function prettifyOrderType(orderType) {
     const clean = String(orderType || "").toLowerCase();
@@ -255,7 +236,17 @@ function getReceivedAmount(receipt) {
 
     return null;
 }
+function canUseCashierPaymentFlow(order) {
+    const orderType = String(order?.order_type || "").toLowerCase();
+    const paymentMethod = String(order?.payment_method || "").toLowerCase();
+    const status = String(order?.status || "").toLowerCase();
 
+    const isSupportedOrderType = ["cashier", "kiosk", "online"].includes(orderType);
+    const isCashPayment = paymentMethod === "cash";
+    const isPayableStatus = ["pending", "unpaid"].includes(status);
+
+    return isSupportedOrderType && isCashPayment && isPayableStatus;
+}
 function getChangeAmount(receipt) {
     if (receipt?.change_amount !== null && receipt?.change_amount !== undefined) {
         return Number(receipt.change_amount);
@@ -335,13 +326,10 @@ function renderQueueColumn(container, orders, emptyMessage) {
     container.innerHTML = orders.map(order => {
         const status = String(order.status || "pending").toLowerCase();
         const canResumePayment =
-            isWalkInOrder(order) && ["pending", "unpaid", "paid"].includes(status);
+            canUseCashierPaymentFlow(order);
 
         const canMarkCashPaid =
-            isWalkInOrder(order) &&
-            ["pending", "unpaid"].includes(status) &&
-            String(order.payment_method || "").toLowerCase() === "cash";
-
+            canUseCashierPaymentFlow(order);
         const canComplete = status === "paid";
 
         let actionButtons = `
@@ -569,6 +557,45 @@ function fillModal(receipt, summary) {
 
         <div class="receipt-divider"></div>
 
+         ${
+            receipt?.is_pwd_discount
+                ? `
+        <div class="manifest-row">
+            <span>Gross Sales</span>
+            <span>${escapeHTML(formatPeso(
+                summary?.subtotal_amount ||
+                receipt?.gross_total ||
+                receipt?.subtotal ||
+                receipt?.total_amount ||
+                0
+            ))}</span>
+        </div>
+        <div class="manifest-row">
+            <span>VAT-Exempt Sales</span>
+            <span>${escapeHTML(formatPeso(receipt?.vat_exempt_sales || 0))}</span>
+        </div>
+        <div class="manifest-row">
+            <span>VAT</span>
+            <span>₱0.00</span>
+        </div>
+        <div class="manifest-row">
+            <span>PWD Discount</span>
+            <span>${escapeHTML(formatPeso(receipt?.pwd_discount_amount || 0))}</span>
+        </div>
+        ${receipt?.pwd_name ? `
+        <div class="manifest-row">
+            <span>PWD Name</span>
+            <span>${escapeHTML(receipt.pwd_name)}</span>
+        </div>
+        ` : ""}
+        ${receipt?.pwd_id_reference ? `
+        <div class="manifest-row">
+            <span>PWD ID Ref</span>
+            <span>${escapeHTML(receipt.pwd_id_reference)}</span>
+        </div>
+        ` : ""}
+        `
+         : `
         <div class="manifest-row">
             <span>Subtotal</span>
             <span>${escapeHTML(formatPeso(receipt?.subtotal || 0))}</span>
@@ -581,6 +608,8 @@ function fillModal(receipt, summary) {
             <span>Discount</span>
             <span>${escapeHTML(formatPeso(receipt?.discount_amount || 0))}</span>
         </div>
+        `
+        }
         <div class="manifest-row">
             <span>Total</span>
             <span>${escapeHTML(formatPeso(receipt?.total_amount || 0))}</span>
@@ -664,10 +693,17 @@ function fillModal(receipt, summary) {
         </div>
     `;
 
-    const isWalkIn = ["cashier", "kiosk"].includes(orderType);
+const modalOrderForPaymentFlow = {
+    order_type: orderType,
+    payment_method: paymentMethod,
+    status: status
+};
 
-    resumePaymentBtn.style.display = isWalkIn && ["pending", "unpaid", "paid"].includes(status) ? "flex" : "none";
-    markPaidBtn.style.display = isWalkIn && ["pending", "unpaid"].includes(status) && paymentMethod === "cash" ? "flex" : "none";
+const canResumeInModal = canUseCashierPaymentFlow(modalOrderForPaymentFlow);
+const canMarkPaidInModal = canUseCashierPaymentFlow(modalOrderForPaymentFlow);
+
+resumePaymentBtn.style.display = canResumeInModal ? "flex" : "none";
+markPaidBtn.style.display = canMarkPaidInModal ? "flex" : "none";
 }
 
 function showCancelReason() {

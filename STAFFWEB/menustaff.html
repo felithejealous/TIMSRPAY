@@ -606,7 +606,123 @@
             margin-bottom: 1.5rem;
             color: var(--text-main);
         }
+.total-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 1rem;
+}
 
+.total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--text-main);
+}
+
+.total-row.muted {
+    color: var(--text-muted);
+    font-weight: 700;
+}
+
+.total-row.discount {
+    color: var(--success);
+}
+
+.pwd-box {
+    border: 1px dashed rgba(16, 185, 129, 0.35);
+}
+
+.toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.toggle-label {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--text-main);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.toggle-switch {
+    position: relative;
+    width: 52px;
+    height: 30px;
+    flex-shrink: 0;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+}
+
+.toggle-slider {
+    position: absolute;
+    inset: 0;
+    background: var(--input-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: 0.25s ease;
+}
+
+.toggle-slider::before {
+    content: "";
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    left: 3px;
+    top: 3px;
+    border-radius: 50%;
+    background: var(--text-main);
+    transition: 0.25s ease;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background: rgba(16, 185, 129, 0.18);
+    border-color: var(--success);
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+    transform: translateX(22px);
+    background: var(--success);
+}
+
+.pwd-fields {
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.pwd-fields.show {
+    display: flex;
+}
+
+.pwd-fields input {
+    width: 100%;
+    padding: 12px 14px;
+    background: var(--input-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    color: var(--text-main);
+    outline: none;
+    font-weight: 700;
+}
+
+.pwd-fields input:focus {
+    border-color: var(--success);
+}
         .btn-checkout {
             width: 100%;
             padding: 1.2rem;
@@ -715,6 +831,188 @@
                 padding: 1.2rem;
             }
         }
+        .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.cart-btn {
+    position: relative;
+    background: var(--icon-bg);
+    border: 1px solid var(--card-border);
+    color: var(--text-main);
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: 0.3s;
+    display: grid;
+    place-items: center;
+    font-size: 16px;
+}
+
+.cart-btn:hover {
+    background: var(--mango);
+    color: #111;
+    transform: translateY(-2px);
+}
+
+.cart-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: var(--danger);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--panel-bg);
+}
+
+.cart-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    pointer-events: none;
+    transition: 0.25s ease;
+    z-index: 1200;
+}
+
+.cart-overlay.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.cart-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 390px;
+    max-width: 92vw;
+    height: 100vh;
+    background: var(--panel-bg);
+    border-left: 1px solid var(--card-border);
+    box-shadow: -10px 0 30px rgba(0,0,0,0.25);
+    transform: translateX(100%);
+    transition: 0.28s ease;
+    z-index: 1300;
+    display: flex;
+    flex-direction: column;
+}
+
+.cart-drawer.show {
+    transform: translateX(0);
+}
+
+.cart-drawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 1.4rem 1.4rem 1rem;
+    border-bottom: 1px solid var(--card-border);
+}
+
+.cart-drawer-title {
+    font-size: 18px;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-main);
+}
+
+.cart-close-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    border: 1px solid var(--card-border);
+    background: var(--icon-bg);
+    color: var(--text-main);
+    cursor: pointer;
+    transition: 0.2s;
+    font-size: 16px;
+}
+
+.cart-close-btn:hover {
+    background: var(--mango);
+    color: #111;
+    border-color: var(--mango);
+}
+
+.cart-drawer-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem 1.4rem;
+}
+
+.cart-drawer-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.cart-drawer-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.cart-drawer-body::-webkit-scrollbar-thumb {
+    background: rgba(255, 194, 68, 0.35);
+    border-radius: 999px;
+}
+
+.cart-drawer-body::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 194, 68, 0.6);
+}
+
+.cart-drawer-footer {
+    padding: 1rem 1.4rem 1.4rem;
+    border-top: 1px solid var(--card-border);
+    background: var(--panel-bg);
+}
+
+.cart-qty-btn {
+    width: 34px;
+    height: 34px;
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    background: var(--input-bg);
+    color: var(--text-main);
+    font-size: 16px;
+    font-weight: 900;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.cart-qty-btn:hover {
+    background: var(--mango);
+    color: #111;
+    border-color: var(--mango);
+}
+
+.cart-qty-input {
+    height: 34px;
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    background: var(--input-bg);
+    color: var(--text-main);
+    outline: none;
+    font-weight: 900;
+}
+
+@media screen and (max-width: 768px) {
+    .cart-drawer {
+        width: 100%;
+        max-width: 100%;
+    }
+}
     </style>
     <script>
 (function () {
@@ -732,17 +1030,18 @@
     <aside>
         <div class="sidebar-logo"><img src="logo.png" alt="Teo D' Mango"></div>
         <nav>
-            <ul>
-                <li><a href="overview.html"><i class="fa-solid fa-chart-line"></i> <span>Overview</span></a></li>
-                <li><a href="orderstaffs.html"><i class="fa-solid fa-bell-concierge"></i> <span>Orders</span></a></li>
-                <li class="active"><a href="menustaff.html"><i class="fa-solid fa-receipt"></i> <span>Menu</span></a></li>
-                <li><a href="inventory.html"><i class="fa-solid fa-boxes-stacked"></i> <span>Inventory</span></a></li>
-                <li><a href="dashboardstaff.html"><i class="fa-solid fa-user-clock"></i> <span>Attendance</span></a></li>
-                <li><a href="walletstaff.html"><i class="fa-solid fa-credit-card"></i> <span>RPAY</span></a></li>
-                <li><a href="rewardsstaff.html"><i class="fa-solid fa-gift"></i> <span>Rewards</span></a></li>
-                <li><a href="dashaccsettstaff.html"><i class="fa-solid fa-gear"></i> <span>Settings</span></a></li>
-                <li style="margin-top: auto;"><a href="loginstaff.html" class="logout-link" style="color: var(--danger);"><i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></a></li>
-            </ul>
+<ul>
+    <li><a href="overview.html"><i class="fa-solid fa-chart-line"></i> <span>Overview</span></a></li>
+    <li ><a href="orderstaffs.html"><i class="fa-solid fa-bell-concierge"></i> <span>Orders</span></a>
+    </li>
+    <li class="active"><a href="menustaff.html"><i class="fa-solid fa-receipt"></i> <span>Menu</span></a></li>
+    <li><a href="inventory.html"><i class="fa-solid fa-boxes-stacked"></i> <span>Inventory</span></a></li>
+    <li><a href="walletstaff.html"><i class="fa-solid fa-credit-card"></i> <span>RPAY</span></a></li>
+    <li><a href="rewardsstaff.html"><i class="fa-solid fa-gift"></i> <span>Rewards</span></a></li>
+    <li><a href="salesreportstaff.html"><i class="fa-solid fa-chart-column"></i> <span>Sales Report</span></a></li>
+    <li style="margin-top: auto;"><a href="loginstaff.html" class="logout-link"><i
+                class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></a></li>
+</ul>
         </nav>
     </aside>
 
@@ -753,9 +1052,16 @@
                     <h1 class="page-title">Menu Explorer</h1>
                     <p class="page-desc">Select a drink to customize order</p>
                 </div>
-                <button class="theme-btn" id="themeToggle" title="Toggle Theme">
-                    <i class="fa-solid fa-sun"></i>
-                </button>
+<div class="header-actions">
+    <button class="cart-btn" id="cartToggleBtn" title="Open Cart">
+        <i class="fa-solid fa-cart-shopping"></i>
+        <span class="cart-badge" id="cartCountBadge">0</span>
+    </button>
+
+    <button class="theme-btn" id="themeToggle" title="Toggle Theme">
+        <i class="fa-solid fa-sun"></i>
+    </button>
+</div>
             </header>
 
             <div class="menu-grid" id="menuGrid">
@@ -820,23 +1126,92 @@
                 <input type="text" id="promoCodeInput" placeholder="Enter promo code if applicable">
                 <div class="helper-text">This promo is only valid if the customer is linked to an account.</div>
             </div>
+<div class="card-custom pwd-box">
+    <h4>PWD Discount</h4>
 
+    <div class="toggle-row">
+        <div class="toggle-label">Apply PWD Discount</div>
+        <label class="toggle-switch">
+            <input type="checkbox" id="pwdDiscountCheckbox">
+            <span class="toggle-slider"></span>
+        </label>
+    </div>
+
+    <div class="helper-text">
+        Applies a 20% discount to the current cashier order total. This is optional and can be used for qualified PWD
+        customers.
+    </div>
+
+    <div id="pwdFields" class="pwd-fields">
+        <input type="text" id="pwdNameInput" placeholder="PWD customer name (optional)">
+        <input type="text" id="pwdIdInput" placeholder="PWD ID / reference number (optional)">
+    </div>
+</div>
             <button class="btn-add-cart" id="addToCartBtn">Add to Cart</button>
 
             <div class="cart-list" id="cartList">
                 <div class="cart-empty">Cart is empty</div>
             </div>
+<div class="checkout-section">
+    <div class="total-breakdown">
+        <div class="total-row muted">
+            <span>Subtotal</span>
+            <span id="subtotalPrice">₱0.00</span>
+        </div>
+        <div class="total-row discount" id="pwdDiscountRow" style="display:none;">
+            <span>PWD Discount (20%)</span>
+            <span id="pwdDiscountAmount">-₱0.00</span>
+        </div>
+    </div>
 
-            <div class="checkout-section">
-                <div class="grand-total">
-                    <span>Total</span>
-                    <span id="totalPrice" style="color: var(--mango);">₱0.00</span>
-                </div>
-                <button class="btn-checkout" id="checkoutBtn">Proceed to Payment</button>
-            </div>
+    <div class="grand-total">
+        <span>Total</span>
+        <span id="totalPrice" style="color: var(--mango);">₱0.00</span>
+    </div>
+
+    <button class="btn-checkout" id="checkoutBtn">Proceed to Payment</button>
+</div>
         </section>
     </main>
+<div class="cart-overlay" id="cartOverlay"></div>
 
+<aside class="cart-drawer" id="cartDrawer">
+    <div class="cart-drawer-header">
+        <div class="cart-drawer-title">
+            <i class="fa-solid fa-cart-shopping" style="color: var(--mango);"></i>
+            Staff Cart
+        </div>
+        <button class="cart-close-btn" id="cartCloseBtn" type="button">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+    <div class="cart-drawer-body">
+        <div class="cart-list" id="cartDrawerList">
+            <div class="cart-empty">Cart is empty</div>
+        </div>
+    </div>
+
+    <div class="cart-drawer-footer">
+        <div class="total-breakdown">
+            <div class="total-row muted">
+                <span>Subtotal</span>
+                <span id="drawerSubtotalPrice">₱0.00</span>
+            </div>
+            <div class="total-row discount" id="drawerPwdDiscountRow" style="display:none;">
+                <span>PWD Discount (20%)</span>
+                <span id="drawerPwdDiscountAmount">-₱0.00</span>
+            </div>
+        </div>
+
+        <div class="grand-total">
+            <span>Total</span>
+            <span id="drawerTotalPrice" style="color: var(--mango);">₱0.00</span>
+        </div>
+
+        <button class="btn-checkout" id="drawerCheckoutBtn" type="button">Proceed to Payment</button>
+    </div>
+</aside>
     <script src="config.js"></script>
     <script src="js/authGuard.js"></script>
     <script src="js/logoutstaff.js"></script>

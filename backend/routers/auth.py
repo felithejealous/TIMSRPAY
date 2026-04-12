@@ -17,7 +17,7 @@ from urllib.parse import urlencode
 from pathlib import Path
 from uuid import uuid4
 from backend.database import SessionLocal
-from backend.models import User, Wallet, RewardWallet, Role, PasswordResetToken, LoginRateLimit, CustomerProfile
+from backend.models import User, Wallet, RewardWallet, Role, PasswordResetToken, LoginRateLimit, CustomerProfile, StaffProfile
 from backend.security import create_access_token, get_current_user
 from backend.activity_logger import log_activity
 router = APIRouter(prefix="/auth", tags=["Auth"])
@@ -733,6 +733,7 @@ def google_callback(
 def me(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     wallet = db.query(Wallet).filter(Wallet.user_id == current_user.id).first()
     customer_profile = db.query(CustomerProfile).filter(CustomerProfile.user_id == current_user.id).first()
+    staff_profile = db.query(StaffProfile).filter(StaffProfile.user_id == current_user.id).first()
 
     if wallet and not (getattr(wallet, "wallet_code", None) or "").strip():
         wallet.wallet_code = _generate_unique_wallet_code(db)
@@ -747,11 +748,14 @@ def me(current_user: User = Depends(get_current_user), db: Session = Depends(get
         full_name = (customer_profile.full_name or "").strip() or None
         first_name = (getattr(customer_profile, "first_name", None) or "").strip() or None
         last_name = (getattr(customer_profile, "last_name", None) or "").strip() or None
+    elif staff_profile:
+        full_name = (getattr(staff_profile, "full_name", None) or "").strip() or None
 
     display_name = first_name or full_name or current_user.email
 
     return {
         "user_id": current_user.id,
+        "id": current_user.id,
         "email": current_user.email,
         "full_name": full_name,
         "first_name": first_name,

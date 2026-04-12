@@ -62,18 +62,46 @@ function maskWalletCode(code) {
     if (raw.length <= 3) return raw;
     return `${raw.slice(0, 3)}***`;
 }
-
 function formatTimeOnly(value) {
     if (!value) return "-";
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return "-";
 
-    return date.toLocaleTimeString("en-US", {
+    const raw = String(value).trim();
+    if (!raw) return "-";
+
+    let date = null;
+
+    if (/[zZ]$|[+\-]\d{2}:\d{2}$/.test(raw)) {
+        date = new Date(raw);
+    } else {
+        const normalized = raw.replace(" ", "T");
+        const match = normalized.match(
+            /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?(?:\.\d+)?$/
+        );
+
+        if (match) {
+            const [, year, month, day, hour, minute, second = "00"] = match;
+            date = new Date(Date.UTC(
+                Number(year),
+                Number(month) - 1,
+                Number(day),
+                Number(hour),
+                Number(minute),
+                Number(second)
+            ));
+        } else {
+            date = new Date(raw);
+        }
+    }
+
+    if (!date || Number.isNaN(date.getTime())) return "-";
+
+    return date.toLocaleTimeString("en-PH", {
+        timeZone: "Asia/Manila",
         hour: "2-digit",
-        minute: "2-digit"
+        minute: "2-digit",
+        hour12: true
     });
 }
-
 function showMessage(message) {
     alert(message);
 }
@@ -184,69 +212,60 @@ function setMethod(el, method) {
     document.querySelectorAll("#methods .option-chip").forEach(chip => chip.classList.remove("active"));
     el?.classList.add("active");
 }
-
 function getSessionLogKey() {
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, "0");
-    const dd = String(today.getDate()).padStart(2, "0");
-    return `staff_topup_logs_${yyyy}-${mm}-${dd}`;
+    return "backend_topup_logs";
 }
 
 function readSessionLogs() {
-    try {
-        const raw = localStorage.getItem(getSessionLogKey());
-        const parsed = JSON.parse(raw || "[]");
-        return Array.isArray(parsed) ? parsed : [];
-    } catch {
-        return [];
-    }
+    return [];
 }
 
 function writeSessionLogs(logs) {
-    localStorage.setItem(getSessionLogKey(), JSON.stringify(logs));
+    return logs;
 }
 
 function renderSessionSummary() {
-    const logs = readSessionLogs();
-    const total = logs.reduce((sum, item) => sum + Number(item.amount || 0), 0);
-
-    if (summaryAmount) summaryAmount.textContent = formatMoney(total);
-    if (summaryCount) summaryCount.textContent = `${logs.length} Top-up${logs.length === 1 ? "" : "s"}`;
+    if (summaryAmount) summaryAmount.textContent = formatMoney(0);
+    if (summaryCount) summaryCount.textContent = "0 Top-ups";
 }
-
-function renderSessionHistory() {
+async function renderSessionHistory() {
     if (!historyTableBody) return;
 
-    const logs = readSessionLogs().slice().reverse();
+    try {
+        const data = await fetchJSON(`${getAPIURL()}/wallet/topup/history?limit=50`);
+        const logs = Array.isArray(data?.data) ? data.data : [];
 
-    if (!logs.length) {
+        if (!logs.length) {
+            historyTableBody.innerHTML = `
+                <tr>
+                    <td colspan="4" style="text-align:center; color: var(--text-muted); font-style: italic;">No top-up logs yet today.</td>
+                </tr>
+            `;
+            return;
+        }
+
+        historyTableBody.innerHTML = logs.map(item => `
+            <tr>
+                <td>${escapeHTML(formatTimeOnly(item.created_at))}</td>
+                <td>${escapeHTML(item.method || "Cash")}</td>
+                <td style="color: var(--success); font-weight: 900;">+${escapeHTML(formatMoney(item.amount || 0))}</td>
+                <td><span class="status-badge">${escapeHTML(item.status || "Completed")}</span></td>
+            </tr>
+        `).join("");
+    } catch (error) {
+        console.error("Failed to load top-up history:", error);
         historyTableBody.innerHTML = `
             <tr>
-                <td colspan="4" style="text-align:center; color: var(--text-muted); font-style: italic;">No top-up logs yet today.</td>
+                <td colspan="4" style="text-align:center; color: var(--text-muted); font-style: italic;">Failed to load top-up logs.</td>
             </tr>
         `;
-        return;
     }
-
-    historyTableBody.innerHTML = logs.map(item => `
-        <tr>
-            <td>${escapeHTML(formatTimeOnly(item.created_at))}</td>
-            <td>${escapeHTML(item.method || "Cash")}</td>
-            <td style="color: var(--success); font-weight: 900;">+${escapeHTML(formatMoney(item.amount || 0))}</td>
-            <td><span class="status-badge">Completed</span></td>
-        </tr>
-    `).join("");
 }
-
-function addSessionLog(entry) {
-    const logs = readSessionLogs();
-    logs.push(entry);
-    writeSessionLogs(logs);
+async function addSessionLog(entry) {
+    await renderSessionHistory();
     renderSessionSummary();
-    renderSessionHistory();
+    return entry;
 }
-
 async function processReload() {
     if (!selectedMember?.user_id) {
         showMessage("Select a member first from the RPAY member list.");
@@ -282,7 +301,7 @@ async function processReload() {
         selectedMember.balance = Number(result.balance || 0);
         loadSelectedMember(selectedMember);
 
-        addSessionLog({
+        await addSessionLog({
             created_at: new Date().toISOString(),
             method: selectedPaymentMethod,
             amount: amount,
@@ -300,7 +319,6 @@ async function processReload() {
         if (processReloadBtn) processReloadBtn.disabled = false;
     }
 }
-
 function setupActions() {
     window.setAmount = setAmount;
     window.setMethod = setMethod;
