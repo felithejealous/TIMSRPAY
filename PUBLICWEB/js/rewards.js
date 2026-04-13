@@ -11,6 +11,8 @@ const redeemQrCanvas = document.getElementById("redeemQrCanvas");
 let allTransactions = [];
 let allRewards = [];
 let currentPoints = 0;
+
+
 function parseServerDate(value) {
   if (!value) return null;
 
@@ -34,15 +36,20 @@ function parseServerDate(value) {
 
   const [, year, month, day, hour, minute, second = "00"] = match;
 
-  return new Date(
-    `${year}-${month}-${day}T${hour}:${minute}:${second}+08:00`
-  );
+  return new Date(Date.UTC(
+    Number(year),
+    Number(month) - 1,
+    Number(day),
+    Number(hour),
+    Number(minute),
+    Number(second)
+  ));
 }
 function formatDateTime(dateStr) {
   if (!dateStr) return "--";
 
   const d = parseServerDate(dateStr);
-  if (!d || Number.isNaN(d.getTime())) return "--";
+  if (!d || Number.isNaN(d.getTime())) return dateStr;
 
   return d.toLocaleString("en-PH", {
     timeZone: "Asia/Manila",
@@ -54,7 +61,6 @@ function formatDateTime(dateStr) {
     hour12: true,
   });
 }
-
 function formatExpiry(dateStr, hasExpiry = true) {
   if (!hasExpiry || !dateStr) return "No Expiry";
 

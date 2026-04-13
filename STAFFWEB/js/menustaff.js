@@ -59,10 +59,12 @@ function getAPIURL() {
     return window.API_URL;
 }
 async function fetchJSON(url, options = {}) {
+    const extraHeaders = options.headers || {};
+
     const response = await fetch(url, {
+        ...options,
         credentials: "include",
-        headers: getAuthHeaders(options.headers || {}),
-        ...options
+        headers: getAuthHeaders(extraHeaders)
     });
 
     let data = null;
@@ -78,7 +80,6 @@ async function fetchJSON(url, options = {}) {
 
     return data;
 }
-
 function escapeHTML(value) {
     return String(value ?? "")
         .replaceAll("&", "&amp;")
