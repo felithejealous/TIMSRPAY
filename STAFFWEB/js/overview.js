@@ -636,7 +636,7 @@ function startOrdersAutoRefresh() {
 
     ordersRefreshInterval = setInterval(() => {
         loadOrders();
-    }, 15000);
+    }, 60000);
 }
 
 /* =========================

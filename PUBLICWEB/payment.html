@@ -130,7 +130,6 @@
             transform: scale(1.05);
         }
 
-        /* HAMBURGER BTN CSS */
         .hamburger-btn {
             display: none;
             background: transparent;
@@ -208,7 +207,6 @@
             color: var(--mango);
         }
 
-        /* CHECKOUT LAYOUT */
         .checkout-wrapper {
             max-width: 1200px;
             margin: 40px auto 80px;
@@ -442,7 +440,6 @@
             color: var(--text-main);
         }
 
-        /* PAYMENT METHODS */
         .method-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -573,7 +570,88 @@
             padding: 15px;
         }
 
-        /* PROMO SECTION */
+        .pickup-box {
+            background: var(--bg-main);
+            border: 1px solid var(--card-border);
+            border-radius: 25px;
+            padding: 30px;
+            margin-top: 25px;
+            animation: fadeIn .4s ease;
+        }
+
+        .pickup-type-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .pickup-type-card {
+            background: var(--icon-bg);
+            border: 2px solid transparent;
+            border-radius: 18px;
+            padding: 18px 16px;
+            cursor: pointer;
+            transition: .3s;
+        }
+
+        .pickup-type-card:hover {
+            background: var(--hover-bg);
+            transform: translateY(-2px);
+        }
+
+        .pickup-type-card.active {
+            border-color: var(--mango);
+            background: rgba(255, 194, 68, .1);
+        }
+
+        .pickup-type-card h4 {
+            font-size: 13px;
+            font-weight: 900;
+            margin-bottom: 6px;
+            color: var(--text-main);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .pickup-type-card p {
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.5;
+            font-weight: 700;
+        }
+
+        .pickup-schedule-fields {
+            display: none;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+            margin-top: 6px;
+        }
+
+        .pickup-schedule-fields.active {
+            display: grid;
+        }
+
+        .pickup-help {
+            margin-top: 14px;
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.5;
+            font-weight: 700;
+        }
+
+        .pickup-preview {
+            margin-top: 14px;
+            padding: 14px 16px;
+            border-radius: 16px;
+            background: rgba(255, 194, 68, .08);
+            border: 1px solid rgba(255, 194, 68, .18);
+            color: var(--text-main);
+            font-size: 12px;
+            font-weight: 800;
+            line-height: 1.5;
+        }
+
         .promo-box {
             background: var(--bg-main);
             border: 1px solid var(--card-border);
@@ -723,7 +801,6 @@
             transform: translateY(-1px);
         }
 
-        /* SUMMARY CARD */
         .sticky-card {
             position: sticky;
             top: 100px;
@@ -763,6 +840,20 @@
 
         .summary-row.discount-row span:last-child {
             color: var(--success);
+        }
+
+        .summary-row.pickup-row {
+            background: rgba(255, 255, 255, .04);
+            padding: 15px;
+            border-radius: 15px;
+            border: 1px solid var(--card-border);
+            align-items: flex-start;
+        }
+
+        .summary-row.pickup-row span:last-child {
+            font-size: 13px;
+            text-align: right;
+            line-height: 1.45;
         }
 
         .total-divider {
@@ -827,7 +918,6 @@
             text-align: center;
         }
 
-        /* RECEIPT MODAL */
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -1020,9 +1110,6 @@
             }
         }
 
-        /* =========================================
-           RESPONSIVE MOBILE FIXES & HAMBURGER MENU
-           ========================================= */
         @media (max-width: 950px) {
             .hamburger-btn {
                 display: grid;
@@ -1032,7 +1119,6 @@
                 position: fixed;
                 top: 0;
                 left: -100%;
-                /* Hidden on left */
                 width: 250px;
                 height: 100vh;
                 background: var(--bg-main);
@@ -1094,7 +1180,9 @@
                 padding: 25px;
             }
 
-            .method-grid {
+            .method-grid,
+            .pickup-type-grid,
+            .pickup-schedule-fields {
                 grid-template-columns: 1fr;
             }
 
@@ -1153,6 +1241,45 @@
                     <i class="fa-solid fa-cart-arrow-down"></i>
                     <h3>Your cart is empty</h3>
                     <p>Go back to the menu to add tropical shakes.</p>
+                </div>
+            </div>
+
+            <div class="glass-bento">
+                <h2 class="bento-title"><i class="fa-solid fa-clock"></i> Pickup Schedule</h2>
+
+                <div class="pickup-box">
+                    <div class="pickup-type-grid">
+                        <div class="pickup-type-card active" id="pickupAsapCard" onclick="selectPickupType('asap')">
+                            <h4>ASAP Pickup</h4>
+                            <p>Prepare my order as soon as possible for the next available pickup.</p>
+                        </div>
+
+                        <div class="pickup-type-card" id="pickupScheduleCard" onclick="selectPickupType('scheduled')">
+                            <h4>Schedule Pickup</h4>
+                            <p>Choose a preferred date and time if you want to pick up later.</p>
+                        </div>
+                    </div>
+
+                    <div class="pickup-schedule-fields" id="pickupScheduleFields">
+                        <div class="input-group">
+                            <label for="pickupDate">Pickup Date</label>
+                            <input type="date" class="rpay-input" id="pickupDate">
+                        </div>
+
+                        <div class="input-group">
+                            <label for="pickupTime">Pickup Time</label>
+                            <input type="time" class="rpay-input" id="pickupTime">
+                        </div>
+                    </div>
+
+                    <div class="pickup-help">
+                        Store pickup hours follow your shop schedule. Scheduled pickup should be set ahead of the
+                        current time.
+                    </div>
+
+                    <div class="pickup-preview" id="pickupPreview">
+                        Pickup: ASAP
+                    </div>
                 </div>
             </div>
 
@@ -1217,6 +1344,11 @@
 
         <div class="side-col">
             <div class="glass-bento sticky-card">
+                <div class="summary-row pickup-row">
+                    <span>Pickup</span>
+                    <span id="pickupSummaryDisplay">ASAP</span>
+                </div>
+
                 <div class="summary-row">
                     <span>Subtotal</span>
                     <span id="subtotalDisplay">₱0.00</span>
@@ -1267,6 +1399,8 @@
                     <div class="receipt-row"><span>Customer:</span><span id="receiptCustomerName">-</span></div>
                     <div class="receipt-row"><span>Order Type:</span><span id="receiptOrderType">-</span></div>
                     <div class="receipt-row"><span>Status:</span><span id="receiptStatus">-</span></div>
+                    <div class="receipt-row"><span>Pickup Preference:</span><span id="receiptPickupDisplay">-</span>
+                    </div>
                 </div>
 
                 <div class="receipt-note" id="receiptClaimBox"></div>

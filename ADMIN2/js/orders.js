@@ -2,7 +2,7 @@ let ordersCache = [];
 let refundsCache = [];
 let autoRefreshInterval = null;
 
-const AUTO_REFRESH_MS = 5000;
+const AUTO_REFRESH_MS = 60000;
 const ORDER_DISPLAY_OFFSET = 900;
 const PH_TIMEZONE = "Asia/Manila";
 function getToken() {

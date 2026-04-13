@@ -76,6 +76,9 @@ class OrderCreate(BaseModel):
     promo_code: Optional[str] = Field(default=None, min_length=3, max_length=50)
 
     customer_name: Optional[str] = Field(default=None, max_length=150)
+    pickup_type: Optional[Literal["asap", "scheduled"]] = "asap"
+    pickup_at: Optional[datetime] = None
+    pickup_note: Optional[str] = Field(default=None, max_length=200)
 
 # =========================
 # INVENTORY MASTER

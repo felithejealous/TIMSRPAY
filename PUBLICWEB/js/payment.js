@@ -9,6 +9,8 @@ let lastOrderResponse = null;
 let availablePromos = [];
 let appliedPromo = null;
 
+let currentPickupType = "asap";
+
 function escapeHtml(value) {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
@@ -85,7 +87,18 @@ function loadCheckoutItems() {
   }
 }
 
+function getPickupDraft() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(CHECKOUT_DRAFT_KEY) || "{}");
+    return saved && typeof saved === "object" ? saved : {};
+  } catch {
+    return {};
+  }
+}
+
 function saveCheckoutItems() {
+  const pickup = getPickupPayload();
+
   localStorage.setItem(MENU_STORAGE_KEY, JSON.stringify(checkoutItems));
 
   const payload = {
@@ -99,6 +112,9 @@ function saveCheckoutItems() {
     })),
     subtotal_preview: Number(getBaseTotal().toFixed(2)),
     promo_code: appliedPromo?.code || null,
+    pickup_type: pickup.pickup_type,
+    pickup_date: pickup.pickup_date,
+    pickup_time: pickup.pickup_time,
   };
 
   localStorage.setItem(CHECKOUT_DRAFT_KEY, JSON.stringify(payload));
@@ -257,6 +273,127 @@ function getPreviewTotals() {
   };
 }
 
+function getPickupPayload() {
+  const pickupDate = (document.getElementById("pickupDate")?.value || "").trim();
+  const pickupTime = (document.getElementById("pickupTime")?.value || "").trim();
+
+  if (currentPickupType === "scheduled") {
+    return {
+      pickup_type: "scheduled",
+      pickup_date: pickupDate || null,
+      pickup_time: pickupTime || null,
+    };
+  }
+
+  return {
+    pickup_type: "asap",
+    pickup_date: null,
+    pickup_time: null,
+  };
+}
+
+function formatPickupDisplay(pickup = null) {
+  const source = pickup || getPickupPayload();
+
+  if ((source.pickup_type || "asap") === "scheduled") {
+    const dateText = source.pickup_date || "-";
+    const timeText = source.pickup_time || "-";
+    return `Scheduled • ${dateText} ${timeText}`;
+  }
+
+  return "ASAP";
+}
+
+function updatePickupPreview() {
+  const preview = document.getElementById("pickupPreview");
+  const summary = document.getElementById("pickupSummaryDisplay");
+
+  const text = formatPickupDisplay();
+
+  if (preview) {
+    preview.textContent = `Pickup: ${text}`;
+  }
+
+  if (summary) {
+    summary.textContent = text;
+  }
+}
+
+function selectPickupType(type) {
+  currentPickupType = type === "scheduled" ? "scheduled" : "asap";
+
+  const asapCard = document.getElementById("pickupAsapCard");
+  const scheduledCard = document.getElementById("pickupScheduleCard");
+  const scheduleFields = document.getElementById("pickupScheduleFields");
+
+  asapCard?.classList.toggle("active", currentPickupType === "asap");
+  scheduledCard?.classList.toggle("active", currentPickupType === "scheduled");
+  scheduleFields?.classList.toggle("active", currentPickupType === "scheduled");
+
+  updatePickupPreview();
+  saveCheckoutItems();
+}
+
+function setPickupMinimums() {
+  const dateInput = document.getElementById("pickupDate");
+  const timeInput = document.getElementById("pickupTime");
+
+  if (!dateInput || !timeInput) return;
+
+  const now = new Date();
+  const pad = (n) => String(n).padStart(2, "0");
+
+  const today = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+  dateInput.min = today;
+  timeInput.step = 300;
+}
+
+function restorePickupDraft() {
+  const draft = getPickupDraft();
+
+  if (draft.pickup_type === "scheduled") {
+    currentPickupType = "scheduled";
+  } else {
+    currentPickupType = "asap";
+  }
+
+  const dateInput = document.getElementById("pickupDate");
+  const timeInput = document.getElementById("pickupTime");
+
+  if (dateInput && draft.pickup_date) dateInput.value = draft.pickup_date;
+  if (timeInput && draft.pickup_time) timeInput.value = draft.pickup_time;
+
+  selectPickupType(currentPickupType);
+}
+
+function validatePickupSelection() {
+  const pickup = getPickupPayload();
+
+  if (pickup.pickup_type !== "scheduled") {
+    return pickup;
+  }
+
+  if (!pickup.pickup_date) {
+    throw new Error("Please select a pickup date.");
+  }
+
+  if (!pickup.pickup_time) {
+    throw new Error("Please select a pickup time.");
+  }
+
+  const scheduledAt = new Date(`${pickup.pickup_date}T${pickup.pickup_time}`);
+  if (Number.isNaN(scheduledAt.getTime())) {
+    throw new Error("Invalid pickup schedule.");
+  }
+
+  const now = new Date();
+  if (scheduledAt <= now) {
+    throw new Error("Pickup schedule must be later than the current time.");
+  }
+
+  return pickup;
+}
+
 function updateSummary() {
   const totals = getPreviewTotals();
 
@@ -281,6 +418,8 @@ function updateSummary() {
       promoDiscountDisplay.textContent = "- ₱0.00";
     }
   }
+
+  updatePickupPreview();
 }
 
 function renderCart() {
@@ -422,9 +561,14 @@ function selectPayment(element, type) {
 }
 
 function buildOrderPayload() {
+  const pickup = getPickupPayload();
+
   return {
     payment_method: currentPayment,
     promo_code: appliedPromo?.code || null,
+    pickup_type: pickup.pickup_type,
+    pickup_date: pickup.pickup_date,
+    pickup_time: pickup.pickup_time,
     items: checkoutItems.map((item) => ({
       product_id: Number(item.product_id),
       quantity: Number(item.qty),
@@ -447,6 +591,8 @@ function validateBeforeSubmit(payload) {
   if (!checkoutItems.length) {
     throw new Error("Your cart is empty.");
   }
+
+  validatePickupSelection();
 
   if (payload.payment_method === "wallet") {
     if (!payload.wallet_email || !payload.wallet_email.includes("@")) {
@@ -579,10 +725,11 @@ async function handleFinish() {
 
     lastOrderResponse = data;
 
-    showSuccessReceipt(data);
+    showSuccessReceipt(data, payload);
     clearCheckoutStorage();
     checkoutItems = [];
     appliedPromo = null;
+    currentPickupType = "asap";
     renderCart();
   } catch (error) {
     alert(error.message || "Failed to submit order.");
@@ -631,7 +778,7 @@ function showReceiptNote(message = "") {
   noteBox.textContent = message;
 }
 
-function showSuccessReceipt(orderData) {
+function showSuccessReceipt(orderData, submittedPayload = null) {
   const modal = document.getElementById("successReceiptModal");
   if (!modal) return;
 
@@ -649,12 +796,20 @@ function showSuccessReceipt(orderData) {
     currentUser?.email ||
     "Customer";
 
+  const pickupDisplay =
+    formatPickupDisplay({
+      pickup_type: submittedPayload?.pickup_type || "asap",
+      pickup_date: submittedPayload?.pickup_date || null,
+      pickup_time: submittedPayload?.pickup_time || null,
+    });
+
   const receiptDateTime = document.getElementById("receiptDateTime");
   const receiptDisplayId = document.getElementById("receiptDisplayId");
   const receiptRawId = document.getElementById("receiptRawId");
   const receiptCustomerName = document.getElementById("receiptCustomerName");
   const receiptOrderType = document.getElementById("receiptOrderType");
   const receiptStatus = document.getElementById("receiptStatus");
+  const receiptPickupDisplay = document.getElementById("receiptPickupDisplay");
   const receiptBody = document.getElementById("receiptBody");
   const receiptClaimBox = document.getElementById("receiptClaimBox");
   const receiptMethodLabel = document.getElementById("receiptMethodLabel");
@@ -686,6 +841,10 @@ function showSuccessReceipt(orderData) {
 
   if (receiptStatus) {
     receiptStatus.textContent = prettifyText(status);
+  }
+
+  if (receiptPickupDisplay) {
+    receiptPickupDisplay.textContent = pickupDisplay;
   }
 
   if (receiptClaimBox) {
@@ -743,8 +902,8 @@ function showSuccessReceipt(orderData) {
 
   showReceiptNote(
     paymentMethod === "wallet"
-      ? "Your order has been paid successfully. Please present this receipt at the counter."
-      : "Your online order was created successfully. Please pay at the store counter upon pickup."
+      ? `Your order has been paid successfully. Pickup preference: ${pickupDisplay}. Please present this receipt at the counter.`
+      : `Your online order was created successfully. Pickup preference: ${pickupDisplay}. Please pay at the store counter upon pickup.`
   );
 
   modal.classList.add("active");
@@ -782,22 +941,44 @@ function setupPromoInputEvents() {
   });
 }
 
+function setupPickupEvents() {
+  const pickupDate = document.getElementById("pickupDate");
+  const pickupTime = document.getElementById("pickupTime");
+
+  pickupDate?.addEventListener("change", () => {
+    updatePickupPreview();
+    saveCheckoutItems();
+  });
+
+  pickupTime?.addEventListener("change", () => {
+    updatePickupPreview();
+    saveCheckoutItems();
+  });
+}
+
 async function initPaymentPage() {
   setupThemeToggle();
   setupModalClose();
   setupPromoInputEvents();
+  setPickupMinimums();
+  setupPickupEvents();
+
   loadCheckoutItems();
   renderCart();
+
   await loadCurrentUser();
+  restorePickupDraft();
   await loadAvailablePromos();
 
   const teopayCard = document.getElementById("paymentTeopayCard");
   selectPayment(teopayCard, "wallet");
+  updatePickupPreview();
 }
 
 window.updateQty = updateQty;
 window.removeItem = removeItem;
 window.selectPayment = selectPayment;
+window.selectPickupType = selectPickupType;
 window.handleFinish = handleFinish;
 window.goBackToMenu = goBackToMenu;
 window.applyPromoCode = applyPromoCode;

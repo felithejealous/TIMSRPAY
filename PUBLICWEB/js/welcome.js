@@ -135,8 +135,8 @@ function parseServerDate(value) {
   if (!raw) return null;
 
   if (raw.endsWith("Z") || /[+-]\d{2}:\d{2}$/.test(raw)) {
-    const utcDate = new Date(raw);
-    return Number.isNaN(utcDate.getTime()) ? null : utcDate;
+    const dateWithZone = new Date(raw);
+    return Number.isNaN(dateWithZone.getTime()) ? null : dateWithZone;
   }
 
   const normalized = raw.replace(" ", "T");
@@ -145,21 +145,24 @@ function parseServerDate(value) {
   );
 
   if (!match) {
-    const fallbackDate = new Date(raw);
-    return Number.isNaN(fallbackDate.getTime()) ? null : fallbackDate;
+    const fallback = new Date(raw);
+    return Number.isNaN(fallback.getTime()) ? null : fallback;
   }
 
   const [, year, month, day, hour, minute, second = "00"] = match;
 
   return new Date(
-    Number(year),
-    Number(month) - 1,
-    Number(day),
-    Number(hour),
-    Number(minute),
-    Number(second)
+    Date.UTC(
+      Number(year),
+      Number(month) - 1,
+      Number(day),
+      Number(hour),
+      Number(minute),
+      Number(second)
+    )
   );
 }
+
 function formatDateTime(value) {
   if (!value) return "—";
 
@@ -167,6 +170,7 @@ function formatDateTime(value) {
   if (!d || Number.isNaN(d.getTime())) return "—";
 
   return d.toLocaleString("en-PH", {
+    timeZone: "Asia/Manila",
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -352,6 +356,7 @@ const formatAnnouncementDate = (value) => {
   return !d || Number.isNaN(d.getTime())
     ? "Latest update"
     : d.toLocaleString("en-PH", {
+        timeZone: "Asia/Manila",
         year: "numeric",
         month: "short",
         day: "numeric",

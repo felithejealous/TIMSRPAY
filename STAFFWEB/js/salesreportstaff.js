@@ -487,7 +487,7 @@ function startSalesAutoRefresh() {
         } catch (error) {
             console.error("salesreport auto refresh failed:", error);
         }
-    }, 15000);
+    }, 60000);
 }
 
 /* =========================

@@ -1,7 +1,7 @@
 let charts = {};
 let modalChartInstance = null;
 let lowStockPollInterval = null;
-const LOW_STOCK_POLL_MS = 15000;
+const LOW_STOCK_POLL_MS = 60000;
 const PH_TIMEZONE = "Asia/Manila";
 
 function getSelectedTimeframe() {

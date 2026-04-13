@@ -88,6 +88,9 @@ class Order(Base):
     order_type = Column(String(20), nullable=False)
     payment_method = Column(String(20), nullable=True)
     customer_name = Column(String(150), nullable=True)
+    pickup_type = Column(String(20), nullable=True, default="asap")
+    pickup_at = Column(DateTime(timezone=False), nullable=True)
+    pickup_note = Column(String(200), nullable=True)
     processed_by_staff_id = Column(Integer, ForeignKey("users.id"), nullable=True)
 
     status = Column(String(20), default="pending")

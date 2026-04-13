@@ -46,7 +46,11 @@ PLACEHOLDER_CUSTOMER_NAMES = {
     "guest customer",
     "customer",
 }
-
+MIN_SCHEDULE_LEAD_MINUTES = 30
+MAX_SCHEDULE_DAYS_AHEAD = 7
+STORE_OPEN_HOUR = 10
+STORE_CLOSE_HOUR = 22
+PH_TZ = timezone(timedelta(hours=8))
 def compute_initial_status(order_type: str, payment_method: str) -> str:
     order_type = (order_type or "").strip().lower()
     payment_method = (payment_method or "").strip().lower()
@@ -72,9 +76,75 @@ def _as_utc(dt: datetime) -> Optional[datetime]:
     if dt is None:
         return None
     if dt.tzinfo is None:
-        return dt.replace(tzinfo=timezone.utc)
+        return dt.replace(tzinfo=PH_TZ).astimezone(timezone.utc)
     return dt.astimezone(timezone.utc)
+def validate_pickup_schedule(
+    pickup_type: Optional[str],
+    pickup_at: Optional[datetime],
+    order_type: Optional[str] = None,
+) -> Dict[str, Optional[datetime]]:
+    pickup_type_clean = (pickup_type or "asap").strip().lower()
 
+    if pickup_type_clean not in {"asap", "scheduled"}:
+        raise HTTPException(
+            status_code=400,
+            detail="pickup_type must be 'asap' or 'scheduled'"
+        )
+
+    if (order_type or "").strip().lower() != "online":
+        return {
+            "pickup_type": "asap",
+            "pickup_at": None,
+            "pickup_note": None,
+        }
+
+    if pickup_type_clean == "asap":
+        return {
+            "pickup_type": "asap",
+            "pickup_at": None,
+            "pickup_note": "ASAP pickup",
+        }
+
+    pickup_at_utc = _as_utc(pickup_at)
+    if not pickup_at_utc:
+        raise HTTPException(
+            status_code=400,
+            detail="pickup_at is required when pickup_type is 'scheduled'"
+        )
+
+    now_utc = _utcnow()
+    min_allowed = now_utc + timedelta(minutes=MIN_SCHEDULE_LEAD_MINUTES)
+    max_allowed = now_utc + timedelta(days=MAX_SCHEDULE_DAYS_AHEAD)
+
+    if pickup_at_utc < min_allowed:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Scheduled pickup must be at least {MIN_SCHEDULE_LEAD_MINUTES} minutes from now"
+        )
+
+    if pickup_at_utc > max_allowed:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Scheduled pickup cannot be more than {MAX_SCHEDULE_DAYS_AHEAD} days ahead"
+        )
+
+    local_pickup = pickup_at_utc.astimezone(timezone(timedelta(hours=8)))
+    pickup_hour = local_pickup.hour
+    pickup_minute = local_pickup.minute
+
+    if pickup_hour < STORE_OPEN_HOUR or pickup_hour >= STORE_CLOSE_HOUR:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Pickup time must be within store hours ({STORE_OPEN_HOUR}:00 to {STORE_CLOSE_HOUR}:00)"
+        )
+
+    pickup_note = local_pickup.strftime("Pickup at %b %d, %Y %I:%M %p")
+
+    return {
+        "pickup_type": "scheduled",
+        "pickup_at": pickup_at_utc.replace(tzinfo=None),
+        "pickup_note": pickup_note,
+    }
 
 def _money(value) -> Decimal:
     return Decimal(str(value or 0)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
@@ -147,6 +217,9 @@ class BaseOrderPayload(BaseModel):
     pwd_discount_rate: Optional[Decimal] = Decimal("0.20")
     pwd_name: Optional[str] = None
     pwd_id_reference: Optional[str] = None
+    pickup_type: Optional[str] = "asap"
+    pickup_at: Optional[datetime] = None
+    pickup_note: Optional[str] = None
 class CashPayPayload(BaseModel):
     amount_received: Decimal = Field(gt=0)
 
@@ -161,12 +234,11 @@ class OnlineOrderCreate(BaseModel):
     wallet_code: Optional[str] = None
     wallet_pin: Optional[str] = None
     promo_code: Optional[str] = None
-
-
+    pickup_type: Optional[str] = "asap"
+    pickup_at: Optional[datetime] = None
+    pickup_note: Optional[str] = None
 class CashierOrderCreate(BaseOrderPayload):
     customer_name: str = Field(min_length=1, max_length=150)
-
-
 class OrderStatusUpdate(BaseModel):
     status: str
 
@@ -287,6 +359,9 @@ def list_orders(
                 if getattr(order, "amount_received", None) is not None else None,
             "change_amount": float(getattr(order, "change_amount", 0) or 0)
                 if getattr(order, "change_amount", None) is not None else None,
+            "pickup_type": getattr(order, "pickup_type", "asap"),
+            "pickup_at": str(getattr(order, "pickup_at", "")) if getattr(order, "pickup_at", None) else None,
+            "pickup_note": getattr(order, "pickup_note", None),
         })
 
     return {"count": len(result), "data": result}
@@ -349,6 +424,9 @@ def list_my_orders(
             "status": order.status,
             "payment_method": (order.payment_method or "cash"),
             "customer_name": getattr(order, "customer_name", None),
+            "pickup_type": getattr(order, "pickup_type", "asap"),
+            "pickup_at": str(getattr(order, "pickup_at", "")) if getattr(order, "pickup_at", None) else None,
+            "pickup_note": getattr(order, "pickup_note", None),
             "created_at": str(order.created_at),
             "product_name": first_product_name,
             "items_summary": items_summary,
@@ -945,8 +1023,6 @@ def validate_and_compute_promo(
         "discount_value": discount_value,
         "promo_code_text": promo.code,
     }
-
-
 def _create_order_core(
     db: Session,
     order_type: str,
@@ -962,6 +1038,9 @@ def _create_order_core(
     pwd_discount_rate: Decimal = Decimal("0.20"),
     pwd_name: Optional[str] = None,
     pwd_id_reference: Optional[str] = None,
+    pickup_type: Optional[str] = "asap",
+    pickup_at: Optional[datetime] = None,
+    pickup_note: Optional[str] = None,
 ):
     if is_pwd_discount and (promo_code or "").strip():
         raise HTTPException(
@@ -1122,12 +1201,20 @@ def _create_order_core(
         user_id=user_id,
         explicit_customer_name=customer_name,
     )
+    pickup_info = validate_pickup_schedule(
+        pickup_type=pickup_type,
+        pickup_at=pickup_at,
+        order_type=order_type,
+    )
 
     order = Order(
         user_id=user_id,
         order_type=order_type,
         payment_method=payment_method,
         customer_name=resolved_customer_name,
+        pickup_type=pickup_info["pickup_type"],
+        pickup_at=pickup_info["pickup_at"],
+        pickup_note=(pickup_note or pickup_info["pickup_note"]),
         status=initial_status,
         subtotal=subtotal,
         vat_amount=vat_amount,
@@ -1321,6 +1408,13 @@ def _create_order_core(
             if getattr(order, "points_claim_expires_at", None)
             else None
         ),
+                "pickup_type": getattr(order, "pickup_type", "asap"),
+        "pickup_at": (
+            str(getattr(order, "pickup_at", None))
+            if getattr(order, "pickup_at", None)
+            else None
+        ),
+        "pickup_note": getattr(order, "pickup_note", None),
     }
 
 
@@ -1350,6 +1444,9 @@ def create_order(payload: OrderCreate, db: Session = Depends(get_db)):
             wallet_pin=getattr(payload, "wallet_pin", None),
             promo_code=getattr(payload, "promo_code", None),
             customer_name=getattr(payload, "customer_name", None),
+            pickup_type=getattr(payload, "pickup_type", "asap"),
+            pickup_at=getattr(payload, "pickup_at", None),
+            pickup_note=getattr(payload, "pickup_note", None),
         )
 
     except HTTPException:
@@ -1374,6 +1471,9 @@ def create_kiosk_order(payload: KioskOrderCreate, db: Session = Depends(get_db))
             wallet_pin=payload.wallet_pin,
             promo_code=payload.promo_code,
             customer_name=payload.customer_name,
+            pickup_type=getattr(payload, "pickup_type", "asap"),
+            pickup_at=getattr(payload, "pickup_at", None),
+            pickup_note=getattr(payload, "pickup_note", None),
         )
     except HTTPException:
         db.rollback()
@@ -1401,6 +1501,9 @@ def create_online_order(
             wallet_pin=payload.wallet_pin,
             promo_code=payload.promo_code,
             customer_name=None,
+            pickup_type=getattr(payload, "pickup_type", "asap"),
+            pickup_at=getattr(payload, "pickup_at", None),
+            pickup_note=getattr(payload, "pickup_note", None),
         )
     except HTTPException:
         db.rollback()
@@ -1428,6 +1531,9 @@ def create_cashier_order(
             wallet_pin=payload.wallet_pin,
             promo_code=payload.promo_code,
             customer_name=payload.customer_name,
+            pickup_type=getattr(payload, "pickup_type", "asap"),
+            pickup_at=getattr(payload, "pickup_at", None),
+            pickup_note=getattr(payload, "pickup_note", None),
             is_pwd_discount=bool(payload.is_pwd_discount),
             pwd_discount_rate=payload.pwd_discount_rate or Decimal("0.20"),
             pwd_name=payload.pwd_name,
@@ -1999,6 +2105,13 @@ def get_receipt(order_id: int, db: Session = Depends(get_db)):
         "display_id": _display_order_id(order.id),
         "user_id": order.user_id,
         "customer_name": resolved_customer_name or "Walk-in Customer",
+         "pickup_type": getattr(order, "pickup_type", "asap"),
+        "pickup_at": (
+            str(getattr(order, "pickup_at", None))
+            if getattr(order, "pickup_at", None)
+            else None
+        ),
+        "pickup_note": getattr(order, "pickup_note", None),
         "order_type": order.order_type,
         "status": order.status,
         "payment_method": payment_method,
