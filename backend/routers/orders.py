@@ -1379,23 +1379,23 @@ def _create_order_core(
     if order.user_id:
         placed_message = f"Your order {_display_order_id(order.id)} has been placed and is now being processed."
 
-    if getattr(order, "pickup_type", "asap") == "scheduled" and getattr(order, "pickup_note", None):
-        placed_message += f" Preferred pickup: {order.pickup_note}."
-    else:
-        placed_message += " Pickup: ASAP."
+        if getattr(order, "pickup_type", "asap") == "scheduled" and getattr(order, "pickup_note", None):
+            placed_message += f" Preferred pickup: {order.pickup_note}."
+        else:
+            placed_message += " Pickup: ASAP."
 
-    create_customer_notification(
-        db,
-        user_id=order.user_id,
-        title="Order placed successfully",
-        message=placed_message,
-        notif_type="order",
-        priority="important",
-        is_sticky=True,
-        action_url="welcome.html",
-        reference_type="order",
-        reference_id=order.id,
-    )
+        create_customer_notification(
+            db,
+            user_id=order.user_id,
+            title="Order placed successfully",
+            message=placed_message,
+            notif_type="order",
+            priority="important",
+            is_sticky=True,
+            action_url="welcome.html",
+            reference_type="order",
+            reference_id=order.id,
+        )
     return {
         "order_id": order.id,
         "order_type": order.order_type,
