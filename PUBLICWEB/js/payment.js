@@ -99,6 +99,20 @@ function getPickupDraft() {
 function saveCheckoutItems() {
   const pickup = getPickupPayload();
 
+  let pickupAt = null;
+
+  if (
+    pickup.pickup_type === "scheduled" &&
+    pickup.pickup_date &&
+    pickup.pickup_time
+  ) {
+    const localDateTime = new Date(`${pickup.pickup_date}T${pickup.pickup_time}`);
+
+    if (!Number.isNaN(localDateTime.getTime())) {
+      pickupAt = localDateTime.toISOString();
+    }
+  }
+
   localStorage.setItem(MENU_STORAGE_KEY, JSON.stringify(checkoutItems));
 
   const payload = {
@@ -113,6 +127,7 @@ function saveCheckoutItems() {
     subtotal_preview: Number(getBaseTotal().toFixed(2)),
     promo_code: appliedPromo?.code || null,
     pickup_type: pickup.pickup_type,
+    pickup_at: pickupAt,
     pickup_date: pickup.pickup_date,
     pickup_time: pickup.pickup_time,
   };
@@ -563,12 +578,25 @@ function selectPayment(element, type) {
 function buildOrderPayload() {
   const pickup = getPickupPayload();
 
+  let pickupAt = null;
+
+  if (
+    pickup.pickup_type === "scheduled" &&
+    pickup.pickup_date &&
+    pickup.pickup_time
+  ) {
+    const localDateTime = new Date(`${pickup.pickup_date}T${pickup.pickup_time}`);
+
+    if (!Number.isNaN(localDateTime.getTime())) {
+      pickupAt = localDateTime.toISOString();
+    }
+  }
+
   return {
     payment_method: currentPayment,
     promo_code: appliedPromo?.code || null,
     pickup_type: pickup.pickup_type,
-    pickup_date: pickup.pickup_date,
-    pickup_time: pickup.pickup_time,
+    pickup_at: pickupAt,
     items: checkoutItems.map((item) => ({
       product_id: Number(item.product_id),
       quantity: Number(item.qty),

@@ -96,7 +96,9 @@ class DeleteUserPayload(BaseModel):
     admin_password: str
     confirm_text: str
 
-
+class DeleteMyAccountPayload(BaseModel):
+    current_password: str
+    confirm_text: str
 @router.get("/")
 def list_users(
     q: Optional[str] = Query(default=None, description="search by email, name, or wallet code"),
@@ -251,7 +253,61 @@ def create_customer(
         "wallet_code": wallet_code,
         "temporary_password": temp_password,
     }
+@router.delete("/me")
+def delete_my_account(
+    payload: DeleteMyAccountPayload,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if payload.confirm_text.strip().upper() != "DELETE":
+        raise HTTPException(
+            status_code=400,
+            detail="Confirmation text must be DELETE"
+        )
 
+    if not getattr(current_user, "password_hash", None):
+        raise HTTPException(
+            status_code=400,
+            detail="This account cannot use password-based deletion."
+        )
+
+    if not auth_verify_password(payload.current_password, current_user.password_hash):
+        raise HTTPException(
+            status_code=401,
+            detail="Current password is incorrect"
+        )
+
+    user = db.query(User).filter(User.id == current_user.id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    wallet = db.query(Wallet).filter(Wallet.user_id == user.id).first()
+    reward_wallet = db.query(RewardWallet).filter(RewardWallet.user_id == user.id).first()
+
+    wallet_balance = float(wallet.balance) if wallet else 0.0
+    reward_points = int(reward_wallet.total_points or 0) if reward_wallet else 0
+
+    if wallet_balance > 0:
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot delete account with remaining wallet balance"
+        )
+
+    if reward_points > 0:
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot delete account with remaining reward points"
+        )
+
+    db.query(CustomerProfile).filter(CustomerProfile.user_id == user.id).delete()
+    db.query(StaffProfile).filter(StaffProfile.user_id == user.id).delete()
+    db.query(Wallet).filter(Wallet.user_id == user.id).delete()
+    db.query(RewardWallet).filter(RewardWallet.user_id == user.id).delete()
+
+    db.delete(user)
+    db.commit()
+
+    return {"message": "Your account has been deleted successfully"}
 
 @router.get("/{user_id}")
 def get_user(
@@ -431,3 +487,4 @@ def delete_user(
     db.commit()
 
     return {"message": "User deleted successfully"}
+

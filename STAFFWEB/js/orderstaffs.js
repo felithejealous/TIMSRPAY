@@ -223,7 +223,27 @@ function prettifyPaymentMethod(method) {
     if (clean === "cash") return "Cash";
     return method || "-";
 }
+function prettifyPickupType(pickupType) {
+    const clean = String(pickupType || "").toLowerCase();
+    if (clean === "scheduled") return "Scheduled";
+    return "ASAP";
+}
 
+function formatPickupDisplay(order) {
+    if (!order) return "-";
+
+    const pickupType = String(order.pickup_type || "asap").toLowerCase();
+
+    if (pickupType === "scheduled" && order.pickup_at) {
+        return formatDateTime(order.pickup_at);
+    }
+
+    if (order.pickup_note && String(order.pickup_note).trim()) {
+        return order.pickup_note;
+    }
+
+    return "ASAP Pickup";
+}
 function getReceivedAmount(receipt) {
     if (receipt?.amount_received !== null && receipt?.amount_received !== undefined) {
         return Number(receipt.amount_received);
@@ -371,12 +391,14 @@ function renderQueueColumn(container, orders, emptyMessage) {
 
                 <div class="ticket-items">${escapeHTML(order.items_summary || "No items")}</div>
 
-                <div class="ticket-meta-grid">
-                    <div class="ticket-meta">Customer: ${escapeHTML(order.customer_name || "Walk-in Customer")}</div>
-                    <div class="ticket-meta">Payment: ${escapeHTML(order.payment_method || "N/A")}</div>
-                    <div class="ticket-meta">Type: ${escapeHTML(order.order_type || "N/A")}</div>
-                    <div class="ticket-meta">Total: ${escapeHTML(formatPeso(order.total_amount || 0))}</div>
-                </div>
+<div class="ticket-meta-grid">
+    <div class="ticket-meta">Customer: ${escapeHTML(order.customer_name || "Walk-in Customer")}</div>
+<div class="ticket-meta">Payment: ${escapeHTML(prettifyPaymentMethod(order.payment_method || "N/A"))}</div>
+<div class="ticket-meta">Type: ${escapeHTML(prettifyOrderType(order.order_type || "N/A"))}</div>
+    <div class="ticket-meta">Total: ${escapeHTML(formatPeso(order.total_amount || 0))}</div>
+    <div class="ticket-meta">Pickup Type: ${escapeHTML(prettifyPickupType(order.pickup_type))}</div>
+    <div class="ticket-meta">Pickup Time: ${escapeHTML(formatPickupDisplay(order))}</div>
+</div>
 
                 ${
                     order.has_item_notes
@@ -518,6 +540,14 @@ function fillModal(receipt, summary) {
             <span>Created At</span>
             <span>${escapeHTML(formatDateTime(receipt?.created_at || summary?.created_at))}</span>
         </div>
+        <div class="manifest-row">
+    <span>Pickup Type</span>
+    <span>${escapeHTML(prettifyPickupType(receipt?.pickup_type || summary?.pickup_type || "asap"))}</span>
+</div>
+<div class="manifest-row">
+    <span>Pickup Time</span>
+    <span>${escapeHTML(formatPickupDisplay(receipt || summary || {}))}</span>
+</div>
         ${receipt?.promo_code_text ? `
             <div class="manifest-row">
                 <span>Promo Code</span>

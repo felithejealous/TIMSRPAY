@@ -35,28 +35,26 @@ function parseServerDate(value) {
   const [, year, month, day, hour, minute, second = "00"] = match;
 
   return new Date(
-    Number(year),
-    Number(month) - 1,
-    Number(day),
-    Number(hour),
-    Number(minute),
-    Number(second)
+    `${year}-${month}-${day}T${hour}:${minute}:${second}+08:00`
   );
 }
 function formatDateTime(dateStr) {
   if (!dateStr) return "--";
 
   const d = parseServerDate(dateStr);
-  if (!d || Number.isNaN(d.getTime())) return dateStr;
+  if (!d || Number.isNaN(d.getTime())) return "--";
 
   return d.toLocaleString("en-PH", {
+    timeZone: "Asia/Manila",
     year: "numeric",
     month: "short",
     day: "numeric",
     hour: "numeric",
     minute: "2-digit",
+    hour12: true,
   });
 }
+
 function formatExpiry(dateStr, hasExpiry = true) {
   if (!hasExpiry || !dateStr) return "No Expiry";
 
@@ -64,6 +62,7 @@ function formatExpiry(dateStr, hasExpiry = true) {
   if (!date || Number.isNaN(date.getTime())) return "No Expiry";
 
   return date.toLocaleString("en-PH", {
+    timeZone: "Asia/Manila",
     year: "numeric",
     month: "short",
     day: "numeric",

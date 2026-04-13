@@ -43,7 +43,7 @@ function updateSettingsPageUI({ user, points, walletBalance, tier }) {
   if (settingsEmail) settingsEmail.value = email;
 
   if (dangerZoneText) {
-    dangerZoneText.textContent = "Deleting your account is currently handled through account deactivation. Please visit the nearest Teo D' Mango shop for assistance.";
+    dangerZoneText.textContent = "Deleting your account is permanent and cannot be undone. Your wallet balance and reward points must both be zero before deletion is allowed.";
   }
 }
 
@@ -218,10 +218,99 @@ async function saveProfileAndPassword() {
   }
 }
 
-function handleDeleteAccount() {
-  alert(
-    "Account deletion is currently handled as account deactivation. Please visit the nearest Teo D' Mango shop for assistance.",
-  );
+function openDeleteAccountPanel() {
+  const overlay = document.getElementById("deleteAccountOverlay");
+  const panel = document.getElementById("deleteAccountPanel");
+
+  if (overlay) overlay.classList.add("active");
+  if (panel) panel.classList.add("active");
+  document.body.style.overflow = "hidden";
+}
+
+function closeDeleteAccountPanel() {
+  const overlay = document.getElementById("deleteAccountOverlay");
+  const panel = document.getElementById("deleteAccountPanel");
+  const passwordEl = document.getElementById("deleteAccountPassword");
+  const confirmEl = document.getElementById("deleteAccountConfirmText");
+
+  if (overlay) overlay.classList.remove("active");
+  if (panel) panel.classList.remove("active");
+
+  if (passwordEl) passwordEl.value = "";
+  if (confirmEl) confirmEl.value = "";
+
+  document.body.style.overflow = "auto";
+}
+
+async function handleDeleteAccount() {
+  openDeleteAccountPanel();
+}
+
+async function confirmDeleteMyAccount() {
+  const password = (document.getElementById("deleteAccountPassword")?.value || "").trim();
+  const confirmText = (document.getElementById("deleteAccountConfirmText")?.value || "").trim();
+  const btn = document.getElementById("confirmDeleteAccountBtn");
+
+  try {
+    if (!password) {
+      alert("Current password is required.");
+      return;
+    }
+
+    if (confirmText.toUpperCase() !== "DELETE") {
+      alert("Please type DELETE to confirm account deletion.");
+      return;
+    }
+
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = "Deleting...";
+    }
+
+    const res = await fetch(`${API_BASE_URL}/users/me`, {
+      method: "DELETE",
+      headers: {
+        ...getAuthHeaders({
+          "Content-Type": "application/json"
+        })
+      },
+body: JSON.stringify({
+  current_password: password,
+  confirm_text: confirmText
+})
+    });
+
+    const text = await res.text();
+    let data = null;
+
+    try {
+      data = text ? JSON.parse(text) : null;
+    } catch {
+      data = { detail: text || "Unexpected server response" };
+    }
+
+    if (!res.ok) {
+      throw new Error(data?.detail || "Failed to delete account.");
+    }
+
+    alert("Your account has been deleted successfully.");
+
+    localStorage.removeItem("token");
+    localStorage.removeItem("public_menu_cart");
+    localStorage.removeItem("checkout_cart");
+    localStorage.removeItem("checkout_draft");
+    localStorage.removeItem("public_online_order_draft");
+
+    window.location.href = "index.html";
+  } catch (err) {
+    console.error("Delete account error:", err);
+    alert(err.message || "Failed to delete account.");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "Permanently Delete My Account";
+    }
+  }
 }
 function bindProfilePhotoActions() {
   const uploadInput = document.getElementById("settingsProfileUpload");
@@ -309,9 +398,19 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
     }
 
-    const deleteBtn = document.querySelector(".btn-danger");
+    const deleteBtn = document.getElementById("deleteAccountBtn");
     if (deleteBtn) {
-      deleteBtn.onclick = handleDeleteAccount;
+      deleteBtn.addEventListener("click", handleDeleteAccount);
+    }
+
+    const confirmDeleteBtn = document.getElementById("confirmDeleteAccountBtn");
+    if (confirmDeleteBtn) {
+      confirmDeleteBtn.addEventListener("click", confirmDeleteMyAccount);
+    }
+
+    const deleteOverlay = document.getElementById("deleteAccountOverlay");
+    if (deleteOverlay) {
+      deleteOverlay.addEventListener("click", closeDeleteAccountPanel);
     }
   } catch (err) {
     console.error("Failed to initialize settings page", err);

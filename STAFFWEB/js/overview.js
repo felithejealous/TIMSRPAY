@@ -156,6 +156,33 @@ function formatDateTimeAgo(dateString) {
         year: "numeric"
     });
 }
+function formatPickupDisplay(order) {
+    if (!order) return "-";
+
+    const pickupType = String(order.pickup_type || "asap").toLowerCase();
+    const pickupAt = order.pickup_at;
+
+    if (pickupType === "scheduled" && pickupAt) {
+        const date = parseServerDate(pickupAt);
+        if (!date || Number.isNaN(date.getTime())) return "Scheduled";
+
+        return date.toLocaleString("en-PH", {
+            timeZone: "Asia/Manila",
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true
+        });
+    }
+
+    if (pickupType === "scheduled") {
+        return "Scheduled";
+    }
+
+    return "ASAP";
+}
 function setText(el, value, fallback = "--") {
     if (!el) return;
     el.textContent = value ?? fallback;
@@ -253,9 +280,9 @@ function renderOrders(orders = []) {
         ["pending", "unpaid"].includes((order.status || "").toLowerCase())
     ).length;
 
-    const readyCount = orders.filter(order =>
-        (order.status || "").toLowerCase() === "paid"
-    ).length;
+const readyCount = orders.filter(order =>
+    (order.status || "").toLowerCase() === "ready_for_pickup"
+).length;
 
     setText(pendingOrdersCount, String(pendingCount).padStart(2, "0"));
     setText(readyOrdersCount, String(readyCount).padStart(2, "0"));
@@ -271,19 +298,25 @@ function renderOrders(orders = []) {
 
         let actionButton = "";
 
-        if (status === "pending" || status === "unpaid") {
-            actionButton = `
-                <button class="complete-btn action-btn" data-action="pay" data-order-id="${orderId}">
-                    <i class="fa-solid fa-money-bill"></i> Mark Paid
-                </button>
-            `;
-        } else if (status === "paid") {
-            actionButton = `
-                <button class="complete-btn action-btn" data-action="complete" data-order-id="${orderId}">
-                    <i class="fa-solid fa-check"></i> Mark Complete
-                </button>
-            `;
-        } else {
+if (status === "pending" || status === "unpaid") {
+    actionButton = `
+        <button class="complete-btn action-btn" data-action="pay" data-order-id="${orderId}">
+            <i class="fa-solid fa-money-bill"></i> Mark Paid
+        </button>
+    `;
+} else if (status === "paid") {
+    actionButton = `
+        <button class="complete-btn action-btn" data-action="ready" data-order-id="${orderId}">
+            <i class="fa-solid fa-bell"></i> Mark Ready
+        </button>
+    `;
+} else if (status === "ready_for_pickup") {
+    actionButton = `
+        <button class="complete-btn action-btn" data-action="complete" data-order-id="${orderId}">
+            <i class="fa-solid fa-check"></i> Mark Complete
+        </button>
+    `;
+} else {
             actionButton = `
                 <button class="complete-btn" disabled style="opacity:0.6; cursor:not-allowed;">
                     <i class="fa-solid fa-circle-check"></i> ${escapeHTML(status)}
@@ -305,10 +338,10 @@ function renderOrders(orders = []) {
                 <small style="color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 10px;">
                     Status: ${escapeHTML(status)}
                 </small>
-
-                <div class="order-meta">Customer: ${escapeHTML(customerName)}</div>
-                <div class="order-meta">Payment: ${escapeHTML(paymentMethod)}</div>
-                <div class="order-meta">Type: ${escapeHTML(order.order_type || "N/A")}</div>
+<div class="order-meta">Customer: ${escapeHTML(customerName)}</div>
+<div class="order-meta">Payment: ${escapeHTML(paymentMethod)}</div>
+<div class="order-meta">Type: ${escapeHTML(order.order_type || "N/A")}</div>
+<div class="order-meta">Pickup: ${escapeHTML(formatPickupDisplay(order))}</div>
 
                 ${actionButton}
             </div>
@@ -350,15 +383,19 @@ function attachOrderActionEvents() {
             button.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Updating...';
 
             try {
-                if (action === "pay") {
-                    await fetchJSON(`${getAPIURL()}/orders/${orderId}/pay-cash`, {
-                        method: "POST"
-                    });
-                } else if (action === "complete") {
-                    await fetchJSON(`${getAPIURL()}/orders/${orderId}/complete`, {
-                        method: "POST"
-                    });
-                }
+if (action === "pay") {
+    await fetchJSON(`${getAPIURL()}/orders/${orderId}/pay-cash`, {
+        method: "POST"
+    });
+} else if (action === "ready") {
+    await fetchJSON(`${getAPIURL()}/orders/${orderId}/ready`, {
+        method: "POST"
+    });
+} else if (action === "complete") {
+    await fetchJSON(`${getAPIURL()}/orders/${orderId}/complete`, {
+        method: "POST"
+    });
+}
 
                 await loadOrders();
             } catch (error) {

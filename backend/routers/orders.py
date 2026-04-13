@@ -182,7 +182,16 @@ def compute_pwd_ph_discount(gross_total: Decimal, pwd_rate: Decimal = Decimal("0
 def _display_order_id(order_id: int) -> str:
     return f"#TM-{ORDER_DISPLAY_OFFSET + int(order_id)}"
 
+def build_pickup_notification_message(order: Order) -> str:
+    pickup_type = (getattr(order, "pickup_type", "asap") or "asap").strip().lower()
+    pickup_note = (getattr(order, "pickup_note", None) or "").strip()
 
+    if pickup_type == "scheduled":
+        if pickup_note:
+            return f"Your order {_display_order_id(order.id)} is ready for pickup. Preferred pickup: {pickup_note}."
+        return f"Your order {_display_order_id(order.id)} is ready for pickup at your scheduled time."
+
+    return f"Your order {_display_order_id(order.id)} is ready for pickup."
 def _sync_all_product_availability(db: Session):
     from backend.routers.products import sync_all_product_availability
     sync_all_product_availability(db, commit=False)
@@ -1367,21 +1376,26 @@ def _create_order_core(
 
     db.commit()
     db.refresh(order)
-
     if order.user_id:
-        create_customer_notification(
-            db,
-            user_id=order.user_id,
-            title="Order placed successfully",
-            message=f"Your order {_display_order_id(order.id)} has been placed and is now being processed.",
-            notif_type="order",
-            priority="important",
-            is_sticky=True,
-            action_url="welcome.html",
-            reference_type="order",
-            reference_id=order.id,
-        )
+        placed_message = f"Your order {_display_order_id(order.id)} has been placed and is now being processed."
 
+    if getattr(order, "pickup_type", "asap") == "scheduled" and getattr(order, "pickup_note", None):
+        placed_message += f" Preferred pickup: {order.pickup_note}."
+    else:
+        placed_message += " Pickup: ASAP."
+
+    create_customer_notification(
+        db,
+        user_id=order.user_id,
+        title="Order placed successfully",
+        message=placed_message,
+        notif_type="order",
+        priority="important",
+        is_sticky=True,
+        action_url="welcome.html",
+        reference_type="order",
+        reference_id=order.id,
+    )
     return {
         "order_id": order.id,
         "order_type": order.order_type,
@@ -1780,7 +1794,6 @@ def void_order(
     payload = CancelPayload(reason="VOID/ Counter Cancellation")
     return cancel_order(order_id=order_id, payload=payload, db=db, _=True)
 
-
 @router.post("/{order_id}/complete")
 def complete_order(
     order_id: int,
@@ -1792,12 +1805,17 @@ def complete_order(
         if not order:
             raise HTTPException(status_code=404, detail="Order not found")
 
-        if order.status == "cancelled":
+        current_status = (getattr(order, "status", "") or "").strip().lower()
+
+        if current_status == "cancelled":
             raise HTTPException(status_code=400, detail="Cannot complete a cancelled order")
-        if order.status == "completed":
+        if current_status == "completed":
             raise HTTPException(status_code=400, detail="Order already completed")
-        if order.status != "paid":
-            raise HTTPException(status_code=400, detail="Only paid orders can be marked as completed")
+        if current_status != "ready_for_pickup":
+            raise HTTPException(
+                status_code=400,
+                detail="Only ready-for-pickup orders can be marked as completed"
+            )
 
         order.status = "completed"
 
@@ -1818,13 +1836,18 @@ def complete_order(
 
         db.commit()
         db.refresh(order)
+        if order.user_id:
+            pickup_label = (
+                "Your scheduled order has been completed successfully."
+                if (getattr(order, "pickup_type", "asap") or "").strip().lower() == "scheduled"
+                else "Your order has been completed successfully."
+            )
 
-        if order.user_id and order.status == "completed":
             create_customer_notification(
                 db,
                 user_id=order.user_id,
                 title="Order completed",
-                message="Your order has been completed successfully.",
+                message=f"{pickup_label} Order {_display_order_id(order.id)} is now marked as completed.",
                 notif_type="order",
                 priority="important",
                 is_sticky=True,
@@ -1841,8 +1864,82 @@ def complete_order(
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")
+@router.post("/{order_id}/ready")
+def mark_order_ready(
+    order_id: int,
+    db: Session = Depends(get_db),
+    current_staff: User = Depends(require_roles("staff", "cashier", "admin")),
+):
+    try:
+        order = db.query(Order).filter(Order.id == order_id).first()
+        if not order:
+            raise HTTPException(status_code=404, detail="Order not found")
 
+        current_status = (getattr(order, "status", "") or "").strip().lower()
 
+        if current_status == "cancelled":
+            raise HTTPException(status_code=400, detail="Cannot mark a cancelled order as ready")
+        if current_status == "completed":
+            raise HTTPException(status_code=400, detail="Completed order can no longer be marked as ready")
+        if current_status == "ready_for_pickup":
+            raise HTTPException(status_code=400, detail="Order is already marked as ready for pickup")
+        if current_status != "paid":
+            raise HTTPException(status_code=400, detail="Only paid orders can be marked as ready for pickup")
+
+        order.status = "ready_for_pickup"
+
+        if not getattr(order, "processed_by_staff_id", None):
+            order.processed_by_staff_id = int(current_staff.id)
+
+        db.commit()
+        db.refresh(order)
+
+        if order.user_id:
+            pickup_type = (getattr(order, "pickup_type", "asap") or "").strip().lower()
+            pickup_note = getattr(order, "pickup_note", None)
+            pickup_at = getattr(order, "pickup_at", None)
+
+            if pickup_type == "scheduled":
+                if pickup_note:
+                    ready_message = (
+                        f"Your scheduled order {_display_order_id(order.id)} is now ready for pickup. "
+                        f"Preferred pickup: {pickup_note}."
+                    )
+                elif pickup_at:
+                    ready_message = (
+                        f"Your scheduled order {_display_order_id(order.id)} is now ready for pickup."
+                    )
+                else:
+                    ready_message = (
+                        f"Your scheduled order {_display_order_id(order.id)} is now ready for pickup."
+                    )
+            else:
+                ready_message = f"Your order {_display_order_id(order.id)} is now ready for pickup."
+
+            create_customer_notification(
+                db,
+                user_id=order.user_id,
+                title="Order ready for pickup",
+                message=ready_message,
+                notif_type="order",
+                priority="important",
+                is_sticky=True,
+                action_url="welcome.html",
+                reference_type="order",
+                reference_id=order.id,
+            )
+
+        return {
+            "order_id": order.id,
+            "status": order.status,
+        }
+
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")
 @router.post("/{order_id}/pay-cash")
 def pay_cash_order(
     order_id: int,
@@ -1899,6 +1996,19 @@ def pay_cash_order(
             order.processed_by_staff_id = int(current_staff.id)
         db.commit()
         db.refresh(order)
+        if order.user_id:
+            create_customer_notification(
+                db,
+                user_id=order.user_id,
+                title="Order ready for pickup",
+                message=build_pickup_notification_message(order),
+                notif_type="order",
+                priority="important",
+                is_sticky=True,
+                action_url="welcome.html",
+                reference_type="order",
+                reference_id=order.id,
+            )
 
         return {
             "order_id": order.id,
@@ -2000,6 +2110,19 @@ def pay_wallet_order(
 
         db.commit()
         db.refresh(order)
+        if order.user_id:
+            create_customer_notification(
+                db,
+                user_id=order.user_id,
+                title="Order ready for pickup",
+                message=build_pickup_notification_message(order),
+                notif_type="order",
+                priority="important",
+                is_sticky=True,
+                action_url="welcome.html",
+                reference_type="order",
+                reference_id=order.id,
+            )
 
         return {
             "order_id": order.id,

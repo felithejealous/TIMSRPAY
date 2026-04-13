@@ -1017,14 +1017,14 @@
                 </button>
             </div>
 
-            <div class="section-card danger-card">
-                <h4>Danger Zone</h4>
-                <p id="dangerZoneText">Deleting your account is permanent and cannot be undone.</p>
-                <button type="button" class="btn-danger"
-                    onclick="confirm('Are you absolutely sure? This cannot be undone.');">
-                    Delete Account
-                </button>
-            </div>
+<div class="section-card danger-card">
+    <h4>Danger Zone</h4>
+    <p id="dangerZoneText">Deleting your account is permanent and cannot be undone. Your wallet balance and reward
+        points must both be zero before deletion is allowed.</p>
+    <button type="button" class="btn-danger" id="deleteAccountBtn">
+        Delete Account
+    </button>
+</div>
         </div>
     </div>
 
@@ -1066,6 +1066,54 @@
                 <a href="topup.html" class="acc-link-btn"><i class="fa-solid fa-plus-circle"></i> Top-Up Wallet</a>
                 <a href="index.html" class="acc-link-btn danger"><i class="fa-solid fa-right-from-bracket"></i> Log
                     Out</a>
+            </div>
+        </div>
+    </div>
+    <div class="panel-overlay" id="deleteAccountOverlay"></div>
+    
+    <div class="side-panel" id="deleteAccountPanel" style="max-width: 520px; z-index: 2501;">
+        <div class="panel-header">
+            <h2 style="color: var(--danger);">Delete Account</h2>
+            <button class="panel-close-btn" type="button" onclick="closeDeleteAccountPanel()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+    
+        <div class="panel-body">
+            <div class="section-card danger-card" style="margin: 0;">
+                <h4 style="margin-bottom: 12px;">Before You Continue</h4>
+                <p style="margin-bottom: 14px;">
+                    This action permanently deletes your account and cannot be undone.
+                </p>
+                <p style="margin-bottom: 14px;">
+                    Your account can only be deleted if:
+                </p>
+                <p style="margin-bottom: 8px;">• Wallet balance is <strong>₱0.00</strong></p>
+                <p style="margin-bottom: 8px;">• Reward points are <strong>0</strong></p>
+                <p style="margin-bottom: 18px;">
+                    Enter your current password and type <strong>DELETE</strong> to confirm.
+                </p>
+    
+                <div class="form-grid" style="grid-template-columns: 1fr;">
+                    <div class="form-group password-field full-width">
+                        <label for="deleteAccountPassword">Current Password</label>
+                        <div class="input-shell">
+                            <input type="password" id="deleteAccountPassword" placeholder="Enter current password">
+                            <i class="fa-solid fa-eye toggle-password"></i>
+                        </div>
+                    </div>
+    
+                    <div class="form-group full-width">
+                        <label for="deleteAccountConfirmText">Type DELETE</label>
+                        <div class="input-shell">
+                            <input type="text" id="deleteAccountConfirmText" placeholder="Type DELETE to confirm">
+                        </div>
+                    </div>
+                </div>
+    
+                <button type="button" class="btn-danger" id="confirmDeleteAccountBtn" style="margin-top: 20px;">
+                    Permanently Delete My Account
+                </button>
             </div>
         </div>
     </div>
