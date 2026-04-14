@@ -1194,6 +1194,90 @@
                 padding: 16px;
             }
         }
+        /* =========================
+   PICKUP DATE/TIME VISIBILITY FIX
+========================= */
+#pickupDate,
+#pickupTime {
+    color-scheme: dark;
+    color: #f8fafc;
+    background: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.025));
+    border-color: rgba(255, 255, 255, 0.14);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
+}
+
+#pickupDate::-webkit-calendar-picker-indicator,
+#pickupTime::-webkit-calendar-picker-indicator {
+    opacity: 1;
+    cursor: pointer;
+    filter: brightness(2.8) contrast(1.55) drop-shadow(0 0 2px rgba(255, 194, 68, 0.35));
+}
+
+#pickupDate:focus,
+#pickupTime:focus {
+    border-color: var(--mango);
+    background: rgba(255,255,255,0.06);
+    box-shadow:
+        0 0 0 3px rgba(255, 194, 68, 0.12),
+        0 8px 18px rgba(255, 194, 68, 0.08);
+}
+
+/* placeholder-like value visibility */
+#pickupDate,
+#pickupTime,
+#pickupDate::-webkit-datetime-edit,
+#pickupTime::-webkit-datetime-edit,
+#pickupDate::-webkit-datetime-edit-text,
+#pickupTime::-webkit-datetime-edit-text,
+#pickupDate::-webkit-datetime-edit-month-field,
+#pickupDate::-webkit-datetime-edit-day-field,
+#pickupDate::-webkit-datetime-edit-year-field,
+#pickupTime::-webkit-datetime-edit-hour-field,
+#pickupTime::-webkit-datetime-edit-minute-field,
+#pickupTime::-webkit-datetime-edit-ampm-field {
+    color: #f8fafc;
+}
+
+/* when empty, make default text more visible */
+#pickupDate:invalid,
+#pickupTime:invalid {
+    color: rgba(255, 255, 255, 0.78);
+}
+
+/* LIGHT MODE counterpart para hindi sobrang puti doon */
+.light-mode #pickupDate,
+.light-mode #pickupTime {
+    color-scheme: light;
+    color: #1f2937;
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.08);
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.01);
+}
+
+.light-mode #pickupDate::-webkit-calendar-picker-indicator,
+.light-mode #pickupTime::-webkit-calendar-picker-indicator {
+    filter: brightness(0.55) contrast(1.4) drop-shadow(0 0 1px rgba(0,0,0,0.12));
+}
+
+.light-mode #pickupDate,
+.light-mode #pickupTime,
+.light-mode #pickupDate::-webkit-datetime-edit,
+.light-mode #pickupTime::-webkit-datetime-edit,
+.light-mode #pickupDate::-webkit-datetime-edit-text,
+.light-mode #pickupTime::-webkit-datetime-edit-text,
+.light-mode #pickupDate::-webkit-datetime-edit-month-field,
+.light-mode #pickupDate::-webkit-datetime-edit-day-field,
+.light-mode #pickupDate::-webkit-datetime-edit-year-field,
+.light-mode #pickupTime::-webkit-datetime-edit-hour-field,
+.light-mode #pickupTime::-webkit-datetime-edit-minute-field,
+.light-mode #pickupTime::-webkit-datetime-edit-ampm-field {
+    color: #1f2937;
+}
+
+.light-mode #pickupDate:invalid,
+.light-mode #pickupTime:invalid {
+    color: rgba(31, 41, 55, 0.68);
+}
     </style>
 </head>
 
