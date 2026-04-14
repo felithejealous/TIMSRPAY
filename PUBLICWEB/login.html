@@ -4,12 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script>
-        (function () {
-            const t = localStorage.getItem("publicweb-theme") || "light";
-            if (t === "dark") document.documentElement.classList.add("light-mode");
-        })();
-    </script>
+<script>
+    (function () {
+        const t = localStorage.getItem("publicweb-theme") || "dark";
+        if (t === "dark") document.documentElement.classList.add("light-mode");
+    })();
+</script>
     <title>Teo D' Mango | Member Hub</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -566,6 +566,6 @@
 
     <script src="config.js"></script>
     <script src="js/login.js"></script>
-    <script src="js/theme-sync.js"></script>
+    <script src="js/theme-sync-public.js"></script>
 </body>
 </html>
