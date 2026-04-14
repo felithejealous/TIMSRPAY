@@ -80,6 +80,7 @@ async function fetchJSON(url, options = {}) {
 
     return data;
 }
+
 function escapeHTML(value) {
     return String(value ?? "")
         .replaceAll("&", "&amp;")
@@ -186,6 +187,11 @@ function getProductImageByName(name) {
     if (clean.includes("strawberry")) return "berry2.png";
 
     return "banner.png";
+}
+function getProductImage(product) {
+    const imageUrl = String(product?.image_url || "").trim();
+    if (imageUrl) return imageUrl;
+    return getProductImageByName(product?.name);
 }
 
 function showMenuMessage(message) {
@@ -721,7 +727,7 @@ function renderProducts(items = []) {
                     ${escapeHTML(stockState.label)}
                 </div>
 
-                <img src="${escapeHTML(getProductImageByName(product.name))}" alt="${escapeHTML(product.name)}">
+                <img src="${escapeHTML(getProductImage(product))}" alt="${escapeHTML(product.name)}">
                 <h4>${escapeHTML(product.name)}</h4>
                 <div class="product-sub">${escapeHTML(normalizeCategoryName(product.category_name))}</div>
                 <p class="product-price">${escapeHTML(formatPeso(displayPrice))}</p>

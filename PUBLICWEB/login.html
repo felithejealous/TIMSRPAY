@@ -20,6 +20,7 @@
             --text: #1a1a1a;
             --surface: #fafaf8;
             --border: rgba(0, 0, 0, 0.06);
+            --logo-filter: brightness(0) invert(1);
         }
 
         .light-mode {
@@ -64,12 +65,31 @@
             border-right-color: var(--border);
         }
 
-        .brand-logo {
-            width: clamp(90px, 10vw, 120px);
-            margin-bottom: 30px;
-            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.05));
-            animation: slideIn 0.8s ease;
-        }
+.brand-logo {
+    width: clamp(90px, 10vw, 120px);
+    margin-bottom: 30px;
+    filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.08));
+    animation: slideIn 0.8s ease;
+    transition: filter 0.35s ease, transform 0.35s ease;
+}
+
+.light-mode .brand-logo {
+    filter:
+        drop-shadow(0 0 2px rgba(255, 255, 255, 0.85))
+        drop-shadow(0 0 6px rgba(255, 194, 68, 0.55))
+        drop-shadow(0 0 14px rgba(255, 194, 68, 0.28));
+}
+
+.brand-logo:hover {
+    transform: scale(1.04);
+}
+
+.light-mode .brand-logo:hover {
+    filter:
+        drop-shadow(0 0 3px rgba(255, 255, 255, 1))
+        drop-shadow(0 0 10px rgba(255, 194, 68, 0.7))
+        drop-shadow(0 0 18px rgba(255, 194, 68, 0.38));
+}
 
         .brand-wall h1 {
             font-size: clamp(45px, 6vw, 90px);
@@ -367,7 +387,23 @@
             color: #111;
         }
 
-      
+      .brand-watermark {
+    margin-top: 50px;
+    font-weight: 950;
+    font-size: clamp(24px, 4vw, 35px);
+    letter-spacing: 2px;
+    color: var(--text);
+    opacity: 0.10;
+    transition: all 0.4s ease;
+}
+
+.light-mode .brand-watermark {
+    color: #ffffff;
+    opacity: 0.12;
+    text-shadow:
+        0 0 8px rgba(255, 255, 255, 0.08),
+        0 0 18px rgba(255, 194, 68, 0.06);
+}
         @media (max-width: 1000px) {
             body {
                 grid-template-columns: 1fr;
@@ -425,6 +461,7 @@
                 height: 40px;
             }
         }
+
     </style>
 </head>
 
@@ -435,9 +472,7 @@
         <h1>STAY<br><span class="accent">FRESH.</span></h1>
         <p>Your daily energy boost is just one tap away. Experience the legendary mango overload that Lemery is talking
             about.</p>
-        <div
-            style="margin-top: 50px; font-weight: 950; opacity: 0.05; font-size: clamp(24px, 4vw, 35px); letter-spacing: 2px;">
-            TEO D' MANGO</div>
+<div class="brand-watermark">TEO D' MANGO</div>
     </section>
 
     <section class="form-area">

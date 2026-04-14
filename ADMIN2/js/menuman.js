@@ -260,7 +260,9 @@ function renderProducts() {
 
     productsCache.forEach(product => {
         const isActive = Boolean(product.is_active);
-        const imageCell = buildImagePlaceholder(product.name);
+        const imageCell = product.image_url
+            ? `<img src="${escapeHtml(product.image_url)}" alt="${escapeHtml(product.name)}" class="w-[45px] h-[45px] rounded-xl object-cover border-2 border-white/10 bg-white/5">`
+            : buildImagePlaceholder(product.name);
 
         tbody.innerHTML += `
             <tr class="hover:bg-white/5 transition">
@@ -369,9 +371,9 @@ function editProduct(productId) {
     document.getElementById("prodName").value = product.name || "";
     document.getElementById("prodPrice").value = Number(product.price || 0);
     document.getElementById("prodPoints").value = Number(product.points_per_unit || 0);
-    document.getElementById("imgPreview").src = EMPTY_IMAGE;
+    document.getElementById("imgPreview").src = product.image_url || EMPTY_IMAGE;
     document.getElementById("prodImgInput").value = "";
-    tempProductImage = "";
+    tempProductImage = product.image_url || "";
 
     populateCategorySelect();
     document.getElementById("prodCategory").value = String(product.category_id || "");
@@ -411,6 +413,7 @@ async function saveProduct() {
         price,
         points_per_unit: points,
         category_id: categoryId,
+        image_url: tempProductImage|| null,
         is_active: true,
         is_available: true
     };
@@ -446,10 +449,6 @@ async function saveProduct() {
         renderProducts();
         populateRecipeProductSelect();
         closeModals();
-
-        if (tempProductImage) {
-            alert("Note: product image preview is UI-only for now because your backend products table still has no image field.");
-        }
     } catch (error) {
         console.error("Save product error:", error);
         alert(error.message || "Failed to save product.");

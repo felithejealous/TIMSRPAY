@@ -33,7 +33,21 @@ function normalizeName(value) {
 }
 
 function getProductImage(product) {
-    const normalizedName = normalizeName(product.name);
+    const rawImage = String(product?.image_url || "").trim();
+
+    if (rawImage) {
+        if (rawImage.startsWith("http://") || rawImage.startsWith("https://")) {
+            return rawImage;
+        }
+
+        if (rawImage.startsWith("/")) {
+            return `${API_URL}${rawImage}`;
+        }
+
+        return rawImage;
+    }
+
+    const normalizedName = normalizeName(product?.name);
     return PRODUCT_IMAGE_MAP[normalizedName] || "../Images/new banner teo.png";
 }
 
@@ -65,16 +79,18 @@ async function loadMenuProducts() {
         id: Number(item.product_id),
         name: item.name || "Unnamed Product",
         price: Number(item.price || 0),
+        description: item.description || "",
+        image_url: item.image_url || "",
         desc: item.category_name
             ? `${item.category_name} Selection.`
-            : "Freshly prepared and ready for your next craving.",
+            : "We are ready to serve you a delicious treat!",
         img: getProductImage(item),
         category_name: item.category_name || null,
         points_per_unit: Number(item.points_per_unit || 0),
         is_available: Boolean(item.is_available)
     }));
 
-    localStorage.setItem("teo_kiosk_products_cache", JSON.stringify(products));
+    //localStorage.setItem("teo_kiosk_products_cache", JSON.stringify(products));
 }
 
 function renderProducts() {
