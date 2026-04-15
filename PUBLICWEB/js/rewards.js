@@ -88,6 +88,10 @@ function showEmptyHistory(target, message = "No transaction history yet.") {
         </div>
     `;
 }
+function formatPointsLabel(value) {
+  const points = Number(value || 0);
+  return `${points.toLocaleString()} ${points === 1 ? "pt" : "pts"}`;
+}
 
 function normalizeTransaction(tx) {
   const rawType = String(
@@ -95,13 +99,35 @@ function normalizeTransaction(tx) {
   ).toLowerCase();
   const points = Number(tx.amount || tx.points || tx.points_change || 0);
 
+  const rewardName =
+    tx.reward_name ||
+    tx.reward_title ||
+    tx.name ||
+    "";
+
+  const productName =
+    tx.product_name ||
+    tx.reward_product_name ||
+    "";
+
+  let resolvedTitle =
+    tx.title ||
+    tx.description ||
+    rewardName;
+
+  if (!resolvedTitle) {
+    if (rawType === "redeem") {
+      resolvedTitle = productName
+        ? `Redeemed ${productName}`
+        : "Reward Redemption";
+    } else {
+      resolvedTitle = "Points Earned";
+    }
+  }
+
   return {
     id: tx.id || tx.order_id || tx.transaction_id || "N/A",
-    title:
-      tx.title ||
-      tx.description ||
-      tx.reward_name ||
-      (rawType === "redeem" ? "Reward Redemption" : "Points Earned"),
+    title: resolvedTitle,
     type: rawType,
     amount: points,
     date: tx.created_at || tx.date || tx.transaction_date || null,
@@ -143,9 +169,9 @@ function renderHistory(list, target, limit = null) {
                     </div>
                 </div>
 
-                <div style="font-size:15px;font-weight:900;color:${color};white-space:nowrap;">
-                    ${sign}${Math.abs(tx.amount)} PTS
-                </div>
+ <div style="font-size:15px;font-weight:900;color:${color};white-space:nowrap;">
+    ${sign}${formatPointsLabel(Math.abs(tx.amount)).toUpperCase()}
+</div>
             </div>
         `;
     })
@@ -173,6 +199,8 @@ function renderRewards(points, rewards = null) {
             points_required: 2800,
             image_url: "mango.png",
             claimable: points >= 2800,
+            product_name: "Classic Teo D Mango",
+            size_label: "Regular",
           },
           {
             reward_id: 2,
@@ -180,6 +208,8 @@ function renderRewards(points, rewards = null) {
             points_required: 2800,
             image_url: "avo2.png",
             claimable: points >= 2800,
+            product_name: "Avocado",
+            size_label: "Regular",
           },
         ];
 
@@ -194,21 +224,28 @@ function renderRewards(points, rewards = null) {
           : points >= requiredPoints;
 
       const image = reward.image_url || getRewardImageByName(reward.name);
+      const rewardName = reward.name || "Reward";
+      const productName = reward.product_name || reward.linked_product_name || "";
+      const sizeLabel = reward.size_label || "";
+      const subLabel = [productName, sizeLabel].filter(Boolean).join(" • ");
 
       return `
             <div class="reward-item ${canClaim ? "" : "locked"}">
                 <div class="ledger-left">
-                    <img src="${image}" class="reward-img" alt="${reward.name}">
+                    <img src="${image}" class="reward-img" alt="${rewardName}">
                     <div class="reward-info">
-                        <h5>${reward.name}</h5>
-                        <p>${requiredPoints.toLocaleString()} POINTS</p>
+                        <h5>${rewardName}</h5>
+                        <p>${formatPointsLabel(requiredPoints).toUpperCase()}</p>
+                        ${subLabel ? `<small style="display:block;margin-top:4px;color:var(--text-muted);font-weight:700;">${subLabel}</small>` : ""}
                     </div>
                 </div>
 
                 <button
                     class="btn-claim"
                     data-id="${Number(reward.reward_id)}"
-                    data-name="${reward.name}"
+                    data-name="${rewardName}"
+                    data-product-name="${productName}"
+                    data-size-label="${sizeLabel}"
                     ${canClaim ? "" : "disabled title='You need more points to unlock this reward.'"}
                     onclick="handleRedeem(this)"
                 >
@@ -219,7 +256,6 @@ function renderRewards(points, rewards = null) {
     })
     .join("");
 }
-
 function updateRewardsPageUI({ points, tier }) {
   const pointsBalance = document.getElementById("pointsBalance");
   const memberStatus = document.getElementById("memberStatus");
@@ -351,6 +387,8 @@ async function handleRedeem(button) {
   try {
     const rewardId = Number(button.dataset.id);
     const rewardName = button.dataset.name || "Reward";
+    const productName = button.dataset.productName || "";
+    const sizeLabel = button.dataset.sizeLabel || "";
 
     if (!rewardId || Number.isNaN(rewardId)) {
       throw new Error("Reward ID is missing or invalid.");
@@ -366,10 +404,36 @@ async function handleRedeem(button) {
     const expiresAt = result.expires_at || null;
     const hasExpiry = Boolean(result.has_expiry);
 
-    if (redeemRewardName) redeemRewardName.textContent = rewardName;
+    const resolvedRewardName =
+      result.reward_name ||
+      rewardName;
+
+    const resolvedProductName =
+      result.product_name ||
+      result.reward_product_name ||
+      productName;
+
+    const resolvedSizeLabel =
+      result.size_label ||
+      sizeLabel;
+
+    if (redeemRewardName) {
+      redeemRewardName.innerHTML = `
+        <div>${resolvedRewardName}</div>
+        ${
+          resolvedProductName || resolvedSizeLabel
+            ? `<div style="margin-top:6px;font-size:13px;color:var(--text-muted);font-weight:700;">
+                ${[resolvedProductName, resolvedSizeLabel].filter(Boolean).join(" • ")}
+               </div>`
+            : ""
+        }
+      `;
+    }
+
     if (redeemToken) redeemToken.textContent = token;
-    if (redeemExpiry)
+    if (redeemExpiry) {
       redeemExpiry.textContent = formatExpiry(expiresAt, hasExpiry);
+    }
 
     if (window.QRCode && redeemQrCanvas) {
       redeemQrCanvas

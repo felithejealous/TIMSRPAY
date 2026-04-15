@@ -2,6 +2,7 @@ let rewardsMembersCache = [];
 let filteredMembersCache = [];
 let memberSearchTimer = null;
 let selectedRedeemCustomer = null;
+let rewardsCatalogCache = [];
 function getAPIURL() {
     if (!window.API_URL) {
         throw new Error("API_URL is not defined. Make sure authGuard.js loads first.");
@@ -40,18 +41,48 @@ function escapeHTML(value) {
         .replaceAll("'", "&#039;");
 }
 function formatPoints(value) {
-    return `${Number(value || 0).toLocaleString()} pts`;
+    const points = Number(value || 0);
+    return `${points.toLocaleString()} ${points === 1 ? "pt" : "pts"}`;
+}
+function getActiveRewardsCatalog() {
+    return Array.isArray(rewardsCatalogCache)
+        ? rewardsCatalogCache.filter(reward => reward.is_active !== false)
+        : [];
+}
+
+function getLowestActiveRewardPoints() {
+    const activeRewards = getActiveRewardsCatalog();
+    const pointValues = activeRewards
+        .map(reward => Number(reward.points_required || 0))
+        .filter(value => Number.isFinite(value) && value > 0);
+
+    if (!pointValues.length) return 0;
+    return Math.min(...pointValues);
+}
+
+function getClaimableRewards(points) {
+    const customerPoints = Number(points || 0);
+
+    return getActiveRewardsCatalog().filter(reward => {
+        const required = Number(reward.points_required || 0);
+        return Number.isFinite(required) && required > 0 && customerPoints >= required;
+    });
 }
 
 function getProgressPercent(points) {
     const value = Number(points || 0);
-    const max = 2800;
-    const pct = Math.max(0, Math.min(100, (value / max) * 100));
+    const baseRequired = getLowestActiveRewardPoints();
+
+    if (!baseRequired || baseRequired <= 0) return "0.00";
+
+    const pct = Math.max(0, Math.min(100, (value / baseRequired) * 100));
     return pct.toFixed(2);
 }
 
 function getMemberStatus(points) {
-    return Number(points || 0) >= 2800
+    const claimableRewards = getClaimableRewards(points);
+
+    return claimableRewards.length > 0
         ? {
             label: "Ready",
             className: "eligible"
@@ -61,7 +92,6 @@ function getMemberStatus(points) {
             className: "not-eligible"
         };
 }
-
 function showInlineMessage(container, html, color = "") {
     if (!container) return;
     container.innerHTML = html;
@@ -71,6 +101,13 @@ function showInlineMessage(container, html, color = "") {
 function updateRedeemInfoBox(html, color = "") {
     const redeemInfo = document.getElementById("redeemTokenInfo");
     showInlineMessage(redeemInfo, html, color);
+}
+async function loadRewardsCatalogForStaff() {
+    const response = await fetchJSON(
+        `${getAPIURL()}/rewards/admin/catalog?active_only=true`
+    );
+
+    rewardsCatalogCache = Array.isArray(response?.data) ? response.data : [];
 }
 /* =========================
    MEMBERS TABLE
@@ -197,7 +234,7 @@ function setupMembersTableActions() {
                 <div><strong>User ID:</strong> ${escapeHTML(userId || "-")}</div>
                 <div><strong>Current Points:</strong> <span style="color: var(--mango); font-weight: 900;">${escapeHTML(points.toLocaleString())}</span></div>
                 <div style="color: var(--success); font-weight: 800;">
-                    This customer is ready for free drink redemption. Ask the customer to show the QR/token, then consume it here.
+                    "Use this for customers who have already generated a redeem token. Reward tokens do not expire, but once consumed, they cannot be reused."
                 </div>
             </div>
         `, "var(--text-main)");
@@ -309,18 +346,33 @@ async function handleConsumeToken() {
             }
         );
 
-        updateRedeemInfoBox(`
-            <div style="display:grid; gap:8px;">
-                <div style="color: var(--success); font-weight: 900;">Reward redeemed successfully.</div>
-                <div><strong>User ID:</strong> ${escapeHTML(result.user_id)}</div>
-                <div><strong>Remaining Points:</strong> ${escapeHTML(Number(result.remaining_points || 0).toLocaleString())}</div>
-                <div>This token is now consumed and cannot be reused.</div>
-            </div>
-        `, "var(--text-main)");
+const redeemedRewardName = result.reward_name || "Reward";
+const redeemedProductName = result.product_name || "No linked product";
+const redeemedSizeLabel = result.size_label || "Standard";
+const consumedPoints = Number(result.required_points || 0);
+const remainingPoints = Number(result.remaining_points || 0);
 
-        alert(
-            `${result.message || "Reward redeemed successfully."}\n\nUser ID: ${result.user_id}\nRemaining Points: ${Number(result.remaining_points || 0).toLocaleString()}`
-        );
+updateRedeemInfoBox(`
+    <div style="display:grid; gap:8px;">
+        <div style="color: var(--success); font-weight: 900;">Reward redeemed successfully.</div>
+        <div><strong>User ID:</strong> ${escapeHTML(result.user_id)}</div>
+        <div><strong>Reward:</strong> ${escapeHTML(redeemedRewardName)}</div>
+        <div><strong>Drink to Prepare:</strong> ${escapeHTML(redeemedProductName)}</div>
+        <div><strong>Size:</strong> ${escapeHTML(redeemedSizeLabel)}</div>
+        <div><strong>Points Deducted:</strong> ${escapeHTML(formatPoints(consumedPoints))}</div>
+        <div><strong>Remaining Points:</strong> ${escapeHTML(formatPoints(remainingPoints))}</div>
+        <div>This token is now consumed and cannot be reused.</div>
+    </div>
+`, "var(--text-main)");
+
+alert(
+    `${result.message || "Reward redeemed successfully."}\n\n` +
+    `User ID: ${result.user_id}\n` +
+    `Reward: ${result.reward_name || "Reward"}\n` +
+    `Drink: ${result.product_name || "No linked product"}\n` +
+    `Size: ${result.size_label || "Standard"}\n` +
+    `Remaining Points: ${formatPoints(result.remaining_points || 0)}`
+);
 
         if (tokenInput) tokenInput.value = "";
         selectedRedeemCustomer = null;
@@ -489,7 +541,7 @@ async function initRewardsStaffPage() {
             "Use this for customers who already generated a redeem token. Free drink token does not expire, but once consumed it cannot be reused.",
             "var(--text-muted)"
         );
-
+        await loadRewardsCatalogForStaff();
         await loadMembers("");
     } catch (error) {
         console.error("rewardsstaff init error:", error);

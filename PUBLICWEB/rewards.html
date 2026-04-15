@@ -835,6 +835,17 @@
             transition: 0.3s;
         }
 
+        .avatar-circle {
+            width: 60px;
+            height: 60px;
+            background: var(--mango);
+            color: #111;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            font-size: 24px;
+            font-weight: 900;
+        }
         .profile-details {
             min-width: 0;
             flex: 1;
@@ -876,9 +887,13 @@
             overflow: hidden;
         }
 
-        .avatar-has-shell {
-            background: transparent;
+    
+            .avatar-has-shell {
+            overflow: hidden;
+            position: relative;
+            /* Tinanggal natin yung background: transparent; */
         }
+        
 
         .avatar-image {
             width: 100%;
@@ -1298,11 +1313,12 @@
     <script src="config.js"></script>
     <script src="js/api.js"></script>
     <script src="js/authGuard.js"></script>
-    <script src="js/logout.js"></script>
-    <script src="js/sidepanel-fetching.js"></script>
-    <script src="js/theme-sync.js"></script>
-    <script src="js/account-panel.js"></script>
     <script src="js/rewards.js"></script>
+    <script src="js/logout.js"></script>
+    <script src="js/theme-sync.js"></script>
+    <script src="js/sidepanel-fetching.js"></script>
+    <script src="js/account-panel.js"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 
     <script>

@@ -20,6 +20,8 @@ from backend.routers.activity_logs import router as activity_logs_router
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
 import os
+from fastapi.staticfiles import StaticFiles
+from pathlib import Path
 from backend.routers.announcement import router as announcements_router
 from fastapi.staticfiles import StaticFiles
 from backend.routers.admin import router as admin_router
@@ -27,7 +29,7 @@ from backend.routers.notification import router as notification_router
 load_dotenv()
 
 app = FastAPI(title="TIMS-RPAY API")
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
 
 cors_origins_env = (os.getenv("CORS_ORIGINS") or "").strip()
 default_origins = [
@@ -40,6 +42,11 @@ allow_origins = (
     if cors_origins_env
     else default_origins
 )
+BASE_DIR = Path(__file__).resolve().parent
+UPLOADS_DIR = BASE_DIR / "uploads"
+UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
+
+app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
 
 app.add_middleware(
     CORSMiddleware,

@@ -217,49 +217,76 @@ async function submitRewardForm(event) {
   const rewardId = String(document.getElementById("rewardId")?.value || "").trim();
   const status = document.getElementById("rewardFormStatus");
   const saveBtn = document.getElementById("saveRewardBtn");
+  const fileInput = document.getElementById("rewardImageFile");
 
-  const payload = {
-    name: document.getElementById("rewardName")?.value.trim(),
-    description: document.getElementById("rewardDescription")?.value.trim() || null,
-    image_url: document.getElementById("rewardImageUrl")?.value.trim() || null,
-    points_required: Number(document.getElementById("rewardPointsRequired")?.value || 0),
-    reward_type: document.getElementById("rewardType")?.value.trim() || "free_drink",
-    product_id: document.getElementById("rewardProductId")?.value ? Number(document.getElementById("rewardProductId").value) : null,
-    size_label: document.getElementById("rewardSizeLabel")?.value.trim() || null,
-    is_active: document.getElementById("rewardIsActive")?.value === "true",
-    sort_order: Number(document.getElementById("rewardSortOrder")?.value || 0),
-  };
-
-  if (!payload.name || payload.points_required < 1) {
-    if (status) {
-      status.style.color = "#ef4444";
-      status.innerText = "Reward name and valid points are required.";
-    }
-    return;
-  }
+  let imageUrl = document.getElementById("rewardImageUrl")?.value.trim() || null;
 
   try {
     if (saveBtn) saveBtn.disabled = true;
+
     if (status) {
       status.style.color = "";
       status.innerText = rewardId ? "Updating reward..." : "Creating reward...";
     }
 
+    if (fileInput && fileInput.files && fileInput.files.length > 0) {
+      const file = fileInput.files[0];
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const uploadRes = await fetch(`${API_URL}/rewards/admin/upload-image`, {
+        method: "POST",
+        headers: getAuthHeaders(),
+        body: formData
+      });
+
+      const uploadData = await uploadRes.json().catch(() => ({}));
+
+      if (!uploadRes.ok) {
+        throw new Error(uploadData.detail || uploadData.message || "Image upload failed");
+      }
+
+      imageUrl = uploadData.image_url || null;
+    }
+
+    const payload = {
+      name: document.getElementById("rewardName")?.value.trim() || "",
+      description: document.getElementById("rewardDescription")?.value.trim() || null,
+      image_url: imageUrl,
+      points_required: Number(document.getElementById("rewardPointsRequired")?.value || 0),
+      reward_type: document.getElementById("rewardType")?.value.trim() || "free_drink",
+      product_id: document.getElementById("rewardProductId")?.value
+        ? Number(document.getElementById("rewardProductId").value)
+        : null,
+      size_label: document.getElementById("rewardSizeLabel")?.value.trim() || null,
+      is_active: document.getElementById("rewardIsActive")?.value === "true",
+      sort_order: Number(document.getElementById("rewardSortOrder")?.value || 0),
+    };
+
+    if (!payload.name || payload.points_required < 1) {
+      throw new Error("Reward name and valid points are required.");
+    }
+
     const isEdit = !!rewardId;
-    const endpoint = isEdit ? `${API_URL}/rewards/admin/catalog/${rewardId}` : `${API_URL}/rewards/admin/catalog`;
+    const endpoint = isEdit
+      ? `${API_URL}/rewards/admin/catalog/${rewardId}`
+      : `${API_URL}/rewards/admin/catalog`;
     const method = isEdit ? "PUT" : "POST";
 
     const res = await fetch(endpoint, {
       method,
       headers: getAuthHeaders({
         "Content-Type": "application/json"
-      }) ,
+      }),
       body: JSON.stringify(payload),
     });
 
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
 
-    if (!res.ok) throw new Error(data.detail || data.message || "Failed to save reward");
+    if (!res.ok) {
+      throw new Error(data.detail || data.message || "Failed to save reward");
+    }
 
     if (status) {
       status.style.color = "#22c55e";
@@ -273,6 +300,7 @@ async function submitRewardForm(event) {
     }, 800);
   } catch (error) {
     console.error("Reward form submit error:", error);
+
     if (status) {
       status.style.color = "#ef4444";
       status.innerText = error.message || "Failed to save reward.";
@@ -281,7 +309,6 @@ async function submitRewardForm(event) {
     if (saveBtn) saveBtn.disabled = false;
   }
 }
-
 async function toggleRewardStatus(rewardId) {
   try {
     const res = await fetch(`${API_URL}/rewards/admin/catalog/${rewardId}/toggle`, {

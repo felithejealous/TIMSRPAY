@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Header, Query
+from fastapi import APIRouter, Depends, HTTPException, Header, Query, UploadFile, File
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, func as sa_func, cast, String
@@ -12,7 +12,9 @@ import re
 import smtplib
 import string
 from email.message import EmailMessage
-
+from pathlib import Path
+import shutil
+import uuid
 from backend.routers.notification import create_customer_notification
 from backend.schemas import RewardCreate, RewardUpdate
 from backend.security import get_current_user, require_roles
@@ -40,7 +42,36 @@ MANUAL_OTP_MAX_ATTEMPTS = 3
 MANUAL_OTP_REQUEST_COOLDOWN_SECONDS = 60
 ORDER_POINTS_CLAIM_WINDOW_HOURS = 24
 ORDER_DISPLAY_OFFSET = 900
+ALLOWED_IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
+MAX_IMAGE_UPLOAD_BYTES = 5 * 1024 * 1024  # 5MB
 
+
+def _get_project_root() -> Path:
+    return Path(__file__).resolve().parents[2]
+
+
+def _ensure_reward_upload_dir() -> Path:
+    upload_dir = _get_project_root() / "uploads" / "rewards"
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    return upload_dir
+
+
+def _validate_reward_image_file(file: UploadFile):
+    if not file or not file.filename:
+        raise HTTPException(status_code=400, detail="Image file is required")
+
+    ext = Path(file.filename).suffix.lower()
+    if ext not in ALLOWED_IMAGE_EXTENSIONS:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid image type. Allowed: jpg, jpeg, png, webp, gif"
+        )
+
+    content_type = (file.content_type or "").lower()
+    if not content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="Uploaded file must be an image")
+
+    return ext
 
 def get_db():
     db = SessionLocal()
@@ -596,8 +627,37 @@ def admin_customer_history(
             for t in txs
         ],
     }
+@router.post("/admin/upload-image")
+def admin_upload_reward_image(
+    file: UploadFile = File(...),
+    _: User = Depends(require_roles("admin")),
+):
+    ext = _validate_reward_image_file(file)
+    upload_dir = _ensure_reward_upload_dir()
 
+    safe_name = f"{uuid.uuid4().hex}{ext}"
+    save_path = upload_dir / safe_name
 
+    try:
+        with save_path.open("wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+    except Exception:
+        raise HTTPException(status_code=500, detail="Failed to save uploaded image")
+    finally:
+        file.file.close()
+
+    file_size = save_path.stat().st_size if save_path.exists() else 0
+    if file_size > MAX_IMAGE_UPLOAD_BYTES:
+        try:
+            save_path.unlink(missing_ok=True)
+        except Exception:
+            pass
+        raise HTTPException(status_code=400, detail="Image file is too large. Max size is 5MB")
+
+    return {
+        "message": "Image uploaded successfully",
+        "image_url": f"/uploads/rewards/{safe_name}"
+    }
 # ============================================================
 # ADMIN REWARD CATALOG MANAGEMENT
 # ============================================================
@@ -996,8 +1056,6 @@ def generate_redeem_qr_for_customer(
         "required_points": int(row.required_points or 0),
         "message": "Redeem token generated successfully for customer"
     }
-
-
 @router.post("/redeem-qr/consume")
 def consume_redeem_qr(
     qr_token: str,
@@ -1017,6 +1075,14 @@ def consume_redeem_qr(
 
     if row.is_used:
         raise HTTPException(status_code=400, detail="Token already used")
+
+    reward = None
+    product = None
+
+    if getattr(row, "reward_id", None):
+        reward = db.query(Reward).filter(Reward.id == row.reward_id).first()
+        if reward and getattr(reward, "product_id", None):
+            product = db.query(Product).filter(Product.id == reward.product_id).first()
 
     rw = _get_reward_wallet(db, row.user_id)
     required_points = int(getattr(row, "required_points", 0) or 0)
@@ -1043,15 +1109,20 @@ def consume_redeem_qr(
     )
 
     db.commit()
+    db.refresh(rw)
 
     return {
         "message": "Reward redeemed",
         "user_id": row.user_id,
         "reward_id": getattr(row, "reward_id", None),
+        "reward_name": getattr(reward, "name", None),
+        "reward_type": getattr(reward, "reward_type", None),
+        "product_id": getattr(reward, "product_id", None),
+        "product_name": getattr(product, "name", None),
+        "size_label": getattr(reward, "size_label", None),
+        "required_points": required_points,
         "remaining_points": int(rw.total_points or 0)
     }
-
-
 # ======================
 # INQUIRY
 # ======================
