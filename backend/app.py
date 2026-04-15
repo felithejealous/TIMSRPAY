@@ -23,12 +23,13 @@ import os
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 from backend.routers.announcement import router as announcements_router
+from fastapi.staticfiles import StaticFiles
 from backend.routers.admin import router as admin_router
 from backend.routers.notification import router as notification_router
-
 load_dotenv()
 
 app = FastAPI(title="TIMS-RPAY API")
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 cors_origins_env = (os.getenv("CORS_ORIGINS") or "").strip()
 default_origins = [
@@ -41,7 +42,6 @@ allow_origins = (
     if cors_origins_env
     else default_origins
 )
-
 BASE_DIR = Path(__file__).resolve().parent
 UPLOADS_DIR = BASE_DIR / "uploads"
 UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
@@ -76,7 +76,6 @@ app.include_router(feedback_router)
 app.include_router(faq_router)
 app.include_router(activity_logs_router)
 app.include_router(notification_router)
-
 @app.get("/")
 def root():
     return {"message": "Backend is running"}

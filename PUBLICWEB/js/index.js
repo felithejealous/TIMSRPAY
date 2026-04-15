@@ -34,42 +34,43 @@ function resolveAnnouncementImage(imageUrl) {
   if (clean.startsWith("/")) return `${API_URL}${clean}`;
   return clean;
 }
-
 function resolveBestSellerImage(imageUrl, productName = "") {
   const cleanName = String(productName || "").trim().toLowerCase();
+
   const noBgMap = {
     "classic teo d' mango": "mango2.png",
     "classic teo d mango": "mango2.png",
     "classic mango bliss": "mango2.png",
     "teo d' mango": "mango2.png",
     "teo d mango": "mango2.png",
-    mango: "mango2.png",
+    "mango": "mango2.png",
 
     "creamy buko slush": "bukonobg.png",
-    buko: "bukonobg.png",
+    "buko": "bukonobg.png",
 
     "strawberry dream": "STRAWBERRY.png",
-    strawberry: "STRAWBERRY.png",
+    "strawberry": "STRAWBERRY.png",
 
     "ube macapuno slush": "ubenobg.png",
-    ube: "ubenobg.png",
+    "ube": "ubenobg.png",
 
-    "summer lychee sunset": "lychee.png",
-    lychee: "lycheenobg.png",
+    "summer lychee sunset": "lycheenobg.png",
+    "lychee": "lycheenobg.png",
 
-    avocado: "avocado.png",
+    "avocado": "avocado.png",
     "avocado supreme": "avocado.png",
   };
 
-  const fallback = noBgMap[cleanName] || "multilogo.png";
-  const clean = String(imageUrl || "").trim();
+  const mappedImage = noBgMap[cleanName];
+  if (mappedImage) return mappedImage;
 
-  if (!clean) return fallback;
+  const clean = String(imageUrl || "").trim();
+  if (!clean) return "multilogo.png";
   if (clean.startsWith("http://") || clean.startsWith("https://")) return clean;
   if (clean.startsWith("/")) return `${API_URL}${clean}`;
+
   return clean;
 }
-
 function resolveMenuImage(imageUrl, productName = "") {
   const cleanName = String(productName || "").trim().toLowerCase();
   const withBgMap = {
