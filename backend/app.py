@@ -29,8 +29,6 @@ from backend.routers.notification import router as notification_router
 load_dotenv()
 
 app = FastAPI(title="TIMS-RPAY API")
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
-
 cors_origins_env = (os.getenv("CORS_ORIGINS") or "").strip()
 default_origins = [
     "http://127.0.0.1:5500",
