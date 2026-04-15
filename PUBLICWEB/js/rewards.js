@@ -177,7 +177,14 @@ function renderHistory(list, target, limit = null) {
     })
     .join("");
 }
+function resolveRewardImage(imageUrl, rewardName = "") {
+  const clean = String(imageUrl || "").trim();
 
+  if (!clean) return getRewardImageByName(rewardName);
+  if (clean.startsWith("http://") || clean.startsWith("https://")) return clean;
+  if (clean.startsWith("/")) return `${API_URL}${clean}`;
+  return clean;
+}
 function getRewardImageByName(name) {
   const clean = String(name || "").toLowerCase();
 
@@ -223,7 +230,7 @@ function renderRewards(points, rewards = null) {
           ? reward.claimable
           : points >= requiredPoints;
 
-      const image = reward.image_url || getRewardImageByName(reward.name);
+     const image = resolveRewardImage(reward.image_url, reward.name);
       const rewardName = reward.name || "Reward";
       const productName = reward.product_name || reward.linked_product_name || "";
       const sizeLabel = reward.size_label || "";
