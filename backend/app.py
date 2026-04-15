@@ -42,12 +42,12 @@ allow_origins = (
     if cors_origins_env
     else default_origins
 )
-BASE_DIR = Path(__file__).resolve().parent
+BASE_DIR = Path(__file__).resolve().parent.parent 
 UPLOADS_DIR = BASE_DIR / "uploads"
+
 UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
 
 app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allow_origins,
