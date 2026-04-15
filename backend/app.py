@@ -17,35 +17,37 @@ from backend.routers.inquiries import router as inquiries_router
 from backend.routers.feedback import router as feedback_router
 from backend.routers.faq import router as faq_router
 from backend.routers.activity_logs import router as activity_logs_router
-from dotenv import load_dotenv
-from fastapi.middleware.cors import CORSMiddleware
-import os
-from fastapi.staticfiles import StaticFiles
-from pathlib import Path
 from backend.routers.announcement import router as announcements_router
-from fastapi.staticfiles import StaticFiles
 from backend.routers.admin import router as admin_router
 from backend.routers.notification import router as notification_router
+
+from dotenv import load_dotenv
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from pathlib import Path
+import os
+
 load_dotenv()
 
 app = FastAPI(title="TIMS-RPAY API")
+
 cors_origins_env = (os.getenv("CORS_ORIGINS") or "").strip()
 default_origins = [
     "http://127.0.0.1:5500",
     "http://localhost:5500",
     "https://felithejealous.github.io",
 ]
+
 allow_origins = (
     [o.strip() for o in cors_origins_env.split(",") if o.strip()]
     if cors_origins_env
     else default_origins
 )
-BASE_DIR = Path(__file__).resolve().parent.parent 
-UPLOADS_DIR = BASE_DIR / "uploads"
 
+BASE_DIR = Path(__file__).resolve().parent.parent
+UPLOADS_DIR = BASE_DIR / "uploads"
 UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
 
-app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allow_origins,
@@ -53,6 +55,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
 
 app.include_router(auth_router)
 app.include_router(orders_router)
@@ -74,6 +78,7 @@ app.include_router(feedback_router)
 app.include_router(faq_router)
 app.include_router(activity_logs_router)
 app.include_router(notification_router)
+
 @app.get("/")
 def root():
     return {"message": "Backend is running"}
