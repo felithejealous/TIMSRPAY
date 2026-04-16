@@ -221,12 +221,28 @@ function toggleCart() {
 
 function goToCustomize(productId) {
     const selectedProduct = products.find((p) => Number(p.id) === Number(productId));
+    
     if (selectedProduct) {
-        localStorage.setItem("teo_selected_product", JSON.stringify(selectedProduct));
+
+        const productToSave = { ...selectedProduct };
+
+ 
+        if (productToSave.image_url && productToSave.image_url.length > 500) {
+            productToSave.image_url = "too-large-to-save"; 
+        }
+        if (productToSave.img && productToSave.img.length > 500) {
+            productToSave.img = "too-large-to-save";
+        }
+
+        try {
+            localStorage.setItem("teo_selected_product", JSON.stringify(productToSave));
+        } catch (e) {
+            console.warn("Hindi ma-save sa localStorage. Puno pa rin ang storage.");
+        }
     }
+    
     window.location.href = `customize.html?id=${encodeURIComponent(productId)}`;
 }
-
 async function initKioskMenuPage() {
     try {
         await loadMenuProducts();
