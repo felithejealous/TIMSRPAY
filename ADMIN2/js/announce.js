@@ -4,7 +4,21 @@ let selectedImageFile = null;
 function getToken() {
 return localStorage.getItem("token");
 }
+function getImageUrl(path) {
+    if (!path) return "";
 
+    const value = String(path).trim();
+
+    if (value.startsWith("http://") || value.startsWith("https://") || value.startsWith("data:")) {
+        return value;
+    }
+
+    if (value.startsWith("/")) {
+        return `${API_URL}${value}`;
+    }
+
+    return `${API_URL}/${value}`;
+}
 function getAuthHeaders(extra = {}) {
     const token = getToken();
     return {
@@ -189,9 +203,8 @@ function renderAnnouncements(hasError = false) {
         const isPinned = Boolean(item.is_pinned);
 
         const imageBlock = item.image_url
-            ? `<img src="${escapeHtml(item.image_url)}" class="post-image" alt="Announcement image">`
+            ? `<img src="${escapeHtml(getImageUrl(item.image_url))}" class="post-image" alt="Announcement image">`
             : "";
-
         const publishLine = item.publish_at
             ? `<div class="mt-2 text-[11px] opacity-60">Publish: ${escapeHtml(formatDateTime(item.publish_at))}</div>`
             : "";
@@ -329,7 +342,7 @@ function populateEditForm(item) {
     setScheduleMin();
 
     if (item.image_url) {
-        showImagePreview(item.image_url);
+        showImagePreview(getImageUrl(item.image_url));
     } else {
         clearImagePreview();
     }
