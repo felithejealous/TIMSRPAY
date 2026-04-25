@@ -473,7 +473,9 @@ async function deletePromoCode(promoId) {
             throw new Error(result.detail || `Delete promo failed: ${response.status}`);
         }
 
-        await refreshPromoData();
+
+        promoCodesCache = promoCodesCache.filter(p => Number(p.promo_id) !== Number(promoId));
+        renderPromoTable();
 
         if (result.action === "deactivated") {
             showToast("Promo code archived");

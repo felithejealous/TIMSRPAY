@@ -309,7 +309,6 @@ def list_categories(
 # CUSTOMER MENU: active + available only (PUBLIC)
 # ============================================================
 @router.get("/menu")
-@router.get("/menu")
 def get_menu(db: Session = Depends(get_db)):
     sync_all_product_availability(db, commit=True)
 
@@ -403,7 +402,7 @@ def get_monthly_best_sellers(
         ],
     }
 # ============================================================
-# LIST PRODUCTS (staff/cashier/admin)
+# LIST PRODUCTS (staff/cashier/admin)   /*sync_all_product_availability(db, commit=True)*
 # ============================================================
 @router.get("/")
 def list_products(
@@ -413,8 +412,6 @@ def list_products(
     db: Session = Depends(get_db),
     _: User = Depends(require_roles("staff", "cashier", "admin")),
 ):
-    sync_all_product_availability(db, commit=True)
-
     query = db.query(Product, Category).outerjoin(Category, Category.id == Product.category_id)
 
     if active_only:

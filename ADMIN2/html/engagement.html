@@ -627,7 +627,14 @@
         .main-content::-webkit-scrollbar-thumb:hover {
             background: var(--scroll-thumb-hover);
         }
-
+        option {
+            background-color: var(--mango-dark);
+            color: var(--text-main);
+        }
+        body.light-theme option {
+            background-color: #ffffff;
+            color: #1a1a1a;
+        }
         @media (max-width: 1100px) {
             .toolbar {
                 grid-template-columns: 1fr 1fr;

@@ -223,39 +223,33 @@ async function fetchInventory() {
         items = [];
     }
 }
-
 async function fetchAllHistory() {
     try {
-        const allLogs = [];
+        const response = await fetch(`${API_URL}/inventory/movements`, {
+            method: "GET",
+            headers: getAuthHeaders()
+        });
 
-        for (const item of items) {
-            const response = await fetch(`${API_URL}/inventory/master/${item.id}/movements/?limit=30`, {
-                method: "GET",
-                headers: getAuthHeaders()
-            });
-
-            if (!response.ok) continue;
-
-            const result = await response.json();
-            const rows = (result.data || []).map(log => ({
-                item_name: item.name,
-                item_category: item.category || "General",
-                item_is_active: item.is_active,
-                created_at: log.created_at,
-                change_qty: Number(log.change_qty || 0),
-                reason: log.reason || "-",
-            }));
-
-            allLogs.push(...rows);
+        if (!response.ok) {
+            throw new Error("Failed to fetch movements");
         }
 
-        historyCache = allLogs.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        const result = await response.json();
+
+        historyCache = (result.data || []).map(log => ({
+            item_name: log.item_name,
+            item_category: log.category,
+            item_is_active: log.is_active,
+            created_at: log.created_at,
+            change_qty: Number(log.change_qty || 0),
+            reason: log.reason || "-"
+        }));
+
     } catch (error) {
         console.error("History fetch error:", error);
         historyCache = [];
     }
 }
-
 function renderItems() {
     const grid = document.getElementById("gridContent");
     const tableBody = document.getElementById("tableBody");

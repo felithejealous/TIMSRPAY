@@ -314,8 +314,33 @@
             opacity: 0;
         }
 
+        option {
+            background-color: var(--mango-dark);
+            color: var(--text-main);
+        }
+        body.light-theme option {
+            background-color: #ffffff;
+            color: #1a1a1a;
+        }
         .alert.show {
             transform: translateY(0);
+            opacity: 1;
+        }
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+            opacity: 0.8; 
+        }
+
+        input[type="date"]::-webkit-calendar-picker-indicator:hover {
+            opacity: 1;
+        }
+        body.light-theme input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(0);
+            opacity: 0.7;
+        }
+
+        body.light-theme input[type="date"]::-webkit-calendar-picker-indicator:hover {
             opacity: 1;
         }
 

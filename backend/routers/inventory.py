@@ -651,3 +651,42 @@ def restore_low_stock_alert(
     db.commit()
 
     return {"message": "Alert restored successfully"}
+# =========================================================
+# 10) GLOBAL MOVEMENTS (LAST 30 DAYS ONLY) ✅ NEW
+# =========================================================
+from datetime import timedelta
+
+@router.get("/movements", operation_id="inventory_all_movements_30days_v1")
+def get_all_inventory_movements(
+    limit: int = 500,
+    db: Session = Depends(get_db),
+    _: User = Depends(require_roles("staff", "cashier", "admin")),
+):
+    cutoff = datetime.now(timezone.utc) - timedelta(days=30)
+
+    rows = (
+        db.query(InventoryMasterMovement, InventoryMaster)
+        .join(InventoryMaster, InventoryMaster.id == InventoryMasterMovement.inventory_master_id)
+        .filter(InventoryMasterMovement.created_at >= cutoff)
+        .order_by(InventoryMasterMovement.created_at.desc())
+        .limit(limit)
+        .all()
+    )
+
+    data = []
+
+    for movement, item in rows:
+        data.append({
+            "id": movement.id,
+            "item_name": item.name,
+            "category": item.category or "General",
+            "is_active": item.is_active,
+            "change_qty": float(movement.change_qty or 0),
+            "reason": movement.reason or "-",
+            "created_at": str(movement.created_at) if movement.created_at else None,
+        })
+
+    return {
+        "count": len(data),
+        "data": data
+    }
