@@ -94,15 +94,42 @@ function buildQuery(params) {
     return search.toString();
 }
 
-function downloadFile(url, filenameFallback = "report.csv") {
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", filenameFallback);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-}
+async function downloadFile(url, filenameFallback = "report.csv") {
+    try {
+        const response = await fetch(url, {
+            method: "GET",
+            headers: getAuthHeaders(),
+        });
 
+        const text = await response.text();
+
+        if (!response.ok) {
+            let message = `Download failed: ${response.status}`;
+
+            try {
+                const parsed = JSON.parse(text);
+                message = parsed.detail || parsed.message || message;
+            } catch {}
+
+            throw new Error(message);
+        }
+
+        const blob = new Blob([text], { type: "text/csv;charset=utf-8;" });
+        const blobUrl = URL.createObjectURL(blob);
+
+        const link = document.createElement("a");
+        link.href = blobUrl;
+        link.download = filenameFallback;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+
+        URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+        console.error("CSV download error:", error);
+        showAlert(error.message || "Failed to download CSV");
+    }
+}
 async function fetchJson(url) {
     const response = await fetch(url, {
         method: "GET",
@@ -153,7 +180,7 @@ overview?.payment_breakdown_today?.by_type?.TEOPAY_PAYMENT?.amount || 0;
     }
 }
 
-function downloadOrdersCsv() {
+async function downloadOrdersCsv() {
     const qs = buildQuery({
         start_date: getValue("ordersStartDate"),
         end_date: getValue("ordersEndDate"),
@@ -161,11 +188,9 @@ function downloadOrdersCsv() {
         order_type: getValue("ordersType")
     });
 
-    downloadFile(`${API_URL}/reports/csv/orders${qs ? `?${qs}` : ""}`, "orders_sales.csv");
-    showAlert("Orders CSV download started");
+    await downloadFile(`${API_URL}/reports/csv/orders${qs ? `?${qs}` : ""}`, "orders_sales.csv");
 }
-
-function downloadWalletCsv() {
+async function downloadWalletCsv() {
     const qs = buildQuery({
         start_date: getValue("walletStartDate"),
         end_date: getValue("walletEndDate"),
@@ -173,30 +198,24 @@ function downloadWalletCsv() {
         user_id: getValue("walletUserId")
     });
 
-    downloadFile(`${API_URL}/reports/csv/wallet-transactions${qs ? `?${qs}` : ""}`, "wallet_transactions.csv");
-    showAlert("Wallet CSV download started");
+    await downloadFile(`${API_URL}/reports/csv/wallet-transactions${qs ? `?${qs}` : ""}`, "wallet_transactions.csv");
 }
-
-function downloadLowStockCsv() {
+async function downloadLowStockCsv() {
     const qs = buildQuery({
         threshold: getValue("lowStockThreshold")
     });
 
-    downloadFile(`${API_URL}/reports/csv/low-stock${qs ? `?${qs}` : ""}`, "low_stock.csv");
-    showAlert("Low stock CSV download started");
+    await downloadFile(`${API_URL}/reports/csv/low-stock${qs ? `?${qs}` : ""}`, "low_stock.csv");
 }
-
-function downloadInventoryCsv() {
+async function downloadInventoryCsv() {
     const qs = buildQuery({
         kind: getValue("inventoryKind"),
         start_date: getValue("inventoryStartDate"),
         end_date: getValue("inventoryEndDate")
     });
 
-    downloadFile(`${API_URL}/reports/csv/inventory-movements${qs ? `?${qs}` : ""}`, "inventory_movements.csv");
-    showAlert("Inventory CSV download started");
+    await downloadFile(`${API_URL}/reports/csv/inventory-movements${qs ? `?${qs}` : ""}`, "inventory_movements.csv");
 }
-
 async function previewSalesSummary() {
     try {
         const qs = buildQuery({
