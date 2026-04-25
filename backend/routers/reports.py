@@ -1022,7 +1022,7 @@ def orders_csv(
     if order_type:
         q = q.filter(Order.order_type == order_type.strip().lower())
 
-    rows = q.all()
+    rows = q.limit(2000).all()
 
     buf = io.StringIO()
     writer = csv.writer(buf)

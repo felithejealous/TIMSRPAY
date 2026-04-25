@@ -93,41 +93,38 @@ function buildQuery(params) {
 
     return search.toString();
 }
-
 async function downloadFile(url, filenameFallback = "report.csv") {
     try {
         const response = await fetch(url, {
             method: "GET",
-            headers: getAuthHeaders(),
+            headers: getAuthHeaders()
         });
-
-        const text = await response.text();
 
         if (!response.ok) {
             let message = `Download failed: ${response.status}`;
 
             try {
-                const parsed = JSON.parse(text);
-                message = parsed.detail || parsed.message || message;
+                const data = await response.json();
+                message = data.detail || data.message || message;
             } catch {}
 
             throw new Error(message);
         }
 
-        const blob = new Blob([text], { type: "text/csv;charset=utf-8;" });
-        const blobUrl = URL.createObjectURL(blob);
+        const blob = await response.blob();
+        const objectUrl = URL.createObjectURL(blob);
 
         const link = document.createElement("a");
-        link.href = blobUrl;
+        link.href = objectUrl;
         link.download = filenameFallback;
         document.body.appendChild(link);
         link.click();
         link.remove();
 
-        URL.revokeObjectURL(blobUrl);
+        URL.revokeObjectURL(objectUrl);
     } catch (error) {
         console.error("CSV download error:", error);
-        showAlert(error.message || "Failed to download CSV");
+        showAlert(error.message || "CSV download failed");
     }
 }
 async function fetchJson(url) {
