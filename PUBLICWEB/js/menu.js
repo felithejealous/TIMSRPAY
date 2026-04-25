@@ -3,7 +3,7 @@ const CHECKOUT_DRAFT_KEY = "public_online_order_draft";
 const APPLIED_PROMO_STORAGE_KEY = "public_applied_promo";
 const PROMO_QUERY_PARAM = "promo";
 
-const SIZE_OPTIONS = {
+let SIZE_OPTIONS = {
   small: { label: "Small", addPrice: 0 },
   medium: { label: "Medium", addPrice: 10 },
   large: { label: "Large", addPrice: 20 },
@@ -95,7 +95,53 @@ function getProductImage(product) {
 function getSelectedSizeValue() {
   return document.querySelector('input[name="size"]:checked')?.value || "small";
 }
+function normalizeSizeKey(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-");
+}
+function normalizeSizeKey(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-");
+}
+function renderSizeOptions(sizes = []) {
+  const container = document.getElementById("sizeSelector");
+  if (!container) return;
 
+  const rows = Array.isArray(sizes) && sizes.length
+    ? sizes
+    : [
+        { name: "Small", price: 0 },
+        { name: "Medium", price: 10 },
+        { name: "Large", price: 20 },
+      ];
+
+  SIZE_OPTIONS = {};
+
+  container.innerHTML = rows.map((size, index) => {
+    const key = normalizeSizeKey(size.name);
+    const label = size.name || "Small";
+    const addPrice = Number(size.price || 0);
+
+    SIZE_OPTIONS[key] = { label, addPrice };
+
+    return `
+      <label>
+        <input
+          type="radio"
+          name="size"
+          value="${escapeHtml(key)}"
+          ${index === 0 ? "checked" : ""}
+          onchange="updateModalPrice()"
+        >
+        <div class="select-label">${escapeHtml(label)} ${addPrice > 0 ? `(+${formatPeso(addPrice)})` : ""}</div>
+      </label>
+    `;
+  }).join("");
+}
 function getSelectedAddOns() {
   return Array.from(document.querySelectorAll(".addon-check:checked")).map(
     (input) => ({
@@ -459,7 +505,7 @@ async function loadMenuProducts() {
 
     const rows = Array.isArray(data?.data) ? data.data : [];
     allProducts = rows;
-
+    renderSizeOptions(data?.sizes || []);
     buildFilterChips(allProducts);
     renderProducts(allProducts);
   } catch (error) {
@@ -531,8 +577,8 @@ function openProductById(productId) {
   if (qtyEl) qtyEl.textContent = "1";
   if (notesEl) notesEl.value = "";
 
-  const sizeSmall = document.querySelector('input[name="size"][value="small"]');
-  if (sizeSmall) sizeSmall.checked = true;
+const firstSize = document.querySelector('input[name="size"]');
+if (firstSize) firstSize.checked = true;
 
   renderModalAddOns(product.add_ons || []);
   updateModalPrice();
@@ -581,7 +627,7 @@ function addToCartExecute() {
   if (!currentProduct) return;
 
   const sizeValue = getSelectedSizeValue();
-  const sizeMeta = SIZE_OPTIONS[sizeValue] || SIZE_OPTIONS.small;
+  const sizeMeta = SIZE_OPTIONS[sizeValue] || SIZE_OPTIONS.small || { label: "Small", addPrice: 0 };
   const selectedAddOns = getSelectedAddOns();
   const notes = (document.getElementById("modalNotes")?.value || "").trim();
 
@@ -589,23 +635,29 @@ function addToCartExecute() {
     (sum, item) => sum + Number(item.price || 0),
     0,
   );
+
   const unitPrice =
     Number(currentProduct.price || 0) +
     Number(sizeMeta.addPrice || 0) +
     addOnsTotal;
+
   const total = unitPrice * qty;
 
   cart.push({
     cart_item_id: `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
     product_id: Number(currentProduct.product_id),
-    title: currentProduct.name,
+    title: String(currentProduct.name || ""),
     image_url: getProductImage(currentProduct),
     base_price: Number(currentProduct.price || 0),
     points_per_unit: Number(currentProduct.points_per_unit || 0),
-    size: sizeValue,
-    size_label: sizeMeta.label,
+    size: String(sizeValue || "small"),
+    size_label: String(sizeMeta.label || "Small"),
     size_price: Number(sizeMeta.addPrice || 0),
-    add_ons: selectedAddOns,
+    add_ons: selectedAddOns.map((item) => ({
+      add_on_id: Number(item.add_on_id),
+      name: String(item.name || ""),
+      price: Number(item.price || 0),
+    })),
     add_on_ids: selectedAddOns.map((item) => Number(item.add_on_id)),
     notes,
     qty: Number(qty),
@@ -622,7 +674,6 @@ function addToCartExecute() {
     openCart();
   }, 180);
 }
-
 function removeCartItem(cartItemId) {
   cart = cart.filter((item) => item.cart_item_id !== cartItemId);
   saveCart();

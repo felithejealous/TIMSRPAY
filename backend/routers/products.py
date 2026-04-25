@@ -55,6 +55,18 @@ class RecipeItem(BaseModel):
     inventory_master_id: int
     qty_used: float
 
+class AddOnCreate(BaseModel):
+    name: str
+    price: float = 0
+    addon_type: str = "ADDON"
+    is_active: bool = True
+
+
+class AddOnPatch(BaseModel):
+    name: Optional[str] = None
+    price: Optional[float] = None
+    addon_type: Optional[str] = None
+    is_active: Optional[bool] = None
 
 class RecipeReplace(BaseModel):
     items: List[RecipeItem]
@@ -181,7 +193,14 @@ def _get_public_addons(db: Session) -> List[dict]:
     )
     return [_serialize_addon(row) for row in rows]
 
-
+def _get_public_sizes(db: Session) -> List[dict]:
+    rows = (
+        db.query(AddOn)
+        .filter(AddOn.is_active == True, AddOn.addon_type == "SIZE")
+        .order_by(AddOn.name.asc())
+        .all()
+    )
+    return [_serialize_addon(row) for row in rows]
 def sync_product_availability_for_product(
     db: Session,
     product_id: int,
@@ -290,10 +309,12 @@ def list_categories(
 # CUSTOMER MENU: active + available only (PUBLIC)
 # ============================================================
 @router.get("/menu")
+@router.get("/menu")
 def get_menu(db: Session = Depends(get_db)):
     sync_all_product_availability(db, commit=True)
 
     public_addons = _get_public_addons(db)
+    public_sizes = _get_public_sizes(db)
 
     rows = (
         db.query(Product, Category)
@@ -305,6 +326,7 @@ def get_menu(db: Session = Depends(get_db)):
 
     return {
         "count": len(rows),
+        "sizes": public_sizes,
         "data": [
             _serialize_product(
                 product,
@@ -314,7 +336,6 @@ def get_menu(db: Session = Depends(get_db)):
             for product, category in rows
         ],
     }
-
 #--------------------------------------
 #_____________MENNUU
 #========================

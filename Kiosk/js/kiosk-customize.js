@@ -4,7 +4,12 @@ let currentProduct = null;
 let quantity = 1;
 let editIndex = null;
 let publicAddons = [];
-
+let publicSizes = [
+    { name: "Small", price: 0 },
+    { name: "Medium", price: 10 },
+    { name: "Large", price: 20 },
+    { name: "Sample Size", price: 100 }
+];
 const PRODUCT_IMAGE_MAP = {
     "classic mango": "../Images/mangga.png",
     "strawberry": "../Images/strawberry.png",
@@ -170,7 +175,6 @@ function setupQtyButtons() {
     document.getElementById("qtyMinusBtn")?.addEventListener("click", () => adjustQty(-1));
     document.getElementById("qtyPlusBtn")?.addEventListener("click", () => adjustQty(1));
 }
-
 function renderAddons(selectedAddonIds = []) {
     if (!addonsGroup) return;
 
@@ -203,6 +207,33 @@ function renderAddons(selectedAddonIds = []) {
     setupAddonCheckboxes();
 }
 
+function renderSizes(selectedSize = "Small") {
+    const sizeGroup = document.getElementById("sizeGroup");
+    if (!sizeGroup) return;
+
+    const sizes = publicSizes.length
+        ? publicSizes
+        : [
+            { id: "small", add_on_id: "small", name: "Small", price: 0 },
+            { id: "medium", add_on_id: "medium", name: "Medium", price: 10 },
+            { id: "large", add_on_id: "large", name: "Large", price: 20 }
+        ];
+
+    sizeGroup.innerHTML = sizes.map((size, index) => {
+        const name = size.name || "Small";
+        const price = Number(size.price || 0);
+        const active = normalizeName(name) === normalizeName(selectedSize) || (!selectedSize && index === 0);
+
+        return `
+            <button class="pill-btn ${active ? "active" : ""}" data-val="${escapeHTML(name)}" data-price="${price}">
+                ${escapeHTML(name)}
+                <span class="price-addon">${price > 0 ? `+₱${price.toFixed(0)}` : "Base"}</span>
+            </button>
+        `;
+    }).join("");
+
+    setupSizeButtons();
+}
 function updatePrice() {
     if (!currentProduct) return;
 
@@ -217,12 +248,18 @@ function updatePrice() {
 
     totalDisplay.innerText = `₱${(total * quantity).toFixed(2)}`;
 }
-
 async function fetchPublicAddons() {
     const response = await fetchJSON(`${API_URL}/products/add-ons/public`);
     publicAddons = Array.isArray(response?.data) ? response.data : [];
-}
 
+    try {
+        const sizeResponse = await fetchJSON(`${API_URL}/addons/?active_only=true&addon_type=SIZE`);
+        publicSizes = Array.isArray(sizeResponse) ? sizeResponse : [];
+    } catch (error) {
+        console.warn("Failed to fetch sizes:", error);
+        publicSizes = [];
+    }
+}
 async function fetchProductDetail(productId) {
     const response = await fetchJSON(`${API_URL}/products/${productId}`);
 
@@ -283,8 +320,10 @@ async function loadProductData() {
     applyProductToUI();
 
     if (editIndex !== null && tray[editIndex]) {
+        renderSizes(tray[editIndex].size || "Small");
         loadEditState(tray[editIndex]);
     } else {
+        renderSizes("Small");
         renderAddons([]);
         updatePrice();
     }

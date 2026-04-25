@@ -127,7 +127,7 @@ async function fetchCategories() {
 
 async function fetchProducts() {
     try {
-        const response = await fetch(`${API_URL}/products/?limit=500`, {
+        const response = await fetch(`${API_URL}/products/?active_only=true&limit=500`, {
             method: "GET",
             headers: getAuthHeaders(),
         });
@@ -148,11 +148,11 @@ async function fetchProducts() {
 async function fetchAddons() {
     try {
         const [addonsResponse, sizesResponse] = await Promise.all([
-            fetch(`${API_URL}/addons/?active_only=false&addon_type=ADDON`, {
+            fetch(`${API_URL}/addons/?active_only=true&addon_type=ADDON`, {
                 method: "GET",
                 headers: getAuthHeaders(),
             }),
-            fetch(`${API_URL}/addons/?active_only=false&addon_type=SIZE`, {
+            fetch(`${API_URL}/addons/?active_only=true&addon_type=SIZE`, {
                 method: "GET",
                 headers: getAuthHeaders(),
             })
@@ -658,12 +658,78 @@ function editOption(id, type) {
     openModal("addonModal");
 }
 
-function saveAddon() {
-    alert("Add-on/Size save backend is not connected yet. Fetching works, but create/edit endpoint is still missing.");
+async function saveAddon() {
+    const addonId = document.getElementById("addonId").value;
+    const name = document.getElementById("addonName").value.trim();
+    const price = Number(document.getElementById("addonPrice").value || 0);
+    const addonType = document.getElementById("addonTypeField").value || "ADDON";
+
+    if (!name) {
+        alert("Option name is required.");
+        return;
+    }
+
+    if (Number.isNaN(price) || price < 0) {
+        alert("Valid price is required.");
+        return;
+    }
+
+    const payload = {
+        name,
+        price,
+        addon_type: addonType,
+        is_active: true
+    };
+
+    try {
+        const response = await fetch(
+            addonId ? `${API_URL}/addons/${addonId}` : `${API_URL}/addons/`,
+            {
+                method: addonId ? "PATCH" : "POST",
+                headers: getAuthHeaders({
+                    "Content-Type": "application/json"
+                }),
+                body: JSON.stringify(payload)
+            }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.detail || `Save option failed: ${response.status}`);
+        }
+
+        await fetchAddons();
+        renderOptions();
+        closeModals();
+    } catch (error) {
+        console.error("Save add-on/size error:", error);
+        alert(error.message || "Failed to save option.");
+    }
 }
 
-function deleteOption() {
-    alert("Add-on/Size delete backend is not connected yet. We need addon create/update/delete/toggle endpoints next.");
+async function deleteOption(id, type) {
+    const confirmed = confirm(`Delete this ${type === "size" ? "size" : "add-on"}?`);
+    if (!confirmed) return;
+
+    try {
+        const response = await fetch(`${API_URL}/addons/${id}`, {
+            method: "DELETE",
+            headers: getAuthHeaders()
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.detail || `Delete option failed: ${response.status}`);
+        }
+
+        await fetchAddons();
+        renderOptions();
+    } catch (error) {
+        console.error("Delete add-on/size error:", error);
+        alert(error.message || "Failed to delete option.");
+    }
 }
 
 async function initializeMenuManager() {

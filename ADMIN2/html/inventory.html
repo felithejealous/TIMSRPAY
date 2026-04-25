@@ -163,6 +163,48 @@
 
         .btn-orange { background: var(--mango-orange); color: white; padding: 12px 25px; border-radius: 14px; font-weight: 900; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; }
         .btn-gray { background: rgba(255,255,255,0.05); color: var(--text-main); padding: 12px 25px; border-radius: 14px; font-weight: 700; font-size: 0.75rem; }
+    
+        option {
+            background-color: var(--mango-dark);
+            color: var(--text-main);
+        }
+        body.light-theme option {
+            background-color: #ffffff;
+            color: #1a1a1a;
+        }
+        body.light-theme .filter-select {
+            background-color: #ffffff !important;
+            color: #1a1a1a !important;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .inventory-grid.active,
+        .inv-table-container.active,
+        .history-container.active {
+            max-height: 55vh; 
+            overflow-y: auto;
+            padding-right: 10px; 
+        }
+
+        .inventory-grid::-webkit-scrollbar,
+        .inv-table-container::-webkit-scrollbar,
+        .history-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .inventory-grid::-webkit-scrollbar-thumb,
+        .inv-table-container::-webkit-scrollbar-thumb,
+        .history-container::-webkit-scrollbar-thumb {
+            background: rgba(252, 219, 5, 0.4); 
+            border-radius: 10px;
+        }
+        
+        .inventory-grid::-webkit-scrollbar-track,
+        .inv-table-container::-webkit-scrollbar-track,
+        .history-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05); 
+            border-radius: 10px;
+        }
     </style>
     <script>
 (function () {

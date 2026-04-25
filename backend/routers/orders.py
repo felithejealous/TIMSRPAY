@@ -145,7 +145,14 @@ def validate_pickup_schedule(
         "pickup_at": pickup_at_utc.replace(tzinfo=None),
         "pickup_note": pickup_note,
     }
-
+def _normalize_size_key(value: str) -> str:
+    return (
+        str(value or "")
+        .strip()
+        .lower()
+        .replace("-", " ")
+        .replace("_", " ")
+    )
 def _money(value) -> Decimal:
     return Decimal(str(value or 0)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 def compute_pwd_ph_discount(gross_total: Decimal, pwd_rate: Decimal = Decimal("0.20")) -> Dict[str, Decimal]:
@@ -1087,8 +1094,8 @@ def _create_order_core(
         .all()
     )
     size_price_map: Dict[str, Decimal] = {
-        s.name.strip().lower(): Decimal(str(s.price)) for s in size_rows
-    }
+    _normalize_size_key(s.name): Decimal(str(s.price)) for s in size_rows
+}
     size_price_map.setdefault("small", Decimal("0"))
     size_price_map.setdefault("medium", Decimal("10"))
     size_price_map.setdefault("large", Decimal("20"))
@@ -1118,7 +1125,7 @@ def _create_order_core(
             raise HTTPException(status_code=400, detail=f"Product '{product.name}' is currently unavailable/out of stock")
 
         base_price = Decimal(str(product.price))
-        size_name = (it.size or "small").strip().lower()
+        size_name = _normalize_size_key(it.size or "small")
         size_upcharge = size_price_map.get(size_name, Decimal("0"))
 
         addon_total = Decimal("0")

@@ -151,6 +151,20 @@
 
         #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--mango-yellow); color: #000; padding: 12px 30px; border-radius: 50px; font-weight: 900; text-transform: uppercase; font-size: 10px; letter-spacing: 1px; transition: 0.5s; z-index: 2000; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
         #toast.show { transform: translateX(-50%) translateY(0); }
+        option {
+            background-color: var(--mango-dark);
+            color: var(--text-main);
+        }
+        body.light-theme option {
+            background-color: #ffffff;
+            color: #1a1a1a;
+        }
+        body.light-theme #statusFilter {
+            background-color: #ffffff !important;
+            color: #1a1a1a !important;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+        }
     </style>
     <script>
 (function () {
