@@ -81,6 +81,16 @@ function escapeHTML(value) {
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
 }
+function formatStockUnit(quantity, unit) {
+    const qty = Number(quantity || 0);
+    const cleanUnit = String(unit || "").trim();
+
+    if (qty === 1 && cleanUnit.toLowerCase().endsWith("s")) {
+        return cleanUnit.slice(0, -1);
+    }
+
+    return cleanUnit;
+}
 function parseServerDate(value) {
     if (!value) return null;
 
@@ -439,7 +449,7 @@ function renderLowStock(items = []) {
                         ${escapeHTML(item.name || "Inventory Item")}
                     </strong><br>
                     <small style="font-weight: 700; color: ${isCritical ? "var(--danger)" : "var(--warning)"};">
-                        Remaining: ${escapeHTML(quantity)} ${escapeHTML(item.unit || "")}
+                        Remaining: ${escapeHTML(quantity)} ${escapeHTML(formatStockUnit(quantity, item.unit))}
                     </small>
                 </div>
                 <i class="fa-solid ${isCritical ? "fa-box-open" : "fa-hourglass-half"}"
