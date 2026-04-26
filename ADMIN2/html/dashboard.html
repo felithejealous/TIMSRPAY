@@ -231,6 +231,21 @@
     background: rgba(255,255,255,0.08);
     color: var(--text-main);
     border: 1px solid var(--glass-border);
+        * { 
+            transition: background 0.3s, border 0.3s, box-shadow 0.3s, transform 0.2s, color 0.05s !important; 
+        }
+
+        body.light-theme .header-card h1 { 
+            color: var(--mango-orange) !important; 
+        }
+        option { 
+            background-color: var(--mango-dark); 
+            color: var(--text-main); 
+        }
+        body.light-theme option { 
+            background-color: #ffffff; 
+            color: #1a1a1a; 
+        }
 }
     </style>
     <script>
@@ -240,6 +255,52 @@
         document.documentElement.classList.add("preload-light");
     }
 })();
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        function syncChartColors() {
+     
+            if (typeof Chart === 'undefined') return;
+
+            const isLight = document.body.classList.contains('light-theme');
+            const textColor = isLight ? '#57534e' : '#a1a1aa'; 
+            const gridColor = isLight ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.05)';
+
+            Chart.defaults.color = textColor;
+            Chart.defaults.borderColor = gridColor;
+
+
+            for (let id in Chart.instances) {
+                let chart = Chart.instances[id];
+                if (chart.options.scales) {
+                    if (chart.options.scales.x) {
+                        chart.options.scales.x.ticks.color = textColor;
+                        chart.options.scales.x.grid.color = gridColor;
+                    }
+                    if (chart.options.scales.y) {
+                        chart.options.scales.y.ticks.color = textColor;
+                        chart.options.scales.y.grid.color = gridColor;
+                    }
+                }
+     
+                chart.update();
+            }
+        }
+
+        const observer = new MutationObserver(function (mutations) {
+            mutations.forEach(function (mutation) {
+                if (mutation.attributeName === "class") {
+                    syncChartColors();
+                }
+            });
+        });
+
+        observer.observe(document.body, { attributes: true });
+
+
+        setTimeout(syncChartColors, 500);
+    });
 </script>
 </head>
 <body class="dark-theme">

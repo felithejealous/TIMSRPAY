@@ -26,36 +26,24 @@ function getAuthHeaders(extra = {}) {
         ...extra
     };
 }
-async function fetchInventoryMasterData() {
-    try {
-        const response = await fetch(`${API_URL}/inventory/master`, {
-            method: "GET",
-            headers: getAuthHeaders(),
-        });
+function getInventoryDataFromDashboard(apiData) {
+    const items = apiData?.low_stock?.items || [];
 
-        if (!response.ok) {
-            throw new Error(`Inventory fetch failed: ${response.status}`);
-        }
+    const sortedItems = [...items]
+        .sort((a, b) => Number(a.quantity || 0) - Number(b.quantity || 0))
+        .slice(0, 10);
 
-        const result = await response.json();
-        const items = result.data || [];
-
-        const sortedItems = [...items]
-            .filter(item => item.is_active)
-            .sort((a, b) => a.quantity - b.quantity)
-            .slice(0, 10);
-
+    if (!sortedItems.length) {
         return {
-            labels: sortedItems.map(item => item.name),
-            values: sortedItems.map(item => item.quantity)
-        };
-    } catch (error) {
-        console.error("Inventory fetch error:", error);
-        return {
-            labels: ["No Data"],
+            labels: ["No Low Stock"],
             values: [0]
         };
     }
+
+    return {
+        labels: sortedItems.map(item => item.name || "Unknown"),
+        values: sortedItems.map(item => Number(item.quantity || 0))
+    };
 }
 
 async function fetchDashboardData() {
@@ -119,7 +107,7 @@ async function renderDashboardFromAPI(apiData, timeframe = "weekly") {
         : (apiData.rewards_issued_last_7_days || []);
 
     const stockHealth = apiData.stock_health || {};
-    const inventoryData = await fetchInventoryMasterData();
+    const inventoryData = getInventoryDataFromDashboard(apiData);
 
     const totalRevenue = Number(salesSummary.gross_sales || 0);
     const rewardsIssued = Number(rewardsSummary.total_points_issued || 0);
@@ -307,27 +295,65 @@ function openModal(chartId, title) {
 function closeModal() {
     document.getElementById("chartModal").classList.remove("show");
 }
+function getDateRangeForExport() {
+    const timeframe = getSelectedTimeframe();
+    const now = new Date();
+
+    const pad = (n) => String(n).padStart(2, "0");
+    const toDateString = (date) =>
+        `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+
+    const endDate = toDateString(now);
+
+    if (timeframe === "daily") {
+        return {
+            start_date: endDate,
+            end_date: endDate
+        };
+    }
+
+    const start = new Date(now);
+    start.setDate(start.getDate() - 6);
+
+    return {
+        start_date: toDateString(start),
+        end_date: endDate
+    };
+}
 
 async function exportData() {
     try {
-        const response = await fetch(`${API_URL}/reports/csv/orders`, {
+        const range = getDateRangeForExport();
+        const qs = new URLSearchParams(range).toString();
+
+        const response = await fetch(`${API_URL}/reports/csv/orders?${qs}`, {
             method: "GET",
             headers: getAuthHeaders(),
         });
 
         if (!response.ok) {
-            throw new Error("CSV export failed");
+            let message = `CSV export failed: ${response.status}`;
+            try {
+                const data = await response.json();
+                message = data.detail || data.message || message;
+            } catch {}
+            throw new Error(message);
         }
 
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
+
         const a = document.createElement("a");
         a.href = url;
-        a.download = "Teo_Reports.csv";
+        a.download = `Teo_Reports_${range.start_date}_to_${range.end_date}.csv`;
+        document.body.appendChild(a);
         a.click();
+        a.remove();
+
         window.URL.revokeObjectURL(url);
     } catch (error) {
         console.error("Export error:", error);
+        alert(error.message || "Failed to export CSV.");
     }
 }
 async function fetchLowStockAlerts() {
@@ -479,5 +505,5 @@ window.onload = () => {
 
     updateDashboardTitle("weekly");
     fetchDashboardData();
-    startLowStockPolling();
+    //startLowStockPolling();
 };
