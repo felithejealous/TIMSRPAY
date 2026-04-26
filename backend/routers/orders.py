@@ -266,6 +266,7 @@ class CancelPayload(BaseModel):
 def list_orders(
     status: Optional[str] = None,
     limit: int = 50,
+    today_only: bool = True,
     db: Session = Depends(get_db),
     _: User = Depends(require_roles("staff", "cashier", "admin")),
 ):
@@ -281,11 +282,16 @@ def list_orders(
         .outerjoin(staff_profile, staff_profile.user_id == staff_user.id)
     )
 
+    if today_only:
+        today_ph = datetime.now(PH_TZ).date()
+        start = datetime.combine(today_ph, datetime.min.time(), tzinfo=PH_TZ).astimezone(timezone.utc).replace(tzinfo=None)
+        end = datetime.combine(today_ph + timedelta(days=1), datetime.min.time(), tzinfo=PH_TZ).astimezone(timezone.utc).replace(tzinfo=None)
+        q = q.filter(Order.created_at >= start, Order.created_at < end)
+
     if status:
         q = q.filter(Order.status == status.strip().lower())
 
     rows = q.order_by(Order.id.desc()).limit(limit).all()
-
     result = []
     for order, user, profile, processed_by_user, processed_by_profile in rows:
         item_rows = (

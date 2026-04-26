@@ -198,11 +198,37 @@ function isWalkInOrder(order) {
     return ["cashier", "kiosk"].includes(String(order?.order_type || "").toLowerCase());
 }
 
-function matchesFilter(order, filter) {
-    if (filter === "all") return true;
-    return String(order?.status || "").toLowerCase() === filter;
+function normalizeOrderStatus(order) {
+    const status = String(order?.status || "").toLowerCase();
+    const paymentStatus = String(order?.payment_status || "").toLowerCase();
+
+    if (status === "cancelled") return "cancelled";
+    if (status === "completed") return "completed";
+
+    if (
+        status === "paid" ||
+        paymentStatus === "paid" ||
+        order?.paid_at ||
+        order?.is_paid === true
+    ) {
+        return "paid";
+    }
+
+    if (
+        status === "unpaid" ||
+        paymentStatus === "unpaid" ||
+        paymentStatus === "pending"
+    ) {
+        return "unpaid";
+    }
+
+    return "pending";
 }
 
+function matchesFilter(order, filter) {
+    if (filter === "all") return true;
+    return normalizeOrderStatus(order) === filter;
+}
 function buildEmptyState(message) {
     return `<div class="empty-state">${escapeHTML(message)}</div>`;
 }
@@ -312,7 +338,7 @@ function setupLogout() {
    LOAD ORDERS
 ========================= */
 async function loadOrders() {
-    const data = await fetchJSON(`${getAPIURL()}/orders/?limit=200`);
+    const data = await fetchJSON(`${getAPIURL()}/orders/?limit=50`);
     const rawOrders = Array.isArray(data?.data) ? data.data : [];
 
     allOrders = rawOrders.filter(order => isSameLocalDate(order.created_at));
@@ -323,7 +349,7 @@ function renderQueues() {
     const filtered = allOrders.filter(order => matchesFilter(order, currentFilter));
 
     const pendingLikeCount = allOrders.filter(order =>
-        ["pending", "unpaid", "paid"].includes(String(order.status || "").toLowerCase())
+        ["pending", "unpaid", "paid"].includes(normalizeOrderStatus(order))
     ).length;
 
     pendingCount.textContent = String(pendingLikeCount);
@@ -344,7 +370,7 @@ function renderQueueColumn(container, orders, emptyMessage) {
     }
 
     container.innerHTML = orders.map(order => {
-        const status = String(order.status || "pending").toLowerCase();
+        const status = normalizeOrderStatus(order);
         const canResumePayment =
             canUseCashierPaymentFlow(order);
 
