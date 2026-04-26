@@ -712,6 +712,22 @@
             transform: rotate(90deg);
         }
 
+        
+        .history-modal-header {
+            position: relative; 
+        }
+        
+        .history-modal-header .close-modal {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%); 
+            right: 0;
+            z-index: 10; 
+        }
+
+        .history-modal-header .close-modal:hover {
+            transform: translateY(-50%) rotate(90deg); 
+        }
         .qr-wrapper {
             margin: 20px 0;
             background: #fff;
@@ -1238,14 +1254,14 @@
             </div>
         </div>
     </div>
-
-    <div class="modal-overlay" id="fullHistoryModal" onclick="closeAllPanels(event)">
-        <div class="premium-modal history-modal" onclick="event.stopPropagation()">
-            <div class="history-modal-header">
-                <h2>All Transactions</h2>
-                <button class="close-modal" style="position: static;" onclick="closeAllPanels(event)"><i
-                        class="fa-solid fa-xmark"></i></button>
-            </div>
+<div class="modal-overlay" id="fullHistoryModal" onclick="closeHistoryModal()">
+    <div class="premium-modal history-modal" onclick="event.stopPropagation()">
+        <div class="history-modal-header">
+            <h2>All Transactions</h2>
+            <button class="close-modal" type="button" onclick="closeHistoryModal()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
 
             <div class="history-filters">
                 <button class="history-tab active" onclick="filterLedger('all', this)">All</button>
@@ -1354,6 +1370,16 @@
                 });
             }
         });
+    </script>
+    <script>
+
+        function closeHistoryModal() {
+            const modal = document.getElementById("fullHistoryModal");
+            if (modal) {
+                modal.classList.remove("active");
+                document.body.style.overflow = "auto";
+            }
+        }
     </script>
 </body>
 

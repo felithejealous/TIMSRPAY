@@ -1055,7 +1055,7 @@ const footerModalContentMap = {
 
   privacy: {
     title: "Privacy Policy",
-    icon: "fa-solid fa-shield-halved",
+    icon: "fa-solid fa-shield",
     body: `
       <div class="info-section">
         <div class="info-section-title">Information We Collect</div>
