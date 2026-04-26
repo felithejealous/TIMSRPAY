@@ -108,7 +108,7 @@ async function fetchPromoSummary() {
 
 async function fetchPromoCodes() {
     try {
-        const response = await fetch(`${API_URL}/promo/codes`, {
+        const response = await fetch(`${API_URL}/promo/codes?active_only=true`, {
             method: "GET",
             headers: getAuthHeaders(),
         });

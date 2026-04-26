@@ -99,13 +99,17 @@ def get_promo_summary(
 
 @router.get("/codes")
 def list_promo_codes(
-    active_only: bool = Query(default=False),
+    active_only: bool = Query(default=True),
+    include_archived: bool = Query(default=False),
     db: Session = Depends(get_db),
     _: User = Depends(require_roles("admin")),
 ):
     query = db.query(PromoCode)
 
-    if active_only:
+    if not include_archived:
+        query = query.filter(PromoCode.is_active == True)
+
+    elif active_only:
         query = query.filter(PromoCode.is_active == True)
 
     rows = query.order_by(PromoCode.id.desc()).all()
@@ -114,8 +118,6 @@ def list_promo_codes(
         "count": len(rows),
         "data": [_serialize_code(row) for row in rows],
     }
-
-
 @router.get("/available/me")
 def list_my_available_promos(
     db: Session = Depends(get_db),
