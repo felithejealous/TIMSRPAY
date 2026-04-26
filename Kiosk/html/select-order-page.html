@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="icon" href="/favicon.ico">
+    <link rel="icon" href="../favicon.ico">
     <title>Teo D' Mango - Tablet Kiosk</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;800&display=swap" rel="stylesheet">
     
@@ -16,7 +16,7 @@
             --glass-card: rgba(255, 255, 255, 0.45);
         }
 
-        /* Essential Kiosk Resets */
+   
         * {
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
@@ -27,18 +27,16 @@
         body, html {
             margin: 0;
             padding: 0;
-            height: 100dvh; /* Dynamic viewport height for tablet browsers */
+            height: 100dvh; 
             width: 100%;
             font-family: 'Plus Jakarta Sans', sans-serif;
             overflow: hidden;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: space-between; /* Spreads content: Top, Center, Bottom */
-            padding: 6vh 0; /* Uniform padding for top/bottom breathing room */
+            justify-content: space-between; 
+            padding: 6vh 0; 
         }
-
-        /* --- ANIMATED JUICE BACKGROUND --- */
         .mango-juice-bg {
             position: fixed;
             top: 0;
@@ -61,7 +59,6 @@
             100% { background-position: 100% 100%; }
         }
 
-        /* --- HEADER SECTION --- */
         .header-area {
             text-align: center;
         }
@@ -86,13 +83,13 @@
             opacity: 0.8;
         }
 
-        /* --- CHOICE SECTION (CENTERED) --- */
+
         .order-options {
             display: flex;
             flex-direction: row;
             gap: 20px;
             width: 90%;
-            max-width: 650px; /* Kept compact for tablet ergonomics */
+            max-width: 650px; 
         }
 
         .option-card {
@@ -102,7 +99,7 @@
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border: 1.5px solid rgba(255, 255, 255, 0.6);
-            border-radius: 30px; /* Square-y soft corners */
+            border-radius: 30px; 
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.2);
             display: flex;
@@ -127,7 +124,7 @@
             text-transform: uppercase;
         }
 
-        /* Selected State */
+
         .option-card.selected {
             background: rgba(255, 255, 255, 0.95);
             border-color: var(--mango-deep);
@@ -135,7 +132,6 @@
             box-shadow: 0 20px 40px rgba(255, 140, 0, 0.15);
         }
 
-        /* --- FOOTER SECTION --- */
         .footer-area {
             width: 100%;
             display: flex;
