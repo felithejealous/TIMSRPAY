@@ -31,7 +31,7 @@ router = APIRouter(
     tags=["Reports"],
     dependencies=[Depends(require_roles("admin"))],
 )
-
+PAID_REVENUE_STATUSES = ["paid", "ready_for_pickup", "completed"]
 
 # ============================================================
 # DB
@@ -208,7 +208,7 @@ def sales_summary(
     q = db.query(Order).filter(
         Order.created_at >= start_dt,
         Order.created_at < end_dt,
-        Order.status.in_(["paid", "completed"]),
+        Order.status.in_(PAID_REVENUE_STATUSES),
     )
 
     total_orders = q.count()
@@ -220,7 +220,7 @@ def sales_summary(
     ).filter(
         Order.created_at >= start_dt,
         Order.created_at < end_dt,
-        Order.status.in_(["paid", "completed"]),
+        Order.status.in_(PAID_REVENUE_STATUSES),
     ).first()
 
     gross_sales = _money(sums[0])
@@ -258,7 +258,7 @@ def sales_daily(
     ).filter(
         Order.created_at >= start_dt,
         Order.created_at < end_dt,
-        Order.status.in_(["paid", "completed"]),
+        Order.status.in_(PAID_REVENUE_STATUSES),
     ).all()
 
     by_date = {}
@@ -314,7 +314,7 @@ def top_products(
     ).filter(
         Order.created_at >= start_dt,
         Order.created_at < end_dt,
-        Order.status.in_(["paid", "completed"]),
+        Order.status.in_(PAID_REVENUE_STATUSES),
     ).group_by(
         Product.id, Product.name
     ).order_by(
@@ -553,7 +553,6 @@ def _payment_breakdown_summary(
     end_date: str,
 ):
     wallet_data = wallet_summary(start_date=start_date, end_date=end_date, db=db)
-
     s, e, start_dt, end_dt = _resolve_date_range(start_date, end_date, default_days=1)
 
     cash_orders = db.query(
@@ -562,26 +561,39 @@ def _payment_breakdown_summary(
     ).filter(
         Order.created_at >= start_dt,
         Order.created_at < end_dt,
-        Order.status.in_(["paid", "completed"]),
+        Order.status.in_(PAID_REVENUE_STATUSES),
         sa_func.lower(sa_func.coalesce(Order.payment_method, "")) == "cash",
     ).first()
+
+    teopay_orders = db.query(
+        sa_func.coalesce(sa_func.sum(Order.total_amount), 0).label("sum_total"),
+        sa_func.count(Order.id).label("cnt"),
+    ).filter(
+        Order.created_at >= start_dt,
+        Order.created_at < end_dt,
+        Order.status.in_(PAID_REVENUE_STATUSES),
+        sa_func.lower(sa_func.coalesce(Order.payment_method, "")) == "wallet",
+    ).first()
+
+    wallet_types = wallet_data.get("by_type", {})
 
     cash_amount = _money(cash_orders.sum_total if cash_orders else 0)
     cash_count = int(cash_orders.cnt if cash_orders else 0)
 
-    wallet_types = wallet_data.get("by_type", {})
+    teopay_amount = _money(teopay_orders.sum_total if teopay_orders else 0)
+    teopay_count = int(teopay_orders.cnt if teopay_orders else 0)
 
     return {
         "range": wallet_data.get("range", {"start_date": start_date, "end_date": end_date}),
         "by_type": {
             "TOPUP": wallet_types.get("TOPUP", {"count": 0, "amount": 0.0}),
-            "TEOPAY_PAYMENT": wallet_types.get("PAYMENT", {"count": 0, "amount": 0.0}),
+            "TEOPAY_PAYMENT": {"count": teopay_count, "amount": teopay_amount},
             "CASH_PAYMENT": {"count": cash_count, "amount": cash_amount},
             "REFUND": wallet_types.get("REFUND", {"count": 0, "amount": 0.0}),
         },
         "totals": {
             "topup_amount": _money(wallet_types.get("TOPUP", {}).get("amount", 0)),
-            "teopay_payment_amount": _money(wallet_types.get("PAYMENT", {}).get("amount", 0)),
+            "teopay_payment_amount": teopay_amount,
             "cash_payment_amount": cash_amount,
             "refund_amount": _money(wallet_types.get("REFUND", {}).get("amount", 0)),
         }
