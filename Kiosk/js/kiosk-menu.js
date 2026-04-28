@@ -1,6 +1,9 @@
 const API_URL = window.API_URL || "http://127.0.0.1:8000";
+
 let tray = JSON.parse(localStorage.getItem("teo_tray")) || [];
 let products = [];
+
+const PRODUCTS_CACHE_KEY = "teo_kiosk_products_cache";
 
 const PRODUCT_IMAGE_MAP = {
     "classic teo d' mango": "../Images/mangga.png",
@@ -58,6 +61,7 @@ async function fetchJSON(url, options = {}) {
     });
 
     let data = null;
+
     try {
         data = await response.json();
     } catch {
@@ -71,11 +75,8 @@ async function fetchJSON(url, options = {}) {
     return data;
 }
 
-async function loadMenuProducts() {
-    const response = await fetchJSON(`${API_URL}/products/menu`);
-    const rows = Array.isArray(response?.data) ? response.data : [];
-
-    products = rows.map((item) => ({
+function normalizeProductRows(rows) {
+    return rows.map((item) => ({
         id: Number(item.product_id),
         name: item.name || "Unnamed Product",
         price: Number(item.price || 0),
@@ -89,8 +90,32 @@ async function loadMenuProducts() {
         points_per_unit: Number(item.points_per_unit || 0),
         is_available: Boolean(item.is_available)
     }));
+}
 
-    //localStorage.setItem("teo_kiosk_products_cache", JSON.stringify(products));
+function loadCachedProductsFirst() {
+    try {
+        const cachedProducts = JSON.parse(localStorage.getItem(PRODUCTS_CACHE_KEY) || "[]");
+
+        if (Array.isArray(cachedProducts) && cachedProducts.length) {
+            products = cachedProducts;
+            renderProducts();
+        }
+    } catch {
+        localStorage.removeItem(PRODUCTS_CACHE_KEY);
+    }
+}
+
+async function loadMenuProducts() {
+    const response = await fetchJSON(`${API_URL}/products/menu`);
+    const rows = Array.isArray(response?.data) ? response.data : [];
+
+    products = normalizeProductRows(rows);
+
+    try {
+        localStorage.setItem(PRODUCTS_CACHE_KEY, JSON.stringify(products));
+    } catch {
+        console.warn("Hindi ma-save ang kiosk products cache sa localStorage.");
+    }
 }
 
 function renderProducts() {
@@ -108,7 +133,9 @@ function renderProducts() {
 
     grid.innerHTML = products.map((p) => `
         <div class="product-card" onclick="goToCustomize(${p.id})">
-            <div class="img-wrapper"><img src="${escapeHTML(p.img)}" alt="${escapeHTML(p.name)}"></div>
+            <div class="img-wrapper">
+                <img src="${escapeHTML(p.img)}" alt="${escapeHTML(p.name)}" loading="lazy" decoding="async">
+            </div>
             <div class="product-info">
                 <h3>${escapeHTML(p.name)}</h3>
                 <p>${escapeHTML(p.desc)}</p>
@@ -139,25 +166,27 @@ function renderTray() {
     }
 
     floatingBar.style.display = "flex";
-    container.innerHTML = "";
 
     let total = 0;
 
-    tray.forEach((item, index) => {
+    const trayHtml = tray.map((item, index) => {
         const qty = Number(item.qty || 0);
         const unitPrice = Number(item.price || 0);
         const subtotal = unitPrice * qty;
         total += subtotal;
 
         const toppings = Array.isArray(item.toppings) ? item.toppings : [];
+
         const addonsHtml = toppings.length
             ? toppings.map((t) => `<span class="detail-tag">+ ${escapeHTML(t)}</span>`).join("")
             : "";
 
-        container.innerHTML += `
+        return `
             <div class="cart-item">
                 <div class="item-main-row">
-                    <div class="item-thumb"><img src="${escapeHTML(item.img || "../Images/mangga.png")}" alt="${escapeHTML(item.name || "Product")}"></div>
+                    <div class="item-thumb">
+                        <img src="${escapeHTML(item.img || "../Images/mangga.png")}" alt="${escapeHTML(item.name || "Product")}" loading="lazy" decoding="async">
+                    </div>
                     <div style="flex:1">
                         <h4 style="font-weight:800; font-size:1.1rem; color:var(--text-dark);">${escapeHTML(item.name || "Unnamed Product")}</h4>
                         <div class="item-details-grid">
@@ -171,7 +200,7 @@ function renderTray() {
                         <div style="font-size:0.7rem; opacity:0.5; font-weight:700;">₱${unitPrice.toFixed(2)} / ea</div>
                     </div>
                 </div>
-                
+
                 <div class="qty-controls">
                     <button class="qty-btn" onclick="updateQty(${index}, -1, event)">-</button>
                     <span style="font-weight:900; font-size:1.2rem;">${qty}</span>
@@ -181,8 +210,9 @@ function renderTray() {
                 </div>
             </div>
         `;
-    });
+    }).join("");
 
+    container.innerHTML = trayHtml;
     updateTotals(total);
 }
 
@@ -213,6 +243,7 @@ function updateTotals(total) {
 function toggleCart() {
     const panel = document.getElementById("cartPanel");
     const overlay = document.getElementById("overlay");
+
     if (!panel || !overlay) return;
 
     const isActive = panel.classList.toggle("active");
@@ -221,29 +252,32 @@ function toggleCart() {
 
 function goToCustomize(productId) {
     const selectedProduct = products.find((p) => Number(p.id) === Number(productId));
-    
-    if (selectedProduct) {
 
+    if (selectedProduct) {
         const productToSave = { ...selectedProduct };
 
- 
         if (productToSave.image_url && productToSave.image_url.length > 500) {
-            productToSave.image_url = "too-large-to-save"; 
+            productToSave.image_url = "too-large-to-save";
         }
+
         if (productToSave.img && productToSave.img.length > 500) {
             productToSave.img = "too-large-to-save";
         }
 
         try {
             localStorage.setItem("teo_selected_product", JSON.stringify(productToSave));
-        } catch (e) {
+        } catch {
             console.warn("Hindi ma-save sa localStorage. Puno pa rin ang storage.");
         }
     }
-    
+
     window.location.href = `customize.html?id=${encodeURIComponent(productId)}`;
 }
+
 async function initKioskMenuPage() {
+    loadCachedProductsFirst();
+    renderTray();
+
     try {
         await loadMenuProducts();
         renderProducts();
@@ -251,13 +285,16 @@ async function initKioskMenuPage() {
     } catch (error) {
         console.error("Failed to load kiosk menu:", error);
 
-        const grid = document.getElementById("productGrid");
-        if (grid) {
-            grid.innerHTML = `
-                <div style="grid-column: 1 / -1; text-align:center; padding:60px 20px; color:#b91c1c; font-weight:800; text-transform:uppercase; letter-spacing:2px;">
-                    Failed to load menu
-                </div>
-            `;
+        if (!products.length) {
+            const grid = document.getElementById("productGrid");
+
+            if (grid) {
+                grid.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align:center; padding:60px 20px; color:#b91c1c; font-weight:800; text-transform:uppercase; letter-spacing:2px;">
+                        Failed to load menu
+                    </div>
+                `;
+            }
         }
 
         renderTray();
