@@ -67,7 +67,8 @@ def _end_dt_exclusive(d: date) -> datetime:
 
 def _money(value) -> float:
     return float(Decimal(str(value or 0)))
-
+def _decimal_money(value) -> Decimal:
+    return Decimal(str(value or 0)).quantize(Decimal("0.01"))
 def _csv_response(content: str, filename: str) -> Response:
     return Response(
         content=content,
@@ -598,6 +599,145 @@ def _payment_breakdown_summary(
             "refund_amount": _money(wallet_types.get("REFUND", {}).get("amount", 0)),
         }
     }
+#==========================
+# profit summary
+#==========================
+@router.get("/profit/summary", operation_id="reports_profit_summary_v1")
+def profit_summary(
+    start_date: Optional[str] = Query(default=None, description="YYYY-MM-DD"),
+    end_date: Optional[str] = Query(default=None, description="YYYY-MM-DD"),
+    db: Session = Depends(get_db),
+):
+    s, e, start_dt, end_dt = _resolve_date_range(start_date, end_date, default_days=1)
+
+    revenue_row = db.query(
+        sa_func.coalesce(sa_func.sum(Order.total_amount), 0).label("revenue"),
+        sa_func.count(Order.id).label("order_count"),
+    ).filter(
+        Order.created_at >= start_dt,
+        Order.created_at < end_dt,
+        Order.status.in_(PAID_REVENUE_STATUSES),
+    ).first()
+
+    cogs_row = db.query(
+        sa_func.coalesce(sa_func.sum(InventoryMasterMovement.total_cost_snapshot), 0).label("cogs")
+    ).join(
+        Order,
+        Order.id == InventoryMasterMovement.ref_order_id
+    ).filter(
+        Order.created_at >= start_dt,
+        Order.created_at < end_dt,
+        Order.status.in_(PAID_REVENUE_STATUSES),
+        InventoryMasterMovement.change_qty < 0,
+        InventoryMasterMovement.reason.in_([
+            "product_recipe",
+            "addon_recipe",
+            "packaging_cup",
+            "packaging_straw",
+        ]),
+    ).first()
+
+    revenue = Decimal(str(revenue_row.revenue or 0))
+    cogs = Decimal(str(cogs_row.cogs or 0))
+    gross_profit = revenue - cogs
+
+    profit_margin = Decimal("0")
+    if revenue > 0:
+        profit_margin = (gross_profit / revenue) * Decimal("100")
+
+    return {
+        "range": {
+            "start_date": str(s),
+            "end_date": str(e),
+        },
+        "order_count": int(revenue_row.order_count or 0),
+        "gross_sales": float(revenue.quantize(Decimal("0.01"))),
+        "cost_of_goods_sold": float(cogs.quantize(Decimal("0.01"))),
+        "gross_profit": float(gross_profit.quantize(Decimal("0.01"))),
+        "profit_margin_percent": float(profit_margin.quantize(Decimal("0.01"))),
+    }
+#=========================
+#Profit by product
+#==========================
+@router.get("/profit/by-product", operation_id="reports_profit_by_product_v1")
+def profit_by_product(
+    start_date: Optional[str] = Query(default=None, description="YYYY-MM-DD"),
+    end_date: Optional[str] = Query(default=None, description="YYYY-MM-DD"),
+    limit: int = Query(default=20, ge=1, le=100),
+    db: Session = Depends(get_db),
+):
+    s, e, start_dt, end_dt = _resolve_date_range(start_date, end_date, default_days=7)
+
+    sales_rows = db.query(
+        Product.id.label("product_id"),
+        Product.name.label("name"),
+        sa_func.coalesce(sa_func.sum(OrderItem.quantity), 0).label("qty_sold"),
+        sa_func.coalesce(sa_func.sum(OrderItem.price * OrderItem.quantity), 0).label("revenue"),
+    ).join(
+        OrderItem, OrderItem.product_id == Product.id
+    ).join(
+        Order, Order.id == OrderItem.order_id
+    ).filter(
+        Order.created_at >= start_dt,
+        Order.created_at < end_dt,
+        Order.status.in_(PAID_REVENUE_STATUSES),
+    ).group_by(
+        Product.id, Product.name
+    ).order_by(
+        desc("revenue")
+    ).limit(limit).all()
+
+    data = []
+
+    for row in sales_rows:
+        cogs_row = db.query(
+            sa_func.coalesce(sa_func.sum(InventoryMasterMovement.total_cost_snapshot), 0)
+        ).join(
+            Order,
+            Order.id == InventoryMasterMovement.ref_order_id
+        ).join(
+            OrderItem,
+            OrderItem.order_id == Order.id
+        ).filter(
+            Order.created_at >= start_dt,
+            Order.created_at < end_dt,
+            Order.status.in_(PAID_REVENUE_STATUSES),
+            OrderItem.product_id == row.product_id,
+            InventoryMasterMovement.change_qty < 0,
+            InventoryMasterMovement.reason.in_([
+                "product_recipe",
+                "addon_recipe",
+                "packaging_cup",
+                "packaging_straw",
+            ]),
+        ).scalar() or 0
+
+        revenue = Decimal(str(row.revenue or 0))
+        cogs = Decimal(str(cogs_row or 0))
+        profit = revenue - cogs
+
+        margin = Decimal("0")
+        if revenue > 0:
+            margin = (profit / revenue) * Decimal("100")
+
+        data.append({
+            "product_id": int(row.product_id),
+            "name": row.name,
+            "qty_sold": int(row.qty_sold or 0),
+            "revenue": float(revenue.quantize(Decimal("0.01"))),
+            "cost_of_goods_sold": float(cogs.quantize(Decimal("0.01"))),
+            "gross_profit": float(profit.quantize(Decimal("0.01"))),
+            "profit_margin_percent": float(margin.quantize(Decimal("0.01"))),
+        })
+
+    return {
+        "range": {
+            "start_date": str(s),
+            "end_date": str(e),
+        },
+        "count": len(data),
+        "data": data,
+    }
 # ============================================================
 # H) DASHBOARD OVERVIEW
 # ============================================================
@@ -647,6 +787,8 @@ def dashboard_overview(
         start_date=str(last7_start),
         end_date=str(today),
     )
+    profit_today = profit_summary(start_date=str(today), end_date=str(today), db=db)
+    profit_last_7_days = profit_summary(start_date=str(last7_start), end_date=str(today), db=db)
 
     low_stock_data = low_stock(threshold=low_stock_threshold, db=db)
 
@@ -700,6 +842,8 @@ def dashboard_overview(
 
         "payment_breakdown_today": payment_breakdown_today,
         "payment_breakdown_last_7_days": payment_breakdown_last_7_days,
+        "profit_today": profit_today,
+        "profit_last_7_days": profit_last_7_days,
 
         "rewards_today_summary": {
             "total_points_issued": rewards_today["total_points_issued"],

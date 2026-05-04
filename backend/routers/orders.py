@@ -633,15 +633,18 @@ def deduct_packaging_for_item(
         )
 
     cup.quantity = Decimal(str(cup.quantity)) - need_cup
+    cup_unit_cost = Decimal(str(getattr(cup, "unit_cost", 0) or 0))
+
     db.add(
         InventoryMasterMovement(
             inventory_master_id=cup.id,
             change_qty=-need_cup,
             reason="packaging_cup",
             ref_order_id=order_id,
+            unit_cost_snapshot=cup_unit_cost,
+            total_cost_snapshot=need_cup * cup_unit_cost,
         )
     )
-
     straw = _get_active_invm_by_name("Straw")
     need_straw = Decimal(qty)
 
@@ -652,15 +655,18 @@ def deduct_packaging_for_item(
         )
 
     straw.quantity = Decimal(str(straw.quantity)) - need_straw
+    straw_unit_cost = Decimal(str(getattr(straw, "unit_cost", 0) or 0))
+
     db.add(
         InventoryMasterMovement(
             inventory_master_id=straw.id,
             change_qty=-need_straw,
             reason="packaging_straw",
             ref_order_id=order_id,
-        )
+            unit_cost_snapshot=straw_unit_cost,
+            total_cost_snapshot=need_straw * straw_unit_cost,
     )
-
+)
 
 def verify_pin(pin: str, stored: str) -> bool:
     try:
@@ -756,14 +762,18 @@ def deduct_inventory_master_for_item(
 
         invm.quantity = Decimal(str(invm.quantity)) - need
 
+        unit_cost = Decimal(str(getattr(invm, "unit_cost", 0) or 0))
+
         db.add(
             InventoryMasterMovement(
                 inventory_master_id=invm.id,
                 change_qty=-need,
                 reason="product_recipe",
                 ref_order_id=order_id,
-            )
-        )
+                unit_cost_snapshot=unit_cost,
+                total_cost_snapshot=need * unit_cost,
+    )
+)
 
     if selected_addon_ids:
         ar_rows = (
@@ -794,16 +804,18 @@ def deduct_inventory_master_for_item(
 
             invm.quantity = Decimal(str(invm.quantity)) - need
 
+            unit_cost = Decimal(str(getattr(invm, "unit_cost", 0) or 0))
+
             db.add(
                 InventoryMasterMovement(
                     inventory_master_id=invm.id,
                     change_qty=-need,
                     reason="addon_recipe",
                     ref_order_id=order_id,
-                )
-            )
-
-
+                    unit_cost_snapshot=unit_cost,
+                    total_cost_snapshot=need * unit_cost,
+    )
+)
 def sync_order_rewards_if_eligible(db: Session, order: Order):
     if not order:
         return
