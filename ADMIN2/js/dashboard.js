@@ -537,5 +537,5 @@ window.onload = () => {
 
     updateDashboardTitle("weekly");
     fetchDashboardData();
-    //startLowStockPolling();
+    startLowStockPolling();
 };
