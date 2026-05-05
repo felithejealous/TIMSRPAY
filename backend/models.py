@@ -208,6 +208,7 @@ class InventoryMaster(Base):
     category = Column(String(20), nullable=False, default="General")
     unit = Column(String(20), nullable=False, default="pcs")
     quantity = Column(Numeric(12, 2), nullable=False, default=0)
+    unit_cost = Column(Numeric(12, 4), nullable=False, default=0)
     alert_threshold = Column(Numeric(12, 2), nullable=False, default=10)
     expiration_date = Column(DateTime(timezone=True), nullable=True)
     is_active = Column(Boolean, nullable=False, default=True)
@@ -222,6 +223,8 @@ class InventoryMasterMovement(Base):
     change_qty = Column(Numeric(12, 4), nullable=False)
     reason = Column(String(50), nullable=False)
     ref_order_id = Column(Integer, ForeignKey("orders.id"), nullable=True)
+    unit_cost_snapshot = Column(Numeric(12, 4), nullable=False, default=0)
+    total_cost_snapshot = Column(Numeric(12, 4), nullable=False, default=0)
     created_at = Column(DateTime(timezone=False), server_default=func.now())
 
 class InventoryAlertDismissal(Base):

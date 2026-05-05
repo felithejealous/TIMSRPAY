@@ -26,6 +26,12 @@ function getAuthHeaders(extra = {}) {
         ...extra
     };
 }
+function formatPesoDisplay(value) {
+    return `₱${Number(value || 0).toLocaleString("en-PH", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    })}`;
+}
 function getInventoryDataFromDashboard(apiData) {
     const items = apiData?.low_stock?.items || [];
 
@@ -68,6 +74,9 @@ async function fetchDashboardData() {
         console.error("Dashboard error:", error);
 
         document.getElementById("statRevenue").innerText = "₱0";
+        document.getElementById("statCOGS").innerText = "₱0";
+        document.getElementById("statGrossProfit").innerText = "₱0";
+        document.getElementById("statProfitMargin").innerText = "0%";
         document.getElementById("statRewards").innerText = "0 pts";
         document.getElementById("statStock").innerText = "0%";
         document.getElementById("currentDate").innerText = new Date().toLocaleDateString("en-PH", {
@@ -101,7 +110,9 @@ async function renderDashboardFromAPI(apiData, timeframe = "weekly") {
     const rewardsSummary = timeframe === "daily"
         ? (apiData.rewards_today_summary || {})
         : (apiData.rewards_summary || {});
-
+    const profitSummary = timeframe === "daily"
+        ? (apiData.profit_today || {})
+        : (apiData.profit_last_7_days || {});
     const rewardsSeries = timeframe === "daily"
         ? (apiData.rewards_issued_today || [])
         : (apiData.rewards_issued_last_7_days || []);
@@ -110,10 +121,18 @@ async function renderDashboardFromAPI(apiData, timeframe = "weekly") {
     const inventoryData = getInventoryDataFromDashboard(apiData);
 
     const totalRevenue = Number(salesSummary.gross_sales || 0);
+    const ingredientCost = Number(profitSummary.cost_of_goods_sold || 0);
+    const grossProfit = Number(profitSummary.gross_profit || 0);
+    const profitMargin = Number(profitSummary.profit_margin_percent || 0);
+
     const rewardsIssued = Number(rewardsSummary.total_points_issued || 0);
     const stockHealthPercent = Number(stockHealth.percent || 0);
 
-    document.getElementById("statRevenue").innerText = `₱${totalRevenue.toLocaleString()}`;
+    document.getElementById("statRevenue").innerText = formatPesoDisplay(totalRevenue);
+    document.getElementById("statCOGS").innerText = formatPesoDisplay(ingredientCost);
+    document.getElementById("statGrossProfit").innerText = formatPesoDisplay(grossProfit);
+    document.getElementById("statProfitMargin").innerText = `${profitMargin.toFixed(2)}%`;
+
     document.getElementById("statRewards").innerText = `${rewardsIssued.toLocaleString()} pts`;
     document.getElementById("statStock").innerText = `${Math.round(stockHealthPercent)}%`;
     document.getElementById("currentDate").innerText = apiData.date_label || apiData.date || "-";
@@ -136,6 +155,19 @@ async function renderDashboardFromAPI(apiData, timeframe = "weekly") {
         "#52c41a",
         "Revenue",
         false
+    );
+    renderChart(
+    "profitChart",
+    "bar",
+    ["Revenue", "Ingredient Cost", "Gross Profit"],
+    [
+        Number(profitSummary.gross_sales || 0),
+        Number(profitSummary.cost_of_goods_sold || 0),
+        Number(profitSummary.gross_profit || 0)
+    ],
+    ["#52c41a", "#ef4444", "#fcdb05"],
+    "Profit Overview",
+    false
     );
 
     renderChart(

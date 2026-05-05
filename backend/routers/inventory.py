@@ -38,31 +38,47 @@ class InventoryCreate(BaseModel):
     name: str = Field(..., min_length=1)
     category: str = Field(default="General", min_length=1)
     unit: str = Field(..., min_length=1)
+
     quantity: Decimal = Field(default=Decimal("0"))
+    unit_cost: Decimal = Field(default=Decimal("0"), ge=0)
+
+    purchase_quantity: Optional[Decimal] = Field(default=None, gt=0)
+    purchase_unit: Optional[str] = None
+    total_purchase_cost: Optional[Decimal] = Field(default=None, ge=0)
+    units_per_package: Optional[Decimal] = Field(default=None, gt=0)
+
     alert_threshold: Decimal = Field(default=Decimal("10"), ge=0)
     expiration_date: Optional[datetime] = None
     is_active: bool = True
-
 
 class InventoryUpdate(BaseModel):
     name: Optional[str] = None
     category: Optional[str] = None
     unit: Optional[str] = None
+    unit_cost: Optional[Decimal] = Field(default=None, ge=0)
     alert_threshold: Optional[Decimal] = Field(default=None, ge=0)
     expiration_date: Optional[datetime] = None
     is_active: Optional[bool] = None
 
 
 class RestockPayload(BaseModel):
-    qty_added: Decimal = Field(..., gt=0)
+    qty_added: Optional[Decimal] = Field(default=None, gt=0)
     reason: str = Field(default="restock")
 
+    purchase_quantity: Optional[Decimal] = Field(default=None, gt=0)
+    purchase_unit: Optional[str] = None
+    total_purchase_cost: Optional[Decimal] = Field(default=None, ge=0)
+    units_per_package: Optional[Decimal] = Field(default=None, gt=0)
+
+    expiration_date: Optional[datetime] = None
+    category: Optional[str] = None
 
 class AdjustPayload(BaseModel):
     change_qty: Decimal
     reason: str = Field(default="adjustment")
     expiration_date: Optional[datetime] = None
     category: Optional[str] = None
+    unit_cost: Optional[Decimal] = Field(default=None, ge=0)
 
 
 # -----------------------
@@ -76,7 +92,137 @@ def _normalize_text(s: str, fallback: str = "") -> str:
     s = (s or "").strip()
     return s if s else fallback
 
+def _normalize_unit(unit: Optional[str]) -> str:
+    return (unit or "").strip().lower()
 
+
+def _convert_purchase_to_inventory_qty(
+    purchase_quantity: Decimal,
+    purchase_unit: str,
+    inventory_unit: str,
+    units_per_package: Optional[Decimal] = None,
+) -> Decimal:
+    qty = Decimal(str(purchase_quantity))
+    from_unit = _normalize_unit(purchase_unit)
+    to_unit = _normalize_unit(inventory_unit)
+
+    # Note:
+    # Existing field name is units_per_package, but we now use it as
+    # "equivalent inventory quantity" to avoid changing too many frontend/backend names.
+    # Example:
+    # 1 kg mango = 4 pcs, so units_per_package = 4
+    # 2 packs straw = 200 pcs, so units_per_package = 200
+    equivalent_qty = Decimal(str(units_per_package or 0))
+
+    if qty <= 0:
+        raise HTTPException(status_code=400, detail="purchase_quantity must be greater than zero")
+
+    if from_unit == to_unit:
+        return qty
+
+    if from_unit == "kg" and to_unit in ["grams", "gram", "g"]:
+        return qty * Decimal("1000")
+
+    if from_unit in ["grams", "gram", "g"] and to_unit == "kg":
+        return qty / Decimal("1000")
+
+    if from_unit in ["liters", "liter", "l"] and to_unit in ["ml", "milliliters", "milliliter"]:
+        return qty * Decimal("1000")
+
+    if from_unit in ["ml", "milliliters", "milliliter"] and to_unit in ["liters", "liter", "l"]:
+        return qty / Decimal("1000")
+
+    # Non-fixed conversions:
+    # kg -> pcs, packs -> pcs, pcs -> packs, etc.
+    # The admin must enter the total equivalent inventory quantity.
+    if equivalent_qty > 0:
+        return equivalent_qty
+
+    raise HTTPException(
+        status_code=400,
+        detail=(
+            f"Cannot directly convert purchase unit '{purchase_unit}' to inventory unit '{inventory_unit}'. "
+            "Enter the equivalent inventory quantity."
+        )
+    )
+def _compute_inventory_quantity_and_unit_cost(payload: InventoryCreate):
+    has_purchase_costing = (
+        payload.purchase_quantity is not None
+        or payload.purchase_unit is not None
+        or payload.total_purchase_cost is not None
+    )
+
+    if not has_purchase_costing:
+        return Decimal(str(payload.quantity)), Decimal(str(payload.unit_cost or 0))
+
+    if payload.purchase_quantity is None:
+        raise HTTPException(status_code=400, detail="purchase_quantity is required")
+    if not payload.purchase_unit:
+        raise HTTPException(status_code=400, detail="purchase_unit is required")
+    if payload.total_purchase_cost is None:
+        raise HTTPException(status_code=400, detail="total_purchase_cost is required")
+
+    converted_quantity = _convert_purchase_to_inventory_qty(
+        purchase_quantity=payload.purchase_quantity,
+        purchase_unit=payload.purchase_unit,
+        inventory_unit=payload.unit,
+        units_per_package=payload.units_per_package,
+    )
+
+    if converted_quantity <= 0:
+        raise HTTPException(status_code=400, detail="computed inventory quantity must be greater than zero")
+
+    computed_unit_cost = Decimal(str(payload.total_purchase_cost)) / converted_quantity
+
+    return converted_quantity, computed_unit_cost
+def _compute_restock_quantity_and_weighted_cost(row: InventoryMaster, payload: RestockPayload):
+    has_purchase_costing = (
+        payload.purchase_quantity is not None
+        or payload.purchase_unit is not None
+        or payload.total_purchase_cost is not None
+    )
+
+    current_qty = Decimal(str(row.quantity or 0))
+    current_unit_cost = Decimal(str(row.unit_cost or 0))
+
+    if not has_purchase_costing:
+        if payload.qty_added is None:
+            raise HTTPException(status_code=400, detail="qty_added is required")
+        add_qty = Decimal(str(payload.qty_added))
+        if add_qty <= 0:
+            raise HTTPException(status_code=400, detail="qty_added must be > 0")
+
+        return add_qty, current_unit_cost, add_qty * current_unit_cost
+
+    if payload.purchase_quantity is None:
+        raise HTTPException(status_code=400, detail="purchase_quantity is required")
+    if not payload.purchase_unit:
+        raise HTTPException(status_code=400, detail="purchase_unit is required")
+    if payload.total_purchase_cost is None:
+        raise HTTPException(status_code=400, detail="total_purchase_cost is required")
+
+    add_qty = _convert_purchase_to_inventory_qty(
+        purchase_quantity=payload.purchase_quantity,
+        purchase_unit=payload.purchase_unit,
+        inventory_unit=row.unit,
+        units_per_package=payload.units_per_package,
+    )
+
+    if add_qty <= 0:
+        raise HTTPException(status_code=400, detail="computed restock quantity must be greater than zero")
+
+    new_purchase_cost = Decimal(str(payload.total_purchase_cost or 0))
+    if new_purchase_cost < 0:
+        raise HTTPException(status_code=400, detail="total_purchase_cost cannot be negative")
+
+    new_total_qty = current_qty + add_qty
+    if new_total_qty <= 0:
+        raise HTTPException(status_code=400, detail="new total quantity must be greater than zero")
+
+    current_stock_value = current_qty * current_unit_cost
+    new_weighted_unit_cost = (current_stock_value + new_purchase_cost) / new_total_qty
+
+    return add_qty, new_weighted_unit_cost, new_purchase_cost
 def _get_item(db: Session, inventory_master_id: int) -> InventoryMaster:
     row = db.query(InventoryMaster).filter(InventoryMaster.id == inventory_master_id).first()
     if not row:
@@ -113,6 +259,7 @@ def _serialize_item(row: InventoryMaster):
         "category": getattr(row, "category", "General") or "General",
         "unit": row.unit,
         "quantity": float(Decimal(str(row.quantity))),
+        "unit_cost": float(Decimal(str(getattr(row, "unit_cost", 0) or 0))),
         "alert_threshold": float(Decimal(str(getattr(row, "alert_threshold", 10) or 10))),
         "expiration_date": str(getattr(row, "expiration_date", None)) if getattr(row, "expiration_date", None) else None,
         "is_active": bool(row.is_active),
@@ -203,8 +350,12 @@ def create_inventory_master_item(
 
     _validate_future_expiration(payload.expiration_date)
 
-    if Decimal(str(payload.quantity)) < 0:
+    computed_quantity, computed_unit_cost = _compute_inventory_quantity_and_unit_cost(payload)
+
+    if computed_quantity < 0:
         raise HTTPException(status_code=400, detail="quantity cannot be negative")
+    if computed_unit_cost < 0:
+        raise HTTPException(status_code=400, detail="unit_cost cannot be negative")
 
     exists = db.query(InventoryMaster).filter(sa_func.lower(InventoryMaster.name) == name_norm).first()
     if exists:
@@ -217,7 +368,8 @@ def create_inventory_master_item(
         name=payload.name.strip(),
         category=_normalize_text(payload.category, "General"),
         unit=payload.unit.strip(),
-        quantity=Decimal(str(payload.quantity)),
+        quantity=computed_quantity,
+        unit_cost=computed_unit_cost,
         alert_threshold=Decimal(str(payload.alert_threshold)),
         expiration_date=payload.expiration_date,
         is_active=bool(payload.is_active),
@@ -225,13 +377,15 @@ def create_inventory_master_item(
     db.add(row)
     db.flush()
 
-    if Decimal(str(payload.quantity)) != Decimal("0"):
+    if computed_quantity != Decimal("0"):
         db.add(
             InventoryMasterMovement(
                 inventory_master_id=row.id,
-                change_qty=Decimal(str(payload.quantity)),
+                change_qty=computed_quantity,
                 reason="create_initial_stock",
                 ref_order_id=None,
+                unit_cost_snapshot=Decimal(str(row.unit_cost or 0)),
+                total_cost_snapshot=computed_quantity * Decimal(str(row.unit_cost or 0)),
             )
         )
 
@@ -245,7 +399,7 @@ def create_inventory_master_item(
         module="inventory",
         target_type="inventory_master",
         target_id=row.id,
-        details=f"{row.name} | qty={row.quantity} {row.unit} | threshold={row.alert_threshold}"
+        details=f"{row.name} | qty={row.quantity} {row.unit} | unit_cost={row.unit_cost} | threshold={row.alert_threshold}"
 )
     db.commit()
     db.refresh(row)
@@ -287,7 +441,8 @@ def update_inventory_master_item(
 
     if payload.category is not None:
         row.category = _normalize_text(payload.category, "General")
-
+    if payload.unit_cost is not None:
+        row.unit_cost = Decimal(str(payload.unit_cost))
     if payload.unit is not None:
         if not payload.unit.strip():
             raise HTTPException(status_code=400, detail="unit cannot be empty")
@@ -333,18 +488,24 @@ def restock_inventory_master_item(
     inventory_master_id: int,
     payload: RestockPayload,
     db: Session = Depends(get_db),
-    _: User = Depends(require_roles("staff", "cashier", "admin")),
+    current_user: User = Depends(require_roles("staff", "cashier", "admin")),
 ):
     row = _get_item(db, inventory_master_id)
 
     if not row.is_active:
         raise HTTPException(status_code=400, detail="Item is inactive")
 
-    add = Decimal(str(payload.qty_added))
-    if add <= 0:
-        raise HTTPException(status_code=400, detail="qty_added must be > 0")
+    add, new_weighted_unit_cost, new_purchase_cost = _compute_restock_quantity_and_weighted_cost(row, payload)
 
-    row.quantity = Decimal(str(row.quantity)) + add
+    if payload.expiration_date is not None:
+        _validate_future_expiration(payload.expiration_date)
+        row.expiration_date = payload.expiration_date
+
+    if payload.category is not None:
+        row.category = _normalize_text(payload.category, "General")
+
+    row.quantity = Decimal(str(row.quantity or 0)) + add
+    row.unit_cost = Decimal(str(new_weighted_unit_cost))
 
     db.add(
         InventoryMasterMovement(
@@ -352,6 +513,8 @@ def restock_inventory_master_item(
             change_qty=add,
             reason=(payload.reason or "restock").strip(),
             ref_order_id=None,
+            unit_cost_snapshot=Decimal(str(row.unit_cost or 0)),
+            total_cost_snapshot=Decimal(str(new_purchase_cost or 0)),
         )
     )
 
@@ -359,14 +522,14 @@ def restock_inventory_master_item(
     _clear_low_stock_dismissals_if_resolved(db, row)
 
     log_activity(
-    db,
-    user=_,
-    action="Restocked inventory item",
-    module="inventory",
-    target_type="inventory_master",
-    target_id=row.id,
-    details=f"{row.name} | added={add} {row.unit} | reason={(payload.reason or 'restock').strip()}"
-)
+        db,
+        user=current_user,
+        action="Restocked inventory item",
+        module="inventory",
+        target_type="inventory_master",
+        target_id=row.id,
+        details=f"{row.name} | added={add} {row.unit} | weighted_unit_cost={row.unit_cost} | reason={(payload.reason or 'restock').strip()}"
+    )
 
     db.commit()
     db.refresh(row)
@@ -375,8 +538,6 @@ def restock_inventory_master_item(
         "message": "restocked",
         **_serialize_item(row),
     }
-
-
 # =========================================================
 # 6) ADJUST (+/-)
 # admin only
@@ -406,6 +567,8 @@ def adjust_inventory_master_item(
 
     if payload.category is not None:
         row.category = _normalize_text(payload.category, "General")
+    if payload.unit_cost is not None:
+        row.unit_cost = Decimal(str(payload.unit_cost))
 
     db.add(
         InventoryMasterMovement(
@@ -413,9 +576,10 @@ def adjust_inventory_master_item(
             change_qty=change,
             reason=(payload.reason or "adjustment").strip(),
             ref_order_id=None,
+            unit_cost_snapshot=Decimal(str(row.unit_cost or 0)),
+            total_cost_snapshot=abs(change) * Decimal(str(row.unit_cost or 0)),
         )
     )
-
     _sync_all_product_availability(db)
     _clear_low_stock_dismissals_if_resolved(db, row)
     log_activity(
@@ -684,6 +848,8 @@ def get_all_inventory_movements(
             "change_qty": float(movement.change_qty or 0),
             "reason": movement.reason or "-",
             "created_at": str(movement.created_at) if movement.created_at else None,
+            "unit_cost_snapshot": float(movement.unit_cost_snapshot or 0),
+            "total_cost_snapshot": float(movement.total_cost_snapshot or 0),
         })
 
     return {

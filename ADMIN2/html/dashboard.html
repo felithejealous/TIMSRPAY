@@ -337,22 +337,55 @@
                 <i class="fa-solid fa-sun" id="themeIcon"></i>
             </button>
         </header>
+<section class="stats-grid">
+    <div class="stat-card glass">
+        <div class="stat-icon"><i class="fas fa-coins"></i></div>
+        <div class="stat-data">
+            <h4 class="text-xs opacity-50 uppercase font-bold">Total Revenue</h4>
+            <p id="statRevenue" class="text-2xl font-black tracking-tight">₱0</p>
+        </div>
+    </div>
 
-        <section class="stats-grid">
-            <div class="stat-card glass">
-                <div class="stat-icon"><i class="fas fa-coins"></i></div>
-                <div class="stat-data"><h4 class="text-xs opacity-50 uppercase font-bold">Total Revenue</h4><p id="statRevenue" class="text-2xl font-black tracking-tight">₱0</p></div>
-            </div>
-            <div class="stat-card glass">
-                <div class="stat-icon"><i class="fas fa-gift"></i></div>
-                <div class="stat-data"><h4 class="text-xs opacity-50 uppercase font-bold">Rewards Issued</h4><p id="statRewards" class="text-2xl font-black tracking-tight">0 pts</p></div>
-            </div>
-            <div class="stat-card glass">
-                <div class="stat-icon"><i class="fas fa-boxes"></i></div>
-                <div class="stat-data"><h4 class="text-xs opacity-50 uppercase font-bold">Stock Health</h4><p id="statStock" class="text-2xl font-black tracking-tight">0</p></div>
-            </div>
-        </section>
+    <div class="stat-card glass">
+        <div class="stat-icon"><i class="fas fa-receipt"></i></div>
+        <div class="stat-data">
+            <h4 class="text-xs opacity-50 uppercase font-bold">Ingredient Cost</h4>
+            <p id="statCOGS" class="text-2xl font-black tracking-tight">₱0</p>
+        </div>
+    </div>
 
+    <div class="stat-card glass">
+        <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+        <div class="stat-data">
+            <h4 class="text-xs opacity-50 uppercase font-bold">Gross Profit</h4>
+            <p id="statGrossProfit" class="text-2xl font-black tracking-tight">₱0</p>
+        </div>
+    </div>
+
+    <div class="stat-card glass">
+        <div class="stat-icon"><i class="fas fa-percent"></i></div>
+        <div class="stat-data">
+            <h4 class="text-xs opacity-50 uppercase font-bold">Profit Margin</h4>
+            <p id="statProfitMargin" class="text-2xl font-black tracking-tight">0%</p>
+        </div>
+    </div>
+
+    <div class="stat-card glass">
+        <div class="stat-icon"><i class="fas fa-gift"></i></div>
+        <div class="stat-data">
+            <h4 class="text-xs opacity-50 uppercase font-bold">Rewards Issued</h4>
+            <p id="statRewards" class="text-2xl font-black tracking-tight">0 pts</p>
+        </div>
+    </div>
+
+    <div class="stat-card glass">
+        <div class="stat-icon"><i class="fas fa-boxes"></i></div>
+        <div class="stat-data">
+            <h4 class="text-xs opacity-50 uppercase font-bold">Stock Health</h4>
+            <p id="statStock" class="text-2xl font-black tracking-tight">0</p>
+        </div>
+    </div>
+</section>
         <div class="flex justify-between items-center mb-8 px-2">
             <h2 class="text-sm font-black uppercase tracking-widest opacity-60">System Insights</h2>
             <div class="flex gap-4">
@@ -372,6 +405,10 @@
             <div class="chart-card glass" onclick="openModal('revenueChart', 'Gross Revenue (₱)')">
                 <h3>Total Revenue</h3>
                 <div class="chart-wrap"><canvas id="revenueChart"></canvas></div>
+            </div>
+            <div class="chart-card glass" onclick="openModal('profitChart', 'Revenue vs Ingredient Cost vs Gross Profit')">
+                <h3>Profit Overview</h3>
+                <div class="chart-wrap"><canvas id="profitChart"></canvas></div>
             </div>
             <div class="chart-card glass" onclick="openModal('inventoryChart', 'Current Stock Levels')">
                 <h3>Inventory Status</h3>

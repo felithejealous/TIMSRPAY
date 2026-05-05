@@ -145,6 +145,194 @@ function formatQty(value) {
     const num = Number(value || 0);
     return Number.isInteger(num) ? String(num) : num.toFixed(2);
 }
+function formatPeso(value) {
+    return `₱${Number(value || 0).toFixed(2)}`;
+}
+function normalizeUnit(unit) {
+    return String(unit || "").trim().toLowerCase();
+}
+function convertPurchaseToInventoryQty(purchaseQty, purchaseUnit, inventoryUnit, equivalentInventoryQty = 0) {
+    const qty = Number(purchaseQty || 0);
+    const from = normalizeUnit(purchaseUnit);
+    const to = normalizeUnit(inventoryUnit);
+    const equivalentQty = Number(equivalentInventoryQty || 0);
+
+    if (qty <= 0) return 0;
+
+    if (from === to) return qty;
+
+    if (from === "kg" && (to === "grams" || to === "gram" || to === "g")) {
+        return qty * 1000;
+    }
+
+    if ((from === "grams" || from === "gram" || from === "g") && to === "kg") {
+        return qty / 1000;
+    }
+
+    if ((from === "liters" || from === "liter" || from === "l") && (to === "ml" || to === "milliliters" || to === "milliliter")) {
+        return qty * 1000;
+    }
+
+    if ((from === "ml" || from === "milliliters" || from === "milliliter") && (to === "liters" || to === "liter" || to === "l")) {
+        return qty / 1000;
+    }
+
+    /*
+        For non-fixed conversions like:
+        kg mango -> pcs mango
+        pack straw -> pcs straw
+        pack cups -> pcs cups
+
+        The admin enters the total equivalent inventory quantity.
+        Example:
+        1 kg mango = 4 pcs
+        2 packs straw = 200 pcs
+    */
+    if (equivalentQty > 0) {
+        return equivalentQty;
+    }
+
+    return 0;
+}
+
+function computeAutoInventoryCost() {
+    const purchaseQtyEl = document.getElementById("purchaseQty");
+    const purchaseUnitEl = document.getElementById("purchaseUnit");
+    const totalPurchaseCostEl = document.getElementById("totalPurchaseCost");
+    const unitsPerPackageEl = document.getElementById("unitsPerPackage");
+    const newItemQtyEl = document.getElementById("newItemQty");
+    const newItemUnitEl = document.getElementById("newItemUnit");
+    const newItemUnitCostEl = document.getElementById("newItemUnitCost");
+    const previewEl = document.getElementById("autoCostPreview");
+
+    if (!purchaseQtyEl || !purchaseUnitEl || !totalPurchaseCostEl || !newItemQtyEl || !newItemUnitEl || !newItemUnitCostEl) {
+        return;
+    }
+
+    const purchaseQty = Number(purchaseQtyEl.value || 0);
+    const purchaseUnit = purchaseUnitEl.value;
+    const totalCost = Number(totalPurchaseCostEl.value || 0);
+    const unitsPerPackage = Number(unitsPerPackageEl?.value || 0);
+    const inventoryUnit = newItemUnitEl.value;
+
+    const convertedQty = convertPurchaseToInventoryQty(
+        purchaseQty,
+        purchaseUnit,
+        inventoryUnit,
+        unitsPerPackage
+    );
+
+    const costPerUnit = convertedQty > 0 ? totalCost / convertedQty : 0;
+
+    newItemQtyEl.value = convertedQty > 0 ? convertedQty.toFixed(2) : "";
+    newItemUnitCostEl.value = costPerUnit > 0 ? costPerUnit.toFixed(4) : "";
+
+    if (previewEl) {
+        if (!purchaseQty || !totalCost) {
+            previewEl.innerText = "Enter purchase details to auto-compute inventory quantity and cost per unit.";
+            return;
+        }
+        if (convertedQty <= 0) {
+            previewEl.innerText = `Cannot directly convert ${purchaseUnit} to ${inventoryUnit}. If this is like kg mango to pcs, enter the total Equivalent Inventory Qty.`;
+            return;
+        }
+
+        previewEl.innerText = `${purchaseQty} ${purchaseUnit} = ${convertedQty.toFixed(2)} ${inventoryUnit}. Cost per ${inventoryUnit}: ₱${costPerUnit.toFixed(4)}`;
+        }
+}
+
+function setupAutoInventoryCostListeners() {
+    ["purchaseQty", "purchaseUnit", "totalPurchaseCost", "unitsPerPackage", "newItemUnit"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener("input", computeAutoInventoryCost);
+            el.addEventListener("change", computeAutoInventoryCost);
+        }
+    });
+}
+function computeRestockPreview() {
+    if (!currentId) return;
+
+    const item = items.find(i => Number(i.id) === Number(currentId));
+    if (!item) return;
+
+    const purchaseQtyEl = document.getElementById("restockPurchaseQty");
+    const purchaseUnitEl = document.getElementById("restockPurchaseUnit");
+    const totalCostEl = document.getElementById("restockTotalPurchaseCost");
+    const equivalentQtyEl = document.getElementById("restockEquivalentQty");
+    const previewEl = document.getElementById("restockPreview");
+
+    if (!purchaseQtyEl || !purchaseUnitEl || !totalCostEl || !equivalentQtyEl || !previewEl) return;
+
+    const purchaseQty = Number(purchaseQtyEl.value || 0);
+    const purchaseUnit = purchaseUnitEl.value;
+    const totalCost = Number(totalCostEl.value || 0);
+    const equivalentQty = Number(equivalentQtyEl.value || 0);
+
+    if (!purchaseQty && !totalCost && !equivalentQty) {
+        previewEl.innerText = "Fill this section only when adding new stock.";
+        return;
+    }
+
+    const addedQty = convertPurchaseToInventoryQty(
+        purchaseQty,
+        purchaseUnit,
+        item.unit,
+        equivalentQty
+    );
+
+    if (purchaseQty <= 0 || totalCost < 0) {
+        previewEl.innerText = "Enter valid purchased quantity and total purchase cost.";
+        return;
+    }
+
+    if (addedQty <= 0) {
+        previewEl.innerText = `Cannot directly convert ${purchaseUnit} to ${item.unit}. Enter Equivalent Inventory Qty.`;
+        return;
+    }
+
+    const oldQty = Number(item.qty || 0);
+    const oldUnitCost = Number(item.unit_cost || 0);
+    const oldValue = oldQty * oldUnitCost;
+    const newValue = Number(totalCost || 0);
+    const finalQty = oldQty + addedQty;
+    const weightedUnitCost = finalQty > 0 ? (oldValue + newValue) / finalQty : 0;
+
+    previewEl.innerText =
+        `Add ${addedQty.toFixed(2)} ${item.unit}. New stock: ${finalQty.toFixed(2)} ${item.unit}. New average cost: ₱${weightedUnitCost.toFixed(4)} / ${item.unit}`;
+}
+
+function setupRestockPreviewListeners() {
+    ["restockPurchaseQty", "restockPurchaseUnit", "restockTotalPurchaseCost", "restockEquivalentQty"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener("input", computeRestockPreview);
+            el.addEventListener("change", computeRestockPreview);
+        }
+    });
+}
+
+function resetRestockFields() {
+    const restockPurchaseQty = document.getElementById("restockPurchaseQty");
+    const restockPurchaseUnit = document.getElementById("restockPurchaseUnit");
+    const restockTotalPurchaseCost = document.getElementById("restockTotalPurchaseCost");
+    const restockEquivalentQty = document.getElementById("restockEquivalentQty");
+    const restockPreview = document.getElementById("restockPreview");
+
+    if (restockPurchaseQty) restockPurchaseQty.value = "";
+    if (restockPurchaseUnit) restockPurchaseUnit.value = "kg";
+    if (restockTotalPurchaseCost) restockTotalPurchaseCost.value = "";
+    if (restockEquivalentQty) restockEquivalentQty.value = "";
+    if (restockPreview) restockPreview.innerText = "Fill this section only when adding new stock.";
+}
+
+function hasRestockInput() {
+    const purchaseQty = document.getElementById("restockPurchaseQty")?.value || "";
+    const totalCost = document.getElementById("restockTotalPurchaseCost")?.value || "";
+    const equivalentQty = document.getElementById("restockEquivalentQty")?.value || "";
+
+    return purchaseQty !== "" || totalCost !== "" || equivalentQty !== "";
+}
 function populateCategoryFilter() {
     const categoryFilter = document.getElementById("categoryFilter");
     if (!categoryFilter) return;
@@ -213,6 +401,7 @@ async function fetchInventory() {
             category: row.category || "General",
             qty: Number(row.quantity || 0),
             unit: row.unit || "pcs",
+            unit_cost: Number(row.unit_cost || 0),
             exp: row.expiration_date || null,
             threshold: Number(row.alert_threshold || LOW_STOCK_THRESHOLD),
             is_active: Boolean(row.is_active),
@@ -281,6 +470,7 @@ function renderItems() {
                     <div class="progress-fill ${isLow ? 'bg-red-500' : 'bg-green-500'}" style="width:${barWidth}%"></div>
                 </div>
                 <div class="text-xs opacity-60 mb-2">Exp: ${formatDate(item.exp)}</div>
+                <div class="text-xs opacity-60 mb-2">Cost: ${formatPeso(item.unit_cost)} / ${item.unit}</div>
                 <div class="text-xs mb-3 ${item.is_active ? 'text-green-400' : 'text-red-400'} font-black uppercase">
                     ${item.is_active ? "Active" : "Inactive"}
                 </div>
@@ -301,6 +491,7 @@ function renderItems() {
                 <td class="font-bold">${item.name}</td>
                 <td class="opacity-50">${item.category}</td>
                 <td class="${isLow ? 'text-red-500 font-black' : ''}">${formatQty(item.qty)} ${item.unit}</td>
+                <td>${formatPeso(item.unit_cost)} / ${item.unit}</td>
                 <td>${formatDate(item.exp)}</td>
                 <td>${item.is_active ? '<span class="text-green-400 font-black">ACTIVE</span>' : '<span class="text-red-400 font-black">INACTIVE</span>'}</td>
                 <td style="text-align:right">
@@ -327,7 +518,7 @@ function renderItems() {
 
         tableBody.innerHTML = `
             <tr>
-                <td colspan="6" class="text-center opacity-60">No inventory items found.</td>
+                <td colspan="7" class="text-center opacity-60">No inventory items found.</td>
             </tr>
         `;
     }
@@ -389,30 +580,76 @@ function renderHistory() {
         `;
     });
 }
-
 function resetAddItemForm() {
     document.getElementById("newItemName").value = "";
     document.getElementById("newItemCategory").value = "Ingredients";
+
+    const purchaseQty = document.getElementById("purchaseQty");
+    const purchaseUnit = document.getElementById("purchaseUnit");
+    const totalPurchaseCost = document.getElementById("totalPurchaseCost");
+    const unitsPerPackage = document.getElementById("unitsPerPackage");
+    const autoCostPreview = document.getElementById("autoCostPreview");
+
+    if (purchaseQty) purchaseQty.value = "";
+    if (purchaseUnit) purchaseUnit.value = "kg";
+    if (totalPurchaseCost) totalPurchaseCost.value = "";
+    if (unitsPerPackage) unitsPerPackage.value = "";
+
     document.getElementById("newItemQty").value = "";
-    document.getElementById("newItemUnit").value = "kg";
+    document.getElementById("newItemUnit").value = "grams";
     document.getElementById("newItemExp").value = "";
     document.getElementById("alertThreshold").value = "10";
+    document.getElementById("newItemUnitCost").value = "";
+
+    if (autoCostPreview) {
+        autoCostPreview.innerText = "Enter purchase details to auto-compute inventory quantity and cost per unit.";
+    }
+
     applyDateMinimums();
 }
-
 async function addNewItem() {
+    computeAutoInventoryCost();
+
     const name = document.getElementById("newItemName").value.trim();
     const category = document.getElementById("newItemCategory").value;
     const qty = document.getElementById("newItemQty").value;
     const unit = document.getElementById("newItemUnit").value;
+    const unitCost = document.getElementById("newItemUnitCost").value;
     const exp = document.getElementById("newItemExp").value;
     const threshold = document.getElementById("alertThreshold").value;
 
-    if (!name || qty === "") {
-        alert("Required fields missing");
+    const purchaseQty = document.getElementById("purchaseQty")?.value || "";
+    const purchaseUnit = document.getElementById("purchaseUnit")?.value || "";
+    const totalPurchaseCost = document.getElementById("totalPurchaseCost")?.value || "";
+    const unitsPerPackage = document.getElementById("unitsPerPackage")?.value || "";
+    const canDirectlyConvert = convertPurchaseToInventoryQty(
+    purchaseQty,
+    purchaseUnit,
+    unit,
+    unitsPerPackage
+    );
+
+    if (!name || purchaseQty === "" || totalPurchaseCost === "" || qty === "" || unitCost === "") {
+        alert("Required fields missing. Please complete purchase details so the system can auto-compute quantity and cost per unit.");
         return;
     }
 
+    if (Number(purchaseQty) <= 0) {
+        alert("Purchased quantity must be greater than zero.");
+        return;
+    }
+
+    if (Number(totalPurchaseCost) < 0) {
+        alert("Total purchase cost cannot be negative.");
+        return;
+    }
+
+
+
+    if (Number(canDirectlyConvert || 0) <= 0) {
+        alert("Cannot convert purchase unit to inventory unit. If this is like kg mango to pcs, enter the total Equivalent Inventory Qty.");
+        return;
+    }
     if (Number(qty) < 0) {
         alert("Quantity cannot be negative.");
         return;
@@ -420,6 +657,11 @@ async function addNewItem() {
 
     if (Number(threshold || 0) < 0) {
         alert("Alert threshold cannot be negative.");
+        return;
+    }
+
+    if (Number(unitCost || 0) < 0) {
+        alert("Cost per unit cannot be negative.");
         return;
     }
 
@@ -439,9 +681,15 @@ async function addNewItem() {
                 category,
                 unit,
                 quantity: Number(qty),
+                unit_cost: Number(unitCost || 0),
                 alert_threshold: Number(threshold || 10),
                 expiration_date: exp ? `${exp}T00:00:00` : null,
-                is_active: true
+                is_active: true,
+
+                purchase_quantity: Number(purchaseQty),
+                purchase_unit: purchaseUnit,
+                total_purchase_cost: Number(totalPurchaseCost),
+                units_per_package: unitsPerPackage === "" ? null : Number(unitsPerPackage)
             })
         });
 
@@ -461,7 +709,6 @@ async function addNewItem() {
         alert(error.message || "Failed to register supply.");
     }
 }
-
 function prepareAdjust(id) {
     currentId = id;
 
@@ -471,13 +718,14 @@ function prepareAdjust(id) {
     document.getElementById("adjustItemName").innerText = item.name;
     document.getElementById("adjustCategoryInput").value = item.category || "Other";
     document.getElementById("adjustQtyInput").value = item.qty;
+    document.getElementById("adjustUnitCostInput").value = item.unit_cost || 0;
     document.getElementById("adjustExpInput").value = item.exp ? item.exp.slice(0, 10) : "";
     document.getElementById("adjustReasonInput").value = "";
     applyDateMinimums();
+    resetRestockFields();
 
     openModal("adjustModal");
 }
-
 async function commitAdjust() {
     if (!currentId) return;
 
@@ -488,21 +736,8 @@ async function commitAdjust() {
     const newQtyValue = document.getElementById("adjustQtyInput").value;
     const reason = document.getElementById("adjustReasonInput").value.trim() || "adjustment";
     const expValue = document.getElementById("adjustExpInput").value;
-
-    if (newQtyValue === "") {
-        alert("New quantity is required.");
-        return;
-    }
-
-    const newQty = Number(newQtyValue);
-    const currentQty = Number(item.qty);
-    const changeQty = newQty - currentQty;
-    const categoryChanged = (selectedCategory || "") !== (item.category || "");
-
-    if (newQty < 0) {
-        alert("Quantity cannot be negative.");
-        return;
-    }
+    const unitCostValue = document.getElementById("adjustUnitCostInput").value;
+    const unitCostChanged = Number(unitCostValue || 0) !== Number(item.unit_cost || 0);
 
     if (expValue && isPastDate(expValue)) {
         alert("Expiration date cannot be in the past.");
@@ -510,6 +745,89 @@ async function commitAdjust() {
     }
 
     try {
+        if (hasRestockInput()) {
+            const restockPurchaseQty = document.getElementById("restockPurchaseQty")?.value || "";
+            const restockPurchaseUnit = document.getElementById("restockPurchaseUnit")?.value || "";
+            const restockTotalPurchaseCost = document.getElementById("restockTotalPurchaseCost")?.value || "";
+            const restockEquivalentQty = document.getElementById("restockEquivalentQty")?.value || "";
+
+            const addedQty = convertPurchaseToInventoryQty(
+                restockPurchaseQty,
+                restockPurchaseUnit,
+                item.unit,
+                restockEquivalentQty
+            );
+
+            if (restockPurchaseQty === "" || restockTotalPurchaseCost === "") {
+                alert("Purchased quantity and total purchase cost are required for restock.");
+                return;
+            }
+
+            if (Number(restockPurchaseQty) <= 0) {
+                alert("Purchased quantity must be greater than zero.");
+                return;
+            }
+
+            if (Number(restockTotalPurchaseCost) < 0) {
+                alert("Total purchase cost cannot be negative.");
+                return;
+            }
+
+            if (Number(addedQty || 0) <= 0) {
+                alert("Cannot convert restock purchase unit to inventory unit. Enter Equivalent Inventory Qty if needed.");
+                return;
+            }
+
+            const response = await fetch(`${API_URL}/inventory/master/${currentId}/restock`, {
+                method: "POST",
+                headers: getAuthHeaders({
+                    "Content-Type": "application/json"
+                }),
+                body: JSON.stringify({
+                    qty_added: Number(addedQty),
+                    reason: reason || "restock",
+                    purchase_quantity: Number(restockPurchaseQty),
+                    purchase_unit: restockPurchaseUnit,
+                    total_purchase_cost: Number(restockTotalPurchaseCost),
+                    units_per_package: restockEquivalentQty === "" ? null : Number(restockEquivalentQty),
+                    expiration_date: expValue ? `${expValue}T00:00:00` : null,
+                    category: selectedCategory
+                })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.detail || `Restock inventory failed: ${response.status}`);
+            }
+
+            await fetchInventory();
+            await fetchAllHistory();
+            renderItems();
+            closeModal("adjustModal");
+            return;
+        }
+
+        if (newQtyValue === "") {
+            alert("New quantity is required.");
+            return;
+        }
+
+        if (Number(unitCostValue || 0) < 0) {
+            alert("Cost per unit cannot be negative.");
+            return;
+        }
+
+        const newQty = Number(newQtyValue);
+        const currentQty = Number(item.qty);
+        const changeQty = newQty - currentQty;
+        const categoryChanged = (selectedCategory || "") !== (item.category || "");
+
+        if (newQty < 0) {
+            alert("Quantity cannot be negative.");
+            return;
+        }
+
         if (changeQty !== 0) {
             const response = await fetch(`${API_URL}/inventory/master/${currentId}/adjust`, {
                 method: "POST",
@@ -520,6 +838,7 @@ async function commitAdjust() {
                     change_qty: changeQty,
                     reason,
                     category: selectedCategory,
+                    unit_cost: Number(unitCostValue || 0),
                     expiration_date: expValue ? `${expValue}T00:00:00` : null
                 })
             });
@@ -529,7 +848,7 @@ async function commitAdjust() {
             if (!response.ok) {
                 throw new Error(result.detail || `Adjust inventory failed: ${response.status}`);
             }
-        } else if (categoryChanged || expValue !== (item.exp ? item.exp.slice(0, 10) : "")) {
+        } else if (categoryChanged || unitCostChanged || expValue !== (item.exp ? item.exp.slice(0, 10) : "")) {
             const response = await fetch(`${API_URL}/inventory/master/${currentId}`, {
                 method: "PATCH",
                 headers: getAuthHeaders({
@@ -537,7 +856,8 @@ async function commitAdjust() {
                 }),
                 body: JSON.stringify({
                     category: selectedCategory,
-                    expiration_date: expValue ? `${expValue}T00:00:00` : null
+                    expiration_date: expValue ? `${expValue}T00:00:00` : null,
+                    unit_cost: Number(unitCostValue || 0),
                 })
             });
 
@@ -590,6 +910,8 @@ async function toggleItemActive(id, currentlyActive) {
 
 async function initializeInventoryPage() {
     applyDateMinimums();
+    setupAutoInventoryCostListeners();
+    setupRestockPreviewListeners();
 
     const searchInput = document.getElementById("searchInput");
     const categoryFilter = document.getElementById("categoryFilter");
