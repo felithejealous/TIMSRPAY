@@ -117,12 +117,17 @@
             filter: var(--logo-filter);
         }
 
-        .nav-menu {
-            flex: 1;
-            padding: 10px 15px;
-            overflow-y: auto;
-        }
+.nav-menu {
+    flex: 1;
+    padding: 10px 15px;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
 
+.nav-menu::-webkit-scrollbar {
+    display: none;
+}
         .nav-item {
             display: flex;
             align-items: center;
