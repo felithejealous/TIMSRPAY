@@ -1,5 +1,6 @@
 let notificationCache = [];
 let stickyNotification = null;
+let currentReceiptData = null;
 document.addEventListener("DOMContentLoaded", async () => {
   try {
     const token = localStorage.getItem("token");
@@ -393,6 +394,265 @@ const formatAnnouncementDate = (value) => {
     if (list) list.innerHTML = `<div class="announcement-empty">Failed to load announcements.</div>`;
   }
 }
+function setReceiptActionState(disabled, message = "", isError = false) {
+  const downloadBtn = document.getElementById("downloadReceiptBtn");
+  const emailBtn = document.getElementById("emailReceiptBtn");
+  const status = document.getElementById("receiptActionStatus");
+
+  if (downloadBtn) downloadBtn.disabled = disabled;
+  if (emailBtn) emailBtn.disabled = disabled;
+
+  if (status) {
+    status.textContent = message;
+    status.style.color = isError ? "#dc2626" : "#666";
+  }
+}
+
+function buildReceiptPrintableHtml(data) {
+  const items = Array.isArray(data.items) ? data.items : [];
+
+  const itemRows = items.length
+    ? items.map((item) => {
+        const addOnsText = Array.isArray(item.add_ons) && item.add_ons.length
+          ? item.add_ons.map((a) => `${escapeHtml(a.qty)}x ${escapeHtml(a.name)}`).join(", ")
+          : "None";
+
+        const notes = item.notes && String(item.notes).trim()
+          ? `<div class="small-row"><span>Note</span><span>${escapeHtml(item.notes)}</span></div>`
+          : "";
+
+        return `
+          <div class="row">
+            <span>${escapeHtml(`${item.qty}x ${item.name}`)}</span>
+            <span>${escapeHtml(formatPeso(item.line_total || 0))}</span>
+          </div>
+          <div class="small-row">
+            <span>Add-ons</span>
+            <span>${addOnsText}</span>
+          </div>
+          ${notes}
+        `;
+      }).join("")
+    : `<div class="row"><span>No items found</span><span>-</span></div>`;
+
+  const paymentMethod = String(data.payment_method || "").toLowerCase();
+  const receivedAmount = data.amount_received !== null && data.amount_received !== undefined
+    ? Number(data.amount_received)
+    : paymentMethod === "wallet"
+      ? Number(data.total_amount || 0)
+      : null;
+
+  const changeAmount = data.change_amount !== null && data.change_amount !== undefined
+    ? Number(data.change_amount)
+    : paymentMethod === "wallet"
+      ? 0
+      : null;
+
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>${escapeHtml(data.display_id || "Receipt")}</title>
+      <style>
+        * {
+          box-sizing: border-box;
+          font-family: Arial, sans-serif;
+        }
+
+        body {
+          background: #f5f5f5;
+          margin: 0;
+          padding: 24px;
+          color: #111;
+        }
+
+        .receipt {
+          max-width: 420px;
+          margin: 0 auto;
+          background: #fffdf5;
+          border: 1px solid #ddd;
+          border-radius: 18px;
+          padding: 24px;
+        }
+
+        .brand {
+          text-align: center;
+          margin-bottom: 18px;
+        }
+
+        .brand h1 {
+          margin: 0;
+          font-size: 22px;
+          font-weight: 900;
+          text-transform: uppercase;
+        }
+
+        .brand p {
+          margin: 4px 0 0;
+          font-size: 11px;
+          font-weight: 800;
+          letter-spacing: 2px;
+          color: #666;
+          text-transform: uppercase;
+        }
+
+        .divider {
+          border-bottom: 2px dashed #bbb;
+          margin: 16px 0;
+        }
+
+        .row,
+        .small-row {
+          display: flex;
+          justify-content: space-between;
+          gap: 12px;
+          padding: 8px 0;
+          border-bottom: 1px dashed #ddd;
+          font-size: 13px;
+          font-weight: 700;
+        }
+
+        .small-row {
+          font-size: 11px;
+          color: #555;
+          border-bottom: none;
+          padding: 4px 0;
+        }
+
+        .row span:last-child,
+        .small-row span:last-child {
+          text-align: right;
+        }
+
+        .total {
+          font-size: 16px;
+          font-weight: 900;
+        }
+
+        .footer {
+          margin-top: 18px;
+          text-align: center;
+          font-size: 12px;
+          font-weight: 700;
+          color: #555;
+        }
+
+        @media print {
+          body {
+            background: #fff;
+            padding: 0;
+          }
+
+          .receipt {
+            border: none;
+            border-radius: 0;
+            max-width: 100%;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="receipt">
+        <div class="brand">
+          <h1>Teo D' Mango</h1>
+          <p>Order Receipt</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="row"><span>Receipt No.</span><span>${escapeHtml(data.display_id || `#${data.order_id}`)}</span></div>
+        <div class="row"><span>Customer</span><span>${escapeHtml(data.customer_name || "Customer")}</span></div>
+        <div class="row"><span>Status</span><span>${escapeHtml(data.status || "pending")}</span></div>
+        <div class="row"><span>Order Type</span><span>${escapeHtml(data.order_type || "-")}</span></div>
+        <div class="row"><span>Payment</span><span>${escapeHtml(paymentMethod === "wallet" ? "TeoPay" : data.payment_method || "-")}</span></div>
+        <div class="row"><span>Created At</span><span>${escapeHtml(formatDateTime(data.created_at))}</span></div>
+
+        <div class="divider"></div>
+
+        ${itemRows}
+
+        <div class="divider"></div>
+
+        <div class="row"><span>Subtotal</span><span>${escapeHtml(formatPeso(data.subtotal || 0))}</span></div>
+        <div class="row"><span>VAT</span><span>${escapeHtml(formatPeso(data.vat_amount || 0))}</span></div>
+        <div class="row"><span>Discount</span><span>${escapeHtml(formatPeso(data.discount_amount || 0))}</span></div>
+        <div class="row total"><span>Total</span><span>${escapeHtml(formatPeso(data.total_amount || 0))}</span></div>
+        <div class="row"><span>Received</span><span>${receivedAmount === null ? "-" : escapeHtml(formatPeso(receivedAmount))}</span></div>
+        <div class="row"><span>Change</span><span>${changeAmount === null ? "-" : escapeHtml(formatPeso(changeAmount))}</span></div>
+
+        <div class="divider"></div>
+
+        <div class="row"><span>Earned Points</span><span>${escapeHtml(String(data.earned_points || 0))} pts</span></div>
+        <div class="row"><span>Points Status</span><span>${escapeHtml(data.points_status || "none")}</span></div>
+
+        <div class="footer">Thank you for ordering at Teo D' Mango!</div>
+      </div>
+
+      <script>
+        window.onload = function () {
+          window.print();
+        };
+      <\/script>
+    </body>
+    </html>
+  `;
+}
+
+function downloadCurrentReceipt() {
+  if (!currentReceiptData) {
+    alert("Please open a receipt first.");
+    return;
+  }
+
+  const receiptWindow = window.open("", "_blank");
+
+  if (!receiptWindow) {
+    alert("Please allow pop-ups to download or print the receipt.");
+    return;
+  }
+
+  receiptWindow.document.open();
+  receiptWindow.document.write(buildReceiptPrintableHtml(currentReceiptData));
+  receiptWindow.document.close();
+}
+
+async function sendCurrentReceiptToEmail() {
+  if (!currentReceiptData?.order_id) {
+    alert("Please open a receipt first.");
+    return;
+  }
+
+  const token = localStorage.getItem("token");
+  const emailBtn = document.getElementById("emailReceiptBtn");
+
+  try {
+    if (emailBtn) emailBtn.disabled = true;
+    setReceiptActionState(true, "Sending receipt to your email...");
+
+    const res = await fetch(`${API_URL}/orders/${currentReceiptData.order_id}/receipt/email`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      setReceiptActionState(false, data.detail || "Failed to send receipt email.", true);
+      alert(data.detail || "Failed to send receipt email.");
+      return;
+    }
+
+    const message = data.message || "Receipt email request completed.";
+    setReceiptActionState(false, message, !data.email_sent);
+    alert(message);
+  } catch (err) {
+    console.error("Failed to send receipt email:", err);
+    setReceiptActionState(false, "Failed to send receipt email.", true);
+    alert("Failed to send receipt email.");
+  }
+}
 
 async function viewReceipt(orderId) {
   const modal = document.getElementById("receiptModal");
@@ -407,7 +667,8 @@ async function viewReceipt(orderId) {
   title.textContent = "Order Receipt";
   content.innerHTML = `<div class="announcement-empty">Loading receipt...</div>`;
   rewardSection.innerHTML = "";
-
+currentReceiptData = null;
+setReceiptActionState(true, "");
   try {
     const res = await fetch(`${API_URL}/orders/${orderId}/receipt`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -420,7 +681,8 @@ async function viewReceipt(orderId) {
       rewardSection.innerHTML = "";
       return;
     }
-
+currentReceiptData = data;
+setReceiptActionState(false, "");
     title.textContent = data.display_id || `Receipt #${data.order_id}`;
 
     const itemsHtml = Array.isArray(data.items) && data.items.length
@@ -523,6 +785,8 @@ async function viewReceipt(orderId) {
     `;
   } catch (err) {
     console.error("Failed to load receipt:", err);
+    currentReceiptData = null;
+    setReceiptActionState(true, "Receipt is not available.", true);
     content.innerHTML = `<div class="announcement-empty">Failed to load receipt.</div>`;
     rewardSection.innerHTML = "";
   }
@@ -1284,3 +1548,5 @@ window.openFeedbackModal = openFeedbackModal;
 window.closeFeedbackModal = closeFeedbackModal;
 window.viewReceipt = viewReceipt;
 window.closeReceiptModal = closeReceiptModal;
+window.downloadCurrentReceipt = downloadCurrentReceipt;
+window.sendCurrentReceiptToEmail = sendCurrentReceiptToEmail;

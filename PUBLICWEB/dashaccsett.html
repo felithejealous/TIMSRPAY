@@ -909,7 +909,7 @@
             <a href="welcome.html">HOME</a>
             <a href="menu.html">MENU</a>
             <a href="rewards.html">REWARDS</a>
-            <a href="topup.html">TOP-UP TEOPAY</a>
+            <a href="topup.html">TEOPAY</a>
             <a href="dashaccsett.html" class="active">SETTINGS</a>
             <a href="index.html" class="btn-logout">LOG OUT</a>
         </div>
@@ -971,16 +971,16 @@
                                 <input type="text" id="settingsLastName" placeholder="Enter last name">
                             </div>
                         </div>
-
                         <div class="form-group full-width">
-                            <label for="settingsEmail">Email Address</label>
+                            <label for="settingsPhone">Contact Number</label>
                             <div class="input-shell">
-                                <input type="email" id="settingsEmail" class="readonly-input" readonly>
+                                <input type="tel" id="settingsPhone" placeholder="Optional - 09XXXXXXXXX" maxlength="11" inputmode="numeric"
+                                    autocomplete="tel" pattern="09[0-9]{9}"
+                                    title="Contact number must be 11 digits and start with 09 if provided."
+                                    oninput="sanitizeSettingsPhoneInput(this)">
                             </div>
-                            <p class="helper-text">Email address is currently managed by your account registration or
-                                Google sign-in.</p>
+                            <p class="helper-text">Optional contact number for customer records and store communication only.</p>
                         </div>
-
                         <div class="form-group full-width password-field">
                             <label for="settingsCurrentPassword">Current Password</label>
                             <div class="input-shell">

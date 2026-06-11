@@ -1172,6 +1172,52 @@
             font-weight: 800;
             text-align: right;
         }
+        .receipt-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.receipt-action-btn {
+    width: 100%;
+    padding: 13px 16px;
+    border-radius: 14px;
+    border: 1px solid #d4a017;
+    background: rgba(255, 194, 68, 0.15);
+    color: #111;
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+.receipt-action-btn:hover {
+    background: #ffc244;
+    transform: translateY(-2px);
+}
+
+.receipt-action-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.receipt-action-status {
+    margin-top: 10px;
+    font-size: 12px;
+    font-weight: 800;
+    color: #666;
+    text-align: center;
+}
+
+@media (max-width: 500px) {
+    .receipt-actions {
+        grid-template-columns: 1fr;
+    }
+}
 
         .text-green {
             color: #059669 !important;
@@ -2100,7 +2146,7 @@
             <a href="welcome.html" class="active">HOME</a>
             <a href="menu.html">MENU</a>
             <a href="rewards.html">REWARDS</a>
-            <a href="topup.html">TOP-UP TEOPAY</a>
+            <a href="topup.html">TEOPAY</a>
             <a href="dashaccsett.html">SETTINGS</a>
             <a href="index.html" class="btn-logout">LOG OUT</a>
         </div>
@@ -2245,6 +2291,20 @@
                     </div>
 
                     <div id="receiptRewardSection"></div>
+                    
+                    <div class="receipt-actions">
+                        <button id="downloadReceiptBtn" class="receipt-action-btn" type="button" onclick="downloadCurrentReceipt()"
+                            disabled>
+                            <i class="fa-solid fa-download"></i> Download Receipt
+                        </button>
+                    
+                        <button id="emailReceiptBtn" class="receipt-action-btn" type="button" onclick="sendCurrentReceiptToEmail()"
+                            disabled>
+                            <i class="fa-solid fa-envelope"></i> Send to Email
+                        </button>
+                    </div>
+                    
+                    <div id="receiptActionStatus" class="receipt-action-status"></div>
                 </div>
             </div>
         </div>

@@ -8,11 +8,24 @@ function splitNameFallback(fullName = "") {
     lastName: parts.slice(1).join(" "),
   };
 }
+function sanitizeSettingsPhoneInput(input) {
+  if (!input) return;
+
+  input.value = input.value
+    .replace(/\D/g, "")
+    .slice(0, 11);
+}
+
+function isValidOptionalPhone(phone) {
+  if (!phone) return true;
+  return /^09\d{9}$/.test(phone);
+}
 function updateSettingsPageUI({ user, points, walletBalance, tier }) {
   const rawFirstName = typeof user.first_name === "string" ? user.first_name : "";
   const rawLastName = typeof user.last_name === "string" ? user.last_name : "";
   const rawFullName = typeof user.full_name === "string" ? user.full_name.trim() : "";
   const email = user.email || "";
+const phone = user.phone || "";
 
   const displayFullName = rawFullName || [rawFirstName, rawLastName].filter(Boolean).join(" ") || user.display_name || user.email || "User";
 
@@ -24,6 +37,7 @@ function updateSettingsPageUI({ user, points, walletBalance, tier }) {
   const settingsFirstName = document.getElementById("settingsFirstName");
   const settingsLastName = document.getElementById("settingsLastName");
   const settingsEmail = document.getElementById("settingsEmail");
+  const settingsPhone = document.getElementById("settingsPhone");
   const dangerZoneText = document.getElementById("dangerZoneText");
 
   if (settingsAvatar) {
@@ -41,6 +55,7 @@ function updateSettingsPageUI({ user, points, walletBalance, tier }) {
   if (settingsFirstName) settingsFirstName.value = rawFirstName;
   if (settingsLastName) settingsLastName.value = rawLastName;
   if (settingsEmail) settingsEmail.value = email;
+  if (settingsPhone) settingsPhone.value = phone;
 
   if (dangerZoneText) {
     dangerZoneText.textContent = "Deleting your account is permanent and cannot be undone. Your wallet balance and reward points must both be zero before deletion is allowed.";
@@ -154,8 +169,9 @@ async function apiDelete(path, extraHeaders = {}) {
 }
 async function saveProfileAndPassword() {
   const firstName = (document.getElementById("settingsFirstName")?.value || "").trim();
-  const lastName = (document.getElementById("settingsLastName")?.value || "").trim();
-  const currentPassword = (document.getElementById("settingsCurrentPassword")?.value || "").trim();
+const lastName = (document.getElementById("settingsLastName")?.value || "").trim();
+const phone = (document.getElementById("settingsPhone")?.value || "").trim();
+const currentPassword = (document.getElementById("settingsCurrentPassword")?.value || "").trim();
   const newPassword = (document.getElementById("settingsNewPassword")?.value || "").trim();
 
   try {
@@ -163,10 +179,15 @@ async function saveProfileAndPassword() {
       alert("First name is required.");
       return;
     }
+    if (!isValidOptionalPhone(phone)) {
+      alert("Contact number must be 11 digits and start with 09.");
+      return;
+}
 
     const profileRes = await apiPut("/auth/profile", {
       first_name: firstName,
       last_name: lastName,
+      phone: phone || null,
     });
 
     if (!profileRes.res.ok) {

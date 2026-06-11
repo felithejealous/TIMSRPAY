@@ -29,6 +29,10 @@ function show(id) {
   if (id === "forgot") {
     restoreSendCodeCooldown();
   }
+
+  if (id === "register") {
+    syncRegisterButtonState();
+  }
 }
 
 function getCooldownElements() {
@@ -117,6 +121,54 @@ async function parseJsonSafe(response) {
   }
 }
 
+function sanitizeNameInput(input) {
+  if (!input) return;
+
+  input.value = input.value
+    .replace(/[^A-Za-zÀ-ÖØ-öø-ÿÑñ\s'.-]/g, "")
+    .replace(/\s{2,}/g, " ")
+    .slice(0, 50);
+}
+
+function isValidName(name) {
+  return /^[A-Za-zÀ-ÖØ-öø-ÿÑñ\s'.-]{1,50}$/.test(name);
+}
+function sanitizePhoneInput(input) {
+  if (!input) return;
+
+  input.value = input.value
+    .replace(/\D/g, "")
+    .slice(0, 11);
+}
+
+function isValidPhilippinePhone(phone) {
+  return /^09\d{9}$/.test(phone);
+}
+function syncRegisterButtonState() {
+  const termsCheckbox = document.getElementById("registerTerms");
+  const createButton = document.getElementById("createAccountBtn");
+
+  if (!termsCheckbox || !createButton) return;
+
+  createButton.disabled = !termsCheckbox.checked;
+}
+
+function openTermsModal() {
+  const modal = document.getElementById("termsModal");
+  if (modal) modal.classList.add("active");
+}
+
+function closeTermsModal() {
+  const modal = document.getElementById("termsModal");
+  if (modal) modal.classList.remove("active");
+}
+
+function closeTermsModalOnOverlay(event) {
+  if (event.target && event.target.id === "termsModal") {
+    closeTermsModal();
+  }
+}
+
 async function handleLogin(e) {
   e.preventDefault();
 
@@ -200,18 +252,37 @@ async function handleLogin(e) {
 async function handleRegister(e) {
   e.preventDefault();
 
-  const name = document.getElementById("registerName")?.value.trim();
-  const email = document.getElementById("registerEmail")?.value.trim();
-  const password = document.getElementById("registerPassword")?.value.trim();
+  const lastName = document.getElementById("registerLastName")?.value.trim();
+  const firstName = document.getElementById("registerFirstName")?.value.trim();
+const email = document.getElementById("registerEmail")?.value.trim();
+const phone = document.getElementById("registerPhone")?.value.trim();
+const password = document.getElementById("registerPassword")?.value.trim();
+const termsAccepted = document.getElementById("registerTerms")?.checked;
 
-  if (!name || !email || !password) {
-    alert("Please fill out all fields.");
+if (!lastName || !firstName || !email || !phone || !password) {
+  alert("Please fill out all fields.");
+  return;
+}
+
+  if (!isValidName(lastName) || !isValidName(firstName)) {
+    alert("Name must only contain letters, spaces, apostrophe, hyphen, or period.");
+    return;
+  }
+if (!isValidPhilippinePhone(phone)) {
+  alert("Contact number must be 11 digits and start with 09.");
+  return;
+}
+  if (!termsAccepted) {
+    alert("Please agree to the Terms and Conditions before creating an account.");
+    syncRegisterButtonState();
     return;
   }
 
+  const name = `${firstName} ${lastName}`.replace(/\s{2,}/g, " ").trim();
+
   try {
     const response = await fetch(
-      `${API_URL}/auth/register?full_name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`,
+      `${API_URL}/auth/register?full_name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone)}&password=${encodeURIComponent(password)}`,
       {
         method: "POST",
       }
@@ -227,9 +298,16 @@ async function handleRegister(e) {
 
     alert(data.message || "Account created successfully!");
 
-    document.getElementById("registerName").value = "";
+    document.getElementById("registerLastName").value = "";
+    document.getElementById("registerFirstName").value = "";
     document.getElementById("registerEmail").value = "";
+    document.getElementById("registerPhone").value = "";
     document.getElementById("registerPassword").value = "";
+
+    const registerTerms = document.getElementById("registerTerms");
+    if (registerTerms) registerTerms.checked = false;
+
+    syncRegisterButtonState();
 
     const strengthBar = document.getElementById("strengthBar");
     const strengthText = document.getElementById("strengthText");
@@ -403,4 +481,10 @@ function checkPasswordStrength(password) {
 
 document.addEventListener("DOMContentLoaded", () => {
   restoreSendCodeCooldown();
+  syncRegisterButtonState();
+
+  const registerTerms = document.getElementById("registerTerms");
+  if (registerTerms) {
+    registerTerms.addEventListener("change", syncRegisterButtonState);
+  }
 });

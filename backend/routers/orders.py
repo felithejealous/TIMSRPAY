@@ -3,6 +3,9 @@ from decimal import Decimal, ROUND_HALF_UP
 from datetime import datetime, timezone, timedelta
 import hashlib
 import hmac
+import os
+import smtplib
+from email.message import EmailMessage
 from backend.models import ProductFeedback
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
@@ -209,6 +212,203 @@ def order_requires_locked_wallet_match(order: Order) -> bool:
     promo_code_text = (getattr(order, "promo_code_text", None) or "").strip()
 
     return order_type == "cashier" and bool(promo_code_id or promo_code_text)
+def _format_receipt_datetime(value) -> str:
+    if not value:
+        return "-"
+
+    try:
+        if isinstance(value, datetime):
+            dt = value
+        else:
+            raw = str(value).replace(" ", "T")
+            dt = datetime.fromisoformat(raw)
+
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+
+        ph_time = dt.astimezone(PH_TZ)
+        return ph_time.strftime("%b %d, %Y, %I:%M %p")
+    except Exception:
+        return str(value)
+
+
+def _build_receipt_email_html(receipt: Dict[str, object]) -> str:
+    items = receipt.get("items") or []
+
+    item_rows = ""
+
+    if items:
+        for item in items:
+            qty = item.get("qty", 0)
+            name = item.get("name", "Item")
+            line_total = item.get("line_total", 0)
+
+            add_ons = item.get("add_ons") or []
+            add_on_text = "None"
+
+            if add_ons:
+                add_on_text = ", ".join([
+                    f"{a.get('qty', 1)}x {a.get('name', 'Add-on')}"
+                    for a in add_ons
+                ])
+
+            notes = (item.get("notes") or "").strip()
+
+            item_rows += f"""
+                <tr>
+                    <td style="padding:10px 0;border-bottom:1px dashed #ddd;font-weight:800;">
+                        {qty}x {name}
+                    </td>
+                    <td style="padding:10px 0;border-bottom:1px dashed #ddd;text-align:right;font-weight:800;">
+                        {_format_receipt_money(line_total)}
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:4px 0 10px;color:#555;font-size:12px;">
+                        Add-ons
+                    </td>
+                    <td style="padding:4px 0 10px;color:#555;font-size:12px;text-align:right;">
+                        {add_on_text}
+                    </td>
+                </tr>
+            """
+
+            if notes:
+                item_rows += f"""
+                    <tr>
+                        <td style="padding:4px 0 10px;color:#b45309;font-size:12px;">
+                            Note
+                        </td>
+                        <td style="padding:4px 0 10px;color:#b45309;font-size:12px;text-align:right;">
+                            {notes}
+                        </td>
+                    </tr>
+                """
+    else:
+        item_rows = """
+            <tr>
+                <td style="padding:10px 0;border-bottom:1px dashed #ddd;">No items found</td>
+                <td style="padding:10px 0;border-bottom:1px dashed #ddd;text-align:right;">-</td>
+            </tr>
+        """
+
+    payment_method = str(receipt.get("payment_method") or "").lower()
+    payment_label = "TeoPay" if payment_method == "wallet" else (receipt.get("payment_method") or "-")
+
+    amount_received = receipt.get("amount_received")
+    change_amount = receipt.get("change_amount")
+
+    if amount_received is None and payment_method == "wallet":
+        amount_received = receipt.get("total_amount", 0)
+
+    if change_amount is None and payment_method == "wallet":
+        change_amount = 0
+
+    display_id = receipt.get("display_id") or receipt.get("order_id") or "-"
+    customer_name = receipt.get("customer_name") or "Customer"
+
+    return f"""
+    <!DOCTYPE html>
+    <html>
+    <body style="margin:0;padding:0;background:#f4f4f4;font-family:Arial,Helvetica,sans-serif;color:#111;">
+        <div style="width:100%;padding:30px 0;background:#f4f4f4;">
+            <div style="max-width:430px;margin:0 auto;background:#fffdf5;border:1px solid #ddd;border-radius:18px;padding:26px;">
+
+                <div style="text-align:center;margin-bottom:20px;">
+                    <div style="font-size:24px;font-weight:900;letter-spacing:1px;text-transform:uppercase;">
+                        Teo D' Mango
+                    </div>
+                    <div style="font-size:11px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#666;margin-top:6px;">
+                        Order Receipt
+                    </div>
+                </div>
+
+                <div style="border-bottom:2px dashed #bbb;margin:18px 0;"></div>
+
+                <table style="width:100%;border-collapse:collapse;font-size:14px;">
+                    <tr>
+                        <td style="padding:9px 0;border-bottom:1px dashed #ddd;font-weight:800;">Receipt No.</td>
+                        <td style="padding:9px 0;border-bottom:1px dashed #ddd;text-align:right;font-weight:800;">{display_id}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:9px 0;border-bottom:1px dashed #ddd;font-weight:800;">Customer</td>
+                        <td style="padding:9px 0;border-bottom:1px dashed #ddd;text-align:right;font-weight:800;">{customer_name}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:9px 0;border-bottom:1px dashed #ddd;font-weight:800;">Status</td>
+                        <td style="padding:9px 0;border-bottom:1px dashed #ddd;text-align:right;font-weight:800;">{receipt.get("status") or "-"}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:9px 0;border-bottom:1px dashed #ddd;font-weight:800;">Order Type</td>
+                        <td style="padding:9px 0;border-bottom:1px dashed #ddd;text-align:right;font-weight:800;">{receipt.get("order_type") or "-"}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:9px 0;border-bottom:1px dashed #ddd;font-weight:800;">Payment</td>
+                        <td style="padding:9px 0;border-bottom:1px dashed #ddd;text-align:right;font-weight:800;">{payment_label}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:9px 0;border-bottom:1px dashed #ddd;font-weight:800;">Created At</td>
+                        <td style="padding:9px 0;border-bottom:1px dashed #ddd;text-align:right;font-weight:800;">{_format_receipt_datetime(receipt.get("created_at"))}</td>
+                    </tr>
+                </table>
+
+                <div style="border-bottom:2px dashed #bbb;margin:18px 0;"></div>
+
+                <table style="width:100%;border-collapse:collapse;font-size:14px;">
+                    {item_rows}
+                </table>
+
+                <div style="border-bottom:2px dashed #bbb;margin:18px 0;"></div>
+
+                <table style="width:100%;border-collapse:collapse;font-size:14px;">
+                    <tr>
+                        <td style="padding:8px 0;border-bottom:1px dashed #ddd;font-weight:800;">Subtotal</td>
+                        <td style="padding:8px 0;border-bottom:1px dashed #ddd;text-align:right;font-weight:800;">{_format_receipt_money(receipt.get("subtotal", 0))}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:8px 0;border-bottom:1px dashed #ddd;font-weight:800;">VAT</td>
+                        <td style="padding:8px 0;border-bottom:1px dashed #ddd;text-align:right;font-weight:800;">{_format_receipt_money(receipt.get("vat_amount", 0))}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:8px 0;border-bottom:1px dashed #ddd;font-weight:800;">Discount</td>
+                        <td style="padding:8px 0;border-bottom:1px dashed #ddd;text-align:right;font-weight:800;">{_format_receipt_money(receipt.get("discount_amount", 0))}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:10px 0;border-bottom:1px dashed #ddd;font-size:18px;font-weight:900;">Total</td>
+                        <td style="padding:10px 0;border-bottom:1px dashed #ddd;text-align:right;font-size:18px;font-weight:900;">{_format_receipt_money(receipt.get("total_amount", 0))}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:8px 0;border-bottom:1px dashed #ddd;font-weight:800;">Received</td>
+                        <td style="padding:8px 0;border-bottom:1px dashed #ddd;text-align:right;font-weight:800;">{_format_receipt_money(amount_received) if amount_received is not None else "-"}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:8px 0;border-bottom:1px dashed #ddd;font-weight:800;">Change</td>
+                        <td style="padding:8px 0;border-bottom:1px dashed #ddd;text-align:right;font-weight:800;">{_format_receipt_money(change_amount) if change_amount is not None else "-"}</td>
+                    </tr>
+                </table>
+
+                <div style="border-bottom:2px dashed #bbb;margin:18px 0;"></div>
+
+                <table style="width:100%;border-collapse:collapse;font-size:14px;">
+                    <tr>
+                        <td style="padding:8px 0;border-bottom:1px dashed #ddd;font-weight:800;">Earned Points</td>
+                        <td style="padding:8px 0;border-bottom:1px dashed #ddd;text-align:right;font-weight:800;">{receipt.get("earned_points") or 0} pts</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:8px 0;border-bottom:1px dashed #ddd;font-weight:800;">Points Status</td>
+                        <td style="padding:8px 0;border-bottom:1px dashed #ddd;text-align:right;font-weight:800;">{receipt.get("points_status") or "none"}</td>
+                    </tr>
+                </table>
+
+                <div style="text-align:center;margin-top:22px;font-size:12px;font-weight:700;color:#555;">
+                    Thank you for ordering at Teo D' Mango!
+                </div>
+
+            </div>
+        </div>
+    </body>
+    </html>
+    """
 class OrderItemPayload(BaseModel):
     product_id: int
     quantity: int = Field(gt=0)
@@ -953,7 +1153,103 @@ def get_order_refund_summary(db: Session, order_id: int) -> Dict[str, object]:
         "refund_amount": float(total_refund),
         "last_refund_at": str(last_refund_at) if last_refund_at else None,
     }
+def _format_receipt_money(value) -> str:
+    return f"PHP {Decimal(str(value or 0)).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)}"
+def _send_receipt_email(to_email: str, subject: str, body: str, html_body: Optional[str] = None) -> bool:
+    enabled = (os.getenv("SMTP_ENABLED", "false").lower() == "true")
+    if not enabled:
+        return False
 
+    host = os.getenv("SMTP_HOST", "smtp.gmail.com")
+    port = int(os.getenv("SMTP_PORT", "587"))
+    user = os.getenv("SMTP_USER", "")
+    pw = os.getenv("SMTP_PASS", "")
+    from_addr = os.getenv("SMTP_FROM", user)
+
+    if not user or not pw:
+        raise HTTPException(status_code=500, detail="SMTP credentials not set")
+
+    msg = EmailMessage()
+    msg["Subject"] = subject
+    msg["From"] = from_addr
+    msg["To"] = to_email
+
+    msg.set_content(body)
+
+    if html_body:
+        msg.add_alternative(html_body, subtype="html")
+
+    try:
+        with smtplib.SMTP(host, port) as smtp:
+            smtp.starttls()
+            smtp.login(user, pw)
+            smtp.send_message(msg)
+        return True
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"SMTP send failed: {e}")
+def _build_receipt_email_body(receipt: Dict[str, object]) -> str:
+    lines = []
+
+    lines.append("TEO D' MANGO")
+    lines.append("ORDER RECEIPT")
+    lines.append("-" * 36)
+    lines.append(f"Receipt No.: {receipt.get('display_id') or receipt.get('order_id')}")
+    lines.append(f"Customer: {receipt.get('customer_name') or 'Customer'}")
+    lines.append(f"Status: {receipt.get('status') or '-'}")
+    lines.append(f"Order Type: {receipt.get('order_type') or '-'}")
+    lines.append(f"Payment: {receipt.get('payment_method') or '-'}")
+    lines.append(f"Created At: {receipt.get('created_at') or '-'}")
+    lines.append("-" * 36)
+    lines.append("ITEMS")
+
+    items = receipt.get("items") or []
+    if items:
+        for item in items:
+            qty = item.get("qty", 0)
+            name = item.get("name", "Item")
+            line_total = item.get("line_total", 0)
+            lines.append(f"{qty}x {name} - {_format_receipt_money(line_total)}")
+
+            add_ons = item.get("add_ons") or []
+            if add_ons:
+                add_on_text = ", ".join([f"{a.get('qty', 1)}x {a.get('name', 'Add-on')}" for a in add_ons])
+                lines.append(f"  Add-ons: {add_on_text}")
+
+            notes = (item.get("notes") or "").strip()
+            if notes:
+                lines.append(f"  Note: {notes}")
+    else:
+        lines.append("No items found.")
+
+    lines.append("-" * 36)
+    lines.append(f"Subtotal: {_format_receipt_money(receipt.get('subtotal', 0))}")
+    lines.append(f"VAT: {_format_receipt_money(receipt.get('vat_amount', 0))}")
+    lines.append(f"Discount: {_format_receipt_money(receipt.get('discount_amount', 0))}")
+    lines.append(f"Total: {_format_receipt_money(receipt.get('total_amount', 0))}")
+
+    amount_received = receipt.get("amount_received")
+    change_amount = receipt.get("change_amount")
+
+    if amount_received is not None:
+        lines.append(f"Received: {_format_receipt_money(amount_received)}")
+
+    if change_amount is not None:
+        lines.append(f"Change: {_format_receipt_money(change_amount)}")
+
+    lines.append("-" * 36)
+    lines.append("REWARDS / POINTS")
+    lines.append(f"Earned Points: {receipt.get('earned_points') or 0} pts")
+    lines.append(f"Potential Points: {receipt.get('potential_points') or 0} pts")
+    lines.append(f"Points Status: {receipt.get('points_status') or 'none'}")
+
+    claim_message = receipt.get("claim_message")
+    if claim_message:
+        lines.append(f"Claim Note: {claim_message}")
+
+    lines.append("-" * 36)
+    lines.append("Thank you for ordering at Teo D' Mango!")
+
+    return "\n".join(lines)
 def validate_and_compute_promo(
     db: Session,
     promo_code_text: Optional[str],
@@ -2318,4 +2614,42 @@ def get_receipt(order_id: int, db: Session = Depends(get_db)):
         "refund_count": refund_info["refund_count"],
         "refund_amount": refund_info["refund_amount"],
         "last_refund_at": refund_info["last_refund_at"],
+    }
+@router.post("/{order_id}/receipt/email")
+def email_receipt_to_customer(
+    order_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    order = db.query(Order).filter(Order.id == order_id).first()
+
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    if getattr(order, "user_id", None) != current_user.id:
+        raise HTTPException(status_code=403, detail="You can only email receipts for your own orders")
+
+    customer_email = (getattr(current_user, "email", "") or "").strip().lower()
+
+    if not customer_email:
+        raise HTTPException(status_code=400, detail="Customer email is missing")
+
+    receipt = get_receipt(order_id, db)
+
+    subject = f"Teo D' Mango Receipt {receipt.get('display_id') or order_id}"
+    body = _build_receipt_email_body(receipt)
+    html_body = _build_receipt_email_html(receipt)
+
+    sent = _send_receipt_email(customer_email, subject, body, html_body)
+    if not sent:
+        return {
+            "message": "Receipt email was not sent because SMTP email sending is currently disabled.",
+            "email_sent": False,
+            "recipient": customer_email,
+        }
+
+    return {
+        "message": "Receipt sent successfully to your email.",
+        "email_sent": True,
+        "recipient": customer_email,
     }

@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, Response, HTTPException, Request, Header, Form, UploadFile, File
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta, timezone
+from typing import Optional
 import hashlib
 import hmac
 import os
@@ -119,6 +120,32 @@ def split_full_name(full_name: str):
     first_name = parts[0]
     last_name = " ".join(parts[1:]) if len(parts) > 1 else ""
     return first_name, last_name
+def validate_optional_phone(phone: Optional[str]):
+    phone = (phone or "").strip()
+
+    if not phone:
+        return None
+
+    if not re.fullmatch(r"09\d{9}", phone):
+        raise HTTPException(
+            status_code=400,
+            detail="Contact number must be 11 digits and start with 09"
+        )
+
+    return phone
+def validate_phone_number(phone: str):
+    phone = (phone or "").strip()
+
+    if not phone:
+        raise HTTPException(status_code=400, detail="Contact number is required")
+
+    if not re.fullmatch(r"09\d{9}", phone):
+        raise HTTPException(
+            status_code=400,
+            detail="Contact number must be 11 digits and start with 09"
+        )
+
+    return phone
 # -----------------------
 # TIME HELPERS
 # -----------------------
@@ -302,14 +329,15 @@ class ChangePasswordPayload(BaseModel):
 class UpdateProfilePayload(BaseModel):
     first_name: str
     last_name: str
-
+    phone: Optional[str] = None
 # ============================================================
 # REGISTER
 # ============================================================
 @router.post("/register")
-def register_user(full_name: str, email: str, password: str, db: Session = Depends(get_db)):
+def register_user(full_name: str, email: str, password: str, phone: str, db: Session = Depends(get_db)):
     email = email.strip().lower()
     full_name = (full_name or "").strip()
+    phone = validate_phone_number(phone)
 
     if not full_name:
         raise HTTPException(status_code=400, detail="Full name is required")
@@ -318,6 +346,8 @@ def register_user(full_name: str, email: str, password: str, db: Session = Depen
 
     if db.query(User).filter(User.email == email).first():
         raise HTTPException(status_code=400, detail="Email already registered")
+    if db.query(CustomerProfile).filter(CustomerProfile.phone == phone).first():
+         raise HTTPException(status_code=400, detail="Contact number already registered")
 
     role_id = _get_role_id(db, "customer")
 
@@ -342,7 +372,8 @@ def register_user(full_name: str, email: str, password: str, db: Session = Depen
         user_id=user.id,
         full_name=full_name,
         first_name=first_name,
-        last_name=last_name
+        last_name=last_name,
+        phone=phone
     ))
     db.commit()
     return {
@@ -743,11 +774,13 @@ def me(current_user: User = Depends(get_current_user), db: Session = Depends(get
     full_name = None
     first_name = None
     last_name = None
+    phone = None
 
     if customer_profile:
         full_name = (customer_profile.full_name or "").strip() or None
         first_name = (getattr(customer_profile, "first_name", None) or "").strip() or None
         last_name = (getattr(customer_profile, "last_name", None) or "").strip() or None
+        phone = (getattr(customer_profile, "phone", None) or "").strip() or None
     elif staff_profile:
         full_name = (getattr(staff_profile, "full_name", None) or "").strip() or None
 
@@ -760,6 +793,7 @@ def me(current_user: User = Depends(get_current_user), db: Session = Depends(get
         "full_name": full_name,
         "first_name": first_name,
         "last_name": last_name,
+        "phone": phone,
         "display_name": display_name,
         "role": getattr(current_user, "role_name", "customer"),
         "provider": getattr(current_user, "oauth_provider", None),
@@ -778,6 +812,7 @@ def update_profile(
 ):
     first_name = (payload.first_name or "").strip()
     last_name = (payload.last_name or "").strip()
+    phone = validate_optional_phone(payload.phone)
 
     if not first_name:
         raise HTTPException(status_code=400, detail="First name is required")
@@ -790,12 +825,15 @@ def update_profile(
             full_name=first_name if not last_name else f"{first_name} {last_name}",
             first_name=first_name,
             last_name=last_name,
+            phone=phone,
         )
         db.add(profile)
     else:
         profile.first_name = first_name
         profile.last_name = last_name
         profile.full_name = first_name if not last_name else f"{first_name} {last_name}"
+        profile.phone = phone
+        profile.phone = validate_optional_phone(payload.phone)
 
     db.commit()
 
