@@ -457,11 +457,14 @@ class CashierOrderCreate(BaseOrderPayload):
     customer_name: str = Field(min_length=1, max_length=150)
 class OrderStatusUpdate(BaseModel):
     status: str
-
-
+class OrderStatusUpdate(BaseModel):
+    status: str
 class CancelPayload(BaseModel):
     reason: str
-
+class EmailReceiptPayload(BaseModel):
+    email: Optional[str] = None
+class EmailReceiptPayload(BaseModel):
+    email: Optional[str] = None
 @router.get("/")
 def list_orders(
     status: Optional[str] = None,
@@ -2618,21 +2621,29 @@ def get_receipt(order_id: int, db: Session = Depends(get_db)):
 @router.post("/{order_id}/receipt/email")
 def email_receipt_to_customer(
     order_id: int,
+    payload: EmailReceiptPayload = EmailReceiptPayload(),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
 ):
     order = db.query(Order).filter(Order.id == order_id).first()
 
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
 
-    if getattr(order, "user_id", None) != current_user.id:
-        raise HTTPException(status_code=403, detail="You can only email receipts for your own orders")
+    provided_email = (payload.email or "").strip().lower()
+    customer_email = provided_email
 
-    customer_email = (getattr(current_user, "email", "") or "").strip().lower()
+    if customer_email and ("@" not in customer_email or "." not in customer_email.split("@")[-1]):
+        raise HTTPException(status_code=400, detail="Please enter a valid email address")
+
+    if not customer_email and getattr(order, "user_id", None):
+        user = db.query(User).filter(User.id == order.user_id).first()
+        customer_email = (getattr(user, "email", "") or "").strip().lower() if user else ""
 
     if not customer_email:
-        raise HTTPException(status_code=400, detail="Customer email is missing")
+        raise HTTPException(
+            status_code=400,
+            detail="Email address is required for this receipt"
+        )
 
     receipt = get_receipt(order_id, db)
 
@@ -2641,6 +2652,7 @@ def email_receipt_to_customer(
     html_body = _build_receipt_email_html(receipt)
 
     sent = _send_receipt_email(customer_email, subject, body, html_body)
+
     if not sent:
         return {
             "message": "Receipt email was not sent because SMTP email sending is currently disabled.",
@@ -2649,7 +2661,7 @@ def email_receipt_to_customer(
         }
 
     return {
-        "message": "Receipt sent successfully to your email.",
+        "message": f"Receipt sent successfully to {customer_email}.",
         "email_sent": True,
         "recipient": customer_email,
     }

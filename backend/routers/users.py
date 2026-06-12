@@ -89,6 +89,7 @@ class CustomerCreatePayload(BaseModel):
 
 class CustomerPatchPayload(BaseModel):
     full_name: Optional[str] = None
+    phone: Optional[str] = None
     is_active: Optional[bool] = None
 
 
@@ -137,6 +138,7 @@ def list_users(
             or_(
                 User.email.ilike(search),
                 CustomerProfile.full_name.ilike(search),
+                CustomerProfile.phone.ilike(search),
                 Wallet.wallet_code.ilike(search),
             )
         )
@@ -172,6 +174,7 @@ def list_users(
             "role_name": get_role_name(db, u.role_id),
             "created_at": str(getattr(u, "created_at", "")) if hasattr(u, "created_at") else None,
             "full_name": cp.full_name if cp else None,
+            "phone": cp.phone if cp else None,
             "profile_picture": getattr(u, "profile_picture", None),
             "wallet_code": getattr(wallet, "wallet_code", None) if wallet else None,
         }
@@ -250,6 +253,7 @@ def create_customer(
         "role": "customer",
         "is_active": user.is_active,
         "full_name": customer_profile.full_name,
+        "phone": customer_profile.phone,
         "wallet_code": wallet_code,
         "temporary_password": temp_password,
     }
@@ -383,7 +387,8 @@ def patch_customer(
 
     if payload.full_name is not None:
         cp.full_name = payload.full_name.strip()
-
+    if payload.phone is not None:
+        cp.phone = payload.phone.strip() or None
     if payload.is_active is not None:
         u.is_active = bool(payload.is_active)
 
@@ -405,6 +410,7 @@ def patch_customer(
         "role": "customer",
         "is_active": bool(u.is_active),
         "full_name": cp.full_name,
+        "phone": cp.phone,
         "wallet_code": getattr(wallet, "wallet_code", None) if wallet else None,
     }
 
@@ -459,6 +465,13 @@ def delete_user(
             status_code=400,
             detail="Admin cannot delete their own account"
         )
+    target_role = get_role_name(db, user.role_id)
+
+    if target_role == "admin":
+        raise HTTPException(
+            status_code=403,
+            detail="Admin accounts cannot be deleted"
+    )
 
     wallet = db.query(Wallet).filter(Wallet.user_id == user_id).first()
     reward_wallet = db.query(RewardWallet).filter(RewardWallet.user_id == user_id).first()

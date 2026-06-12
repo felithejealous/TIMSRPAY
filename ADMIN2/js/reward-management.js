@@ -1,4 +1,9 @@
-const rewardCatalogState = { rewards: [], filtered: [], products: [] };
+const rewardCatalogState = {
+  rewards: [],
+  filtered: [],
+  products: [],
+  statusFilter: "all"
+};
 function getToken() {
 return localStorage.getItem("token");
 }
@@ -132,34 +137,62 @@ function renderRewardTable() {
     })
     .join("");
 }
-
 function applyRewardSearch() {
   const search = String(document.getElementById("rewardSearchInput")?.value || "").trim().toLowerCase();
-  const rewards = rewardCatalogState.rewards || [];
+  const linkedFilter = String(document.getElementById("linkedProductFilter")?.value || "all");
+  const sizeFilter = String(document.getElementById("sizeFilter")?.value || "all").toLowerCase();
+  const sortFilter = String(document.getElementById("rewardSortFilter")?.value || "default");
+  const statusFilter = rewardCatalogState.statusFilter || "all";
 
-  if (!search) {
-    rewardCatalogState.filtered = [...rewards];
-    renderRewardTable();
-    return;
+  let rows = [...(rewardCatalogState.rewards || [])];
+
+  if (search) {
+    rows = rows.filter((item) => {
+      return [
+        item.name,
+        item.description,
+        item.reward_type,
+        item.product_name,
+        item.size_label,
+        String(item.points_required || ""),
+      ]
+        .join(" ")
+        .toLowerCase()
+        .includes(search);
+    });
   }
 
-  rewardCatalogState.filtered = rewards.filter((item) => {
-    return [
-      item.name,
-      item.description,
-      item.reward_type,
-      item.product_name,
-      item.size_label,
-      String(item.points_required || ""),
-    ]
-      .join(" ")
-      .toLowerCase()
-      .includes(search);
-  });
+  if (statusFilter === "active") {
+    rows = rows.filter((item) => Boolean(item.is_active));
+  } else if (statusFilter === "inactive") {
+    rows = rows.filter((item) => !Boolean(item.is_active));
+  }
 
+  if (linkedFilter === "linked") {
+    rows = rows.filter((item) => Boolean(item.product_id));
+  } else if (linkedFilter === "unlinked") {
+    rows = rows.filter((item) => !Boolean(item.product_id));
+  }
+
+  if (sizeFilter !== "all") {
+    rows = rows.filter((item) => String(item.size_label || "").toLowerCase() === sizeFilter);
+  }
+
+  if (sortFilter === "points_low") {
+    rows.sort((a, b) => Number(a.points_required || 0) - Number(b.points_required || 0));
+  } else if (sortFilter === "points_high") {
+    rows.sort((a, b) => Number(b.points_required || 0) - Number(a.points_required || 0));
+  } else if (sortFilter === "az") {
+    rows.sort((a, b) => String(a.name || "").localeCompare(String(b.name || "")));
+  } else if (sortFilter === "za") {
+    rows.sort((a, b) => String(b.name || "").localeCompare(String(a.name || "")));
+  } else {
+    rows.sort((a, b) => Number(a.sort_order || 0) - Number(b.sort_order || 0));
+  }
+
+  rewardCatalogState.filtered = rows;
   renderRewardTable();
 }
-
 async function fetchProductsForRewardDropdown() {
   try {
     const res = await fetch(`${API_URL}/products?active_only=true&limit=500`, {
@@ -352,6 +385,21 @@ function bindRewardTableActions() {
 
 function bindRewardManagementEvents() {
   document.getElementById("rewardSearchInput")?.addEventListener("input", applyRewardSearch);
+  document.querySelectorAll("[data-status-filter]").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    rewardCatalogState.statusFilter = btn.dataset.statusFilter || "all";
+
+    document.querySelectorAll("[data-status-filter]").forEach((item) => {
+      item.classList.toggle("active", item === btn);
+    });
+
+    applyRewardSearch();
+  });
+});
+
+document.getElementById("linkedProductFilter")?.addEventListener("change", applyRewardSearch);
+document.getElementById("sizeFilter")?.addEventListener("change", applyRewardSearch);
+document.getElementById("rewardSortFilter")?.addEventListener("change", applyRewardSearch);
   document.getElementById("refreshRewardsBtn")?.addEventListener("click", fetchRewardCatalog);
   document.getElementById("openCreateRewardBtn")?.addEventListener("click", () => openRewardFormModal("create"));
   document.getElementById("closeRewardFormModalBtn")?.addEventListener("click", closeRewardFormModal);

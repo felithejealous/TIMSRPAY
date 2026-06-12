@@ -49,6 +49,18 @@
     --modal-card: #ffffff;
     --modal-overlay: rgba(0,0,0,0.4);
 }
+.export-accounts-btn {
+    background: var(--glass-bg);
+    color: var(--text-main);
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.export-accounts-btn:hover {
+    background: var(--mango-yellow);
+    color: #120f0a;
+    transform: scale(1.05);
+}
 
         * { box-sizing: border-box; margin: 0; padding: 0; transition: background 0.3s, color 0.3s, border 0.3s, transform 0.2s; }
         ::-webkit-scrollbar { width: 0px; background: transparent; }
@@ -187,8 +199,8 @@
             <a href="inventory.html" class="nav-item"><i class="fa-solid fa-boxes-stacked"></i> Inventory</a>
             <a href="menuman.html" class="nav-item"><i class="fa-solid fa-utensils"></i> Menu Management</a>
             <a href="promo.html" class="nav-item"><i class="fa-solid fa-tags"></i> Promos</a>
-            <a href="rewards.html" class="nav-item"><i class="fa-solid fa-gift"></i> Rewards Monitoring</a>
-            <a href="wallet.html" class="nav-item"><i class="fa-solid fa-wallet"></i> Wallets Monitoring</a>
+           <!-- <a href="rewards.html" class="nav-item"><i class="fa-solid fa-gift"></i> Rewards Monitoring</a> -->
+           <!-- <a href="wallet.html" class="nav-item"><i class="fa-solid fa-wallet"></i> Wallets Monitoring</a> -->
             <a href="reward-management.html" class="nav-item"><i class="fa-solid fa-trophy"></i> Rewards Manager</a>
             <a href="announce.html" class="nav-item"><i class="fa-solid fa-bell"></i> Announcements</a>
             <a href="engagement.html" class="nav-item"><i class="fa-solid fa-comments"></i> Interactions</a>
@@ -229,9 +241,17 @@
                 <i class="fas fa-search"></i>
                 <input type="text" id="searchInput" placeholder="Search by name, ID or @user..." onkeyup="searchCards()">
             </div>
-            <button class="bg-yellow-400 text-black px-6 py-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg hover:scale-105" onclick="openModal('formModal')">
-                <i class="fas fa-plus mr-2"></i> Create Profile
-            </button>
+    <div class="flex flex-wrap gap-3">
+<button type="button" class="export-accounts-btn px-6 py-4 rounded-2xl font-black uppercase text-xs tracking-widest"
+    onclick="exportAccountsCSV()">
+    <i class="fas fa-file-csv mr-2"></i> Export CSV
+</button>
+        <button
+            class="bg-yellow-400 text-black px-6 py-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg hover:scale-105"
+            onclick="openModal('formModal')">
+            <i class="fas fa-plus mr-2"></i> Create Profile
+        </button>
+    </div>
         </div>
 
         <div class="flex flex-wrap gap-3 mb-8" id="roleFilters">
@@ -285,6 +305,10 @@
                     <div class="input-group"><label>Full Display Name</label><input type="text" id="fullName" required></div>
                     <div class="input-group"><label>Username</label><input type="text" id="userName" required></div>
                     <div class="input-group"><label>Email Address</label><input type="email" id="email" required></div>
+                    <div class="input-group">
+                        <label>Contact Number</label>
+                        <input type="tel" id="phone" placeholder="09XXXXXXXXX">
+                    </div>
                 </div>
 
                 <div class="flex justify-between items-center mt-10">
@@ -314,10 +338,10 @@
                         <button class="bg-blue-600/20 text-blue-400 py-3 rounded-xl font-bold text-[10px] uppercase hover:bg-blue-600/30" onclick="confirmReset()">
                             <i class="fas fa-key mr-2"></i>Reset Password
                         </button>
-                        <button class="bg-red-600/20 text-red-500 py-3 rounded-xl font-bold text-[10px] uppercase hover:bg-red-600/30"
-                            onclick="openDeleteModal()">
-                            <i class="fas fa-trash mr-2"></i>Delete Account
-                        </button>
+<button id="deleteAccountBtn" class="bg-red-600/20 text-red-500 py-3 rounded-xl font-bold text-[10px] uppercase hover:bg-red-600/30"
+    onclick="openDeleteModal()">
+    <i class="fas fa-trash mr-2"></i>Delete Account
+</button>
                         <button id="toggleActiveBtn" class="btn-toggle py-3 rounded-xl font-bold text-[10px] uppercase" onclick="toggleStatus()"></button>
                     </div>
                 </div>

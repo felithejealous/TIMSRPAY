@@ -560,6 +560,53 @@
         .table-actions-head {
             text-align: right !important;
         }
+        .filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 22px;
+    align-items: center;
+}
+
+.reward-filter {
+    padding: 11px 14px;
+    border-radius: 14px;
+    border: 1px solid var(--glass-border);
+    background: rgba(255, 255, 255, .06);
+    color: var(--text-main);
+    font-size: .72rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    outline: none;
+    cursor: pointer;
+}
+
+.reward-filter-btn {
+    padding: 11px 16px;
+    border-radius: 14px;
+    border: 1px solid var(--glass-border);
+    background: rgba(255, 255, 255, .06);
+    color: var(--text-main);
+    font-size: .72rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    cursor: pointer;
+}
+
+.reward-filter-btn.active {
+    background: var(--mango-yellow);
+    color: #120f0a;
+    border-color: var(--mango-yellow);
+}
+
+body.light-theme .reward-filter,
+body.light-theme .reward-filter-btn {
+    background: #ffffff;
+    color: #1a1a1a;
+    border: 1px solid rgba(0, 0, 0, .1);
+}
 
         @media (max-width:950px) {
             .main-content {
@@ -643,8 +690,8 @@
             <a href="inventory.html" class="nav-item"><i class="fa-solid fa-boxes-stacked"></i><span>Inventory</span></a>
             <a href="menuman.html" class="nav-item"><i class="fa-solid fa-utensils"></i><span>Menu Management</span></a>
                         <a href="promo.html" class="nav-item"><i class="fa-solid fa-tags"></i><span>Promos</span></a>
-                        <a href="rewards.html" class="nav-item"><i class="fa-solid fa-gift"></i><span>Rewards Monitoring</span></a>
-            <a href="wallet.html" class="nav-item"><i class="fa-solid fa-wallet"></i><span>Wallets Monitoring</span></a>
+                        <!-- <a href="rewards.html" class="nav-item"><i class="fa-solid fa-gift"></i><span>Rewards Monitoring</span></a> -->
+            <!-- <a href="wallet.html" class="nav-item"><i class="fa-solid fa-wallet"></i><span>Wallets Monitoring</span></a> -->
             <a href="reward-management.html" class="nav-item active"><i class="fa-solid fa-trophy"></i><span>Reward Management</span></a>
             <a href="announce.html" class="nav-item"><i class="fa-solid fa-bell"></i><span>Announcements</span></a>
             <a href="engagement.html" class="nav-item"><i class="fa-solid fa-comments"></i><span>Interactions</span></a>
@@ -706,7 +753,32 @@
                             class="fa-solid fa-plus mr-2"></i>Add Reward</button>
                 </div>
             </div>
+<div class="filter-bar">
+    <button class="reward-filter-btn active" type="button" data-status-filter="all">All</button>
+    <button class="reward-filter-btn" type="button" data-status-filter="active">Active</button>
+    <button class="reward-filter-btn" type="button" data-status-filter="inactive">Inactive</button>
 
+    <select class="reward-filter" id="linkedProductFilter">
+        <option value="all">All Products</option>
+        <option value="linked">With Linked Product</option>
+        <option value="unlinked">No Product</option>
+    </select>
+
+    <select class="reward-filter" id="sizeFilter">
+        <option value="all">All Sizes</option>
+        <option value="small">Small</option>
+        <option value="medium">Medium</option>
+        <option value="large">Large</option>
+    </select>
+
+    <select class="reward-filter" id="rewardSortFilter">
+        <option value="default">Default Sort</option>
+        <option value="points_low">Lowest Points</option>
+        <option value="points_high">Highest Points</option>
+        <option value="az">A-Z</option>
+        <option value="za">Z-A</option>
+    </select>
+</div>
             <table class="data-table">
                 <thead>
                     <tr>

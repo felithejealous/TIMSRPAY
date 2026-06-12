@@ -131,7 +131,9 @@ function getUsernameFromEmail(email) {
     if (!email) return "no_username";
     return email.split("@")[0];
 }
-
+function getContactNumber(user) {
+    return String(user?.phone || "").trim();
+}
 function resolveProfileImage(profilePicture, fallbackName) {
     const value = String(profilePicture || "").trim();
     const fallback = buildInitialAvatar(fallbackName);
@@ -189,13 +191,15 @@ function getFilteredUsers() {
         const email = (user.email || "").toLowerCase();
         const userId = String(user.user_id || "").toLowerCase();
         const walletCode = String(user.wallet_code || "").toLowerCase();
+        const phone = String(user.phone || "").toLowerCase();
 
         return (
             displayName.includes(searchValue) ||
             username.includes(searchValue) ||
             email.includes(searchValue) ||
             userId.includes(searchValue) ||
-            walletCode.includes(searchValue)
+            walletCode.includes(searchValue) ||
+            phone.includes(searchValue)
         );
     });
 }
@@ -320,6 +324,10 @@ if (viewProfileImg) {
         <span class="text-[11px] opacity-80">${user.email || "-"}</span>
     </div>
     <div class="bg-white/5 p-4 rounded-xl flex justify-between items-center">
+    <span class="font-bold text-sm">Contact Number</span>
+    <span class="text-[11px] opacity-80">${getContactNumber(user) || "-"}</span>
+</div>
+    <div class="bg-white/5 p-4 rounded-xl flex justify-between items-center">
         <span class="font-bold text-sm">Status</span>
         <span class="text-[10px] ${user.is_active ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'} px-3 py-1 rounded-full font-black">
             ${user.is_active ? "ACTIVE" : "INACTIVE"}
@@ -363,7 +371,16 @@ if (viewProfileImg) {
         toggleInBtn.disabled = true;
         toggleInBtn.onclick = null;
     }
+const deleteAccountBtn = document.getElementById("deleteAccountBtn");
+const viewedRole = String(user.role_name || "").toLowerCase();
 
+if (deleteAccountBtn) {
+    if (viewedRole === "admin") {
+        deleteAccountBtn.style.display = "none";
+    } else {
+        deleteAccountBtn.style.display = "block";
+    }
+}
     const toggleActiveBtn = document.getElementById("toggleActiveBtn");
     toggleActiveBtn.innerText = user.is_active ? "Deactivate Profile" : "Reactivate Profile";
     toggleActiveBtn.className = user.is_active
@@ -500,7 +517,7 @@ function editAccountFromProfile() {
     document.getElementById("officialId").value = user.user_id;
     document.getElementById("fullName").value = displayName === user.email ? "" : displayName;
     document.getElementById("userName").value = username;
-    document.getElementById("email").value = user.email || "";
+   document.getElementById("phone").value = getContactNumber(user);
     document.getElementById("profilePreview").src = getProfileImage(user);
     uploadedProfileImage = null;
 
@@ -526,6 +543,7 @@ async function submitAccountForm(event) {
     const fullName = document.getElementById("fullName").value.trim();
     const userName = document.getElementById("userName").value.trim();
     const email = document.getElementById("email").value.trim().toLowerCase();
+    const phone = document.getElementById("phone").value.trim();
 
     if (!fullName || !email) {
         alert("Full name and email are required.");
@@ -548,6 +566,7 @@ async function submitAccountForm(event) {
                     }),
                     body: JSON.stringify({
                         full_name: fullName,
+                        phone,
                         profile_picture: uploadedProfileImage
                     })
                 });
@@ -575,6 +594,7 @@ async function submitAccountForm(event) {
                     body: JSON.stringify({
                         email,
                         full_name: fullName,
+                        phone,
                         password: generatedPassword,
                         is_active: true,
                         profile_picture: null
@@ -621,7 +641,72 @@ async function submitAccountForm(event) {
         alert(error.message || "Failed to save profile.");
     }
 }
+function escapeCSV(value) {
+    const text = String(value ?? "");
+    return `"${text.replaceAll('"', '""')}"`;
+}
 
+function exportAccountsCSV() {
+    const rows = getFilteredUsers();
+
+    if (!rows.length) {
+        alert("No accounts to export.");
+        return;
+    }
+
+    const headers = [
+        "User ID",
+        "Full Name",
+        "Email",
+        "Contact Number",
+        "Username",
+        "Role",
+        "Status",
+        "Wallet Code",
+        "Wallet Balance",
+        "Reward Points",
+        "Created At"
+    ];
+
+    const csvRows = rows.map(user => {
+        const fullName = getDisplayName(user);
+        const username = getUsernameFromEmail(user.email);
+        const role = getRoleLabel(user.role_name);
+        const status = user.is_active ? "Active" : "Inactive";
+
+        return [
+            user.user_id,
+            fullName,
+            user.email || "",
+            getContactNumber(user),
+            username,
+            role,
+            status,
+            user.wallet_code || "",
+            Number(user.wallet_balance || 0).toFixed(2),
+            Number(user.reward_points || 0),
+            user.created_at || ""
+        ].map(escapeCSV).join(",");
+    });
+
+    const csvContent = [headers.map(escapeCSV).join(","), ...csvRows].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+
+    const date = new Date();
+    const dateKey = date.toISOString().slice(0, 10);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `accounts-report-${dateKey}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    URL.revokeObjectURL(url);
+
+    showToast("Accounts CSV exported");
+}
 async function initializeAccountsPage() {
     const savedTheme = localStorage.getItem("theme");
     if (savedTheme === "light") {
@@ -708,6 +793,7 @@ window.processReset = processReset;
 window.editAccountFromProfile = editAccountFromProfile;
 window.setRoleFilter = setRoleFilter;
 window.goToAttendanceProfile = goToAttendanceProfile;
+window.exportAccountsCSV = exportAccountsCSV;
 
 window.onload = () => {
     initializeAccountsPage();

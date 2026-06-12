@@ -1,5 +1,5 @@
 const API_URL = window.API_URL || "http://127.0.0.1:8000";
-
+let currentReceiptData = null;
 function escapeHTML(value) {
     return String(value ?? "")
         .replaceAll("&", "&amp;")
@@ -162,7 +162,7 @@ async function loadReceipt() {
     }
 
     const receipt = await fetchJSON(`${API_URL}/orders/${orderId}/receipt`);
-
+    currentReceiptData = receipt;
     const customerName = receipt.customer_name || "WALK-IN CUSTOMER";
     const paymentMethod = String(receipt.payment_method || "").toLowerCase();
     const discount = Number(receipt.discount_amount || 0);
@@ -248,7 +248,130 @@ async function loadReceipt() {
         claimMessage.innerText = "";
     }
 }
+function isValidEmailFormat(email) {
+    const clean = String(email || "").trim();
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean);
+}
 
+function openEmailReceiptModal() {
+    const paymentMethod = String(currentReceiptData?.payment_method || "").toLowerCase();
+    const walletEmail = localStorage.getItem("walletEmail") || currentReceiptData?.customer_email || "";
+
+    if (paymentMethod === "wallet") {
+        sendReceiptEmail(walletEmail || "");
+        return;
+    }
+
+    const modal = document.getElementById("emailReceiptModal");
+    const input = document.getElementById("receiptEmailInput");
+    const message = document.getElementById("emailReceiptModalMessage");
+
+    if (message) {
+        message.innerText = "Enter your email address to receive a copy of your receipt.";
+    }
+
+    if (input) {
+        input.value = "";
+    }
+
+    if (modal) {
+        modal.style.display = "flex";
+        setTimeout(() => input?.focus(), 100);
+    }
+}
+
+function closeEmailReceiptModal() {
+    const modal = document.getElementById("emailReceiptModal");
+    if (modal) modal.style.display = "none";
+}
+
+async function sendReceiptEmail(email = "") {
+    const orderId = localStorage.getItem("latest_order_id");
+
+    if (!orderId) {
+        showStyledAlert("Receipt Error", "No order found.");
+        return;
+    }
+
+    const sendBtn = document.getElementById("sendReceiptEmailBtn");
+    const confirmBtn = document.getElementById("confirmEmailReceiptBtn");
+    const cleanEmail = String(email || "").trim();
+
+    if (cleanEmail && !isValidEmailFormat(cleanEmail)) {
+        showStyledAlert("Invalid Email", "Please enter a valid email address.");
+        return;
+    }
+
+    try {
+        if (sendBtn) {
+            sendBtn.disabled = true;
+            sendBtn.innerText = "Sending Receipt...";
+        }
+
+        if (confirmBtn) {
+            confirmBtn.disabled = true;
+            confirmBtn.innerText = "Sending...";
+        }
+
+        const payload = cleanEmail ? { email: cleanEmail } : {};
+
+        const result = await fetchJSON(`${API_URL}/orders/${orderId}/receipt/email`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        });
+
+        closeEmailReceiptModal();
+
+        showStyledAlert(
+            "Receipt Email",
+            result.message || "Receipt email request processed."
+        );
+    } catch (error) {
+        showStyledAlert("Email Failed", error.message || "Failed to send receipt email.");
+    } finally {
+        if (sendBtn) {
+            sendBtn.disabled = false;
+            sendBtn.innerText = "Send Receipt to Email";
+        }
+
+        if (confirmBtn) {
+            confirmBtn.disabled = false;
+            confirmBtn.innerText = "Send";
+        }
+    }
+}
+
+function setupEmailReceiptActions() {
+    const sendReceiptEmailBtn = document.getElementById("sendReceiptEmailBtn");
+    const cancelEmailReceiptBtn = document.getElementById("cancelEmailReceiptBtn");
+    const confirmEmailReceiptBtn = document.getElementById("confirmEmailReceiptBtn");
+    const receiptEmailInput = document.getElementById("receiptEmailInput");
+    const emailReceiptModal = document.getElementById("emailReceiptModal");
+
+    sendReceiptEmailBtn?.addEventListener("click", openEmailReceiptModal);
+    cancelEmailReceiptBtn?.addEventListener("click", closeEmailReceiptModal);
+
+    confirmEmailReceiptBtn?.addEventListener("click", () => {
+        const email = receiptEmailInput?.value || "";
+        sendReceiptEmail(email);
+    });
+
+    receiptEmailInput?.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            sendReceiptEmail(receiptEmailInput.value || "");
+        }
+    });
+
+    emailReceiptModal?.addEventListener("click", (event) => {
+        if (event.target === emailReceiptModal) {
+            closeEmailReceiptModal();
+        }
+    });
+}
 function clearKioskCheckoutState() {
     localStorage.removeItem("teo_tray");
     localStorage.removeItem("customerName");
@@ -277,14 +400,13 @@ function confirmOrder() {
         window.location.href = "index.html";
     }, 2500);
 }
-
 function initReceiptPage() {
     document.getElementById("modalOkBtn")?.addEventListener("click", closeCustomModal);
     document.getElementById("finishBtn")?.addEventListener("click", confirmOrder);
+    setupEmailReceiptActions();
 
     loadReceipt().catch(error => {
         showStyledAlert("Receipt Error", error.message || "Failed to load receipt.");
     });
 }
-
 window.addEventListener("DOMContentLoaded", initReceiptPage);

@@ -28,46 +28,54 @@
             }
         }
 
-        body {
-            min-height: 100vh;
-            min-height: 100dvh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background: linear-gradient(-45deg, #ffb703, #ff8c00, #fffdf5, #ffd000);
-            background-size: 400% 400%;
-            animation: gradientMove 15s ease infinite;
-            overflow: hidden;
-            padding: 20px;
-        }
+body {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    background: linear-gradient(-45deg, #ffb703, #ff8c00, #fffdf5, #ffd000);
+    background-size: 400% 400%;
+    animation: gradientMove 15s ease infinite;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 24px 20px;
+}
+.main-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 430px;
+    min-height: calc(100dvh - 48px);
+    justify-content: center;
+    padding-bottom: 24px;
+}
+.receipt {
+    width: 100%;
+    background: #fffdf7;
+    border-radius: 28px;
+    padding: 30px 24px;
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.12);
+    max-height: calc(100dvh - 190px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
 
-        .main-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            max-width: 430px;
-            height: 100%;
-            justify-content: center;
-        }
+.receipt::-webkit-scrollbar {
+    width: 6px;
+}
 
-        .receipt {
-            width: 100%;
-            background: #fffdf7;
-            border-radius: 28px;
-            padding: 30px 24px;
-            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.12);
-            max-height: 82vh;
-            overflow-y: auto;
-            scrollbar-width: none;
-            border: 1px solid rgba(0, 0, 0, 0.05);
-        }
+.receipt::-webkit-scrollbar-track {
+    background: transparent;
+}
 
-        .receipt::-webkit-scrollbar {
-            display: none;
-        }
-
+.receipt::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.18);
+    border-radius: 999px;
+}
         .receipt-order-number {
             text-align: center;
             margin-bottom: 18px;
@@ -298,11 +306,17 @@
             margin-top: 4px;
         }
 
-        .action-container {
-            width: 100%;
-            margin-top: 20px;
-        }
+.action-container {
+    width: 100%;
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
 
+.email-receipt-btn {
+    background: rgba(255, 255, 255, 0.18);
+}
         .receipt-btn {
             width: 100%;
             padding: 18px;
@@ -462,6 +476,19 @@
             .receipt-btn {
                 padding: 16px;
             }
+            .main-container {
+    min-height: calc(100dvh - 28px);
+    justify-content: flex-start;
+}
+
+.receipt {
+    max-height: none;
+    overflow-y: visible;
+}
+
+.action-container {
+    margin-bottom: 10px;
+}
         }
     </style>
 </head>
@@ -477,7 +504,20 @@
             </div>
         </div>
     </div>
+<div id="emailReceiptModal" class="modal-overlay">
+    <div class="modal-card">
+        <h3>Send Receipt</h3>
+        <p id="emailReceiptModalMessage">Enter your email address to receive a copy of your receipt.</p>
 
+        <input type="email" id="receiptEmailInput" placeholder="customer@email.com"
+            style="width:100%; padding:13px 14px; border:1px solid #ddd; border-radius:12px; margin-bottom:14px; font-weight:700; outline:none;">
+
+        <div class="modal-btn-group">
+            <button class="modal-btn" id="cancelEmailReceiptBtn" type="button">Cancel</button>
+            <button class="modal-btn modal-btn-confirm" id="confirmEmailReceiptBtn" type="button">Send</button>
+        </div>
+    </div>
+</div>
     <div id="successOverlay">
         <div class="glass-card" id="glassCard">
             <div class="check-icon">✓</div>
@@ -556,10 +596,12 @@
                 <p>Have a Mango-nificent day!</p>
             </div>
         </div>
-
-        <div class="action-container">
-            <button class="receipt-btn" id="finishBtn">Finish Transaction</button>
-        </div>
+<div class="action-container">
+    <button class="receipt-btn email-receipt-btn" id="sendReceiptEmailBtn" type="button">
+        Send Receipt to Email
+    </button>
+    <button class="receipt-btn" id="finishBtn">Finish Transaction</button>
+</div>
     </div>
 
     <script src="../config.js"></script>
