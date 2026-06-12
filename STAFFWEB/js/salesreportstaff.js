@@ -25,11 +25,15 @@ const pwdTxnCountValue = document.getElementById("pwdTxnCountValue");
 const promoTxnCountValue = document.getElementById("promoTxnCountValue");
 
 const salesTableBody = document.getElementById("salesTableBody");
-
+const transactionSearchInput = document.getElementById("transactionSearchInput");
+const exportCsvBtn = document.getElementById("exportCsvBtn");
+const logFilterButtons = document.querySelectorAll(".log-filter-btn");
 let currentStaffUser = null;
 let allRelevantOrders = [];
 let salesRefreshInterval = null;
-
+let currentLogFilter = "all";
+let currentLogSearch = "";
+let filteredRelevantOrders = [];
 const PH_TIMEZONE = "Asia/Manila";
 
 /* =========================
@@ -386,29 +390,147 @@ function renderSummary() {
 
     reportSubtitle.textContent = `Today • ${getCurrentStaffName()}`;
 }
+function orderMatchesLogFilter(order) {
+    const paymentMethod = normalizePaymentMethod(order.payment_method);
+    const discountAmount = Number(order.discount_amount || 0);
+    const pwdDiscountAmount = Number(order.pwd_discount_amount || 0);
+    const changeAmount = Number(order.change_amount || 0);
 
+    if (currentLogFilter === "cash") {
+        return paymentMethod === "cash";
+    }
+
+    if (currentLogFilter === "wallet") {
+        return paymentMethod === "wallet";
+    }
+
+    if (currentLogFilter === "discounted") {
+        return discountAmount > 0 || pwdDiscountAmount > 0 || !!order.is_pwd_discount || !!String(order.promo_code_text || "").trim();
+    }
+
+    if (currentLogFilter === "with_change") {
+        return changeAmount > 0;
+    }
+
+    if (currentLogFilter === "refunded") {
+        return !!order.is_refunded || Number(order.refund_amount || 0) > 0;
+    }
+
+    return true;
+}
+
+function orderMatchesLogSearch(order) {
+    const query = String(currentLogSearch || "").trim().toLowerCase();
+    if (!query) return true;
+
+    const searchableText = [
+        order.display_id,
+        order.order_id,
+        `#${order.order_id}`,
+        order.customer_name,
+        order.items_summary,
+        normalizePaymentMethod(order.payment_method) === "wallet" ? "teopay" : "cash",
+        order.status,
+        order.promo_code_text
+    ].join(" ").toLowerCase();
+
+    return searchableText.includes(query);
+}
+
+function getFilteredRelevantOrders() {
+    return allRelevantOrders
+        .filter(order => orderMatchesLogFilter(order))
+        .filter(order => orderMatchesLogSearch(order))
+        .slice()
+        .sort((a, b) => {
+            const aTime = parseServerDate(getRelevantOrderDate(a))?.getTime() || 0;
+            const bTime = parseServerDate(getRelevantOrderDate(b))?.getTime() || 0;
+            return bTime - aTime;
+        });
+}
+
+function escapeCSV(value) {
+    const text = String(value ?? "");
+    return `"${text.replaceAll('"', '""')}"`;
+}
+
+function exportFilteredTransactionsCSV() {
+    const rows = filteredRelevantOrders.length ? filteredRelevantOrders : getFilteredRelevantOrders();
+
+    if (!rows.length) {
+        alert("No transactions to export.");
+        return;
+    }
+
+    const headers = [
+        "Time",
+        "Order",
+        "Customer",
+        "Payment",
+        "Total",
+        "Received",
+        "Change",
+        "Discount",
+        "Flags"
+    ];
+
+    const csvRows = rows.map(order => {
+        const isPwd = !!order.is_pwd_discount;
+        const discountShown = isPwd
+            ? Number(order.pwd_discount_amount || 0)
+            : Number(order.discount_amount || 0);
+
+        const flags = [];
+        if (order.is_pwd_discount) flags.push("PWD");
+        if (order.promo_code_text) flags.push("PROMO");
+        if (order.is_refunded) flags.push("REFUNDED");
+        flags.push(normalizePaymentMethod(order.payment_method) === "wallet" ? "TEOPAY" : "CASH");
+
+        return [
+            formatPHTime(getRelevantOrderDate(order)),
+            order.display_id || `#${order.order_id}`,
+            order.customer_name || "Walk-in Customer",
+            normalizePaymentMethod(order.payment_method) === "wallet" ? "TeoPay" : "Cash",
+            Number(order.total_amount || 0).toFixed(2),
+            order.amount_received !== null && order.amount_received !== undefined ? Number(order.amount_received || 0).toFixed(2) : "",
+            order.change_amount !== null && order.change_amount !== undefined ? Number(order.change_amount || 0).toFixed(2) : "",
+            discountShown.toFixed(2),
+            flags.join(" | ")
+        ].map(escapeCSV).join(",");
+    });
+
+    const csvContent = [headers.map(escapeCSV).join(","), ...csvRows].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+
+    const dateKey = getPHDateKey(new Date());
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `shift-summary-transactions-${dateKey}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    URL.revokeObjectURL(url);
+}
 /* =========================
    RENDER TABLE
 ========================= */
 function renderTable() {
     if (!salesTableBody) return;
 
-    if (!allRelevantOrders.length) {
+    filteredRelevantOrders = getFilteredRelevantOrders();
+
+    if (!filteredRelevantOrders.length) {
         salesTableBody.innerHTML = `
             <tr>
-                <td colspan="9" class="empty-state">No paid or completed sales found for your account today.</td>
+                <td colspan="9" class="empty-state">No matching transactions found.</td>
             </tr>
         `;
         return;
     }
 
-    salesTableBody.innerHTML = allRelevantOrders
-        .slice()
-        .sort((a, b) => {
-            const aTime = parseServerDate(getRelevantOrderDate(a))?.getTime() || 0;
-            const bTime = parseServerDate(getRelevantOrderDate(b))?.getTime() || 0;
-            return bTime - aTime;
-        })
+    salesTableBody.innerHTML = filteredRelevantOrders
         .map(order => {
             const isPwd = !!order.is_pwd_discount;
             const discountShown = isPwd
@@ -444,7 +566,6 @@ function renderTable() {
         })
         .join("");
 }
-
 /* =========================
    LOGOUT
 ========================= */
@@ -521,9 +642,27 @@ async function refreshSalesReport(isAutoRefresh = false) {
         }
     }
 }
+function setupLogFiltersAndExport() {
+    transactionSearchInput?.addEventListener("input", () => {
+        currentLogSearch = transactionSearchInput.value.trim();
+        renderTable();
+    });
 
+    logFilterButtons.forEach(button => {
+        button.addEventListener("click", () => {
+            logFilterButtons.forEach(btn => btn.classList.remove("active"));
+            button.classList.add("active");
+
+            currentLogFilter = button.dataset.logFilter || "all";
+            renderTable();
+        });
+    });
+
+    exportCsvBtn?.addEventListener("click", exportFilteredTransactionsCSV);
+}
 function setupActions() {
     refreshBtn?.addEventListener("click", () => refreshSalesReport(false));
+    setupLogFiltersAndExport();
 }
 
 /* =========================

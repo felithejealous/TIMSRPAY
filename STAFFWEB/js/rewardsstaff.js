@@ -3,6 +3,9 @@ let filteredMembersCache = [];
 let memberSearchTimer = null;
 let selectedRedeemCustomer = null;
 let rewardsCatalogCache = [];
+
+let currentMemberFilter = "all";
+let currentMemberSort = "highest_points";
 function getAPIURL() {
     if (!window.API_URL) {
         throw new Error("API_URL is not defined. Make sure authGuard.js loads first.");
@@ -78,7 +81,6 @@ function getProgressPercent(points) {
     const pct = Math.max(0, Math.min(100, (value / baseRequired) * 100));
     return pct.toFixed(2);
 }
-
 function getMemberStatus(points) {
     const claimableRewards = getClaimableRewards(points);
 
@@ -91,6 +93,101 @@ function getMemberStatus(points) {
             label: "Collecting",
             className: "not-eligible"
         };
+}
+function getMemberDisplayName(member) {
+    return member.full_name || member.email || `User #${member.user_id}`;
+}
+function getMemberInitials(nameOrEmail) {
+    const raw = String(nameOrEmail || "").trim();
+
+    if (!raw) return "U";
+
+    const namePart = raw.includes("@") ? raw.split("@")[0] : raw;
+    const parts = namePart.split(/\s+/).filter(Boolean);
+
+    if (parts.length >= 2) {
+        return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    }
+
+    return namePart.slice(0, 2).toUpperCase();
+}
+function memberMatchesFilter(member) {
+    const points = Number(member.total_points || 0);
+    const claimableRewards = getClaimableRewards(points);
+
+    if (currentMemberFilter === "with_points") {
+        return points > 0;
+    }
+
+    if (currentMemberFilter === "no_points") {
+        return points === 0;
+    }
+
+    if (currentMemberFilter === "claimable") {
+        return claimableRewards.length > 0;
+    }
+
+    return true;
+}
+
+function getMemberCreatedValue(member) {
+    const rawDate =
+        member.created_at ||
+        member.registered_at ||
+        member.joined_at ||
+        member.user_id ||
+        0;
+
+    if (rawDate && !Number.isNaN(Date.parse(rawDate))) {
+        return new Date(rawDate).getTime();
+    }
+
+    return Number(member.user_id || 0);
+}
+
+function sortMembers(members) {
+    const sorted = [...members];
+
+    sorted.sort((a, b) => {
+        const aPoints = Number(a.total_points || 0);
+        const bPoints = Number(b.total_points || 0);
+        const aName = getMemberDisplayName(a).toLowerCase();
+        const bName = getMemberDisplayName(b).toLowerCase();
+        const aCreated = getMemberCreatedValue(a);
+        const bCreated = getMemberCreatedValue(b);
+
+        if (currentMemberSort === "lowest_points") {
+            return aPoints - bPoints;
+        }
+
+        if (currentMemberSort === "az") {
+            return aName.localeCompare(bName);
+        }
+
+        if (currentMemberSort === "za") {
+            return bName.localeCompare(aName);
+        }
+
+        if (currentMemberSort === "newest") {
+            return bCreated - aCreated;
+        }
+
+        if (currentMemberSort === "oldest") {
+            return aCreated - bCreated;
+        }
+
+        return bPoints - aPoints;
+    });
+
+    return sorted;
+}
+
+function applyMemberFiltersAndSort() {
+    filteredMembersCache = sortMembers(
+        rewardsMembersCache.filter(member => memberMatchesFilter(member))
+    );
+
+    renderMembersTable();
 }
 function showInlineMessage(container, html, color = "") {
     if (!container) return;
@@ -119,69 +216,75 @@ async function loadMembers(searchValue = "") {
         `${getAPIURL()}/rewards/admin/customers?q=${encodeURIComponent(q)}&limit=200`
     );
 
-    rewardsMembersCache = Array.isArray(response?.data) ? response.data : [];
-    filteredMembersCache = [...rewardsMembersCache];
-    renderMembersTable();
+rewardsMembersCache = Array.isArray(response?.data) ? response.data : [];
+applyMemberFiltersAndSort();
 }
-
 function renderMembersTable() {
-    const tbody = document.getElementById("membersTableBody");
-    if (!tbody) return;
+    const container = document.getElementById("membersTableBody");
+    if (!container) return;
 
     if (!filteredMembersCache.length) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="5" style="color: var(--text-muted);">No members found.</td>
-            </tr>
+        container.innerHTML = `
+            <div class="member-empty-state">No members found.</div>
         `;
         return;
     }
 
-    tbody.innerHTML = filteredMembersCache.map(member => {
+    container.innerHTML = filteredMembersCache.map(member => {
         const points = Number(member.total_points || 0);
         const status = getMemberStatus(points);
-        const displayName = member.full_name || member.email || `User #${member.user_id}`;
+        const displayName = getMemberDisplayName(member);
+        const initials = getMemberInitials(displayName);
         const progressPercent = getProgressPercent(points);
+        const canRedeem = getClaimableRewards(points).length > 0;
 
         return `
-            <tr>
-                <td>
+            <div class="member-row-card">
+                <div class="member-identity">
+                    <div class="member-avatar">${escapeHTML(initials)}</div>
+
                     <div class="member-meta">
                         <span class="member-name">${escapeHTML(displayName)}</span>
                         <span class="member-sub">
                             ${escapeHTML(member.email || "-")} · User ID #${escapeHTML(member.user_id)}
                         </span>
                     </div>
-                </td>
-                <td>${escapeHTML(formatPoints(points))}</td>
-                <td>
-                    <div>${escapeHTML(progressPercent)}%</div>
+                </div>
+
+                <div class="member-points">
+                    <strong>${escapeHTML(Number(points).toLocaleString())}</strong>
+                    <span>Points</span>
+                </div>
+
+                <div class="progress-info">
+                    <div class="progress-percent">${escapeHTML(progressPercent)}%</div>
                     <div class="points-bar">
                         <div class="points-fill" style="width: ${progressPercent}%"></div>
                     </div>
-                </td>
-                <td>
+                </div>
+
+                <div>
                     <span class="promo-badge ${status.className}">
                         ${escapeHTML(status.label)}
                     </span>
-                </td>
-                <td>
+                </div>
+
+                <div>
                     <button
                         class="inline-action-btn redeem-btn"
                         data-email="${escapeHTML(member.email || "")}"
                         data-user-id="${escapeHTML(member.user_id)}"
                         data-points="${escapeHTML(points)}"
                         data-name="${escapeHTML(displayName)}"
-                        ${points < 2800 ? "disabled" : ""}
+                        ${canRedeem ? "" : "disabled"}
                     >
                         Redeem
                     </button>
-                </td>
-            </tr>
+                </div>
+            </div>
         `;
     }).join("");
 }
-
 function setupMemberSearch() {
     const memberSearchInput = document.getElementById("memberSearchInput");
     if (!memberSearchInput) return;
@@ -197,6 +300,29 @@ function setupMemberSearch() {
             }
         }, 300);
     });
+}
+function setupMemberFiltersAndSort() {
+    const filterButtons = document.querySelectorAll(".member-filter-btn");
+    const sortSelect = document.getElementById("memberSortSelect");
+
+    filterButtons.forEach(button => {
+        button.addEventListener("click", () => {
+            filterButtons.forEach(btn => btn.classList.remove("active"));
+            button.classList.add("active");
+
+            currentMemberFilter = button.dataset.memberFilter || "all";
+            applyMemberFiltersAndSort();
+        });
+    });
+
+    if (sortSelect) {
+        sortSelect.value = currentMemberSort;
+
+        sortSelect.addEventListener("change", () => {
+            currentMemberSort = sortSelect.value || "highest_points";
+            applyMemberFiltersAndSort();
+        });
+    }
 }
 
 function setupMembersTableActions() {
@@ -535,6 +661,7 @@ async function initRewardsStaffPage() {
         setupTokenActions();
         setupManualAddActions();
         setupMemberSearch();
+        setupMemberFiltersAndSort();
         setupMembersTableActions();
 
         updateRedeemInfoBox(

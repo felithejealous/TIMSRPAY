@@ -583,7 +583,7 @@ async function handlePointsLookup() {
     const query = pointsLookupInput?.value?.trim();
 
     if (!query) {
-        renderPointsResult("Please enter email, wallet code, or user ID first.", true);
+        renderPointsResult("Please enter email, wallet code, user ID, or contact number first.", true);
         return;
     }
 
@@ -594,6 +594,7 @@ async function handlePointsLookup() {
 
         const fullName = data.full_name || "No name";
         const email = data.email || "No email";
+        const phone = data.phone || "No contact number";
         const walletCode = maskWalletCode(data.wallet_code);
         const rewardPoints = data.reward_points ?? 0;
         const walletBalance = Number(data.wallet_balance ?? 0).toFixed(2);
@@ -604,6 +605,7 @@ async function handlePointsLookup() {
             <div style="text-align:left; color: var(--text-main); font-weight:700; line-height:1.7;">
                 <div><strong>Name:</strong> ${escapeHTML(fullName)}</div>
                 <div><strong>Email:</strong> ${escapeHTML(email)}</div>
+                <div><strong>Contact Number:</strong> ${escapeHTML(phone)}</div>
                 <div><strong>User ID:</strong> ${escapeHTML(userId)}</div>
                 <div><strong>Wallet Code:</strong> ${escapeHTML(walletCode)}</div>
                 <div><strong>Reward Points:</strong> ${escapeHTML(rewardPoints)}</div>

@@ -346,7 +346,80 @@
             align-items: start;
             min-width: 0;
         }
+.log-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
 
+.log-card-head h3 {
+    margin-bottom: 0;
+}
+
+.log-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.log-search {
+    background: var(--input-bg);
+    border: 1px solid var(--card-border);
+    color: var(--text-main);
+    padding: 11px 15px;
+    border-radius: 999px;
+    outline: none;
+    font-size: 12px;
+    font-weight: 800;
+    width: 260px;
+}
+
+.log-search:focus {
+    border-color: var(--mango);
+}
+
+.log-filter-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.log-filter-btn,
+.export-csv-btn {
+    background: var(--icon-bg);
+    border: 1px solid var(--card-border);
+    color: var(--text-muted);
+    padding: 9px 13px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: 0.25s;
+}
+
+.log-filter-btn:hover,
+.export-csv-btn:hover {
+    color: var(--text-main);
+    border-color: var(--mango);
+}
+
+.log-filter-btn.active,
+.export-csv-btn {
+    background: var(--mango);
+    color: #111;
+    border-color: var(--mango);
+}
+
+.export-csv-btn:hover {
+    transform: translateY(-2px);
+}
         /* --- LOGS TABLE FIXES --- */
         .history-wrapper {
             overflow-x: auto;
@@ -649,8 +722,7 @@
                 <li><a href="inventory.html"><i class="fa-solid fa-boxes-stacked"></i> <span>Inventory</span></a></li>
                 <li><a href="walletstaff.html"><i class="fa-solid fa-credit-card"></i> <span>RPAY</span></a></li>
                 <li><a href="rewardsstaff.html"><i class="fa-solid fa-gift"></i> <span>Rewards</span></a></li>
-                <li class="active"><a href="salesreportstaff.html"><i class="fa-solid fa-chart-column"></i> <span>Sales
-                            Report</span></a></li>
+                <li class="active"><a href="salesreportstaff.html"><i class="fa-solid fa-chart-column"></i> <span>Shift Summary</span></a></li>
                 <li style="margin-top: auto;"><a href="loginstaff.html" class="logout-link"
                         style="color: var(--danger);"><i class="fa-solid fa-right-from-bracket"></i>
                         <span>Logout</span></a></li>
@@ -661,7 +733,7 @@
     <main>
         <header>
             <div class="header-title">
-                <h1>Sales Report</h1>
+                <h1>Shift Summary</h1>
                 <p id="reportSubtitle">Today’s cashier reconciliation</p>
             </div>
 
@@ -709,7 +781,26 @@
 
         <div class="bottom-layout">
             <div class="card" style="min-width: 0;">
-                <h3><i class="fa-solid fa-list-check" style="color: var(--mango);"></i> Transaction Log</h3>
+                <div class="log-card-head">
+                    <h3><i class="fa-solid fa-list-check" style="color: var(--mango);"></i> Transaction Log</h3>
+
+                    <div class="log-controls">
+                        <input type="text" id="transactionSearchInput" class="log-search" placeholder="Search order, customer, or item...">
+                        <button type="button" id="exportCsvBtn" class="export-csv-btn">
+                            <i class="fa-solid fa-download"></i> Export CSV
+                        </button>
+                    </div>
+                </div>
+
+                <div class="log-filter-row">
+                    <button type="button" class="log-filter-btn active" data-log-filter="all">All</button>
+                    <button type="button" class="log-filter-btn" data-log-filter="cash">Cash</button>
+                    <button type="button" class="log-filter-btn" data-log-filter="wallet">TeoPay</button>
+                    <button type="button" class="log-filter-btn" data-log-filter="discounted">Discounted</button>
+                    <button type="button" class="log-filter-btn" data-log-filter="with_change">With Change</button>
+                    <button type="button" class="log-filter-btn" data-log-filter="refunded">Refunded</button>
+                </div>
+
                 <div class="history-wrapper">
                     <table class="history-table">
                         <thead>

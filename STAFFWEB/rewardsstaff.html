@@ -306,7 +306,366 @@
         .search-inline:focus {
             border-color: var(--mango);
         }
+.member-directory-card {
+    padding: 2rem;
+}
 
+.member-directory-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 1.3rem;
+    flex-wrap: wrap;
+}
+
+.member-directory-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.member-directory-title h3 {
+    margin-bottom: 0;
+}
+
+.member-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    width: 100%;
+    margin-bottom: 14px;
+}
+
+.search-shell {
+    flex: 1;
+    height: 54px;
+    min-width: 280px;
+    background: var(--input-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 18px;
+    transition: 0.25s;
+}
+
+.search-shell:focus-within {
+    border-color: var(--mango);
+    box-shadow: 0 0 0 4px rgba(255, 194, 68, 0.14);
+}
+
+.search-shell i {
+    color: var(--mango);
+    font-size: 14px;
+}
+
+.search-inline {
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-main);
+    font-weight: 800;
+    font-size: 14px;
+    padding: 0;
+}
+
+.search-inline::placeholder {
+    color: var(--text-muted);
+}
+
+.member-sort-select {
+    height: 54px;
+    min-width: 230px;
+    background: var(--input-bg);
+    border: 1px solid var(--card-border);
+    color: var(--text-main);
+    padding: 0 18px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 900;
+    outline: none;
+    cursor: pointer;
+    transition: 0.25s;
+}
+
+.member-sort-select:focus {
+    border-color: var(--mango);
+    box-shadow: 0 0 0 4px rgba(255, 194, 68, 0.14);
+}
+
+.member-filter-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 1.4rem;
+}
+
+.member-filter-btn {
+    background: var(--icon-bg);
+    border: 1px solid var(--card-border);
+    color: var(--text-muted);
+    padding: 11px 16px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: 0.25s;
+}
+
+.member-filter-btn:hover {
+    color: var(--text-main);
+    border-color: var(--mango);
+    transform: translateY(-1px);
+}
+
+.member-filter-btn.active {
+    background: var(--mango);
+    color: #111;
+    border-color: var(--mango);
+    box-shadow: 0 10px 22px rgba(255, 194, 68, 0.22);
+}
+
+.members-directory {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 520px;
+    overflow-y: auto;
+    padding: 4px 6px 4px 0;
+}
+
+.members-directory::-webkit-scrollbar {
+    width: 10px;
+}
+
+.members-directory::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.04);
+    border-radius: 999px;
+}
+
+.members-directory::-webkit-scrollbar-thumb {
+    background: rgba(255,194,68,0.4);
+    border-radius: 999px;
+}
+.member-list-header {
+    display: grid;
+    grid-template-columns: minmax(260px, 1.7fr) 130px minmax(190px, 1fr) 120px 120px;
+    align-items: center;
+    gap: 18px;
+    padding: 14px 20px;
+    margin-bottom: 10px;
+    border-radius: 18px;
+    background: rgba(0, 0, 0, 0.06);
+    border: 1px solid var(--card-border);
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+@media (max-width: 1100px) {
+    .member-list-header {
+        display: none;
+    }
+}
+.member-row-card {
+    display: grid;
+    grid-template-columns: minmax(260px, 1.7fr) 130px minmax(190px, 1fr) 120px 120px;
+    align-items: center;
+    gap: 18px;
+    background: rgba(255,255,255,0.045);
+    border: 1px solid var(--card-border);
+    border-radius: 24px;
+    padding: 18px 20px;
+    transition: 0.25s;
+}
+
+.member-row-card:hover {
+    background: var(--hover-bg);
+    border-color: rgba(255, 194, 68, 0.45);
+    transform: translateY(-2px);
+}
+
+.member-identity {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+}
+
+.member-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--mango), #ffe08a);
+    color: #111;
+    display: grid;
+    place-items: center;
+    font-weight: 1000;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+    box-shadow: 0 10px 24px rgba(255, 194, 68, 0.22);
+}
+
+.member-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.member-name {
+    font-size: 14px;
+    font-weight: 1000;
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.member-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 800;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.member-points strong {
+    display: block;
+    font-size: 19px;
+    font-weight: 1000;
+    color: var(--text-main);
+    line-height: 1;
+}
+
+.member-points span {
+    display: block;
+    margin-top: 5px;
+    font-size: 10px;
+    font-weight: 900;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.progress-info {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.progress-percent {
+    font-size: 12px;
+    font-weight: 1000;
+    color: var(--text-main);
+}
+
+.points-bar {
+    width: 100%;
+    height: 11px;
+    background: rgba(255,255,255,0.09);
+    border-radius: 999px;
+    overflow: hidden;
+    border: 1px solid var(--card-border);
+}
+
+.points-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--mango), #ffd977);
+    border-radius: 999px;
+    transition: width 0.4s ease;
+}
+
+.promo-badge {
+    padding: 9px 16px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 1000;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.eligible {
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--success);
+    border: 1px solid rgba(16, 185, 129, 0.5);
+}
+
+.not-eligible {
+    background: rgba(136, 136, 136, 0.12);
+    color: var(--text-muted);
+    border: 1px solid var(--card-border);
+}
+
+.inline-action-btn.redeem-btn {
+    width: 100%;
+    min-height: 44px;
+    border-radius: 999px;
+    border: none;
+    background: var(--mango);
+    color: #111;
+    font-size: 11px;
+    font-weight: 1000;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: 0.25s;
+}
+
+.inline-action-btn.redeem-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 22px rgba(255, 194, 68, 0.25);
+}
+
+.inline-action-btn.redeem-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.member-empty-state {
+    padding: 28px;
+    text-align: center;
+    color: var(--text-muted);
+    font-weight: 800;
+    border: 1px dashed var(--card-border);
+    border-radius: 22px;
+    background: var(--icon-bg);
+}
+
+@media (max-width: 1100px) {
+    .member-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-shell,
+    .member-sort-select {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .member-row-card {
+        grid-template-columns: 1fr;
+        align-items: stretch;
+    }
+}
         .form-group {
             margin-bottom: 1rem;
         }
@@ -665,7 +1024,7 @@
     <li><a href="inventory.html"><i class="fa-solid fa-boxes-stacked"></i> <span>Inventory</span></a></li>
     <li><a href="walletstaff.html"><i class="fa-solid fa-credit-card"></i> <span>RPAY</span></a></li>
     <li class="active"><a href="rewardsstaff.html"><i class="fa-solid fa-gift"></i> <span>Rewards</span></a></li>
-    <li><a href="salesreportstaff.html"><i class="fa-solid fa-chart-column"></i> <span>Sales Report</span></a></li>
+    <li><a href="salesreportstaff.html"><i class="fa-solid fa-chart-column"></i> <span>Shift Summary</span></a></li>
     <li style="margin-top: auto;"><a href="loginstaff.html" class="logout-link"><i
                 class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></a></li>
 </ul>
@@ -685,32 +1044,47 @@
         </section>
 
         <section class="page-layout">
-            <div class="card">
-                <div class="card-head">
-                    <h3><i class="fa-solid fa-users" style="color: var(--mango);"></i> Active Members</h3>
-                    <input type="text" id="memberSearchInput" class="search-inline" placeholder="Search customer...">
-                </div>
+<div class="card member-directory-card">
+    <div class="member-directory-head">
+        <div class="member-directory-title">
+            <h3><i class="fa-solid fa-users" style="color: var(--mango);"></i> Active Members</h3>
+        </div>
+    </div>
 
-                <div class="table-shell">
-                    <div class="table-scroll-y">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Member</th>
-                                    <th>Points</th>
-                                    <th>Progression</th>
-                                    <th>Status</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="membersTableBody">
-                                <tr>
-                                    <td colspan="5" style="color: var(--text-muted);">Loading members...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+    <div class="member-controls">
+        <div class="search-shell">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="memberSearchInput" class="search-inline" placeholder="Search customer...">
+        </div>
+
+        <select id="memberSortSelect" class="member-sort-select">
+            <option value="highest_points">Sort: Highest Points</option>
+            <option value="lowest_points">Sort: Lowest Points</option>
+            <option value="az">Sort: A-Z</option>
+            <option value="za">Sort: Z-A</option>
+            <option value="newest">Sort: Newest Members</option>
+            <option value="oldest">Sort: Oldest Members</option>
+        </select>
+    </div>
+
+    <div class="member-filter-row">
+        <button type="button" class="member-filter-btn active" data-member-filter="all">All Members</button>
+        <button type="button" class="member-filter-btn" data-member-filter="with_points">With Points</button>
+        <button type="button" class="member-filter-btn" data-member-filter="no_points">No Points</button>
+        <button type="button" class="member-filter-btn" data-member-filter="claimable">Claimable Reward</button>
+    </div>
+
+<div class="member-list-header">
+    <div>Member</div>
+    <div>Points</div>
+    <div>Progression</div>
+    <div>Status</div>
+    <div>Action</div>
+</div>
+
+<div class="members-directory" id="membersTableBody">
+    <div class="member-empty-state">Loading members...</div>
+</div>
             </div>
 
             <div class="two-col-grid">

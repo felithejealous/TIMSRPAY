@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Response, HTTPException, Request, Header
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta, timezone
 from typing import Optional
+from sqlalchemy.exc import IntegrityError
 import hashlib
 import hmac
 import os
@@ -817,6 +818,22 @@ def update_profile(
     if not first_name:
         raise HTTPException(status_code=400, detail="First name is required")
 
+    if phone:
+        existing_phone = (
+            db.query(CustomerProfile)
+            .filter(
+                CustomerProfile.phone == phone,
+                CustomerProfile.user_id != current_user.id
+            )
+            .first()
+        )
+
+        if existing_phone:
+            raise HTTPException(
+                status_code=400,
+                detail="Contact number is already registered to another account."
+            )
+
     profile = db.query(CustomerProfile).filter(CustomerProfile.user_id == current_user.id).first()
 
     if not profile:
@@ -833,9 +850,24 @@ def update_profile(
         profile.last_name = last_name
         profile.full_name = first_name if not last_name else f"{first_name} {last_name}"
         profile.phone = phone
-        profile.phone = validate_optional_phone(payload.phone)
 
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError as e:
+        db.rollback()
+
+        error_text = str(e.orig).lower() if getattr(e, "orig", None) else str(e).lower()
+
+        if "uq_customer_profiles_phone" in error_text or "phone" in error_text:
+            raise HTTPException(
+                status_code=400,
+                detail="Contact number is already registered to another account."
+            )
+
+        raise HTTPException(
+            status_code=400,
+            detail="Failed to update profile. Please check your information and try again."
+        )
 
     return {"message": "Profile updated successfully"}
 @router.post("/profile-picture")

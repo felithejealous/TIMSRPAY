@@ -311,19 +311,43 @@ def _find_customer_by_identifier(db: Session, raw_query: str):
 
     user = None
     wallet = None
+    customer_profile = None
 
+    clean_phone = re.sub(r"\D", "", q)
+
+    # 1. Search by user ID
     if q.isdigit():
         user = db.query(User).filter(
             User.id == int(q),
             User.role_id == customer_role_id
         ).first()
 
+    # 2. Search by email
     if not user and "@" in q:
         user = db.query(User).filter(
             sa_func.lower(User.email) == q.lower(),
             User.role_id == customer_role_id
         ).first()
 
+    # 3. Search by contact number
+    if not user and clean_phone:
+        customer_profile = (
+            db.query(CustomerProfile)
+            .join(User, User.id == CustomerProfile.user_id)
+            .filter(
+                CustomerProfile.phone == clean_phone,
+                User.role_id == customer_role_id
+            )
+            .first()
+        )
+
+        if customer_profile:
+            user = db.query(User).filter(
+                User.id == customer_profile.user_id,
+                User.role_id == customer_role_id
+            ).first()
+
+    # 4. Search by wallet code
     if not user:
         wallet = db.query(Wallet).join(User, User.id == Wallet.user_id).filter(
             sa_func.upper(Wallet.wallet_code) == q.upper(),
@@ -339,7 +363,9 @@ def _find_customer_by_identifier(db: Session, raw_query: str):
     if not wallet:
         wallet = db.query(Wallet).filter(Wallet.user_id == user.id).first()
 
-    customer_profile = db.query(CustomerProfile).filter(CustomerProfile.user_id == user.id).first()
+    if not customer_profile:
+        customer_profile = db.query(CustomerProfile).filter(CustomerProfile.user_id == user.id).first()
+
     reward_wallet = db.query(RewardWallet).filter(RewardWallet.user_id == user.id).first()
 
     return {
@@ -348,7 +374,6 @@ def _find_customer_by_identifier(db: Session, raw_query: str):
         "customer_profile": customer_profile,
         "reward_wallet": reward_wallet,
     }
-
 
 def _clear_unused_redeem_tokens(db: Session, user_id: int):
     db.query(RewardRedemptionToken).filter(
@@ -1128,7 +1153,7 @@ def consume_redeem_qr(
 # ======================
 @router.get("/inquiry")
 def rewards_inquiry(
-    q: str = Query(..., min_length=1, description="Email, wallet code, or user id"),
+    q: str = Query(..., min_length=1, description="Email, wallet code, user id, or contact number"),
     db: Session = Depends(get_db),
     _: User = Depends(require_roles("staff", "cashier", "admin")),
 ):
@@ -1148,6 +1173,7 @@ def rewards_inquiry(
         "user_id": user.id,
         "full_name": customer_profile.full_name if customer_profile else None,
         "email": user.email,
+        "phone": getattr(customer_profile, "phone", None) if customer_profile else None,
         "wallet_code": getattr(wallet, "wallet_code", None) if wallet else None,
         "reward_points": int(reward_wallet.total_points or 0) if reward_wallet else 0,
         "wallet_balance": float(wallet.balance or 0) if wallet else 0.0,

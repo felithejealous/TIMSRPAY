@@ -315,6 +315,56 @@
             color: #111;
             border-color: var(--mango);
         }
+        .order-search-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 18px;
+    padding: 12px 14px;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(20px);
+}
+
+.order-search-wrap i {
+    color: var(--mango);
+    font-size: 15px;
+}
+
+.order-search-wrap input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-main);
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.order-search-wrap input::placeholder {
+    color: var(--text-muted);
+}
+
+.clear-order-search-btn {
+    border: none;
+    background: var(--icon-bg);
+    color: var(--text-muted);
+    border-radius: 999px;
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: 0.25s;
+}
+
+.clear-order-search-btn:hover {
+    background: var(--mango);
+    color: #111;
+}
 
         .queue-container {
             display: grid;
@@ -568,6 +618,10 @@
             background: var(--text-main);
             color: #111;
         }
+        body.light-mode .btn-complete-card,
+html.preload-light body .btn-complete-card {
+    color: #ffffff !important;
+}
 
         .empty-state {
             text-align: center;
@@ -1047,7 +1101,7 @@
     <li><a href="inventory.html"><i class="fa-solid fa-boxes-stacked"></i> <span>Inventory</span></a></li>
     <li><a href="walletstaff.html"><i class="fa-solid fa-credit-card"></i> <span>RPAY</span></a></li>
     <li><a href="rewardsstaff.html"><i class="fa-solid fa-gift"></i> <span>Rewards</span></a></li>
-    <li><a href="salesreportstaff.html"><i class="fa-solid fa-chart-column"></i> <span>Sales Report</span></a></li>
+    <li><a href="salesreportstaff.html"><i class="fa-solid fa-chart-column"></i> <span>Shift Summary</span></a></li>
     <li style="margin-top: auto;"><a href="loginstaff.html" class="logout-link"><i
                 class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></a></li>
 </ul>
@@ -1079,6 +1133,13 @@
             <button class="filter-btn" data-filter="paid">Paid</button>
             <button class="filter-btn" data-filter="completed">Completed</button>
             <button class="filter-btn" data-filter="cancelled">Cancelled</button>
+        </div>
+        <div class="order-search-wrap">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="orderSearchInput"
+                placeholder="Search by display ID, raw order ID, customer name, item, payment, type, or status..."
+                autocomplete="off">
+            <button type="button" class="clear-order-search-btn" id="clearOrderSearchBtn">Clear</button>
         </div>
 
         <div class="queue-container">

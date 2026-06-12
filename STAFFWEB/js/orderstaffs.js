@@ -1,7 +1,8 @@
 const pendingCount = document.getElementById("pendingCount");
 const onlineQueue = document.getElementById("onlineQueue");
 const instoreQueue = document.getElementById("instoreQueue");
-
+const orderSearchInput = document.getElementById("orderSearchInput");
+const clearOrderSearchBtn = document.getElementById("clearOrderSearchBtn");
 const filterButtons = document.querySelectorAll(".filter-btn");
 
 const orderModal = document.getElementById("orderModal");
@@ -22,6 +23,7 @@ const markPaidBtn = document.getElementById("markPaidBtn");
 
 let allOrders = [];
 let currentFilter = "all";
+let currentSearchQuery = "";
 let selectedOrder = null;
 let ordersRefreshInterval = null;
 
@@ -229,6 +231,46 @@ function matchesFilter(order, filter) {
     if (filter === "all") return true;
     return normalizeOrderStatus(order) === filter;
 }
+function normalizeSearchValue(value) {
+    return String(value ?? "").toLowerCase().trim();
+}
+
+function getOrderSearchText(order) {
+    const displayId = order.display_id || "";
+    const rawOrderId = order.order_id || "";
+    const customerName = order.customer_name || "";
+    const itemsSummary = order.items_summary || "";
+    const paymentMethod = prettifyPaymentMethod(order.payment_method || "");
+    const orderType = prettifyOrderType(order.order_type || "");
+    const pickupType = prettifyPickupType(order.pickup_type || "");
+    const pickupDisplay = formatPickupDisplay(order);
+    const status = normalizeOrderStatus(order);
+    const totalAmount = formatPeso(order.total_amount || 0);
+
+    return normalizeSearchValue([
+        displayId,
+        rawOrderId,
+        `#${rawOrderId}`,
+        customerName,
+        itemsSummary,
+        paymentMethod,
+        orderType,
+        pickupType,
+        pickupDisplay,
+        status,
+        totalAmount
+    ].join(" "));
+}
+
+function matchesSearch(order, searchQuery) {
+    const query = normalizeSearchValue(searchQuery);
+
+    if (!query) return true;
+
+    const searchText = getOrderSearchText(order);
+
+    return searchText.includes(query);
+}
 function buildEmptyState(message) {
     return `<div class="empty-state">${escapeHTML(message)}</div>`;
 }
@@ -346,7 +388,10 @@ async function loadOrders() {
 }
 
 function renderQueues() {
-    const filtered = allOrders.filter(order => matchesFilter(order, currentFilter));
+    const filtered = allOrders.filter(order =>
+        matchesFilter(order, currentFilter) &&
+        matchesSearch(order, currentSearchQuery)
+    );
 
     const pendingLikeCount = allOrders.filter(order =>
         ["pending", "unpaid", "paid"].includes(normalizeOrderStatus(order))
@@ -357,8 +402,19 @@ function renderQueues() {
     const onlineOrders = filtered.filter(order => String(order.order_type || "").toLowerCase() === "online");
     const instoreOrders = filtered.filter(order => isWalkInOrder(order));
 
-    renderQueueColumn(onlineQueue, onlineOrders, "No online orders for today.");
-    renderQueueColumn(instoreQueue, instoreOrders, "No walk-in / POS orders for today.");
+    const hasSearch = currentSearchQuery.trim().length > 0;
+
+    renderQueueColumn(
+        onlineQueue,
+        onlineOrders,
+        hasSearch ? "No matching online orders found." : "No online orders for today."
+    );
+
+    renderQueueColumn(
+        instoreQueue,
+        instoreOrders,
+        hasSearch ? "No matching walk-in / POS orders found." : "No walk-in / POS orders for today."
+    );
 }
 
 function renderQueueColumn(container, orders, emptyMessage) {
@@ -493,7 +549,22 @@ function setupFilters() {
         });
     });
 }
+function setupOrderSearch() {
+    if (orderSearchInput) {
+        orderSearchInput.addEventListener("input", () => {
+            currentSearchQuery = orderSearchInput.value.trim();
+            renderQueues();
+        });
+    }
 
+    if (clearOrderSearchBtn) {
+        clearOrderSearchBtn.addEventListener("click", () => {
+            currentSearchQuery = "";
+            if (orderSearchInput) orderSearchInput.value = "";
+            renderQueues();
+        });
+    }
+}
 /* =========================
    MODAL
 ========================= */
@@ -935,6 +1006,7 @@ async function initOrdersPage() {
     try {
         setupLogout();
         setupFilters();
+        setupOrderSearch();
         setupModalEvents();
 
         await loadOrders();
