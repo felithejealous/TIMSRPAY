@@ -1050,6 +1050,34 @@
             box-shadow: 0 10px 20px rgba(255, 194, 68, .3);
         }
 
+
+        .btn-fill.secondary {
+            background: transparent;
+            color: var(--text-main);
+            border: 1px solid var(--card-border);
+        }
+
+        .btn-fill.secondary:hover {
+            background: var(--hover-bg);
+            color: var(--mango);
+            border-color: var(--mango);
+        }
+
+        .receipt-action-message {
+            margin-top: 12px;
+            min-height: 18px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 600px) {
+            .receipt-actions {
+                flex-direction: column;
+            }
+        }
+
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -1195,90 +1223,91 @@
                 padding: 16px;
             }
         }
+
         /* =========================
    PICKUP DATE/TIME VISIBILITY FIX
 ========================= */
-#pickupDate,
-#pickupTime {
-    color-scheme: dark;
-    color: #f8fafc;
-    background: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.025));
-    border-color: rgba(255, 255, 255, 0.14);
-    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
-}
+        #pickupDate,
+        #pickupTime {
+            color-scheme: dark;
+            color: #f8fafc;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.025));
+            border-color: rgba(255, 255, 255, 0.14);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+        }
 
-#pickupDate::-webkit-calendar-picker-indicator,
-#pickupTime::-webkit-calendar-picker-indicator {
-    opacity: 1;
-    cursor: pointer;
-    filter: brightness(2.8) contrast(1.55) drop-shadow(0 0 2px rgba(255, 194, 68, 0.35));
-}
+        #pickupDate::-webkit-calendar-picker-indicator,
+        #pickupTime::-webkit-calendar-picker-indicator {
+            opacity: 1;
+            cursor: pointer;
+            filter: brightness(2.8) contrast(1.55) drop-shadow(0 0 2px rgba(255, 194, 68, 0.35));
+        }
 
-#pickupDate:focus,
-#pickupTime:focus {
-    border-color: var(--mango);
-    background: rgba(255,255,255,0.06);
-    box-shadow:
-        0 0 0 3px rgba(255, 194, 68, 0.12),
-        0 8px 18px rgba(255, 194, 68, 0.08);
-}
+        #pickupDate:focus,
+        #pickupTime:focus {
+            border-color: var(--mango);
+            background: rgba(255, 255, 255, 0.06);
+            box-shadow:
+                0 0 0 3px rgba(255, 194, 68, 0.12),
+                0 8px 18px rgba(255, 194, 68, 0.08);
+        }
 
-/* placeholder-like value visibility */
-#pickupDate,
-#pickupTime,
-#pickupDate::-webkit-datetime-edit,
-#pickupTime::-webkit-datetime-edit,
-#pickupDate::-webkit-datetime-edit-text,
-#pickupTime::-webkit-datetime-edit-text,
-#pickupDate::-webkit-datetime-edit-month-field,
-#pickupDate::-webkit-datetime-edit-day-field,
-#pickupDate::-webkit-datetime-edit-year-field,
-#pickupTime::-webkit-datetime-edit-hour-field,
-#pickupTime::-webkit-datetime-edit-minute-field,
-#pickupTime::-webkit-datetime-edit-ampm-field {
-    color: #f8fafc;
-}
+        /* placeholder-like value visibility */
+        #pickupDate,
+        #pickupTime,
+        #pickupDate::-webkit-datetime-edit,
+        #pickupTime::-webkit-datetime-edit,
+        #pickupDate::-webkit-datetime-edit-text,
+        #pickupTime::-webkit-datetime-edit-text,
+        #pickupDate::-webkit-datetime-edit-month-field,
+        #pickupDate::-webkit-datetime-edit-day-field,
+        #pickupDate::-webkit-datetime-edit-year-field,
+        #pickupTime::-webkit-datetime-edit-hour-field,
+        #pickupTime::-webkit-datetime-edit-minute-field,
+        #pickupTime::-webkit-datetime-edit-ampm-field {
+            color: #f8fafc;
+        }
 
-/* when empty, make default text more visible */
-#pickupDate:invalid,
-#pickupTime:invalid {
-    color: rgba(255, 255, 255, 0.78);
-}
+        /* when empty, make default text more visible */
+        #pickupDate:invalid,
+        #pickupTime:invalid {
+            color: rgba(255, 255, 255, 0.78);
+        }
 
-/* LIGHT MODE counterpart para hindi sobrang puti doon */
-.light-mode #pickupDate,
-.light-mode #pickupTime {
-    color-scheme: light;
-    color: #1f2937;
-    background: rgba(0, 0, 0, 0.03);
-    border-color: rgba(0, 0, 0, 0.08);
-    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.01);
-}
+        /* LIGHT MODE counterpart para hindi sobrang puti doon */
+        .light-mode #pickupDate,
+        .light-mode #pickupTime {
+            color-scheme: light;
+            color: #1f2937;
+            background: rgba(0, 0, 0, 0.03);
+            border-color: rgba(0, 0, 0, 0.08);
+            box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.01);
+        }
 
-.light-mode #pickupDate::-webkit-calendar-picker-indicator,
-.light-mode #pickupTime::-webkit-calendar-picker-indicator {
-    filter: brightness(0.55) contrast(1.4) drop-shadow(0 0 1px rgba(0,0,0,0.12));
-}
+        .light-mode #pickupDate::-webkit-calendar-picker-indicator,
+        .light-mode #pickupTime::-webkit-calendar-picker-indicator {
+            filter: brightness(0.55) contrast(1.4) drop-shadow(0 0 1px rgba(0, 0, 0, 0.12));
+        }
 
-.light-mode #pickupDate,
-.light-mode #pickupTime,
-.light-mode #pickupDate::-webkit-datetime-edit,
-.light-mode #pickupTime::-webkit-datetime-edit,
-.light-mode #pickupDate::-webkit-datetime-edit-text,
-.light-mode #pickupTime::-webkit-datetime-edit-text,
-.light-mode #pickupDate::-webkit-datetime-edit-month-field,
-.light-mode #pickupDate::-webkit-datetime-edit-day-field,
-.light-mode #pickupDate::-webkit-datetime-edit-year-field,
-.light-mode #pickupTime::-webkit-datetime-edit-hour-field,
-.light-mode #pickupTime::-webkit-datetime-edit-minute-field,
-.light-mode #pickupTime::-webkit-datetime-edit-ampm-field {
-    color: #1f2937;
-}
+        .light-mode #pickupDate,
+        .light-mode #pickupTime,
+        .light-mode #pickupDate::-webkit-datetime-edit,
+        .light-mode #pickupTime::-webkit-datetime-edit,
+        .light-mode #pickupDate::-webkit-datetime-edit-text,
+        .light-mode #pickupTime::-webkit-datetime-edit-text,
+        .light-mode #pickupDate::-webkit-datetime-edit-month-field,
+        .light-mode #pickupDate::-webkit-datetime-edit-day-field,
+        .light-mode #pickupDate::-webkit-datetime-edit-year-field,
+        .light-mode #pickupTime::-webkit-datetime-edit-hour-field,
+        .light-mode #pickupTime::-webkit-datetime-edit-minute-field,
+        .light-mode #pickupTime::-webkit-datetime-edit-ampm-field {
+            color: #1f2937;
+        }
 
-.light-mode #pickupDate:invalid,
-.light-mode #pickupTime:invalid {
-    color: rgba(31, 41, 55, 0.68);
-}
+        .light-mode #pickupDate:invalid,
+        .light-mode #pickupTime:invalid {
+            color: rgba(31, 41, 55, 0.68);
+        }
     </style>
 </head>
 
@@ -1472,8 +1501,8 @@
         <div class="receipt-modal-content">
             <div class="receipt-paper" id="printableReceipt">
                 <div class="receipt-header">
-                <img src="logo.png" alt="Teo D' Mango"
-                    style="height:40px; margin-bottom:10px; display: block; margin-left: auto; margin-right: auto;">
+                    <img src="logo.png" alt="Teo D' Mango"
+                        style="height:40px; margin-bottom:10px; display: block; margin-left: auto; margin-right: auto;">
                     <strong style="font-size:1.2rem;">TEO D' MANGO</strong><br>
                     <small>Official Receipt</small><br>
                     <small id="receiptDateTime">Loading...</small>
@@ -1514,8 +1543,15 @@
             </div>
 
             <div class="receipt-actions no-print">
+<button class="btn-fill secondary" type="button" onclick="downloadReceiptFromModal()">
+    <i class="fa-solid fa-image"></i> Save Receipt Image
+</button>
+                <button class="btn-fill secondary" type="button" onclick="sendReceiptEmail()">
+                    <i class="fa-solid fa-envelope"></i> Send to Email
+                </button>
                 <button class="btn-fill" type="button" onclick="goBackToMenu()">Back to Menu</button>
             </div>
+            <div class="receipt-action-message no-print" id="receiptActionMessage"></div>
         </div>
     </div>
 
@@ -1523,6 +1559,7 @@
     <script src="js/api.js"></script>
     <script src="js/authGuard.js"></script>
     <script src="js/logout.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <script src="js/payment.js"></script>
 
     <script>

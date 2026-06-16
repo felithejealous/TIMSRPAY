@@ -555,7 +555,26 @@ function renderModalAddOns(addOns) {
     )
     .join("");
 }
+function updateNotesCounter() {
+  const notesEl = document.getElementById("modalNotes");
+  const counterEl = document.getElementById("modalNotesCounter");
 
+  if (!notesEl || !counterEl) return;
+
+  const max = 100;
+
+  if (notesEl.value.length > max) {
+    notesEl.value = notesEl.value.slice(0, max);
+  }
+
+  counterEl.textContent = `${notesEl.value.length}/100 characters`;
+
+  if (notesEl.value.length >= max) {
+    counterEl.style.color = "#ff4d6d";
+  } else {
+    counterEl.style.color = "var(--text-muted)";
+  }
+}
 function openProductById(productId) {
   const product = allProducts.find(
     (item) => Number(item.product_id) === Number(productId),
@@ -575,7 +594,10 @@ function openProductById(productId) {
   if (descEl) descEl.textContent = getSafeDescription(product.description);
   if (imgEl) imgEl.src = getProductImage(product);
   if (qtyEl) qtyEl.textContent = "1";
-  if (notesEl) notesEl.value = "";
+  if (notesEl) {
+  notesEl.value = "";
+  updateNotesCounter();
+}
 
 const firstSize = document.querySelector('input[name="size"]');
 if (firstSize) firstSize.checked = true;
@@ -990,6 +1012,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   await initMenuPage();
   const params = new URLSearchParams(window.location.search);
   const productId = params.get("product");
+  const modalNotes = document.getElementById("modalNotes");
+  if (modalNotes) {
+  modalNotes.addEventListener("input", updateNotesCounter);
+  updateNotesCounter();
+}
 
   if (productId) {
     const pid = Number(productId);

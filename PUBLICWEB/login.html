@@ -732,8 +732,8 @@
                     </div>
 
                     <div class="field">
-                        <input id="registerPhone" type="tel" placeholder="Contact Number (09XXXXXXXXX)"
-                            maxlength="11" inputmode="numeric" autocomplete="tel" pattern="09[0-9]{9}"
+                        <input id="registerPhone" type="tel" placeholder="Contact Number (09XXXXXXXXX)" maxlength="11"
+                            inputmode="numeric" autocomplete="tel" pattern="09[0-9]{9}"
                             title="Contact number must be 11 digits and start with 09."
                             oninput="sanitizePhoneInput(this)">
                     </div>
@@ -758,7 +758,7 @@
                         <label for="registerTerms">
                             I agree to the <a href="#" onclick="openTermsModal(); return false;">Terms and
                                 Conditions</a>
-                            and Privacy Policy.
+                            and <a href="#" onclick="openPrivacyModal(); return false;">Privacy Policy</a>.
                         </label>
                     </div>
 
@@ -926,6 +926,86 @@
 
             <div class="terms-actions">
                 <button type="button" class="btn-friendly" onclick="closeTermsModal()">I Understand</button>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div id="privacyModal" class="terms-modal" onclick="closePrivacyModalOnOverlay(event)">
+        <div class="terms-box">
+            <div class="terms-header">
+                <div>
+                    <h3>Privacy Policy</h3>
+                    <p>Teo D' Mango Member Hub</p>
+                </div>
+                <button type="button" class="terms-close" onclick="closePrivacyModal()"
+                    aria-label="Close Privacy Policy">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="terms-content">
+                <div class="terms-section">
+                    <h4>1. Information We Collect</h4>
+                    <p>
+                        Teo D' Mango may collect customer information such as name, email address, contact number,
+                        password, order details, rewards points, and TeoPay wallet transaction records when customers
+                        create and use their Member Hub account.
+                    </p>
+                </div>
+
+                <div class="terms-section">
+                    <h4>2. Purpose of Data Collection</h4>
+                    <p>
+                        The collected information is used for account registration, login authentication, order
+                        processing,
+                        customer lookup, rewards tracking, TeoPay wallet verification, transaction history, support,
+                        and store-related service improvements.
+                    </p>
+                </div>
+
+                <div class="terms-section">
+                    <h4>3. Data Protection</h4>
+                    <p>
+                        Teo D' Mango applies reasonable security measures such as password protection, authenticated
+                        access, role-based system access, and transaction records to help protect customer and business
+                        information from unauthorized use.
+                    </p>
+                </div>
+
+                <div class="terms-section">
+                    <h4>4. Data Sharing</h4>
+                    <p>
+                        Customer information will not be sold or shared with unauthorized third parties. Access to user
+                        data is limited to authorized personnel who need it for system operation, transaction
+                        verification,
+                        account support, and administrative monitoring.
+                    </p>
+                </div>
+
+                <div class="terms-section">
+                    <h4>5. Customer Responsibility</h4>
+                    <p>
+                        Customers are responsible for providing accurate account information and keeping their login
+                        credentials private. Any suspicious account, wallet, or rewards activity should be reported to
+                        Teo D' Mango immediately.
+                    </p>
+                </div>
+
+                <div class="terms-section">
+                    <h4>6. Policy Updates</h4>
+                    <p>
+                        This Privacy Policy may be updated when needed to improve security, comply with store
+                        operations,
+                        or support future system changes. Continued use of the Member Hub means the customer accepts
+                        the latest version of this policy.
+                    </p>
+                </div>
+            </div>
+
+            <div class="terms-actions">
+                <button type="button" class="btn-friendly" onclick="closePrivacyModal()">I Understand</button>
             </div>
         </div>
     </div>

@@ -633,6 +633,20 @@
             background: var(--hover-bg);
         }
 
+
+        .notes-counter {
+            margin-top: 8px;
+            text-align: right;
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+        }
+
+        .notes-counter.limit {
+            color: var(--danger);
+        }
+
         .qty-row {
             display: flex;
             justify-content: space-between;
@@ -774,6 +788,7 @@
             border-radius: 25px;
             transition: 0.3s;
         }
+
         .avatar-circle {
             width: 60px;
             height: 60px;
@@ -1237,7 +1252,9 @@
 
             <div class="config-section">
                 <span class="config-title">Special Notes</span>
-                <textarea id="modalNotes" class="modal-notes" placeholder="Optional notes for this item..."></textarea>
+                <textarea id="modalNotes" class="modal-notes" maxlength="100"
+                    placeholder="Optional notes for this item..."></textarea>
+                <div class="notes-counter" id="modalNotesCounter">0/100 characters</div>
             </div>
 
             <div class="qty-row">

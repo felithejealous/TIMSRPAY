@@ -805,7 +805,147 @@ function showReceiptNote(message = "") {
   noteBox.style.display = "block";
   noteBox.textContent = message;
 }
+function setReceiptActionStatus(message = "", type = "neutral") {
+  const status = document.getElementById("receiptActionStatus");
+  if (!status) return;
 
+  status.textContent = message || "";
+
+  if (type === "success") {
+    status.style.color = "#10b981";
+  } else if (type === "error") {
+    status.style.color = "#ff4d6d";
+  } else {
+    status.style.color = "var(--text-muted)";
+  }
+}
+
+function getLatestOrderIdForReceipt() {
+  return (
+    lastOrderResponse?.order_id ||
+    lastOrderResponse?.id ||
+    lastOrderResponse?.raw_id ||
+    document.getElementById("receiptRawId")?.textContent?.trim()
+  );
+}
+
+async function downloadReceiptFromModal() {
+  const receiptPaper = document.querySelector("#successReceiptModal .receipt-paper");
+
+  if (!receiptPaper) {
+    setReceiptActionStatus("Receipt is not available for download.", "error");
+    return;
+  }
+
+  if (typeof html2canvas === "undefined") {
+    setReceiptActionStatus("Receipt image tool is still loading. Please try again.", "error");
+    return;
+  }
+
+  try {
+    setReceiptActionStatus("Preparing receipt image...", "neutral");
+
+    const orderId = getLatestOrderIdForReceipt() || "receipt";
+
+    const previousTransform = receiptPaper.style.transform;
+    const previousMaxHeight = receiptPaper.style.maxHeight;
+    const previousOverflow = receiptPaper.style.overflow;
+
+    receiptPaper.style.transform = "none";
+    receiptPaper.style.maxHeight = "none";
+    receiptPaper.style.overflow = "visible";
+
+    const canvas = await html2canvas(receiptPaper, {
+      backgroundColor: "#fffdf5",
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      scrollX: 0,
+      scrollY: 0
+    });
+
+    receiptPaper.style.transform = previousTransform;
+    receiptPaper.style.maxHeight = previousMaxHeight;
+    receiptPaper.style.overflow = previousOverflow;
+
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        setReceiptActionStatus("Failed to prepare receipt image.", "error");
+        return;
+      }
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+
+      link.href = url;
+      link.download = `teo-d-mango-receipt-${orderId}.png`;
+
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      URL.revokeObjectURL(url);
+
+      setReceiptActionStatus("Receipt image saved successfully.", "success");
+    }, "image/png");
+  } catch (error) {
+    console.error("downloadReceiptFromModal error:", error);
+    setReceiptActionStatus("Failed to save receipt image.", "error");
+  }
+}
+async function sendReceiptEmailFromModal() {
+  const orderId = getLatestOrderIdForReceipt();
+
+  if (!orderId || orderId === "-") {
+    setReceiptActionStatus("Order ID not found. Cannot send receipt.", "error");
+    return;
+  }
+
+  const fallbackEmail =
+    currentUser?.email ||
+    document.getElementById("rpayEmail")?.value?.trim() ||
+    localStorage.getItem("user_email") ||
+    "";
+
+  const email = prompt("Enter email address for receipt:", fallbackEmail);
+
+  if (email === null) return;
+
+  const cleanEmail = String(email || "").trim().toLowerCase();
+
+  if (!cleanEmail || !cleanEmail.includes("@") || !cleanEmail.includes(".")) {
+    setReceiptActionStatus("Please enter a valid email address.", "error");
+    return;
+  }
+
+  try {
+    setReceiptActionStatus("Sending receipt email...", "neutral");
+
+    const response = await fetch(`${API_URL}/orders/${orderId}/receipt/email`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(localStorage.getItem("token")
+          ? { Authorization: `Bearer ${localStorage.getItem("token")}` }
+          : {})
+      },
+      body: JSON.stringify({
+        email: cleanEmail
+      })
+    });
+
+    const result = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(result.detail || result.message || "Failed to send receipt email.");
+    }
+
+    setReceiptActionStatus(result.message || `Receipt sent to ${cleanEmail}.`, "success");
+  } catch (error) {
+    console.error("sendReceiptEmailFromModal error:", error);
+    setReceiptActionStatus(error.message || "Failed to send receipt email.", "error");
+  }
+}
 function showSuccessReceipt(orderData, submittedPayload = null) {
   const modal = document.getElementById("successReceiptModal");
   if (!modal) return;
@@ -1011,5 +1151,8 @@ window.handleFinish = handleFinish;
 window.goBackToMenu = goBackToMenu;
 window.applyPromoCode = applyPromoCode;
 window.useQuickPromo = useQuickPromo;
-
+window.downloadReceiptFromModal = downloadReceiptFromModal;
+window.sendReceiptEmailFromModal = sendReceiptEmailFromModal;
+window.downloadReceipt = downloadReceiptFromModal;
+window.sendReceiptEmail = sendReceiptEmailFromModal;
 document.addEventListener("DOMContentLoaded", initPaymentPage);
