@@ -1,6 +1,7 @@
 const MENU_STORAGE_KEY = "public_menu_cart";
 const CHECKOUT_DRAFT_KEY = "public_online_order_draft";
 const APPLIED_PROMO_STORAGE_KEY = "public_applied_promo";
+const FAVORITES_STORAGE_KEY = "public_menu_favorites";
 const PROMO_QUERY_PARAM = "promo";
 
 let SIZE_OPTIONS = {
@@ -39,6 +40,7 @@ let currentProduct = null;
 let cart = [];
 let qty = 1;
 let appliedPromo = null;
+let favoriteProductIds = [];
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -92,21 +94,52 @@ function getProductImage(product) {
   return getMenuFallbackImage(product?.name);
 }
 
+function loadFavorites() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(FAVORITES_STORAGE_KEY) || "[]");
+    favoriteProductIds = Array.isArray(saved)
+      ? saved.map((id) => Number(id)).filter((id) => Number.isFinite(id))
+      : [];
+  } catch {
+    favoriteProductIds = [];
+  }
+}
+
+function saveFavorites() {
+  localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(favoriteProductIds));
+}
+
+function isFavoriteProduct(productId) {
+  return favoriteProductIds.includes(Number(productId));
+}
+
+function toggleFavoriteProduct(productId, event) {
+  event?.stopPropagation();
+
+  const id = Number(productId);
+  if (!Number.isFinite(id)) return;
+
+  if (isFavoriteProduct(id)) {
+    favoriteProductIds = favoriteProductIds.filter((itemId) => itemId !== id);
+  } else {
+    favoriteProductIds.push(id);
+  }
+
+  saveFavorites();
+  applyFilters();
+}
+
 function getSelectedSizeValue() {
   return document.querySelector('input[name="size"]:checked')?.value || "small";
 }
+
 function normalizeSizeKey(value) {
   return String(value || "")
     .trim()
     .toLowerCase()
     .replace(/\s+/g, "-");
 }
-function normalizeSizeKey(value) {
-  return String(value || "")
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, "-");
-}
+
 function renderSizeOptions(sizes = []) {
   const container = document.getElementById("sizeSelector");
   if (!container) return;
@@ -142,6 +175,7 @@ function renderSizeOptions(sizes = []) {
     `;
   }).join("");
 }
+
 function getSelectedAddOns() {
   return Array.from(document.querySelectorAll(".addon-check:checked")).map(
     (input) => ({
@@ -384,14 +418,20 @@ function buildFilterChips(products) {
   ];
 
   filterChips.innerHTML = `
-        <button class="chip active" type="button" data-category="all">All Items</button>
+        <button class="chip ${activeCategory === "all" ? "active" : ""}" type="button" data-category="all">All Items</button>
+        <button class="chip ${activeCategory === "favorites" ? "active" : ""}" type="button" data-category="favorites">
+            <i class="fa-solid fa-heart" style="margin-right:6px;"></i> Favorites
+        </button>
         ${categories
           .map(
-            (cat) => `
-            <button class="chip" type="button" data-category="${escapeHtml(normalizeCategory(cat))}">
+            (cat) => {
+              const slug = normalizeCategory(cat);
+              return `
+            <button class="chip ${activeCategory === slug ? "active" : ""}" type="button" data-category="${escapeHtml(slug)}">
                 ${escapeHtml(cat)}
             </button>
-        `,
+        `;
+            },
           )
           .join("")}
     `;
@@ -417,6 +457,7 @@ function renderProducts(products) {
     .toLowerCase();
 
   const filtered = products.filter((product) => {
+    const productId = Number(product.product_id);
     const title = String(product.name || "").toLowerCase();
     const description = String(product.description || "").toLowerCase();
     const categorySlug = normalizeCategory(product.category_name || "others");
@@ -425,7 +466,9 @@ function renderProducts(products) {
       title.includes(searchQuery) || description.includes(searchQuery);
 
     const matchesCategory =
-      activeCategory === "all" || categorySlug === activeCategory;
+      activeCategory === "all" ||
+      categorySlug === activeCategory ||
+      (activeCategory === "favorites" && isFavoriteProduct(productId));
 
     return matchesSearch && matchesCategory;
   });
@@ -438,6 +481,14 @@ function renderProducts(products) {
 
       return `
             <div class="product-card" data-product-id="${Number(product.product_id)}" data-category="${escapeHtml(categorySlug)}" data-title="${escapeHtml((product.name || "").toLowerCase())}" onclick="openProductById(${Number(product.product_id)})">
+                <button
+                    class="favorite-btn ${isFavoriteProduct(Number(product.product_id)) ? "active" : ""}"
+                    type="button"
+                    title="${isFavoriteProduct(Number(product.product_id)) ? "Remove from favorites" : "Add to favorites"}"
+                    onclick="toggleFavoriteProduct(${Number(product.product_id)}, event)"
+                >
+                    <i class="${isFavoriteProduct(Number(product.product_id)) ? "fa-solid" : "fa-regular"} fa-heart"></i>
+                </button>
                 <img src="${escapeHtml(image)}" alt="${escapeHtml(product.name)}" class="product-img">
                 <div class="product-info">
                     <h3>${escapeHtml(product.name)}</h3>
@@ -555,6 +606,7 @@ function renderModalAddOns(addOns) {
     )
     .join("");
 }
+
 function updateNotesCounter() {
   const notesEl = document.getElementById("modalNotes");
   const counterEl = document.getElementById("modalNotesCounter");
@@ -575,6 +627,7 @@ function updateNotesCounter() {
     counterEl.style.color = "var(--text-muted)";
   }
 }
+
 function openProductById(productId) {
   const product = allProducts.find(
     (item) => Number(item.product_id) === Number(productId),
@@ -594,13 +647,14 @@ function openProductById(productId) {
   if (descEl) descEl.textContent = getSafeDescription(product.description);
   if (imgEl) imgEl.src = getProductImage(product);
   if (qtyEl) qtyEl.textContent = "1";
-  if (notesEl) {
-  notesEl.value = "";
-  updateNotesCounter();
-}
 
-const firstSize = document.querySelector('input[name="size"]');
-if (firstSize) firstSize.checked = true;
+  if (notesEl) {
+    notesEl.value = "";
+    updateNotesCounter();
+  }
+
+  const firstSize = document.querySelector('input[name="size"]');
+  if (firstSize) firstSize.checked = true;
 
   renderModalAddOns(product.add_ons || []);
   updateModalPrice();
@@ -633,10 +687,12 @@ function updateModalPrice() {
     (sum, item) => sum + Number(item.price || 0),
     0,
   );
+
   const unitPrice =
     Number(currentProduct.price || 0) +
     Number(sizeMeta.addPrice || 0) +
     addOnsTotal;
+
   const total = unitPrice * qty;
 
   const totalEl = document.getElementById("modalTotal");
@@ -696,6 +752,7 @@ function addToCartExecute() {
     openCart();
   }, 180);
 }
+
 function removeCartItem(cartItemId) {
   cart = cart.filter((item) => item.cart_item_id !== cartItemId);
   saveCart();
@@ -951,6 +1008,7 @@ async function initMenuPage() {
   if (!isAuthed) return;
 
   loadCart();
+  loadFavorites();
   updateCartBadge();
   renderCart();
   bindPromoInputEvents();
@@ -971,6 +1029,8 @@ window.closeAllPanels = closeAllPanels;
 window.proceedToCheckout = proceedToCheckout;
 window.removeCartItem = removeCartItem;
 window.applyPromoCode = applyPromoCode;
+window.toggleFavoriteProduct = toggleFavoriteProduct;
+
 function getProductIdFromUrl() {
   const params = new URLSearchParams(window.location.search);
   const raw = params.get("product");
@@ -1008,15 +1068,18 @@ function focusProductFromUrl() {
     openProductById(productId);
   }, 450);
 }
+
 document.addEventListener("DOMContentLoaded", async () => {
   await initMenuPage();
+
   const params = new URLSearchParams(window.location.search);
   const productId = params.get("product");
+
   const modalNotes = document.getElementById("modalNotes");
   if (modalNotes) {
-  modalNotes.addEventListener("input", updateNotesCounter);
-  updateNotesCounter();
-}
+    modalNotes.addEventListener("input", updateNotesCounter);
+    updateNotesCounter();
+  }
 
   if (productId) {
     const pid = Number(productId);
@@ -1032,17 +1095,14 @@ document.addEventListener("DOMContentLoaded", async () => {
           block: "center",
         });
 
-        // optional highlight
         target.style.boxShadow = "0 0 0 3px #ffc244";
 
         setTimeout(() => {
           target.style.boxShadow = "";
         }, 2000);
-
       }, 400);
     }
 
-    // optional: auto open modal
     setTimeout(() => {
       openProductById(pid);
     }, 600);
