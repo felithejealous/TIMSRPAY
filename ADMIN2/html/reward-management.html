@@ -674,6 +674,124 @@ body.light-theme .reward-filter-btn {
                 text-align: left !important;
             }
         }
+        .reward-filter {
+    background: #1b1712;
+    color: #ffffff;
+    border: 1px solid rgba(255, 194, 68, 0.35);
+}
+
+.reward-filter:focus {
+    border-color: var(--mango-yellow);
+    box-shadow: 0 0 0 3px rgba(255, 194, 68, 0.12);
+}
+
+.reward-filter option {
+    background: #111111;
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.reward-filter option:checked {
+    background: var(--mango-yellow);
+    color: #111111;
+}
+
+/* Light mode */
+body.light-theme .reward-filter {
+    background: #ffffff;
+    color: #111111;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+body.light-theme .reward-filter option {
+    background: #ffffff;
+    color: #111111;
+}
+
+body.light-theme .reward-filter option:checked {
+    background: var(--mango-yellow);
+    color: #111111;
+}
+/* =========================
+   REWARD FILTER VISIBILITY FIX
+   Dark mode + Light mode
+========================= */
+
+/* Search input */
+.search-container input {
+    background: #1b1712 !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 194, 68, 0.35) !important;
+}
+
+.search-container input::placeholder {
+    color: rgba(255, 255, 255, 0.55) !important;
+}
+
+.search-container i {
+    color: rgba(255, 255, 255, 0.65) !important;
+}
+
+/* Filter dropdowns */
+.reward-filter {
+    background: #1b1712 !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 194, 68, 0.35) !important;
+}
+
+.reward-filter:focus {
+    border-color: var(--mango-yellow) !important;
+    box-shadow: 0 0 0 3px rgba(255, 194, 68, 0.12) !important;
+}
+
+.reward-filter option {
+    background: #111111 !important;
+    color: #ffffff !important;
+    font-weight: 700;
+}
+
+.reward-filter option:checked {
+    background: var(--mango-yellow) !important;
+    color: #111111 !important;
+}
+
+/* Light mode search */
+body.light-theme .search-container input,
+html.preload-light body .search-container input {
+    background: #ffffff !important;
+    color: #111111 !important;
+    border: 1px solid rgba(0, 0, 0, 0.14) !important;
+}
+
+body.light-theme .search-container input::placeholder,
+html.preload-light body .search-container input::placeholder {
+    color: rgba(0, 0, 0, 0.45) !important;
+}
+
+body.light-theme .search-container i,
+html.preload-light body .search-container i {
+    color: rgba(0, 0, 0, 0.55) !important;
+}
+
+/* Light mode dropdowns */
+body.light-theme .reward-filter,
+html.preload-light body .reward-filter {
+    background: #ffffff !important;
+    color: #111111 !important;
+    border: 1px solid rgba(0, 0, 0, 0.14) !important;
+}
+
+body.light-theme .reward-filter option,
+html.preload-light body .reward-filter option {
+    background: #ffffff !important;
+    color: #111111 !important;
+}
+
+body.light-theme .reward-filter option:checked,
+html.preload-light body .reward-filter option:checked {
+    background: var(--mango-yellow) !important;
+    color: #111111 !important;
+}
     </style>
     <script>
         (function () { const savedTheme = localStorage.getItem("admin-theme"); if (savedTheme === "light") { document.documentElement.classList.add("preload-light"); } })();

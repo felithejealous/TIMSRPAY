@@ -656,6 +656,85 @@
                 font-size: 0.7rem;
             }
         }
+        /* =========================
+   PROMO LIGHT/DARK INPUT VISIBILITY FIX
+========================= */
+
+/* Dark mode inputs/selects */
+.input-group input,
+.input-group select {
+    background: #1b1712 !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 194, 68, 0.35) !important;
+}
+
+.input-group input::placeholder {
+    color: rgba(255, 255, 255, 0.55) !important;
+}
+
+.input-group select option {
+    background: #111111 !important;
+    color: #ffffff !important;
+    font-weight: 700;
+}
+
+.input-group input:focus,
+.input-group select:focus {
+    border-color: var(--mango-yellow) !important;
+    box-shadow: 0 0 0 3px rgba(255, 194, 68, 0.12) !important;
+    outline: none !important;
+}
+
+/* Light mode inputs/selects */
+body.light-theme .input-group input,
+body.light-theme .input-group select,
+html.preload-light body .input-group input,
+html.preload-light body .input-group select {
+    background: #ffffff !important;
+    color: #111111 !important;
+    border: 1px solid rgba(0, 0, 0, 0.14) !important;
+}
+
+body.light-theme .input-group input::placeholder,
+html.preload-light body .input-group input::placeholder {
+    color: rgba(0, 0, 0, 0.45) !important;
+}
+
+body.light-theme .input-group select option,
+html.preload-light body .input-group select option {
+    background: #ffffff !important;
+    color: #111111 !important;
+}
+
+/* Banner upload area light mode */
+body.light-theme .banner-upload-area,
+html.preload-light body .banner-upload-area {
+    background: #ffffff !important;
+    border: 2px dashed rgba(0, 0, 0, 0.18) !important;
+    color: #111111 !important;
+}
+
+body.light-theme .banner-upload-area p,
+html.preload-light body .banner-upload-area p {
+    color: rgba(0, 0, 0, 0.65) !important;
+}
+
+/* Voucher table readability in light mode */
+body.light-theme .promo-section,
+html.preload-light body .promo-section {
+    background: #ffffff !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+body.light-theme .data-table td,
+html.preload-light body .data-table td {
+    color: #1a1a1a !important;
+}
+
+body.light-theme .data-table thead th,
+html.preload-light body .data-table thead th {
+    background: #ffffff !important;
+}
     </style>
     <script>
         (function () {

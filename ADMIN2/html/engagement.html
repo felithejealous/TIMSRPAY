@@ -671,6 +671,98 @@
                 min-width: 110px;
             }
         }
+        /* =========================
+   ENGAGEMENT INPUT/FILTER VISIBILITY FIX
+   Dark mode + Light mode
+========================= */
+
+/* Dark mode toolbar */
+.toolbar {
+    background: rgba(20, 17, 14, 0.92) !important;
+    border: 1px solid rgba(255, 194, 68, 0.25) !important;
+}
+
+.field-group input,
+.field-group select,
+.field-group textarea {
+    background: #1b1712 !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 194, 68, 0.35) !important;
+}
+
+.field-group input::placeholder,
+.field-group textarea::placeholder {
+    color: rgba(255, 255, 255, 0.55) !important;
+}
+
+.field-group select option {
+    background: #111111 !important;
+    color: #ffffff !important;
+    font-weight: 700;
+}
+
+.field-group input:focus,
+.field-group select:focus,
+.field-group textarea:focus {
+    border-color: var(--mango-yellow) !important;
+    box-shadow: 0 0 0 3px rgba(255, 194, 68, 0.12) !important;
+    outline: none !important;
+}
+
+/* Light mode toolbar */
+body.light-theme .toolbar,
+html.preload-light body .toolbar {
+    background: #ffffff !important;
+    border: 1px solid rgba(0, 0, 0, 0.12) !important;
+}
+
+body.light-theme .field-group input,
+body.light-theme .field-group select,
+body.light-theme .field-group textarea,
+html.preload-light body .field-group input,
+html.preload-light body .field-group select,
+html.preload-light body .field-group textarea {
+    background: #ffffff !important;
+    color: #111111 !important;
+    border: 1px solid rgba(0, 0, 0, 0.14) !important;
+}
+
+body.light-theme .field-group input::placeholder,
+body.light-theme .field-group textarea::placeholder,
+html.preload-light body .field-group input::placeholder,
+html.preload-light body .field-group textarea::placeholder {
+    color: rgba(0, 0, 0, 0.45) !important;
+}
+
+body.light-theme .field-group select option,
+html.preload-light body .field-group select option {
+    background: #ffffff !important;
+    color: #111111 !important;
+}
+
+/* Table readability in light mode */
+body.light-theme .content-container,
+html.preload-light body .content-container {
+    background: #ffffff !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+body.light-theme .data-table td,
+html.preload-light body .data-table td {
+    color: #1a1a1a !important;
+}
+
+body.light-theme .data-table th,
+html.preload-light body .data-table th {
+    background: #ffffff !important;
+}
+
+/* Modal fields */
+body.light-theme .modal-content,
+html.preload-light body .modal-content {
+    background: #ffffff !important;
+    color: #111111 !important;
+}
     </style>
 
     <script>

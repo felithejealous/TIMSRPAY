@@ -10,6 +10,9 @@ let publicSizes = [
     { name: "Large", price: 20 },
     { name: "Sample Size", price: 100 }
 ];
+
+const NOTES_MAX_LENGTH = 100;
+
 const PRODUCT_IMAGE_MAP = {
     "classic mango": "../Images/mangga.png",
     "strawberry": "../Images/strawberry.png",
@@ -85,6 +88,60 @@ function saveTray(tray) {
     localStorage.setItem("teo_tray", JSON.stringify(tray));
 }
 
+/* =========================
+   SPECIAL NOTES LIMIT
+========================= */
+
+function limitNotesText(value) {
+    return String(value || "").slice(0, NOTES_MAX_LENGTH);
+}
+
+function getCurrentNotesValue() {
+    if (noteOverlay?.classList.contains("active")) {
+        return floatingNotes?.value || "";
+    }
+
+    return mainNotes?.value || "";
+}
+
+function updateNotesCounter() {
+    const notesCounter = document.getElementById("notesCounter");
+    const floatingNotesCounter = document.getElementById("floatingNotesCounter");
+
+    const value = getCurrentNotesValue();
+    const count = value.length;
+    const text = `${count}/${NOTES_MAX_LENGTH} characters`;
+    const isLimit = count >= NOTES_MAX_LENGTH;
+
+    if (notesCounter) {
+        notesCounter.textContent = text;
+        notesCounter.classList.toggle("limit", isLimit);
+    }
+
+    if (floatingNotesCounter) {
+        floatingNotesCounter.textContent = text;
+        floatingNotesCounter.classList.toggle("limit", isLimit);
+    }
+}
+
+function setFloatingNotesValue(value) {
+    if (!floatingNotes) return;
+
+    floatingNotes.value = limitNotesText(value);
+    updateNotesCounter();
+}
+
+function setMainNotesValue(value) {
+    if (!mainNotes) return;
+
+    mainNotes.value = limitNotesText(value);
+    updateNotesCounter();
+}
+
+/* =========================
+   CUSTOM KEYBOARD
+========================= */
+
 function buildKeyboard() {
     kb.innerHTML = "";
 
@@ -93,7 +150,14 @@ function buildKeyboard() {
         key.className = "key";
         key.innerText = char;
         key.onclick = () => {
-            floatingNotes.value += char;
+            if (!floatingNotes) return;
+
+            if (floatingNotes.value.length >= NOTES_MAX_LENGTH) {
+                updateNotesCounter();
+                return;
+            }
+
+            setFloatingNotesValue(floatingNotes.value + char);
         };
         kb.appendChild(key);
     });
@@ -102,7 +166,8 @@ function buildKeyboard() {
     del.className = "key wide";
     del.innerText = "DEL";
     del.onclick = () => {
-        floatingNotes.value = floatingNotes.value.slice(0, -1);
+        if (!floatingNotes) return;
+        setFloatingNotesValue(floatingNotes.value.slice(0, -1));
     };
     kb.appendChild(del);
 
@@ -110,7 +175,14 @@ function buildKeyboard() {
     space.className = "key space";
     space.innerText = "SPACE";
     space.onclick = () => {
-        floatingNotes.value += " ";
+        if (!floatingNotes) return;
+
+        if (floatingNotes.value.length >= NOTES_MAX_LENGTH) {
+            updateNotesCounter();
+            return;
+        }
+
+        setFloatingNotesValue(floatingNotes.value + " ");
     };
     kb.appendChild(space);
 
@@ -124,19 +196,22 @@ function buildKeyboard() {
 function openNoteFocus() {
     document.body.classList.add("is-typing");
     noteOverlay.classList.add("active");
-    floatingNotes.value = mainNotes.value;
+    setFloatingNotesValue(mainNotes.value);
     kb.classList.add("show");
+    updateNotesCounter();
 }
 
 function closeNoteFocus() {
     document.body.classList.remove("is-typing");
     noteOverlay.classList.remove("active");
-    mainNotes.value = floatingNotes.value;
+    setMainNotesValue(floatingNotes.value);
     kb.classList.remove("show");
+    updateNotesCounter();
 }
 
 function setupNoteInput() {
     mainNotes?.addEventListener("click", openNoteFocus);
+    updateNotesCounter();
 }
 
 function setActiveButton(groupSelector, clickedButton) {
@@ -175,6 +250,7 @@ function setupQtyButtons() {
     document.getElementById("qtyMinusBtn")?.addEventListener("click", () => adjustQty(-1));
     document.getElementById("qtyPlusBtn")?.addEventListener("click", () => adjustQty(1));
 }
+
 function renderAddons(selectedAddonIds = []) {
     if (!addonsGroup) return;
 
@@ -234,6 +310,7 @@ function renderSizes(selectedSize = "Small") {
 
     setupSizeButtons();
 }
+
 function updatePrice() {
     if (!currentProduct) return;
 
@@ -248,6 +325,7 @@ function updatePrice() {
 
     totalDisplay.innerText = `₱${(total * quantity).toFixed(2)}`;
 }
+
 async function fetchPublicAddons() {
     const response = await fetchJSON(`${API_URL}/products/add-ons/public`);
     publicAddons = Array.isArray(response?.data) ? response.data : [];
@@ -260,6 +338,7 @@ async function fetchPublicAddons() {
         publicSizes = [];
     }
 }
+
 async function fetchProductDetail(productId) {
     const response = await fetchJSON(`${API_URL}/products/${productId}`);
 
@@ -288,7 +367,7 @@ function loadEditState(itemToEdit) {
     addToCartBtn.innerText = "Update Tray";
     quantity = Number(itemToEdit.qty || 1);
     qtyDisplay.innerText = quantity;
-    mainNotes.value = itemToEdit.notes || "";
+    setMainNotesValue(itemToEdit.notes || "");
 
     document.querySelectorAll("#sizeGroup .pill-btn").forEach(btn => {
         btn.classList.toggle("active", btn.dataset.val === itemToEdit.size);
@@ -296,6 +375,7 @@ function loadEditState(itemToEdit) {
 
     renderAddons(Array.isArray(itemToEdit.addOnIds) ? itemToEdit.addOnIds : []);
     updatePrice();
+    updateNotesCounter();
 }
 
 async function loadProductData() {
@@ -326,6 +406,7 @@ async function loadProductData() {
         renderSizes("Small");
         renderAddons([]);
         updatePrice();
+        updateNotesCounter();
     }
 }
 
@@ -356,7 +437,7 @@ function buildTrayItem(tray) {
         size: size,
         toppings: toppings,
         addOnIds: addOnIds,
-        notes: String(mainNotes.value || "").trim().slice(0, 500)
+        notes: limitNotesText(String(mainNotes.value || "").trim())
     };
 }
 
@@ -389,6 +470,7 @@ async function initCustomizePage() {
         setupQtyButtons();
         setupButtons();
         await loadProductData();
+        updateNotesCounter();
     } catch (error) {
         console.error("Failed to initialize customize page:", error);
         alert(error.message || "Failed to load product customization.");

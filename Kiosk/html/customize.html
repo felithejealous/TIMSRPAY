@@ -187,6 +187,28 @@
         .key.wide { grid-column: span 1.5; background: #718096; color: white; }
         .key.space { grid-column: span 5; }
         .key.close { background: var(--mango-deep); color: white; grid-column: span 2; }
+        .notes-counter {
+    margin-top: 8px;
+    text-align: right;
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: rgba(45, 30, 24, 0.55);
+}
+
+.notes-counter.limit {
+    color: #d62828;
+}
+
+.floating-notes-counter {
+    margin-top: 10px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: #777;
+}
+
+.floating-notes-counter.limit {
+    color: #d62828;
+}
     </style>
 </head>
 <body>
@@ -210,7 +232,8 @@
             <div class="addon-grid" id="addonsGroup"></div>
 
             <span class="section-label">Special Notes</span>
-            <input type="text" class="notes-field" id="orderNotes" maxlength="100"placeholder="Tap to add a note..." readonly>
+        <input type="text" class="notes-field" id="orderNotes" maxlength="100" placeholder="Tap to add a note..." readonly>
+        <div class="notes-counter" id="notesCounter">0/100 characters</div>
 
             <div class="qty-row">
                 <span class="section-label" style="margin:0">Quantity</span>
@@ -237,8 +260,9 @@
     <div class="note-focus-overlay" id="noteOverlay">
         <div class="floating-input-card">
             <h3>Special Instructions</h3>
-            <input type="text" id="floatingNotes" placeholder="Type here..." readonly>
-            <p style="margin-top: 15px; font-size: 0.8rem; color: #888;">Tap "DONE" on the keyboard to save</p>
+        <input type="text" id="floatingNotes" maxlength="100" placeholder="Type here..." readonly>
+        <div class="floating-notes-counter" id="floatingNotesCounter">0/100 characters</div>
+        <p style="margin-top: 15px; font-size: 0.8rem; color: #888;">Tap "DONE" on the keyboard to save</p>
         </div>
     </div>
 

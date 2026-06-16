@@ -337,24 +337,54 @@ html.preload-light body {
             background: var(--mango);
             color: #111;
         }
+.category-select {
+    min-width: 200px;
+    padding: 10px 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 194, 68, 0.65);
+    background: #0f0f0f;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 800;
+    outline: none;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+}
 
-        .category-select {
-            min-width: 200px;
-            padding: 10px 14px;
-            border-radius: 14px;
-            border: 1px solid var(--card-border);
-            background: var(--input-bg);
-            color: var(--text-main);
-            font-size: 12px;
-            font-weight: 800;
-            outline: none;
-            letter-spacing: 0.5px;
-        }
+.category-select:focus {
+    border-color: var(--mango);
+    box-shadow: 0 0 0 3px rgba(255, 194, 68, 0.12);
+}
 
-        .category-select:focus {
-            border-color: var(--mango);
-        }
+.category-select option {
+    background: #111111;
+    color: #ffffff;
+    font-weight: 700;
+}
 
+.category-select option:checked {
+    background: var(--mango);
+    color: #111111;
+}
+
+body.light-mode .category-select,
+html.preload-light body .category-select {
+    background: #ffffff;
+    color: #111111;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+body.light-mode .category-select option,
+html.preload-light body .category-select option {
+    background: #ffffff;
+    color: #111111;
+}
+
+body.light-mode .category-select option:checked,
+html.preload-light body .category-select option:checked {
+    background: var(--mango);
+    color: #111111;
+}
         .btn-add {
             background: var(--text-main);
             color: var(--bg-main);
@@ -816,6 +846,7 @@ html.preload-light body {
                 max-height: 420px;
             }
         }
+        
     </style>
     <script>
 (function () {
